@@ -1,0 +1,47 @@
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import QtQuick.Dialogs 1.3
+
+MenuScroll {
+    id: scrollBar
+
+    property int numPlots: displaySettings.numPlots
+    property bool syncPlots: displaySettings.syncPlots
+    property int instruments: displaySettings.instruments
+    property var targetPlot: null
+    property int menuWidth: 200
+    property bool extraInfoVis: displaySettings.extraInfoVis
+    property bool autopilotInfofVis: displaySettings.autopilotInfofVis
+
+    signal languageChanged(string langStr)
+    signal syncPlotEnabled()
+
+    function updateBottomTrack() {
+        displaySettings.updateBottomTrack()
+    }
+
+    ColumnLayout {
+        MenuFrame {
+            DisplaySettings {
+                id: displaySettings
+                targetPlot: scrollBar.targetPlot
+                width: menuWidth
+            }
+
+        }
+    }
+
+    function handleChildSignal(langStr) {
+        languageChanged(langStr)
+    }
+
+    function handleSyncPlotEnabled() {
+        syncPlotEnabled()
+    }
+
+    Component.onCompleted: {
+        displaySettings.languageChanged.connect(handleChildSignal)
+        displaySettings.syncPlotEnabled.connect(handleSyncPlotEnabled)
+    }
+}

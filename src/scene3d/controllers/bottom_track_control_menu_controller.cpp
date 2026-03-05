@@ -1,0 +1,69 @@
+#include "bottom_track_control_menu_controller.h"
+#include "scene3d_view.h"
+#include "bottom_track.h"
+#include "qml_object_names.h"
+
+
+BottomTrackControlMenuController::BottomTrackControlMenuController(QObject* parent)
+    : QmlComponentController(parent),
+      graphicsSceneViewPtr_(nullptr),
+      pendingLambda_(nullptr),
+      visibility_(false)
+{}
+
+BottomTrackControlMenuController::~BottomTrackControlMenuController()
+{}
+
+void BottomTrackControlMenuController::onVisibilityCheckBoxCheckedChanged(bool checked)
+{
+    visibility_ = checked;
+
+
+    if (graphicsSceneViewPtr_) {
+        qDebug() << "graphicsSceneViewPtr_.....";
+        checked = false;
+        graphicsSceneViewPtr_->bottomTrack()->setVisibleState(checked);
+    }
+    else {
+        qDebug() << "graphicsSceneViewPtr_ is null.....";
+        tryInitPendingLambda();
+    }
+}
+
+void BottomTrackControlMenuController::setGraphicsSceneView(GraphicsScene3dView *sceneView)
+{
+    graphicsSceneViewPtr_ = sceneView;
+
+    if (graphicsSceneViewPtr_) {
+        if (pendingLambda_) {
+            pendingLambda_();
+            pendingLambda_ = nullptr;
+        }
+    }
+}
+
+BottomTrack *BottomTrackControlMenuController::bottomTrack() const
+{
+    if(!graphicsSceneViewPtr_)
+        return nullptr;
+
+    return graphicsSceneViewPtr_->bottomTrack().get();
+}
+
+void BottomTrackControlMenuController::tryInitPendingLambda()
+{
+    if (!pendingLambda_) {
+        pendingLambda_ = [this] () -> void {
+            if (graphicsSceneViewPtr_) {
+                if (auto bTPtr = graphicsSceneViewPtr_->bottomTrack(); bTPtr) {
+                    bTPtr->setVisibleState(visibility_);
+                }
+            }
+        };
+    }
+}
+
+void BottomTrackControlMenuController::findComponent()
+{
+    m_component = m_engine->findChild<QObject*>(QmlObjectNames::bottomTrackControlMenu());
+}

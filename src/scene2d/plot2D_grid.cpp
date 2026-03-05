@@ -1,0 +1,160 @@
+#include "plot2D_grid.h"
+#include "plot2D.h"
+#include "math_defs.h"
+
+
+Plot2DGrid::Plot2DGrid() : angleVisibility_(false)
+{}
+
+bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
+{
+    auto &canvas = parent->canvas();
+    auto &cursor = parent->cursor();
+
+    qDebug() << "isVisible: " << isVisible();
+    if (!isVisible())  return false;
+
+    QPen pen(_lineColor);
+    pen.setWidth(_lineWidth);
+
+    QPainter* p = canvas.painter();
+    p->setPen(pen);
+    p->setFont(QFont("Asap", 14, QFont::Normal));
+    QFontMetrics fm(p->font());
+
+    const int imageHeight{ canvas.height() }, imageWidth{ canvas.width() },
+        linesCount{ _lines }, textXOffset{ 30 }, textYOffset{ 10 };
+
+    // линии
+    for (int i = 1; i < linesCount; ++i) {
+        const int posY = i * imageHeight / linesCount;
+
+        QString lineText;
+
+        if (_velocityVisible && cursor.velocity.isValid()) { // velocity
+            const float velFrom{ cursor.velocity.from }, velTo{ cursor.velocity.to },
+                velRange{ velTo - velFrom }, attVal{ velRange * i / linesCount + velFrom };
+            lineText.append({ QString::number(attVal , 'f', 2) + QObject::tr(" m/s    ")});
+        }
+        if (angleVisibility_ && cursor.attitude.isValid()) { // angle
+            const float attFrom{ cursor.attitude.from }, attTo{ cursor.attitude.to },
+                attRange{ attTo - attFrom }, attVal{ attRange * i / linesCount + attFrom };
+            QString text{ QString::number(attVal, 'f', 0) + QStringLiteral("°    ") };
+            lineText.append(text);
+        }
+        if (cursor.distance.isValid()) { // depth
+            const float distFrom{ cursor.distance.from }, distTo{ cursor.distance.to },
+                distRange{ distTo - distFrom }, rangeVal{ distRange * i / linesCount + distFrom };
+            lineText.append( { QString::number(rangeVal, 'f', 2) + QObject::tr(" m") } );
+        }
+
+        const int textW = fm.horizontalAdvance(lineText);
+
+        if (isFillWidth()) {
+            p->drawLine(0, posY, imageWidth, posY);
+        }
+        else {
+            if (invert_) {
+                p->drawLine(0, posY, textW + textXOffset, posY);
+            }
+            else {
+                p->drawLine(imageWidth - textW - textXOffset, posY, imageWidth, posY);
+            }
+        }
+
+        if (!lineText.isEmpty()) {
+            const int textX = invert_ ? textXOffset : (imageWidth - textW - textXOffset);
+            p->drawText(textX, posY - textYOffset, lineText);
+        }
+    }
+
+    // глубина графика
+    if (cursor.distance.isValid()) {
+        p->setFont(QFont("Asap", 26, QFont::Normal));
+        QFontMetrics fm2(p->font());
+        float val{ cursor.distance.to };
+        bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
+        QString rangeText = QString::number(val, 'f', isInteger ? 0 : 2) + QObject::tr(" m");
+        const int w = fm2.horizontalAdvance(rangeText);
+        const int x = invert_ ? (textXOffset * 2) : (imageWidth - textXOffset / 2 - w);
+        p->drawText(x, imageHeight - 10, rangeText);
+    }
+
+    qDebug() << "_rangeFinderLastVisible " << _rangeFinderLastVisible;
+    // rangefinder
+    if (_rangeFinderLastVisible && cursor.distance.isValid()) {
+        Epoch* lastEpoch = dataset->last();
+        Epoch* preLastEpoch = dataset->lastlast();
+        if (!lastEpoch || !preLastEpoch) {
+            return false;
+        }
+        float distance = NAN;
+
+        if (lastEpoch != NULL && qIsFinite(lastEpoch->rangeFinder())) {
+            distance = lastEpoch->rangeFinder();
+        }
+        else if (preLastEpoch != NULL && qIsFinite(preLastEpoch->rangeFinder())) {
+            distance = preLastEpoch->rangeFinder();
+        }
+
+        if (qIsFinite(distance)) {
+            pen.setColor(QColor(250, 100, 0));
+            p->setPen(pen);
+            p->setFont(QFont("Asap", 40, QFont::Normal));
+            float val{ round(distance * 100.f) / 100.f };
+            bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
+            QString rangeText = QString::number(val, 'f', isInteger ? 0 : 2) + QObject::tr(" m");
+            p->drawText(imageWidth / 2 - rangeText.size() * 32, imageHeight - 15, rangeText);
+        }
+    }
+
+    if(true) {
+        Epoch* lastEpoch = dataset->last();
+        Epoch* preLastEpoch = dataset->lastlast();
+        if (!lastEpoch || !preLastEpoch) {
+            return false;
+        }
+
+        Q_UNUSED(lastEpoch)
+        Q_UNUSED(preLastEpoch)
+
+        float temp = NAN;
+        temp = dataset->getLastTemp();
+
+        // qDebug() << "Plot temp def: " << temp;
+
+        // if (lastEpoch != NULL && qIsFinite(lastEpoch->temperatureAvail())) {
+        //     temp = lastEpoch->temperature();
+        //     qDebug() << "Plot temp one: " << temp;
+        // }
+        // else if (preLastEpoch != NULL && qIsFinite(preLastEpoch->temperatureAvail())) {
+        //     temp = preLastEpoch->temperature();
+        //     qDebug() << "Plot temp sec: " << temp;
+        // } else if() {
+
+        // if (lastEpoch != NULL && qIsFinite(lastEpoch->temperatureAvail())) {
+        //     temp = preLastEpoch->temperature();
+        //     qDebug() << "Plot temp sec: " << temp;
+        // }
+
+        // }
+        // qDebug() << "Plot temp end: " << temp;
+
+        if (temperatureVisible_ && qIsFinite(temp)) {
+            pen.setColor(QColor(80, 200, 0));
+            p->setPen(pen);
+            p->setFont(QFont("Asap", 40, QFont::Normal));
+            float val{ round(temp * 100.f) / 100.f };
+            bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
+            QString rangeText = QString::number(val, 'f', isInteger ? 0 : 1) + QObject::tr("°");
+            p->drawText(imageWidth / 2 - 300, imageHeight - 15, rangeText);
+        }
+    }
+
+    return true;
+}
+
+void Plot2DGrid::setAngleVisibility(bool state)
+{
+    angleVisibility_ = state;
+}

@@ -1,0 +1,95 @@
+#pragma once
+
+#include <QObject>
+#include <QThread>
+#include <memory>
+
+#include "device_manager.h"
+
+
+class DeviceManagerWrapper : public QObject
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(DeviceManagerWrapper)
+
+public:
+    /*methods*/
+    DeviceManagerWrapper(QObject* parent = nullptr);
+    ~DeviceManagerWrapper();
+
+    Q_PROPERTY(QList<DevQProperty*> devs READ getDevList NOTIFY devChanged)
+    Q_PROPERTY(bool protoBinConsoled READ getProtoBinConsoled WRITE setProtoBinConsoled)
+    Q_PROPERTY(StreamListModel* streamsList READ streamsList NOTIFY streamChanged)
+    Q_PROPERTY(float vruVoltage READ vruVoltage NOTIFY vruChanged)
+    Q_PROPERTY(float vruCurrent READ vruCurrent NOTIFY vruChanged)
+    Q_PROPERTY(float vruVelocityH READ vruVelocityH NOTIFY vruChanged)
+    Q_PROPERTY(int pilotArmState READ pilotArmState NOTIFY vruChanged)
+    Q_PROPERTY(int pilotModeState READ pilotModeState NOTIFY vruChanged)
+    Q_PROPERTY(int averageChartLosses READ getAverageChartLosses NOTIFY chartLossesChanged)
+    Q_PROPERTY(bool isbeaconDirectQueueAsk READ getUSBLBeaconDirectAsk WRITE setUSBLBeaconDirectAsk)
+
+    DeviceManager* getWorker();
+    QUuid getFileUuid() const;
+
+    /*QML*/
+    QList<DevQProperty*> getDevList     () { return getWorker()->getDevList();     }
+    StreamListModel*     streamsList    () { return getWorker()->streamsList();    }
+    float                vruVoltage     () { return getWorker()->vruVoltage();     }
+    float                vruCurrent     () { return getWorker()->vruCurrent();     }
+    float                vruVelocityH   () { return getWorker()->vruVelocityH();   }
+    int                  pilotArmState  () { return getWorker()->pilotArmState();  }
+    int                  pilotModeState () { return getWorker()->pilotModeState(); }
+
+    bool getProtoBinConsoled() const { return protoBinConsoledState_; };
+    void setProtoBinConsoled(bool state) {
+        protoBinConsoledState_ = state;
+        getWorker()->setProtoBinConsoled(protoBinConsoledState_);
+    }
+
+    bool getUSBLBeaconDirectAsk() const { return USBLBeaconDirectAskState_; };
+    void setUSBLBeaconDirectAsk(bool is_ask) {
+        USBLBeaconDirectAskState_ = is_ask;
+        getWorker()->setUSBLBeaconDirectAsk(USBLBeaconDirectAskState_);
+    }
+
+    void initStreamList();
+
+    int getAverageChartLosses() const {
+        return averageChartLosses_;
+    };
+
+    DeviceManager* getWorkerDeviceManager() const {
+        return workerDeviceManager_;
+    }
+
+public slots:
+    Q_INVOKABLE bool isCreatedId(int id) { return getWorker()->isCreatedId(id); };
+    void calcAverageChartLosses();
+
+signals:
+    void sendOpenFile(QString path);
+    void sendOpenFile_CSV(QString path);
+    void sendOpenFile_tslw(QString path);
+#ifdef SEPARATE_READING
+    void sendCloseFile(bool);
+#else
+    void sendCloseFile();
+#endif
+
+    void devChanged();
+    void streamChanged();
+    void vruChanged();
+    void chartLossesChanged();
+
+private:
+    std::unique_ptr<DeviceManager> workerObject_;
+    DeviceManager* workerDeviceManager_ = nullptr;
+#ifdef SEPARATE_READING
+    std::unique_ptr<QThread> workerThread_;
+    QList<QMetaObject::Connection> deviceManagerConnections_;
+#endif
+
+    int averageChartLosses_;
+    bool protoBinConsoledState_;
+    bool USBLBeaconDirectAskState_;
+}; // class DeviceWrapper

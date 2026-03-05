@@ -1,0 +1,17 @@
+# Qt build
+build/
+
+# Qt Creator
+*.pro.user*
+*.qmake.stash
+
+# MSVC
+*.pdb
+*.obj
+*.ilk
+*.idb
+
+# binary
+*.exe
+*.dll
+*.lib

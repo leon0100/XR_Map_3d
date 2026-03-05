@@ -1,0 +1,7 @@
+module Bluetooth
+
+BleButton 1.0 BleButton.qml
+BleDataPanel 1.0 BleDataPanel.qml
+BleLivedataScanning 1.0 BleLivedataScanning.qml
+SerialPort 1.0 SerialPort.qml
+loading 1.0 loading.qml
