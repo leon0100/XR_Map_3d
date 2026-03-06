@@ -57,11 +57,10 @@ void SurfaceProcessor::setSurfaceMeshPtr(SurfaceMesh *surfaceMeshPtr)
 
 void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> &indxs)
 {
-    qDebug() << "SurfaceProcessor::onUpdatedBottomTrackData...........";
+    // qDebug() << "SurfaceProcessor::onUpdatedBottomTrackData...........";
     if (indxs.empty()) {
         return;
     }
-    qDebug() << "11111111111111111111";
     // Delaunay processing
     QVector<QVector3D> bTrData; // 基于航道底部测线渲染缓存运行
     {
@@ -72,7 +71,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         return;
     }
 
-    qDebug() << "222222222222222222222";
 
     QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kSurface));
 
@@ -351,7 +349,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     // --- 添加 / 更新中心点（按网格单元划分） ---
     auto processOneCenter = [&](const QVector3D& pnt) -> void {
         if (!originSet_) {
-            origin_    = { pnt.x(), pnt.y() };
+            origin_    = {pnt.x(), pnt.y()};
             originSet_ = true;
         }
 
@@ -365,13 +363,14 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
             if (!qFuzzyCompare(static_cast<float>(dp.z), pnt.z())) {
                 dp.z = pnt.z();
                 beenManualChanged = true;
-                for (int triIdx : pointToTris_.value(pIdx)) {
+                const auto& relatedTris = pointToTris_.value(pIdx);
+                for (int triIdx : relatedTris) {
                     updsTrIndx.insert(triIdx);
                 }
             }
         }
         else { // 添加新点
-            const auto res = delaunayProc_.addPoint({ pnt.x(), pnt.y(), pnt.z() });
+            const auto res = delaunayProc_.addPoint({pnt.x(), pnt.y(), pnt.z()});
             for (int triIdx : res.newTriIdx) {
                 registerTriangle(triIdx);
                 updsTrIndx.insert(triIdx);
@@ -396,8 +395,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         if (!qIsFinite(point.z())) continue;
         processOneCenter(point);
     }
-
-    qDebug() << "indxs.................." << indxs.size() << "........." << updsTrIndx.size();
+    // qDebug() << "indxs.................." << indxs.size() << "........." << updsTrIndx.size();
 
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {

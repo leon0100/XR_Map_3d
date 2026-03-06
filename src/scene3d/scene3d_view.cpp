@@ -283,13 +283,13 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         }
     }
 
-
     wasMoved_ = false;
     clearComboSelectionRect();
 
     if (qmlRootObject_) { // maybe this will be removed
         if (auto selectionToolButton = qmlRootObject_->findChild<QObject*>("selectionToolButton"); selectionToolButton) {
-            selectionToolButton->property("checked").toBool() ? m_mode = ActiveMode::BottomTrackVertexSelectionMode : m_mode = ActiveMode::Idle;
+            selectionToolButton->property("checked").toBool() ?
+                m_mode = ActiveMode::BottomTrackVertexSelectionMode : m_mode = ActiveMode::Idle;
         }
     }
 
@@ -828,8 +828,8 @@ void GraphicsScene3dView::setIdleMode()
 void GraphicsScene3dView::setVerticalScale(float scale)
 {
     if(m_verticalScale == scale) return;
-    else if(scale < 0.05f)  m_verticalScale = 0.05f;
-    else if(scale > 10.f)   m_verticalScale = 10.0f;
+    else if(scale < 0.05f)  m_verticalScale = -0.05f;
+    else if(scale > 10.f)   m_verticalScale = -10.0f;
     else                    m_verticalScale = -scale;
 
     QQuickFramebufferObject::update();

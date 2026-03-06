@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 #endif
 
     QCoreApplication::setOrganizationName("Toslon");
-    QCoreApplication::setOrganizationDomain("toslon.tech");
+    QCoreApplication::setOrganizationDomain("Toslon.tech");
     QCoreApplication::setApplicationName("ToslonApp");
     QCoreApplication::setApplicationVersion("0.10");
 
@@ -156,7 +156,6 @@ int main(int argc, char *argv[])
     corePtr->consoleInfo("Run...");
     corePtr->setEngine(&engine);
 
-
     //qDebug() << "SQL drivers =" << QSqlDatabase::drivers(); // тут должен появиться QSQLITE
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &app,[url](QObject *obj, const QUrl &objUrl) {
@@ -167,7 +166,7 @@ int main(int argc, char *argv[])
 // file opening on startup
 #ifndef Q_OS_ANDROID
     if (argc > 1) {
-        QObject::connect(&engine,   &QQmlApplicationEngine::objectCreated, corePtr,     [&argv]() {
+        QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, corePtr, [&argv]() {
             corePtr->openLogFile(argv[1], false, true);
         }, Qt::QueuedConnection);
     }
@@ -185,8 +184,6 @@ int main(int argc, char *argv[])
 
     engine.load(url);
     qCritical() << "App is created";
-
-
 
     // QScreen *screen = QGuiApplication::primaryScreen();
     // QSize size = screen->size();                // 分辨率（像素）

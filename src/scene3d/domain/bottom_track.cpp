@@ -494,9 +494,10 @@ QVector<QPair<int, int>> BottomTrack::getSubarrays(const QVector<int>& sequenceV
 
 void BottomTrack::clearCache()
 {
+    Q_ASSERT(QThread::currentThread() == thread());
     auto* r = RENDER_IMPL(BottomTrack);
-
-    r->m_data.clear();
+    r->m_data.resize(0);
+    // r->m_data.clear();
     vertex2Epoch_.clear();
     epoch2Vertex_.clear();
 }

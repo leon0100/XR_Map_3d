@@ -87,8 +87,8 @@ public:
 private:
     std::vector<Point>    points;
     std::vector<Triangle> triangles;
-    std::stack<size_t> freePointSlots;
-    std::stack<size_t> freeTriangleSlots;
+    std::stack<size_t>    freePointSlots;
+    std::stack<size_t>    freeTriangleSlots;
 
     std::vector<size_t> findBadTriangles(Point const &p) {
         std::vector<size_t> badIdx;

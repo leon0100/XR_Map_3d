@@ -195,7 +195,6 @@ private:
     bool pendingIsobathsWork_;
     QTimer pendingWorkTimer_;
 
-    // отмена/планирование
     std::atomic_bool cancelRequested_{false};
     std::atomic_bool jobRunning_{false};
     std::atomic_bool nextRunPending_{false};

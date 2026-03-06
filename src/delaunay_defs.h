@@ -51,8 +51,8 @@ struct TriResult {
 
 struct Triangle {
     size_t a, b, c;          // indices of vertices in points[]
-    Point circumcenter;       // Center of circumcircle 外接圆圆心
-    double circumradius2;     // Squared radius of circumcircle 外接圆半径的平方
+    Point circumcenter;      // Center of circumcircle 外接圆圆心
+    double circumradius2;    // Squared radius of circumcircle 外接圆半径的平方
     bool is_bad = false;
     double longest_edge_dist;
 
@@ -108,7 +108,6 @@ struct Triangle {
         double area2 = (B.x - A.x)*(C.y - A.y) - (B.y - A.y)*(C.x - A.x);
         if (std::fabs(area2) < COLLINEAR_EPS) {
             // Collinear fallback: choose the longest edge
-
             if (dAB >= dBC && dAB >= dCA) {
                 circumcenter = {(A.x+B.x)/2.0, (A.y+B.y)/2.0, ZERO_LEVEL};
                 circumradius2 = dAB/4.0;
@@ -122,6 +121,7 @@ struct Triangle {
             is_bad = true;
             return;
         }
+
         // Standard circumcircle via perpendicular bisector intersection
         double A1 = B.x - A.x;
         double B1 = B.y - A.y;

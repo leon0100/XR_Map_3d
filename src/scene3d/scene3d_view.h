@@ -305,7 +305,7 @@ private:
     ActiveMode lastMode_ = ActiveMode::BottomTrackVertexSelectionMode;
     QRect m_comboSelectionRect = { 0, 0, 0, 0 };
     Ray m_ray;
-    float m_verticalScale = 1.0f;
+    float m_verticalScale = -1.0f;
     bool m_isSceneBoundingBoxVisible = true;
     Dataset* datasetPtr_ = nullptr;
     DataProcessor* dataProcessorPtr_ = nullptr;

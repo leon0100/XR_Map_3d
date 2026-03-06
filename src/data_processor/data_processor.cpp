@@ -671,6 +671,7 @@ void DataProcessor::requestCancel() noexcept
 // data_processor.cpp
 void DataProcessor::onDepthAddedForIsobaths(uint64_t indx)
 {
+    // qDebug() << "DataProcessor::onDepthAddedForIsobaths........";
     if (!updateIsobaths_) {
         return;
     }
@@ -682,4 +683,5 @@ void DataProcessor::onDepthAddedForIsobaths(uint64_t indx)
     // 触发处理
     scheduleLatest(WorkSet(WF_Surface | WF_Isobaths));
     updateIsobaths_ = true;
+
 }

@@ -30,7 +30,7 @@ void BottomTrackProcessor::setDatasetPtr(Dataset *datasetPtr)
 void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1, const DatasetChannel &channel2, const BottomTrackParam& btP, bool manual, bool redrawAll)
 {
     qDebug() << "BottomTrackProcessor::bottomTrackProcessing...........";
-    auto size = btP.indexTo + btP.windowSize/2;
+    auto size = btP.indexTo + btP.windowSize / 2;
 
     if (!datasetPtr_) {
         qWarning() << "[BT] dataset is null";
@@ -51,7 +51,7 @@ void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1,
         epoch_max_index = size;
     }
 
-    qDebug() << "size:" << size << "  epoch_min_index:"<< epoch_min_index << "  epoch_max_index:" << epoch_max_index;
+    // qDebug() << "size:" << size << "  epoch_min_index:"<< epoch_min_index << "  epoch_max_index:" << epoch_max_index;
     if (epoch_max_index == epoch_min_index) {
         return;
     }

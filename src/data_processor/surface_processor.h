@@ -54,7 +54,7 @@ private:
     kmath::MatrixParams lastMatParams_;
     QReadWriteLock lock_;
     QHash<uint64_t, QVector<int>> pointToTris_;
-    QHash<QPair<int,int>, QVector3D>  cellPoints_; // fir - virt indx, sec - indx in tr
+    QHash<QPair<int,int>, QVector3D> cellPoints_; // fir - virt indx, sec - indx in tr
     QHash<QPair<int,int>, int>  cellPointsInTri_;
     QVector<IsobathUtils::ColorInterval> colorIntervals_; // render
     QPointF origin_;

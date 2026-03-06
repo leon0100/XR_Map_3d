@@ -161,7 +161,7 @@ int qPlot2D::getThemeId() const
 
 void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max, float gain_slope,
                             float threshold, float offsetx, float offsety, float offsetz, bool manual) {
-    qDebug() << "开始处理绘制等高线 qPlot2D::doDistProcessing......";
+    // qDebug() << "开始处理绘制等高线 qPlot2D::doDistProcessing.........";
     if (datasetPtr_ != nullptr) {
         if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
             btpPtr->preset      = static_cast<BottomTrackPreset>(preset);
