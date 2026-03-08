@@ -7,33 +7,31 @@
 
 #include "triangle.h"
 #include "point_3d.h"
-
+#include <QDebug>
 
 template <typename T>
 class Delaunay
 {
-    using TrianglesPointer = std::shared_ptr <std::vector <Triangle <T>>>;
+    using TrianglesPointer = std::shared_ptr<std::vector<Triangle<T>>>;
 
 public:
-
     Delaunay()
     {
-        mpTriangles = std::make_shared <std::vector <Triangle <T>>>();
+        qDebug() << "delaunay_triangulation.h.........";
+        mpTriangles = std::make_shared<std::vector<Triangle<T>>>();
     }
 
 
-    //! Return - pointer to triangles vector
-    TrianglesPointer triangles() const {return mpTriangles;};
-    //! Return - maximum edge length
-    T maxEdgeLength() const {return mMaxEdgeLength;};
-    //! Return - minimum edge length
-    T minEdgeLength() const {return mMinEdgeLength;};
+    TrianglesPointer triangles() const { return mpTriangles; };  //! Return - pointer to triangles vector
+
+    T maxEdgeLength() const { return mMaxEdgeLength; };  //! Return - maximum edge length
+
+    T minEdgeLength() const { return mMinEdgeLength; };  //! Return - minimum edge length
 
     //! Triangulate input data
     TrianglesPointer trinagulate(const std::vector <Point3D <T>>& points, T edgeLengthLimit = -1.0f)
     {
-        if (points.empty())
-            return mpTriangles;
+        if(points.empty()) return mpTriangles;
 
         mpTriangles->clear();
 
@@ -86,22 +84,22 @@ public:
         }
 
         for (auto it = mpTriangles->begin(); it != mpTriangles->end();)
-        {   bool comp = it->contains(super.A()) || it->contains(super.B()) || it->contains(super.C());
-
+        {
+            bool comp = it->contains(super.A()) || it->contains(super.B()) || it->contains(super.C());
             if(comp)
                 it = mpTriangles->erase(it);
             else
                 it++;
         }
 
-        if(edgeLengthLimit != -1){
+        if(edgeLengthLimit != -1) {
             for (auto it = mpTriangles->begin(); it != mpTriangles->end();)
             {
                 bool comp_2 = it->AB().length() > edgeLengthLimit || it->BC().length() > edgeLengthLimit || it->AC().length() > edgeLengthLimit;
-
                 if (comp_2){
                     it = mpTriangles->erase(it);
-                }else{
+                }
+                else{
                     ++it;
                 }
             }
@@ -122,7 +120,6 @@ public:
         }
 
         // Сортируем точки вдоль оси x
-
         std::sort(points.begin(), points.end(),
                   [](const Point3D <T>& p1, const Point3D <T>& p2){
             return p1.x() < p2.x();
@@ -143,7 +140,6 @@ private:
     }
 
     Triangle <T> makeSuperTriangle(const std::vector <Point3D<T>>& points) {
-
         T minX = points.front().x();
         T minY = points.front().y();
         T maxX = minX;

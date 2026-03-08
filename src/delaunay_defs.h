@@ -10,7 +10,7 @@
 namespace delaunay {
 
 constexpr int RESERVE_BAD = 16;
-constexpr double SUPER_SIZE = 1e4;
+constexpr double SUPER_SIZE = 1e5;
 constexpr double COLLINEAR_EPS = 1e-12;
 constexpr double ZERO_LEVEL = 0.0;
 

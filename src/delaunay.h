@@ -9,12 +9,15 @@
 #include "delaunay_defs.h"
 
 
+
 namespace delaunay {
 
 // Brute‐force incremental Delaunay triangulation (Bowyer–Watson)   暴力增量式 Delaunay三角剖分
-class Delaunay {
+class Delaunay
+{
 public:
-    Delaunay(double super_size = SUPER_SIZE) {
+    Delaunay(double super_size = SUPER_SIZE) //surface_processor.cpp...
+    {
         // Create a "super‑triangle" rectangle enclosing all points
         size_t p0 = insertPoint({-super_size, -super_size, ZERO_LEVEL});
         size_t p1 = insertPoint({ super_size, -super_size, ZERO_LEVEL});
@@ -29,7 +32,8 @@ public:
     }
 
     // Add a new point and update triangulation
-    TriResult addPoint(const Point &p) {
+    TriResult addPoint(const Point &p) //surface_processor.cpp...
+    {
         // 1) Insert point and get its index
         size_t pi = insertPoint(p);
 
@@ -45,7 +49,8 @@ public:
         return {pi, removedTriIdx, newTriIdx};
     }
 
-    uint64_t removePoint(size_t p_idx) {
+    uint64_t removePoint(size_t p_idx)
+    {
         if(!markPointAsBad(p_idx)) {
             qDebug() << "invalid removing idx";
             return -1;
@@ -71,16 +76,19 @@ public:
         return p_idx;
     }
 
-    /// Access current triangle list
-    const std::vector<Triangle>& getTriangles() const {
+    // Access current triangle list
+    const std::vector<Triangle>& getTriangles() const  //surface_processor.cpp
+    {
         return triangles;
     }
-    /// Access point list
-    const std::vector<Point>& getPoints() const {
+    // Access point list
+    const std::vector<Point>& getPoints() const  //surface_processor.cpp
+    {
         return points;
     }
 
-    std::vector<Point>& getPointsRef(){
+    std::vector<Point>& getPointsRef()  //surface_processor.cpp
+    {
         return points;
     }
 
@@ -90,7 +98,8 @@ private:
     std::stack<size_t>    freePointSlots;
     std::stack<size_t>    freeTriangleSlots;
 
-    std::vector<size_t> findBadTriangles(Point const &p) {
+    std::vector<size_t> findBadTriangles(Point const &p)
+    {
         std::vector<size_t> badIdx;
         badIdx.reserve(RESERVE_BAD);
         for (size_t i = 0; i < triangles.size(); ++i) {
@@ -100,10 +109,11 @@ private:
                 markTriangleAsBad(i);
             }
         }
-        return badIdx;
+        return badIdx;  
     }
 
-    std::vector<size_t> findBadTrianglesByVertice(size_t p_idx) {
+    std::vector<size_t> findBadTrianglesByVertice(size_t p_idx)
+    {
         std::vector<size_t> badIdx;
         badIdx.reserve(RESERVE_BAD);
         for (size_t i = 0; i < triangles.size(); ++i) {
@@ -116,7 +126,8 @@ private:
         return badIdx;
     }
 
-    std::vector<Edge> buildBoundary(std::vector<size_t> t_idx) {
+    std::vector<Edge> buildBoundary(std::vector<size_t> t_idx)
+    {
         std::vector<Edge> boundary;
         boundary.reserve(RESERVE_BAD * 3);
         for (size_t idx : t_idx) {
@@ -128,7 +139,8 @@ private:
         return boundary;
     }
 
-    std::vector<size_t> triangulateHoleInPlace(std::vector<Edge> boundary, size_t p_idx) {
+    std::vector<size_t> triangulateHoleInPlace(std::vector<Edge> boundary, size_t p_idx)
+    {
         std::vector<size_t> t_new_idx;
         for (const auto &e : boundary) {
             size_t t_new = insertTriangle(e.i1, e.i2, p_idx);
@@ -137,7 +149,8 @@ private:
         return t_new_idx;
     }
 
-    std::vector<Triangle> triangulateHole(std::vector<Edge> boundary) {
+    std::vector<Triangle> triangulateHole(std::vector<Edge> boundary)
+    {
         std::vector<Triangle> newTriangles;
         if (boundary.empty()) {
             return newTriangles;
@@ -149,7 +162,6 @@ private:
             uniqueVerts.insert(e.i1);
             uniqueVerts.insert(e.i2);
         }
-
 
         std::vector<size_t> verts(uniqueVerts.begin(), uniqueVerts.end());
         size_t n = verts.size();
@@ -231,7 +243,8 @@ private:
         return newTriangles;
     }
 
-    std::size_t insertPoint(Point const &p) {
+    std::size_t insertPoint(Point const &p)
+    {
         std::size_t idx;
         if (!freePointSlots.empty()) {
             idx = freePointSlots.top();
@@ -247,7 +260,8 @@ private:
         return idx;
     }
 
-    bool markPointAsBad(std::size_t idx) {
+    bool markPointAsBad(std::size_t idx)
+    {
         if(idx < points.size() && (!points[idx].is_bad)) {
             points[idx].is_bad = true;
             freePointSlots.push(idx);
@@ -258,7 +272,8 @@ private:
     }
 
     // Create a triangle by indices (reuse slot if available)
-    size_t insertTriangle(size_t i0, size_t i1, size_t i2) {
+    size_t insertTriangle(size_t i0, size_t i1, size_t i2)
+    {
         size_t tid;
         Triangle tri(i0, i1, i2, points);
         tri.is_bad = false;
@@ -272,17 +287,19 @@ private:
         } else {
             tid = triangles.size();
             triangles.push_back(tri);
-        }
+        }      
         return tid;
     }
 
-    void markTriangleAsBad(std::size_t idx) {
+    void markTriangleAsBad(std::size_t idx)
+    {
         triangles[idx].is_bad = true;
         freeTriangleSlots.push(idx);
     }
 
-    /// Utility to add or remove edges on boundary
-    void addEdge(std::vector<Edge> &edges, const Edge &e) {
+    // Utility to add or remove edges on boundary
+    void addEdge(std::vector<Edge> &edges, const Edge &e)
+    {
         auto it = std::find(edges.begin(), edges.end(), e);
         if (it == edges.end()) {
             edges.push_back(e);

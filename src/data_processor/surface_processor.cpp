@@ -77,6 +77,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     //头一次都是初始化时的数据
     auto& tr = delaunayProc_.getTriangles();
     auto& pt = delaunayProc_.getPoints();
+    // qDebug() << "tr.size()... " << tr.size() << "    pt.size()...." << pt.size();
 
     const auto registerTriangle = [&](int triIdx) {
         const auto& t = tr[triIdx];
@@ -346,6 +347,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
 */
 
+
     // --- 添加 / 更新中心点（按网格单元划分） ---
     auto processOneCenter = [&](const QVector3D& pnt) -> void {
         if (!originSet_) {
@@ -367,6 +369,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
                 for (int triIdx : relatedTris) {
                     updsTrIndx.insert(triIdx);
                 }
+            } else {
             }
         }
         else { // 添加新点
@@ -395,7 +398,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         if (!qIsFinite(point.z())) continue;
         processOneCenter(point);
     }
-    // qDebug() << "indxs.................." << indxs.size() << "........." << updsTrIndx.size();
 
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {

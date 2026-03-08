@@ -238,7 +238,7 @@ private:
     void setScanStatus(const QString &status);
 
     bool liveScanVisble_ = false;
-    int currentTrackIndex_ = 0;
+    int trackIndex_ = 0;
 
 
 

@@ -458,23 +458,27 @@ void BLEManager::setBleLiveScanningVisible(bool visible)
 
 void BLEManager::slotTrackTimeout()
 {
-    if (currentTrackIndex_ >= track_.size()) {
+    if (trackIndex_ >= track_.size()) {
         trackTimer_->stop();
         qDebug() << "Simulated track finished";
         return;
     }
 
-    const Position& pos = track_[currentTrackIndex_];
+    const Position& pos = track_[trackIndex_];
 
     emit positionComplete(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude);
 
     // emit depthComplete(static_cast<float>(pos.lla.altitude)); // 深度信号
 
-    currentTrackIndex_++;
+    trackIndex_++;
 }
 
 void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
 {
+    if(trackIndex_++ % 3 == 0) {
+        return;
+    }
+    // qDebug() << "trackIndex_....." << trackIndex_;
     // qDebug() << "pt..........." << pt.latitude << "  " << pt.longitude;
     emit positionComplete(pt.latitude, pt.longitude, pt.depth);
 

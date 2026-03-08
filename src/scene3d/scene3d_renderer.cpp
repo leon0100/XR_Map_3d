@@ -171,8 +171,6 @@ void GraphicsScene3dRenderer::drawObjects()
     }
 
     glDisable(GL_DEPTH_TEST);
-    QMatrix4x4 boatModel = m_model;
-    boatModel.translate(0.0f, 0.0f, -0.01f);
     m_boatTrackRenderImpl.render(this,   m_model, view, m_projection, m_shaderProgramMap); //船轨迹
 
     float zOffset = surfaceViewRenderImpl_.getMaxZ() + 0.01f;
@@ -180,8 +178,8 @@ void GraphicsScene3dRenderer::drawObjects()
     QMatrix4x4 upModel = m_model;
     upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
 
-    surfaceViewRenderImpl_.render(this,  m_projection * view * upModel, m_shaderProgramMap);  //高度场
     isobathsViewRenderImpl_.render(this, upModel, view, m_projection, m_shaderProgramMap);    //等值线
+    surfaceViewRenderImpl_.render(this,  m_projection * view * upModel, m_shaderProgramMap);  //高度场
     m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
 
 // glDisable(GL_DEPTH_TEST);
