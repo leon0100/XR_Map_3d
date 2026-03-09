@@ -809,7 +809,7 @@ void GraphicsScene3dView::setLastEpochFocusView(bool useAngle, bool useNavigator
     }
 
     m_camera->focusOnPosition(focusPoint);
-    updatePlaneGrid();
+    // updatePlaneGrid();
     QQuickFramebufferObject::update();
     emit cameraIsMoved();
 }

@@ -95,8 +95,8 @@ public:
 private:
     std::vector<Point>    points;
     std::vector<Triangle> triangles;
-    std::stack<size_t>    freePointSlots;
-    std::stack<size_t>    freeTriangleSlots;
+    std::stack<size_t>    freePointSlots;//存储已经删除的点的索引
+    std::stack<size_t>    freeTriangleSlots; //用来复用被删除/标坏的三角形索引
 
     std::vector<size_t> findBadTriangles(Point const &p)
     {
@@ -255,8 +255,6 @@ private:
             points.push_back(p);
         }
 
-        // std::size_t idx = points.size();
-        // points.push_back(p);
         return idx;
     }
 

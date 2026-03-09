@@ -573,7 +573,7 @@ public:
     }
 protected:
     QMap<ChannelId, QVector<Echogram>> charts_; // key - channelId, value - echograms for all addresses
-    QMap<ChannelId, float> rangefinders_; // ???
+    QMap<ChannelId, float> rangefinders_;
 
     int _eventTimestamp_us = 0;
     int _eventUnix = 0;
