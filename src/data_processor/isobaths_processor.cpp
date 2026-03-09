@@ -126,7 +126,8 @@ void IsobathsProcessor::fullRebuildLinesLabels()
         return;
     }
 
-    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kIsobaths));
+    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection,
+                              Q_ARG(DataProcessorType, DataProcessorType::kIsobaths));
 
     lineSegments_.clear();
     labels_.clear();
@@ -167,6 +168,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
             }
         }
     }
+    // qDebug() << "tris_................" << tris_.size();
 
     if (vertPool_.empty()) {
         return;

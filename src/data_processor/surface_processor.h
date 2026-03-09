@@ -10,6 +10,7 @@
 #include "delaunay.h"
 #include "math_defs.h"
 #include "isobaths_defs.h"
+#include "surface_tile.h"
 
 
 class BottomTrack;
@@ -69,4 +70,5 @@ private:
     int cellPx_;
     int extraWidth_;
     bool originSet_;
+    QSet<TileKey> visibleTileKeys_;
 };

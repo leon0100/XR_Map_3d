@@ -36,6 +36,7 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     requestedMask_(0)
 {
     qRegisterMetaType<WorkBundle>("WorkBundle");
+    qRegisterMetaType<DataProcessorType>("DataProcessorType");
     qRegisterMetaType<DatasetChannel>("DatasetChannel");
     qRegisterMetaType<ChannelId>("ChannelId");
     qRegisterMetaType<BottomTrackParam>("BottomTrackParam");
@@ -424,7 +425,6 @@ void DataProcessor::runCoalescedWork()
         auto it = pendingMosaicIndxs_.begin();
         while (it != pendingMosaicIndxs_.end()) {
             const int idx = *it;
-
             if (idx <= mosaicCounter_) {
                 wb.mosaicVec.append(idx);
                 it = pendingMosaicIndxs_.erase(it);
@@ -439,15 +439,11 @@ void DataProcessor::runCoalescedWork()
         }
     }
 
-    // qDebug() << "wantIsobaths: " << wantIsobaths << "   pendingIsobathsWork_:" << pendingIsobathsWork_
-    //          << "   updateIsobaths_:" << updateIsobaths_ << "   updateMosaic_:" << updateMosaic_;
     if (wantIsobaths && pendingIsobathsWork_ && updateIsobaths_ && !updateMosaic_) {
         wb.doIsobaths = true;
         pendingIsobathsWork_ = false;
     }
 
-    // qDebug() << "wb.surfaceVec.size():  " << wb.surfaceVec.size() << " " << wb.mosaicVec.size()
-    //          << "   wb.doIsobaths " << wb.doIsobaths;
     if (wb.surfaceVec.isEmpty() && wb.mosaicVec.isEmpty() && !wb.doIsobaths) {
         pendingIsobathsWork_ = false;
         // qDebug() <<"pendingIsobathsWork_ = false..........";

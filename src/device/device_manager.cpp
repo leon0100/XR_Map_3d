@@ -552,7 +552,7 @@ void DeviceManager::openFile_CSV(QString filePath)
     // emit vruChanged();
     // emit fileOpened();
 
-    emit fileStopsOpening_CSV(vec_CSV, minZ, maxZ);  //这一步使得最后将读取到的轨迹内容绘制到scene3d_view上
+    emit fileStopsOpening2(vec_CSV, minZ, maxZ);  //这一步使得最后将读取到的轨迹内容绘制到scene3d_view上
 }
 
 
@@ -602,8 +602,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 
     int tslWCnt = tslByteList.count();
     // mapGraphicsView_->objFileProgress_->setProperty("maxValue",tslWCnt);
-    tsl_w tslSingleStru;
-    memcpy(&tslSingleStru, tslByteList.first(), sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w));
+    // tsl_w tslSingleStru;
+    // memcpy(&tslSingleStru, tslByteList.first(), sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w));
     // double last_lon = dm_to_dd((double)tslSingleStru.boat.longitude/100000.0f);
     // double last_lat = dm_to_dd((double)tslSingleStru.boat.latitude/100000.0f);
 
@@ -649,9 +649,9 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 
         emit positionComplete_tslw(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude);
     }
-    qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
+    // qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 
-    emit fileStopsOpening_tslw(vec_CSV, minZ, maxZ);
+    emit fileStopsOpening2(vec_CSV, minZ, maxZ);
 }
 
 

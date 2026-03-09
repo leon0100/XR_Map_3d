@@ -209,6 +209,8 @@ bool SurfaceMesh::getIsInited() const
     return !tiles_.empty();
 }
 
+
+
 void SurfaceMesh::initializeMatrix(int numWidthTiles, int numHeightTiles, const kmath::MatrixParams &matrixParams)
 {
     numWidthTiles_ = numWidthTiles;

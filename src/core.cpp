@@ -1404,29 +1404,15 @@ void Core::setIsAttitudeExpected(bool state)
 
 void Core::onFileStopsOpening()
 {
-    qDebug() << "Core::onFileStopsOpening...................";
+    qDebug() << "Core::onFileStopsOpening.................";
     isFileOpening_ = false;
     emit sendIsFileOpening();
     dataHorizon_->setIsFileOpening(isFileOpening_);
 }
 
-void Core::onFileStopsOpening_CSV(QVector<float>& depthVec, double minZ, double maxZ)
+void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double maxZ)
 {
-    // qDebug() << "onFileStopsOpening_CSV..............";
-    datasetPtr_->vec_CSV_  = depthVec;
-    datasetPtr_->minDepth_ = minZ;
-    datasetPtr_->maxDepth_ = maxZ;
-    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
-    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
-
-    // uint64_t positionIndx = dataHorizon_->getPositionIndx();
-    // scene3dViewPtr_->onPositionAdded(positionIndx);
-}
-
-
-void Core::onFileStopsOpening_tslw(QVector<float>& depthVec, double minZ, double maxZ)
-{
-    qDebug() << "onFileStopsOpening_tslw..............";
+    // qDebug() << "onFileStopsOpening2..............";
     datasetPtr_->vec_CSV_  = depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
@@ -1556,12 +1542,9 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileOpened, this, &Core::onFileOpened,       deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::encoderComplete, datasetPtr_, &Dataset::addEncoder,      deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening, this,  &Core::onFileStopsOpening, deviceManagerConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening_CSV, this, &Core::onFileStopsOpening_CSV, deviceManagerConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening_tslw, this, &Core::onFileStopsOpening_tslw, deviceManagerConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening2, this, &Core::onFileStopsOpening2, deviceManagerConnection);
 
-    QObject::connect(bleManager_.get(), &BLEManager::fileStopsOpening_CSV, this, &Core::onFileStopsOpening_CSV, deviceManagerConnection);
-
-    QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour,this, &Core::slot_RealtimeDrawContour);
+    QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContour, deviceManagerConnection);
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame, deviceManagerConnection);
     QObject::connect(&logger_, &Logger::loggingKlfStarted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLoggingKlfStarted, deviceManagerConnection);
@@ -1756,9 +1739,14 @@ void Core::onZoomLevelChanged(int level)
     emit currentMapLevelChanged();
 }
 
-void Core::slot_RealtimeDrawContour(bool isDraw)
+void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ)
 {
-    emit drawRealtimeContour(isDraw);
+    datasetPtr_->vec_CSV_  = depthVec;
+    datasetPtr_->minDepth_ = minZ;
+    datasetPtr_->maxDepth_ = maxZ;
+    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
+    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
+    emit drawRealtimeContour();
 }
 
 void Core::createDatasetConnections()

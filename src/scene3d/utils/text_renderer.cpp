@@ -323,85 +323,52 @@ void TextRenderer::initBuffers()
     m_arrayBuffer.allocate(6 * 5 * sizeof(float));
 }
 
+
 void TextRenderer::initFont()
 {
-//     m_chars.clear();
-
-//     FT_Library ft;
-//     FT_Face face;
-
-//     if (FT_Init_FreeType(&ft)){
-//         qDebug().noquote() << "ERROR::FREETYPE: Could not init FreeType Library";
-//         return;
-//     }
-
-//     QString resourcePath  = ":/fonts/Roboto-VariableFont_wdth,wght.ttf";
-
-//     QFile fontFile(resourcePath);
-//     if (!fontFile.open(QIODevice::ReadOnly)) {
-//         qDebug() << "ERROR::FREETYPE: Failed to open font file from resources:" << resourcePath;
-//         return;
-//     }
-
-//     QByteArray fontData = fontFile.readAll();
-//     fontFile.close();
-
-//     if (FT_New_Memory_Face(ft,
-//                            reinterpret_cast<const FT_Byte*>(fontData.constData()),
-//                            fontData.size(),
-//                            0,
-//                            &face))
-//     {
-//         qDebug().noquote() << "ERROR::FREETYPE: Failed to load font from memory";
-//         return;
-//     }
-
-//     FT_Set_Pixel_Sizes(face, 0, m_fontPixelSize);
+    m_chars.clear();
 
 
-//     auto loadGlyphRange = [&](uint16_t start, uint16_t end) {
-//         for (uint16_t c = start; c <= end; c++) {
-//             if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-//                 qDebug().noquote() << "ERROR::FREETYTPE: Failed to load Glyph for char code"
-//                                    << QString("0x%1").arg(c, 0, 16);
-//                 continue;
-//             }
+    QFont font;
+    //设置文字字体
+    font.setFamily("宋体");
 
-//             QImage image((uchar*)face->glyph->bitmap.buffer,
-//                          face->glyph->bitmap.width,
-//                          face->glyph->bitmap.rows,
-//                          face->glyph->bitmap.pitch,
-//                          QImage::Format_Indexed8);
+    font.setPixelSize(m_fontPixelSize);
 
-//             Character character;
-//             character.num     = c;
-//             character.size    = QVector2D(face->glyph->bitmap.width, face->glyph->bitmap.rows);
-//             character.bearing = QVector2D(face->glyph->bitmap_left, face->glyph->bitmap_top);
-//             character.advance = face->glyph->advance.x;
+    QFontMetrics metrics(font);
 
-//             if (!image.isNull()) {
-//                 auto texture = std::make_shared<QOpenGLTexture>(image, QOpenGLTexture::GenerateMipMaps);
-//                 texture->create();
-//                 texture->setMinificationFilter(QOpenGLTexture::LinearMipMapLinear);
-//                 texture->setMagnificationFilter(QOpenGLTexture::Linear);
-//                 texture->setWrapMode(QOpenGLTexture::ClampToEdge);
-//                 character.texture = texture;
-//             } else {
-//                 // Для пробела и других невидимых символов оставляем texture = nullptr
-//                 character.texture = nullptr;
-//             }
+    auto loadGlyph = [&](ushort c)
+    {
+        QChar ch(c);
 
-//             m_chars.insert(c, character);
-//         }
-//     };
+        int w = metrics.horizontalAdvance(ch);
+        int h = metrics.height();
 
-//     // ASCII (English)
-//     loadGlyphRange(0x0020, 0x007F);
-//     // Polish
-//     loadGlyphRange(0x00A0, 0x017F);
-//     // Cyrillic (Russian)
-//     loadGlyphRange(0x0400, 0x04FF);
+        if (w <= 0 || h <= 0)
+            return;
 
-//     FT_Done_Face(face);
-//     FT_Done_FreeType(ft);
+        QString str(ch);
+
+        QImage image(w, h, QImage::Format_ARGB32);
+        image.fill(Qt::transparent);
+
+        QPainter painter(&image);
+        painter.setFont(font);
+        painter.setPen(Qt::white);
+        painter.drawText(0, metrics.ascent(), str);
+        painter.end();
+
+        auto tex = std::make_shared<QOpenGLTexture>(image);
+        tex->setMinificationFilter(QOpenGLTexture::Linear);
+        tex->setMagnificationFilter(QOpenGLTexture::Linear);
+        tex->setWrapMode(QOpenGLTexture::ClampToEdge);
+    };
+
+    auto loadRange = [&](ushort start, ushort end)
+    {
+        for (ushort c = start; c <= end; ++c)
+            loadGlyph(c);
+    };
+
+    loadRange(0x20, 0x7F);   // ASCII
 }

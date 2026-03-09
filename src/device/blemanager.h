@@ -89,8 +89,6 @@ private:
     BoatPoint lastBoatPt_;
     bool hasLast_ = false;
 
-    int count_ = 0;
-
     QString lastDateStr_;  // "yyyy-MM-dd" 标准化日期
     QString lastTimeStr_;  // "HH:mm:ss" 记录最新时钟时间
 
@@ -132,12 +130,6 @@ public:
     void translate();
     ~BLEManager() override;
 
-
-    bool hasBlePermission();
-    void doStartScan();
-
-
-
     QStringList devices() const { return m_devices; }
     bool connected() const { return m_connected; }
     QString scanStatus() const { return m_scanStatus; }
@@ -153,6 +145,12 @@ public:
 
     double maxDepthValue() const { return m_maxDepthValue;}
     double currentDepthValue() const { return 0.0; };
+
+
+private:
+    bool hasBlePermission();
+    void doStartScan();
+    void resetData();
 
 
 public: //qml传给class
@@ -188,12 +186,8 @@ signals:
 
     void positionComplete(double lat, double lon, double depth);
     void depthComplete(float depth);
-    void fileStopsOpening_CSV(QVector<float>& depth, double minZ, double maxZ);
-    void signal_drawRealtimeContour(bool isDraw);
+    void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ);
 
-
-public slots:
-    void slot_drawRealtimeContour(bool isDraw);
 
 private slots:
     void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
@@ -238,7 +232,6 @@ private:
     void setScanStatus(const QString &status);
 
     bool liveScanVisble_ = false;
-    int trackIndex_ = 0;
 
 
 
@@ -276,20 +269,7 @@ private:
     QTimer *trackTimer_;
 
     QVector<float> depthHistory_; // 存储深度历史数据
-    double minDepth_ = 0.0; // 最小深度
-    double maxDepth_ = 0.0; // 最大深度
-
-    bool isDrawRealtimeContour_ = false;
-
-
-public:
-
-    // 开始/停止定时发送信号
-    void startContourSignal();
-    void stopContourSignal();
-
-private:
-    QTimer* contourTimer_ = nullptr;  // 定时器
+    double minDepth_ = 0.0, maxDepth_ = 0.0;
 
 
 };

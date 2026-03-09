@@ -50,6 +50,24 @@ void SurfaceTile::init(int sidePixelSize, int heightMatrixRatio, float resolutio
     isInited_ = true;
 }
 
+void SurfaceTile::initImageData(int sidePixelSize, int heightMatrixRatio)
+{
+    const int   heightMatSideSize = heightMatrixRatio + 1;
+
+    // image data
+    imageData_.resize(sidePixelSize * sidePixelSize, 0);
+
+    // texture vertices
+    textureVertices_.clear();
+    textureVertices_.reserve(heightMatSideSize * heightMatSideSize);
+    for (int i = 0; i < heightMatSideSize; ++i) {
+        for (int j = 0; j < heightMatSideSize; ++j) {
+            textureVertices_.append(QVector2D(float(j) / (heightMatSideSize - 1),
+                                              float(i) / (heightMatSideSize - 1)));
+        }
+    }
+}
+
 void SurfaceTile::updateHeightIndices()
 {
     // height indices
@@ -76,6 +94,47 @@ void SurfaceTile::updateHeightIndices()
     }
 }
 
+void SurfaceTile::resetInitData()
+{
+    textureId_ = 0;
+    isUpdated_ = false;
+
+    std::vector<uint8_t>().swap(imageData_);
+    QVector<QVector3D>().swap(heightVertices_);
+    QVector<HeightType>().swap(heightMarkVertices_);
+    QVector<int>().swap(heightIndices_);
+    QVector<QVector2D>().swap(textureVertices_);
+
+    isInited_ = false;
+    headIndx_ = -1;
+}
+
+void SurfaceTile::setOrigin(const QVector3D &val)
+{
+    origin_ = val;
+}
+
+void SurfaceTile::setHeadIndx(int indx)
+{
+    headIndx_ = indx;
+}
+
+void SurfaceTile::setUpdateHint(UpdateHint h)
+{
+    updateHint_ = h;
+}
+
+void SurfaceTile::setInFov(bool state)
+{
+    inFov_ = state;
+}
+
+UpdateHint SurfaceTile::updateHint() const
+{
+    return updateHint_;
+}
+
+
 void SurfaceTile::setMosaicTextureId(GLuint val)
 {
     textureId_ = val;
@@ -85,6 +144,12 @@ void SurfaceTile::setIsUpdated(bool state)
 {
     isUpdated_ = state;
 }
+
+const TileKey &SurfaceTile::getKey() const
+{
+    return key_;
+}
+
 
 QUuid SurfaceTile::getUuid() const
 {
@@ -141,9 +206,24 @@ const QVector<QVector3D>& SurfaceTile::getHeightVerticesCRef() const
     return heightVertices_;
 }
 
+const QVector<HeightType> &SurfaceTile::getHeightMarkVerticesCRef() const
+{
+    return heightMarkVertices_;
+}
+
 const QVector<int>& SurfaceTile::getHeightIndicesCRef() const
 {
     return heightIndices_;
+}
+
+int SurfaceTile::getHeadIndx() const
+{
+    return headIndx_;
+}
+
+bool SurfaceTile::getInFov() const
+{
+    return inFov_;
 }
 
 bool SurfaceTile::checkVerticesDepth(int topLeft, int topRight, int bottomLeft, int bottomRight) const

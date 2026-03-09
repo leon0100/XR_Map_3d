@@ -32,6 +32,7 @@ public:
     int                                     getStepSizeHeightMatrix() const;
     bool                                    getIsInited() const;
 
+
 private:
     /*methods*/
     void initializeMatrix(int numWidthTiles, int numHeightTiles, const kmath::MatrixParams& matrixParams);

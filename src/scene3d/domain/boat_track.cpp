@@ -54,7 +54,7 @@ void BoatTrack::onPositionAdded(uint64_t indx)
     }
 
     const int toIndx = indx;
-    int fromIndx = lastIndx_;
+    const int fromIndx = lastIndx_;
     if (fromIndx >= toIndx) {
         // qDebug() << "fromIndx >= toIndx.................." << fromIndx << "  " << toIndx;
         return;

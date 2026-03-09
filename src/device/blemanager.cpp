@@ -91,8 +91,6 @@ void RealTimeParser::stop()
 
 void RealTimeParser::processQueue()
 {
-    count_++;
-
     QByteArray buffer;
     {
         QMutexLocker locker(&m_mutex);
@@ -351,9 +349,17 @@ void BLEManager::doStartScan()
 
     m_devices.clear();
     devicesList_.clear();
+    resetData();
 
     discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
     setScanStatus(tr("Scanning..."));
+}
+
+void BLEManager::resetData()
+{
+    bleCount_ = 0;
+    minDepth_ = std::numeric_limits<float>::max();
+    maxDepth_ = std::numeric_limits<float>::min();
 }
 
 
@@ -458,24 +464,22 @@ void BLEManager::setBleLiveScanningVisible(bool visible)
 
 void BLEManager::slotTrackTimeout()
 {
-    if (trackIndex_ >= track_.size()) {
+    if (bleCount_ >= (quint32)track_.size()) {
         trackTimer_->stop();
         qDebug() << "Simulated track finished";
         return;
     }
 
-    const Position& pos = track_[trackIndex_];
+    const Position& pos = track_[bleCount_];
 
     emit positionComplete(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude);
 
-    // emit depthComplete(static_cast<float>(pos.lla.altitude)); // 深度信号
-
-    trackIndex_++;
+    bleCount_++;
 }
 
 void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
 {
-    if(trackIndex_++ % 3 == 0) {
+    if(bleCount_++ % 3 != 0) {
         return;
     }
     // qDebug() << "trackIndex_....." << trackIndex_;
@@ -483,34 +487,12 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
     emit positionComplete(pt.latitude, pt.longitude, pt.depth);
 
     depthHistory_.append(static_cast<float>(pt.depth));
-    
-    // 更新深度范围
-    if (depthHistory_.size() == 1) {
-        // 初始化深度范围
-        minDepth_ = pt.depth;
-        maxDepth_ = pt.depth;
-    } else {
-        // 更新最小深度
-        if (pt.depth < minDepth_) {
-            minDepth_ = pt.depth;
-        }
-        // 更新最大深度
-        if (pt.depth > maxDepth_) {
-            maxDepth_ = pt.depth;
-        }
-    }
-    
-    // 发射fileStopsOpening_CSV信号，实现实时等高线绘制
-    emit fileStopsOpening_CSV(depthHistory_, minDepth_, maxDepth_);
+    minDepth_ = std::min(minDepth_, pt.depth);
+    maxDepth_ = std::max(maxDepth_, pt.depth);
 
-    emit signal_drawRealtimeContour(true);
+    emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_);
 }
 
-
-void BLEManager::slot_drawRealtimeContour(bool isDraw)
-{
-    isDrawRealtimeContour_ = isDraw;
-}
 
 void BLEManager::connectToDevice(int index)
 {
@@ -653,21 +635,18 @@ void BLEManager::onScanCanceled()
 void BLEManager::onDeviceConnected()
 {
     bleController_->discoverServices();
-
-    // startContourSignal();
 }
 
 void BLEManager::onDeviceDisconnected()
 {
     m_connected = false;
+    resetData();
     emit connectedChanged(m_connected);
 
     if (bleServer_) {
         bleServer_->deleteLater();
         bleServer_ = nullptr;
     }
-
-    // stopContourSignal();
 }
 
 void BLEManager::onControllerError(QLowEnergyController::Error error)
@@ -677,7 +656,7 @@ void BLEManager::onControllerError(QLowEnergyController::Error error)
 
 void BLEManager::onServiceDiscovered(const QBluetoothUuid &uuid)
 {
-    // qDebug() << "发现服务 uuid:" << uuid.toString();
+    qDebug() << "发现服务 uuid:" << uuid.toString();
 }
 
 
@@ -784,16 +763,14 @@ void BLEManager::BleServiceCharacteristicChanged(const QLowEnergyCharacteristic 
     // qDebug() << "characteristic Changed signals emisison.......";
     // qDebug() << value;
 
-
-        // totalRxCount += value.size();
-        // FiFoTModemWrite(&fifoTModem_, reinterpret_cast<const quint8*>(value.data()), value.size());
-
+    // totalRxCount += value.size();
+    // FiFoTModemWrite(&fifoTModem_, reinterpret_cast<const quint8*>(value.data()), value.size());
 
 
-    bleCount_++;
-    qint64 now = recvTimer_.elapsed();
-    qint64 interval = now - lastElapsed_;
-    lastElapsed_ = now;
+    // bleCount_++;
+    // qint64 now = recvTimer_.elapsed();
+    // qint64 interval = now - lastElapsed_;
+    // lastElapsed_ = now;
     Q_UNUSED(c)
 
     // 将原始数据通过 queued connection 交给 parser 入队，尽量不阻塞主线程

@@ -17,23 +17,23 @@
 
 
 
-enum class DataProcessorType {
-    kUndefined = 0,
-    kBottomTrack,
-    kIsobaths,
-    kMosaic,
-    kSurface
-};
+// enum class DataProcessorType {
+//     kUndefined = 0,
+//     kBottomTrack,
+//     kIsobaths,
+//     kMosaic,
+//     kSurface
+// };
 
-enum WorkFlag : quint32 {
-    WF_None     = 0,
-    WF_Surface  = 1u << 0,
-    WF_Mosaic   = 1u << 1,
-    WF_Isobaths = 1u << 2,
-    WF_All      = WF_Surface | WF_Mosaic | WF_Isobaths
-};
+// enum WorkFlag : quint32 {
+//     WF_None     = 0,
+//     WF_Surface  = 1u << 0,
+//     WF_Mosaic   = 1u << 1,
+//     WF_Isobaths = 1u << 2,
+//     WF_All      = WF_Surface | WF_Mosaic | WF_Isobaths
+// };
 Q_DECLARE_FLAGS(WorkSet, WorkFlag)
-Q_DECLARE_OPERATORS_FOR_FLAGS(WorkSet)
+// Q_DECLARE_OPERATORS_FOR_FLAGS(WorkSet)
 
 class Dataset;
 class BottomTrack;

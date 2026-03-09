@@ -183,7 +183,7 @@ signals:
     void scrrenModeChanged();
     void currentMapLevelChanged();
 
-    void drawRealtimeContour(bool isDraw);
+    void drawRealtimeContour();
 
 #ifdef SEPARATE_READING
     void sendCloseLogFile(bool onOpen = false);
@@ -191,15 +191,14 @@ signals:
 
 private slots:
     void onFileStopsOpening();
-    void onFileStopsOpening_CSV(QVector<float>& depthVec, double minZ, double maxZ);
-    void onFileStopsOpening_tslw(QVector<float>& depthVec, double minZ, double maxZ);
+    void onFileStopsOpening2(QVector<float>& depthVec, double minZ, double maxZ);
     void onSendMapTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId); // TODO: maybe store map texture id in mapView
     void onDataProcesstorStateChanged(const DataProcessorType& state);
     void onSendFrameInputToLogger(QUuid uuid, Link* link, const Parsers::FrameParser& frame);
 
     void onZoomLevelChanged(int level);
 
-    void slot_RealtimeDrawContour(bool isDraw);
+    void slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ);
 
 private:
     /*methods*/

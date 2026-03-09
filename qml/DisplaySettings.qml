@@ -283,10 +283,8 @@ GridLayout {
 
             Connections {
                 target: core
-                function onDrawRealtimeContour(isDraw) {
-                    if (isDraw) {
-                         bottomTrackProcessingGroup.updateProcessing()
-                    }
+                function onDrawRealtimeContour() {
+                    bottomTrackProcessingGroup.updateProcessing()
                 }
             }
 

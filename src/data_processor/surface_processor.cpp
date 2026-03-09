@@ -62,7 +62,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         return;
     }
     // Delaunay processing
-    QVector<QVector3D> bTrData; // 基于航道底部测线渲染缓存运行
+    QVector<QVector3D> bTrData;
     {
         QReadLocker rl(&lock_);
         bTrData = bottomTrackPtr_ ? bottomTrackPtr_->cdata() : QVector<QVector3D>();
@@ -71,8 +71,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         return;
     }
 
-
-    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kSurface));
+    // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kSurface));
 
     //头一次都是初始化时的数据
     auto& tr = delaunayProc_.getTriangles();
@@ -91,262 +90,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     static QSet<SurfaceTile*> changedTiles;
     changedTiles.clear();
-
-/*  nie:test 等高线测试，这里的左右两侧侧扫的内容暂时注释掉
-    auto ensureMeshCoversDisk = [&](const QVector3D& P, float radiusM) -> void { // 用于外推的网格扩展
-        QVector<QVector3D> tri(4);
-        tri[0] = QVector3D(P.x() + radiusM, P.y(),           P.z());
-        tri[1] = QVector3D(P.x(),           P.y() + radiusM, P.z());
-        tri[2] = QVector3D(P.x() - radiusM, P.y(),           P.z());
-        tri[3] = QVector3D(P.x(),           P.y() - radiusM, P.z());
-        kmath::MatrixParams actual(lastMatParams_);
-        kmath::MatrixParams mp = kmath::getMatrixParams(tri);
-        if (mp.isValid()) {
-            concatenateMatrixParameters(actual, mp);
-            if (surfaceMeshPtr_->concatenate(actual)) {
-                lastMatParams_ = actual;
-            }
-        }
-    };
-
-    auto dirForIndexPix = [&](int idx, QVector2D& udirPix) -> bool { // 运动方向
-        const QVector3D& p  = bTrData[idx];
-        const QVector3D  pP = surfaceMeshPtr_->convertPhToPixCoords(p);
-
-        QVector2D v0(0.f, 0.f); // prev -> curr
-        QVector2D v1(0.f, 0.f); // curr -> next
-
-        if (idx > 0) {
-            const QVector3D& pr = bTrData[idx - 1];
-            const QVector3D  prP = surfaceMeshPtr_->convertPhToPixCoords(pr);
-            v0 = QVector2D(pP.x() - prP.x(), pP.y() - prP.y());
-            if (v0.lengthSquared() > kmath::fltEps) {
-                v0.normalize();
-            }
-        }
-
-        if (idx + 1 < bTrData.size()) {
-            const QVector3D& nx = bTrData[idx + 1];
-            const QVector3D  nxP = surfaceMeshPtr_->convertPhToPixCoords(nx);
-            v1 = QVector2D(nxP.x() - pP.x(), nxP.y() - pP.y());
-            if (v1.lengthSquared() > kmath::fltEps) {
-                v1.normalize();
-            }
-        }
-
-        if (v0.lengthSquared() <= kmath::fltEps && v1.lengthSquared() <= kmath::fltEps) {
-            return false;
-        }
-
-        QVector2D v = v1.lengthSquared() > kmath::fltEps && v0.lengthSquared() > kmath::fltEps ? (v0 + v1) : (v1.lengthSquared() > kmath::fltEps ? v1 : v0);
-        if (v.lengthSquared() <= kmath::fltEps) {
-            return false;
-        }
-
-        udirPix = v.normalized();
-        return true;
-    };
-
-    auto paintDiskExtrapolated = [&](const QVector3D& P, const QVector2D* udirOpt, QSet<SurfaceTile*>& changed) {
-        if (!surfaceMeshPtr_->getIsInited() || extraWidth_ <= 0) {
-            return;
-        }
-
-        const float radiusM = 0.5f * static_cast<float>(extraWidth_);
-        ensureMeshCoversDisk(P, radiusM); // 扩展网格
-
-        const int stepPix     = surfaceMeshPtr_->getStepSizeHeightMatrix();
-        const int tileSidePix = surfaceMeshPtr_->getTileSidePixelSize();
-        const int hvSide      = tileSidePix / stepPix + 1;
-        const int tilesY      = surfaceMeshPtr_->getNumHeightTiles();
-        const int meshW       = surfaceMeshPtr_->getPixelWidth();
-        const int meshH       = surfaceMeshPtr_->getPixelHeight();
-
-        auto roundToGrid = [&](float v) -> int {
-            return static_cast<int>(std::round(v / float(stepPix))) * stepPix;
-        };
-        auto clampGrid = [&](int v, int hi) -> int {
-            v = std::clamp(v, 0, hi);
-            int r = v % stepPix;
-            if (r != 0) v -= r;
-            return std::clamp(v, 0, hi);
-        };
-
-        const QVector3D Ppix3 = surfaceMeshPtr_->convertPhToPixCoords(P);
-        const QVector3D Qpix3 = surfaceMeshPtr_->convertPhToPixCoords(QVector3D(P.x() + radiusM, P.y(), P.z()));
-        const float radiusPxF = std::fabs(Qpix3.x() - Ppix3.x());
-        const int   radiusPx  = std::max(1, static_cast<int>(std::ceil(radiusPxF + 0.5f * stepPix)));
-
-        const int minPx = clampGrid(roundToGrid(Ppix3.x() - radiusPx), meshW - 1);
-        const int maxPx = clampGrid(roundToGrid(Ppix3.x() + radiusPx), meshW - 1);
-        const int minPy = clampGrid(roundToGrid(Ppix3.y() - radiusPx), meshH - 1);
-        const int maxPy = clampGrid(roundToGrid(Ppix3.y() + radiusPx), meshH - 1);
-
-        const int cx = static_cast<int>(std::round(Ppix3.x()));
-        const int cy = static_cast<int>(std::round(Ppix3.y()));
-        const int r2 = radiusPx * radiusPx;
-
-        const bool useDir = (udirOpt && udirOpt->lengthSquared() > 0.f);
-        const float ux = useDir ? udirOpt->x() : 0.f;
-        const float uy = useDir ? udirOpt->y() : 0.f;
-
-        for (int py = minPy; py <= maxPy; py += stepPix) {
-            for (int px = minPx; px <= maxPx; px += stepPix) {
-                const int dx = px - cx;
-                const int dy = py - cy;
-                if (dx * dx + dy * dy > r2) {
-                    continue; // 在圆外
-                }
-                if (dx == 0 && dy == 0) {
-                    continue; // 中心
-                }
-
-                bool isFront = true; // круг на forward/backward
-                if (useDir) {
-                    const float dot = static_cast<float>(dx) * ux + static_cast<float>(dy) * uy;
-                    isFront = (dot >= 0.f);
-                }
-
-                const int tileX = px / tileSidePix;
-                const int tileY = (tilesY - 1) - py / tileSidePix;
-                const int locX  = px - tileX * tileSidePix;
-                const int locY  = py - ((tilesY - 1 - tileY) * tileSidePix);
-
-                int hx = (locX + stepPix / 2) / stepPix;
-                if (hx >= hvSide) {
-                    hx = hvSide - 1;
-                }
-                int hy = (locY + stepPix / 2) / stepPix;
-                if (hy >= hvSide) {
-                    hy = hvSide - 1;
-                }
-                const int hvIdx = hy * hvSide + hx;
-
-                SurfaceTile* tile = surfaceMeshPtr_->getTileMatrixRef()[tileY][tileX];
-                if (!tile->getIsInited()) {
-                    tile->init(tileSidePix, tileHeightMatrixRatio_, tileResolution_);
-                }
-
-                auto& mark = tile->getHeightMarkVerticesRef()[hvIdx];
-
-                if (isFront) {
-                    if (mark == HeightType::kTriangulation || mark == HeightType::kMosaic) {
-                        continue;
-                    }
-                }
-                else {
-                    if (mark != HeightType::kUndefined) {
-                        continue; // сзади — только Undefined
-                    }
-                }
-
-                tile->getHeightVerticesRef()[hvIdx][2] = P.z();
-                mark = HeightType::kExrtapolation;
-
-                tile->setIsUpdated(true);
-                changed.insert(tile);
-            }
-        }
-    };
-
-    auto paintTwoLinesManual = [&](const QVector3D& point, const QVector2D* dirVecPix, QSet<SurfaceTile*>& changed) {  // 双线段光斑外推法
-        if (!surfaceMeshPtr_->getIsInited() || extraWidth_ <= 0) {
-            return;
-        }
-
-        const float radiusM = 0.5f * static_cast<float>(extraWidth_);
-        ensureMeshCoversDisk(point, radiusM);  // 确保网格足够大，能包住我们要画的区域
-
-        // 以像素为单位的中心与半径
-        const QVector3D pointPix3D = surfaceMeshPtr_->convertPhToPixCoords(point);
-        const QVector2D point2D(pointPix3D.x(), pointPix3D.y());
-        const QVector3D qPix = surfaceMeshPtr_->convertPhToPixCoords(QVector3D(point.x() + radiusM, point.y(), point.z()));
-        const int radiusPx = std::max(1, static_cast<int>(std::round(std::fabs(qPix.x() - pointPix3D.x()))));
-
-        const int stepPix     = surfaceMeshPtr_->getStepSizeHeightMatrix();
-        const int tileSidePix = surfaceMeshPtr_->getTileSidePixelSize();
-        const int hvSide      = tileSidePix / stepPix + 1;
-        const int tilesY      = surfaceMeshPtr_->getNumHeightTiles();
-        const int meshW       = surfaceMeshPtr_->getPixelWidth();
-        const int meshH       = surfaceMeshPtr_->getPixelHeight();
-
-        auto writeCell = [&](int px, int py, bool strongWrite) {
-            px = std::clamp((px / stepPix) * stepPix, 0, meshW - 1);
-            py = std::clamp((py / stepPix) * stepPix, 0, meshH - 1);
-
-            const int tileX = px / tileSidePix;
-            const int tileY = (tilesY - 1) - py / tileSidePix;
-            const int locX  = px % tileSidePix;
-            const int locY  = py % tileSidePix;
-            const int hvIdx = (locY / stepPix) * hvSide + (locX / stepPix);
-
-            SurfaceTile* tile = surfaceMeshPtr_->getTileMatrixRef()[tileY][tileX];
-            if (!tile->getIsInited()) {
-                tile->init(tileSidePix, tileHeightMatrixRatio_, tileResolution_);
-            }
-
-            auto& mark = tile->getHeightMarkVerticesRef()[hvIdx];
-            if (strongWrite) { // 该线条既不触及马赛克，也不触及三角剖分
-                if (mark == HeightType::kMosaic || mark == HeightType::kTriangulation) {
-                    return;
-                }
-            }
-            else {
-                if (!(mark == HeightType::kExrtapolation || mark == HeightType::kUndefined)) { // 仅为旧版外推/undefined
-                    return;
-                }
-            }
-
-            tile->getHeightVerticesRef()[hvIdx][2] = point.z();
-            mark = HeightType::kExrtapolation;
-            tile->setIsUpdated(true);
-            changed.insert(tile);
-        };
-
-        auto writeCellWithNeighbors = [&](int px, int py) {
-            writeCell(px, py, true); // 基准点
-
-            writeCell(px + stepPix, py, false); // 8-соседей
-            writeCell(px - stepPix, py, false);
-            writeCell(px, py + stepPix, false);
-            writeCell(px, py - stepPix, false);
-            writeCell(px + stepPix, py + stepPix, false);
-            writeCell(px + stepPix, py - stepPix, false);
-            writeCell(px - stepPix, py + stepPix, false);
-            writeCell(px - stepPix, py - stepPix, false);
-        };
-
-        QVector2D dir = (dirVecPix && dirVecPix->lengthSquared() > 0.f) ? (*dirVecPix) : QVector2D(1.f, 0.f); // 方向；若无法获取，则沿 X 轴
-        dir.normalize();
-        const QVector2D n(-dir.y(), dir.x());   //  向左的垂线
-
-        const QVector2D L = point2D + n * float(radiusPx);
-        const QVector2D R = point2D - n * float(radiusPx);
-
-        auto paintLineAB = [&](const QVector2D& A, const QVector2D& B) {
-            const float dx = B.x() - A.x();
-            const float dy = B.y() - A.y();
-            const float len = std::hypot(dx, dy);
-            const int steps = std::max(1, static_cast<int>(std::ceil(len / float(stepPix))));
-
-            for (int i = 0; i <= steps; ++i) {
-                const float t = (steps == 0) ? 1.f : float(i) / float(steps);
-                const int px = static_cast<int>(std::round(A.x() + t * dx));
-                const int py = static_cast<int>(std::round(A.y() + t * dy));
-                writeCellWithNeighbors(px, py);
-            }
-        };
-
-        paintLineAB(L, point2D);
-        paintLineAB(R, point2D);
-
-        const int cx = static_cast<int>(std::round(point2D.x()));
-        const int cy = static_cast<int>(std::round(point2D.y()));
-        writeCellWithNeighbors(cx, cy);
-    };
-
-*/
-
 
     // --- 添加 / 更新中心点（按网格单元划分） ---
     auto processOneCenter = [&](const QVector3D& pnt) -> void {
@@ -384,7 +127,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     for (const auto& itm : indxs) { // 添加至三角剖分
         if (canceled()) {
-            QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
+            // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
             return;
         }
 
@@ -401,7 +144,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {
-        QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
+        // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
         return;
     }
 
@@ -409,7 +152,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     float lastMaxZ = maxZ_;
     for (int triIdx : std::as_const(updsTrIndx)) { // 网格内三角形的追踪
         if (canceled()) {
-            QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
+            // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
             return;
         }
 
@@ -442,20 +185,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         minZ_ = std::min(static_cast<double>(minZ_), std::min({ pt[t.a].z, pt[t.b].z, pt[t.c].z }));
         maxZ_ = std::max(static_cast<double>(maxZ_), std::max({ pt[t.a].z, pt[t.b].z, pt[t.c].z }));
     }
-
-/*
-    for (const auto& itm : indxs) { // 外推法
-        const QVector3D& point = bTrData[itm.second];
-        QVector2D dirVecPix;
-        const bool haveDir = dirForIndexPix(itm.second, dirVecPix);
-        if (itm.first == '1') {
-            paintTwoLinesManual(point, haveDir ? &dirVecPix : nullptr, changedTiles);
-        }
-        else {
-            paintDiskExtrapolated(point, haveDir ? &dirVecPix : nullptr, changedTiles);
-        }
-    }
-*/
 
     propagateBorderHeights(changedTiles);
     for (SurfaceTile* t : std::as_const(changedTiles)) {
@@ -495,8 +224,9 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
-    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
+    // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
 }
+
 
 void SurfaceProcessor::setTileResolution(float tileResolution)
 {

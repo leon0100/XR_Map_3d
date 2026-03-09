@@ -189,9 +189,9 @@ void ComputeWorker::processBundle(const WorkBundle& wb)
         surface_.rebuildColorIntervals();
     }
 
-    if (!wb.mosaicVec.isEmpty() && !isCanceled()) {
-        mosaic_.updateDataWrapper(wb.mosaicVec);
-    }
+    // if (!wb.mosaicVec.isEmpty() && !isCanceled()) {
+    //     mosaic_.updateDataWrapper(wb.mosaicVec);
+    // }
 
     if (wb.doIsobaths && !isCanceled()) {
         isobaths_.onUpdatedBottomTrackData(); //只计算等值线 线。。，但它完全依赖于SurfaceProcessor生成的高度场网格。

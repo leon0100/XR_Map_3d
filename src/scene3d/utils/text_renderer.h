@@ -10,6 +10,8 @@
 #include <QVector2D>
 #include <QVector3D>
 #include <memory>
+#include <QFont>
+#include <QPainter>
 
 class QOpenGLFunctions;
 class TextRenderer
