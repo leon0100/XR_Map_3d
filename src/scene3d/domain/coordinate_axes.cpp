@@ -41,11 +41,11 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     shaderProgram->setUniformValue(matrixLoc, mvp);
     shaderProgram->enableAttributeArray(posLoc);
 
-    QVector<QVector3D> axis_x{{0.0f, 0.0f, 0.0f},       {m_position.x()+10.0f, m_position.y(),       m_position.z()}};
-    QVector<QVector3D> axis_y{{0.0f, 0.0f, 0.0f},       {m_position.x(),       m_position.y()+10.0f, m_position.z()}};
-    QVector<QVector3D> axis_z{{0.0f, 0.0f, 0.0f},       {m_position.x(),       m_position.y(),       m_position.z()+10.0f}};
+    QVector<QVector3D> axis_x{{0.0f, 0.0f, 0.0f}, {m_position.x()+16.0f, m_position.y(),       m_position.z()}};
+    QVector<QVector3D> axis_y{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y()+16.0f, m_position.z()}};
+    QVector<QVector3D> axis_z{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y(),       m_position.z()+16.0f}};
 
-    ctx->glLineWidth(5.0f);
+    ctx->glLineWidth(8.0f);
     shaderProgram->setAttributeArray(posLoc, axis_x.constData());
     shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(255, 0, 0)));
     ctx->glDrawArrays(GL_LINE_STRIP, 0, axis_x.size());

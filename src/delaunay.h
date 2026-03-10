@@ -31,7 +31,7 @@ public:
         insertTriangle(p0, p2, p3);
     }
 
-    // Add a new point and update triangulation
+    // 添加新点，并更新三角剖分
     TriResult addPoint(const Point &p) //surface_processor.cpp...
     {
         // 1) Insert point and get its index

@@ -3,23 +3,24 @@ import QtQuick.Controls 2.15
 
 MenuBar {
     id: root
-    height: 52
+    height: barHeight
 
     // ================== 全局参数 ==================
-    readonly property int menuBarHeight: 52
-    readonly property int menuItemHeight: 50
-    readonly property int menuItemWidth: 150
+    readonly property int barHeight: 72
+
+    readonly property int menuBarHeight: barHeight
+    readonly property int menuItemHeight: barHeight - 2
+    readonly property int menuItemWidth: barHeight * 2
 
     signal openClicked()
     signal fullScreenToggled(bool isFull)
-
 
     delegate: MenuBarItem {
         id: barItem
         implicitHeight: menuBarHeight
         contentItem: Text {
             text: barItem.text
-            font.pixelSize: 25
+            font.pixelSize: barHeight * 0.5
             font.bold: true
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
@@ -33,17 +34,19 @@ MenuBar {
         id: myMenuItemDelegate
         MenuItem {
             id: mItem
-            implicitWidth: menuItemWidth
+            implicitWidth:  menuItemWidth
             implicitHeight: menuItemHeight
 
             arrow: Text {
                 x: mItem.width - width - 10
                 y: (mItem.height - height) / 2
                 text: "›"
+                font.pixelSize: barHeight * 0.4
             }
 
             contentItem: Text {
                 text: mItem.text
+                font.pixelSize: barHeight * 0.4
                 verticalAlignment: Text.AlignVCenter
                 leftPadding: 10
             }

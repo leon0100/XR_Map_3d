@@ -19,11 +19,12 @@ ApplicationWindow  {
     height:        512
     minimumHeight: 256
     color:         "black"
-    title:         qsTr("XR_Map_3dVer")
+    title:         qsTr("XR_Map_3d")
 
     readonly property int _rightBarWidth:                360
     readonly property int _activeObjectParamsMenuHeight: 500
     readonly property int _sceneObjectsListHeight:       300
+    readonly property int footHeight: Math.min(Screen.width, Screen.height) * 0.03
 
     Settings {
         id: appSettings
@@ -37,49 +38,48 @@ ApplicationWindow  {
     }
 
 
-    menuBar: MenuBar_XR {
-       id: menuToolBar
+    // menuBar: MenuBar_XR {
+    //    id: menuToolBar
 
-       // 监听自定义信号
-       onOpenClicked: {
-           console.log("Open clicked")
-           // C++/QML 的打开逻辑
-           // core.openLogFile("", false, false)
-       }
-
-       onFullScreenToggled: function(isFull) {
-           window.visibility = isFull ? Window.FullScreen : Window.Windowed
-       }
-    }
+    //    onFullScreenToggled: function(isFull) {
+    //        window.visibility = isFull ? Window.FullScreen : Window.Windowed
+    //    }
+    // }
 
     header: ToolBar_XR {
         id: toolBarXR
-        // onMenuBarSettingOpened: onMenuBarSettingsOpened()
         Component.onCompleted: toolBarXR.targetPlot = waterViewFirst //把qPlot2D类与ToolBar_XR绑定
     }
 
     footer: Rectangle {
-        height: 45
-        color: "#363636"
+        height: footHeight
+        color: "#88363636"
+        opacity: 0.4
 
         RowLayout {
             anchors.fill: parent
             anchors.margins: 1
 
             Label {
-                text: qsTr("Coordinate: Lat:%1  Lon:%2").arg(renderer.currLat.toFixed(6)).arg(renderer.currLon.toFixed(6))
+                text: qsTr("Lat:%1°   Lon:%2°").arg(renderer.currLat.toFixed(6)).arg(renderer.currLon.toFixed(6))
                 color: "white"
-                font.pixelSize: 24
+                font.pixelSize: footHeight * 0.55
+            }
+
+            Rectangle {
+                width: 1
+                height: parent.height * 0.8
+                color: "#AAAAAA"
+                Layout.alignment: Qt.AlignVCenter
             }
 
             Label {
-                text: qsTr("Zoom: %1").arg(core.currMapLevel)
+                text: qsTr(" Zoom: %1").arg(core.currMapLevel)
                 color: "white"
-                font.pixelSize: 24
+                font.pixelSize: footHeight * 0.55
             }
         }
     }
-
 
 
     Component {
@@ -536,7 +536,6 @@ ApplicationWindow  {
                 Layout.fillHeight: true
                 Layout.fillWidth:  true
                 focus:             true
-
 
                 ScreetRect {
 

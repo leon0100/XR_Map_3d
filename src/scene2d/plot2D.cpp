@@ -673,13 +673,12 @@ void Plot2D::setMousePosition(int x, int y, bool isSync) {
         if (cursor_.tool() == MouseToolDistanceMin || cursor_.tool() == MouseToolDistanceMax) {
             if (auto btp = datasetPtr_->getBottomTrackParamPtr(); btp) {
                 btp->indexFrom = cursor_.getIndex(x_start);
-                btp->indexTo = cursor_.getIndex(x_start + x_length);
+                btp->indexTo   = cursor_.getIndex(x_start + x_length);
                 QMetaObject::invokeMethod(dataProcessorPtr_, "bottomTrackProcessing", Qt::QueuedConnection,
-                                          Q_ARG(DatasetChannel, DatasetChannel(cursor_.channel1, cursor_.subChannel1)),
-                                          Q_ARG(DatasetChannel, DatasetChannel(cursor_.channel2, cursor_.subChannel2)),
-                                          Q_ARG(BottomTrackParam, *btp),
-                                          Q_ARG(bool, true),/*manual*/
-                                          Q_ARG(bool, false)/*redraw all*/);
+                            Q_ARG(DatasetChannel, DatasetChannel(cursor_.channel1, cursor_.subChannel1)),
+                            Q_ARG(DatasetChannel, DatasetChannel(cursor_.channel2, cursor_.subChannel2)),
+                            Q_ARG(BottomTrackParam, *btp), Q_ARG(bool, true),/*manual*/
+                            Q_ARG(bool, false)/*redraw all*/);
             }
         }
 

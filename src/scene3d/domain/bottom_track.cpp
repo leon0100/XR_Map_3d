@@ -390,7 +390,6 @@ void BottomTrack::keyPressEvent(Qt::Key key)
     }
 }
 
-
 void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool manually)
 {
     // qDebug() << "BottomTrack::updateRenderData...................";
@@ -429,6 +428,7 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
     for (int epIndx = fromIndx; epIndx < toIndx; ++epIndx) {
         auto vIt = epoch2Vertex_.find(epIndx);
         if (vIt != epoch2Vertex_.end()) {
+            // 情况A: 已存在点，更新Z坐标
             if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
                 if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
                     auto vIndx = *vIt;
@@ -440,7 +440,7 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
                 }
             }
         }
-        else {
+        else { // 情况B: 新点，创建3D坐标
             if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
                 if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
                     // float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));

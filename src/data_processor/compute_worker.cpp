@@ -183,6 +183,7 @@ void ComputeWorker::bottomTrackProcessing(const DatasetChannel& ch1, const Datas
 void ComputeWorker::processBundle(const WorkBundle& wb)
 {
     // qDebug() << "ComputeWorker::processBundle: task" << wb.mosaicVec.size();
+    // wb.surfaceVec:在底部轨迹数据数组中的索引
     // 依次地，传感器自行向外发送信号
     if (!wb.surfaceVec.isEmpty() && !isCanceled()) {
         surface_.onUpdatedBottomTrackData(wb.surfaceVec); //生成高度场，不负责等值线的绘制，但是却为等值线提供高度场网格

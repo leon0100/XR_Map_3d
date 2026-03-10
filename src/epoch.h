@@ -364,7 +364,7 @@ public:
                         return distance;
                     }
                 }
-            }
+            }           
         } else if (charts_.contains(channelId)) {
             const auto& chart = charts_[channelId];
             for (const auto& ech : chart) {

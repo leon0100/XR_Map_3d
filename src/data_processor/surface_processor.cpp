@@ -118,7 +118,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         else { // 添加新点
             const auto res = delaunayProc_.addPoint({pnt.x(), pnt.y(), pnt.z()});
             for (int triIdx : res.newTriIdx) {
-                registerTriangle(triIdx);
+                registerTriangle(triIdx); //注册加入新三角形
                 updsTrIndx.insert(triIdx);
             }
             cellPointsInTri_[cid] = res.pointIdx;

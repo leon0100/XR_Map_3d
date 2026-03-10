@@ -526,9 +526,7 @@ void GraphicsScene3dView::setCurrentMapLevel(int mapLevel)
 {
     qDebug() << "mapLevel...." << mapLevel;
     screetShot_.currMapLevel_ = mapLevel;
-
 }
-
 
 void GraphicsScene3dView::setScreenMode(bool isScreen)
 {
@@ -545,7 +543,6 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
         m_camera->resetZAxis();
         updateProjection();
     }
-
 
     QQuickFramebufferObject::update();
     emit cameraIsMoved();
@@ -893,23 +890,22 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
     forceUpdateDatasetLlaRef();
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
-                     this,      [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll) -> void {
-                         auto chList = datasetPtr_->channelsList();
-                        //暂时注释
-                         // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
-                         //     return;
-                         // }
-                         // clearComboSelectionRect();
-                         m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll);//最终触发了绘制等高线
+                this,      [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll) -> void {
+                    auto chList = datasetPtr_->channelsList();
+                    //暂时注释
+                    // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
+                    //     return;
+                    // }
+                    // clearComboSelectionRect();
+                    m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll);//最终触发了绘制等高线
 
-                     }, Qt::DirectConnection);
+            }, Qt::DirectConnection);
 
-    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef,
-                     this,      [this]() -> void {
-                         surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
-                         forceUpdateDatasetLlaRef();
-                         fitAllInView();
-                     }, Qt::DirectConnection);
+    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef,this,      [this]() -> void {
+                surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
+                forceUpdateDatasetLlaRef();
+                fitAllInView();
+        }, Qt::DirectConnection);
 }
 
 void GraphicsScene3dView::setDataProcessorPtr(DataProcessor *dataProcessorPtr)

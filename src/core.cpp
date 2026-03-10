@@ -111,6 +111,11 @@ void Core::stopLinkManagerTimer() const
     emit linkManagerWrapperPtr_->sendStopTimer();
 }
 
+void Core::refreshMap()
+{
+    scene3dViewPtr_->updateMapView();
+}
+
 void Core::consoleInfo(QString msg)
 {
     getConsolePtr()->put(QtMsgType::QtInfoMsg, msg);

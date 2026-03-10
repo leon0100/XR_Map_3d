@@ -1,17 +1,16 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-
+import QtQuick.Window 2.15
 
 import Bluetooth 1.0
 
 Rectangle {
     id: toolBar_XR
     objectName:  "toolBar_XR"
-    height: 65
-    width: parent ? parent.width : 400
+    height: iconSize + 3
+    // width: parent ? parent.width : 400
     color: "#f5f5f5"
     border.color: "#c0c0c0"
-
 
     signal openClicked()
     signal saveClicked()
@@ -29,7 +28,7 @@ Rectangle {
     property  bool   extraInfoVis:  appSettings.extraInfoVis
     property  bool   autopilotInfofVis: appSettings.autopilotInfofVis
 
-    property int iconSize: 62
+    property int iconSize: Math.min(Screen.width, Screen.height) * 0.05
 
     signal languageChanged(string langStr)
     signal menuBarSettingOpened()
@@ -98,10 +97,10 @@ Rectangle {
         MenuButton {  // 截图
             id: frameSlectBtn
             icon.source: "qrc:/XR/screet.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 id: btn1
@@ -131,10 +130,10 @@ Rectangle {
         MenuButton {  // 历史截图
             id: historyScreenBtn
             icon.source: "qrc:/XR/historyScreen.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 id: btn2
@@ -152,10 +151,10 @@ Rectangle {
         MenuButton {  // 测距
             id: measureBtn
             icon.source: "qrc:/XR/measuredistance.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 id: btn3
@@ -173,10 +172,10 @@ Rectangle {
         MenuButton { // 定位
             id: locationBtn
             icon.source: "qrc:/XR/location.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 id: btn4
@@ -194,10 +193,10 @@ Rectangle {
         MenuButton { //兴趣点
             id: landMarkBtn
             icon.source: "qrc:/XR/pushPin.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 id: btn5
@@ -215,10 +214,10 @@ Rectangle {
         MenuButton { //等值线
             id: contourBtn
             icon.source: "qrc:/XR/contour.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 id: btn6
@@ -267,17 +266,17 @@ Rectangle {
         // }
 
         Item {
-            width: toolBarXR.width - x - 350
+            width: toolBarXR.width - x - toolBar_XR.iconSize*5.2
             height: 1
         }
 
         MenuButton {
             id: serialPortBtn
             icon.source: "qrc:/XR/serialPort.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 toolTipText: qsTr("SerialPort")
@@ -289,10 +288,10 @@ Rectangle {
         MenuButton {
             id: blueToothBtn
             icon.source: "qrc:/XR/bluetooth.png"
-            icon.width: toolBar_XR.iconSize
+            icon.width:  toolBar_XR.iconSize
             icon.height: toolBar_XR.iconSize
-            width: toolBar_XR.iconSize
-            height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
                 toolTipText: qsTr("Bluetooth")
@@ -306,12 +305,17 @@ Rectangle {
             }
         }
 
+        Item {
+            width: 5
+            height: 1
+        }
+
         Image {
             id: toslonLogo
             source: "qrc:/XR/TOSLON2.png"
             fillMode: Image.PreserveAspectFit
-            width: 200
-            height: 60
+            width:  toolBar_XR.iconSize * 3
+            height: toolBar_XR.iconSize
             anchors.verticalCenter: parent.verticalCenter
             ToolTip.visible: containsMouse
             ToolTip.text: qsTr("TOSLON")
@@ -320,10 +324,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-
-                onClicked: {
-                    // 点击事件
-                }
+                onClicked: Qt.openUrlExternally("https://www.Toslon.com")
             }
         }
 
@@ -339,7 +340,7 @@ Rectangle {
         // anchors.bottom:           isobathsCheckButton.top
         // anchors.horizontalCenter: isobathsCheckButton.horizontalCenter
         x: contourBtn.x
-        y: 62
+        y: toolBar_XR.iconSize+5
         z: 2
     }
 
@@ -366,7 +367,7 @@ Rectangle {
         id: bleLivedata
         visible: blueToothBtn.active
         x: parent.width - width - 10
-        y: 62
+        y: toolBar_XR.iconSize+5
 
         onVisibleChanged: {
             BleManager.setBleLiveScanningVisible(visible)

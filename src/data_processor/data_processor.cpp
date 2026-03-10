@@ -406,7 +406,6 @@ void DataProcessor::runCoalescedWork()
     const bool wantIsobaths = maskNow & WF_Isobaths;
 
     WorkBundle wb;
-
     if (wantSurface && !pendingSurfaceIndxs_.isEmpty() && (updateIsobaths_ || updateMosaic_)) {
         wb.surfaceVec.reserve(pendingSurfaceIndxs_.size());
 

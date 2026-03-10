@@ -132,11 +132,11 @@ void GraphicsScene3dRenderer::drawObjects()
 {
     QMatrix4x4 model, view, projection;
 
-    const float perspectiveEdge     { 5000.0f };
-    const float nearPlanePersp      { 1.0f };
-    const float farPlanePersp       { 20000.0f };
-    const float nearPlaneOrthoCoeff { 0.05f };
-    const float farPlaneOrthoCoeff  { 1.2f };
+    const float perspectiveEdge{ 5000.0f };
+    const float nearPlanePersp{ 1.0f };
+    const float farPlanePersp{ 20000.0f };
+    const float nearPlaneOrthoCoeff{ 0.05f };
+    const float farPlaneOrthoCoeff{ 1.2f };
 
     float perspCoeff = m_camera.getHeightAboveGround() /  perspectiveEdge;
     qreal perspFixFov = m_camera.fov() + m_camera.fov() * perspCoeff;
@@ -181,8 +181,7 @@ void GraphicsScene3dRenderer::drawObjects()
     isobathsViewRenderImpl_.render(this, upModel, view, m_projection, m_shaderProgramMap);    //等值线
     surfaceViewRenderImpl_.render(this,  m_projection * view * upModel, m_shaderProgramMap);  //高度场
     m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
-
-// glDisable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
 
     // navigation arrow
     {
@@ -197,30 +196,32 @@ void GraphicsScene3dRenderer::drawObjects()
         nModel.scale(worldScale);
         navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
     }
-    glDisable(GL_DEPTH_TEST);
+    // glDisable(GL_DEPTH_TEST);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    contactsRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);
-    glDisable(GL_BLEND);
+    //----------------Contacts-----------------
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // contactsRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);
+    // glDisable(GL_BLEND);
 
     //-----------Draw axes-------------
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
-    glViewport(viewport[2]-100,0,100,100);
+    glViewport(viewport[2]-150,0,120,120);
 
     QMatrix4x4 axesView;
     QMatrix4x4 axesProjection;
     QMatrix4x4 axesModel;
 
-    // m_axesThumbnailCamera.setDistance(35);
+    m_axesThumbnailCamera.setDistance(25);
     axesView = m_axesThumbnailCamera.m_view;
     axesProjection.perspective(m_camera.fov(), 100/100, 1.0f, 11000.0f);
-
     m_coordAxesRenderImpl.render(this, axesModel, axesView, axesProjection, m_shaderProgramMap);
 
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 
+
+ /*
     //-----------Draw selection rect-------------
     if(!m_shaderProgramMap.contains("static_sec")) return;
 
@@ -250,67 +251,67 @@ void GraphicsScene3dRenderer::drawObjects()
     shaderProgram->release();
 
     //-----------Draw scene bounding box-------------
-    // if (gridVisibility_) {
-    //     if(!m_shaderProgramMap.contains("static")) return;
+    if (gridVisibility_) {
+        if(!m_shaderProgramMap.contains("static")) return;
 
-    //     auto shaderProgram = m_shaderProgramMap["static"];
-    //     if (!shaderProgram->bind()){
-    //         qCritical() << "Error binding shader program.";
-    //         return;
-    //     }
+        auto shaderProgram = m_shaderProgramMap["static"];
+        if (!shaderProgram->bind()){
+            qCritical() << "Error binding shader program.";
+            return;
+        }
 
-    //     QVector<QVector3D> boundingBox{
-    //         // Bottom horizontal edges
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
+        QVector<QVector3D> boundingBox{
+            // Bottom horizontal edges
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
 
-    //         //Top horizontal edges
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            //Top horizontal edges
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
 
-    //         // Vertical Edges
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-    //         {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()}
-    //     };
+            // Vertical Edges
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
+            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()}
+        };
 
-    //     int posLoc    = shaderProgram->attributeLocation("position");
-    //     int matrixLoc = shaderProgram->uniformLocation("matrix");
-    //     int colorLoc  = shaderProgram->uniformLocation("color");
+        int posLoc    = shaderProgram->attributeLocation("position");
+        int matrixLoc = shaderProgram->uniformLocation("matrix");
+        int colorLoc  = shaderProgram->uniformLocation("color");
 
-    //     shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(0.0f, 104.0f, 145.0f, 0.0f)));
-    //     shaderProgram->setUniformValue(matrixLoc, m_projection*view*m_model);
-    //     shaderProgram->enableAttributeArray(posLoc);
-    //     shaderProgram->setAttributeArray(posLoc, boundingBox.constData());
+        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(0.0f, 104.0f, 145.0f, 0.0f)));
+        shaderProgram->setUniformValue(matrixLoc, m_projection*view*m_model);
+        shaderProgram->enableAttributeArray(posLoc);
+        shaderProgram->setAttributeArray(posLoc, boundingBox.constData());
 
-    //     glEnable(GL_DEPTH_TEST);
-    //     glLineWidth(2.0f);
-    //     glDrawArrays(GL_LINES, 0, boundingBox.size());
-    //     glLineWidth(1.0f);
-    //     glDisable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST);
+        glLineWidth(2.0f);
+        glDrawArrays(GL_LINES, 0, boundingBox.size());
+        glLineWidth(1.0f);
+        glDisable(GL_DEPTH_TEST);
 
-    //     shaderProgram->disableAttributeArray(posLoc);
-    //     shaderProgram->release();
-    // }
+        shaderProgram->disableAttributeArray(posLoc);
+        shaderProgram->release();
+    }
 
-    // 绘制框选区域
+    //绘制框选区域
     if (m_isBoxSelecting) {
         if(!m_shaderProgramMap.contains("static")) return;
 
@@ -332,7 +333,7 @@ void GraphicsScene3dRenderer::drawObjects()
         const float halfHeight = viewport[3] / 2.0f;
         
         // 计算框选矩形的四个顶点
-        QVector<QVector2D> rectVert = { 
+        QVector<QVector2D> rectVert = {
             { (m_boxSelectStart.x() / halfWidth) - 1.0f, (m_boxSelectStart.y() / halfHeight) - 1.0f },
             { (m_boxSelectEnd.x() / halfWidth) - 1.0f,   (m_boxSelectStart.y() / halfHeight) - 1.0f },
             { (m_boxSelectEnd.x() / halfWidth) - 1.0f,   (m_boxSelectEnd.y() / halfHeight) - 1.0f },
@@ -345,4 +346,6 @@ void GraphicsScene3dRenderer::drawObjects()
 
         glEnable(GL_DEPTH_TEST);
     }
+*/
+
 }

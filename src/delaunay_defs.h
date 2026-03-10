@@ -50,13 +50,13 @@ struct TriResult {
 };
 
 struct Triangle {
-    size_t a, b, c;          // indices of vertices in points[]
-    Point circumcenter;      // Center of circumcircle 外接圆圆心
-    double circumradius2;    // Squared radius of circumcircle 外接圆半径的平方
+    size_t a, b, c;          // 三角形的顶点下标
+    Point circumcenter;      // 外接圆圆心
+    double circumradius2;    // 外接圆半径的平方
     bool is_bad = false;
     double longest_edge_dist;
 
-    // Construct and compute circumcircle from indexed points
+    // 创建一个三角形对象，并在创建时完成：顶点排序 + 初始化状态 + 计算外接圆
     Triangle(size_t ia, size_t ib, size_t ic, const std::vector<Point> &points) {
         std::array<size_t,3> v = {ia, ib, ic};
         std::sort(v.begin(), v.end());
@@ -81,7 +81,7 @@ struct Triangle {
         return std::vector<Edge>() = {{a, b}, {b, c}, {a, c}};
     }
 
-    // Compute a robust circumcircle; fallback on collinear triangles
+    // 计算三角形外接圆
     void computeCircumcircle(const std::vector<Point> &pts) {
         const Point &A = pts[a];
         const Point &B = pts[b];
@@ -107,7 +107,7 @@ struct Triangle {
         // Compute twice signed area of triangle ABC
         double area2 = (B.x - A.x)*(C.y - A.y) - (B.y - A.y)*(C.x - A.x);
         if (std::fabs(area2) < COLLINEAR_EPS) {
-            // Collinear fallback: choose the longest edge
+            // 如果三点共线，则外接圆半径为最长边
             if (dAB >= dBC && dAB >= dCA) {
                 circumcenter = {(A.x+B.x)/2.0, (A.y+B.y)/2.0, ZERO_LEVEL};
                 circumradius2 = dAB/4.0;
@@ -122,7 +122,7 @@ struct Triangle {
             return;
         }
 
-        // Standard circumcircle via perpendicular bisector intersection
+        // 通过垂直平分线交点确定的标准外接圆
         double A1 = B.x - A.x;
         double B1 = B.y - A.y;
         double C1 = C.x - A.x;
@@ -138,13 +138,14 @@ struct Triangle {
         circumradius2 = dx*dx + dy*dy;
     }
 
-    // Check if a point lies inside the circumcircle
+    // 点p是否在三角形外接圆内
     bool containsInCircumcircle(const Point &p) const {
         double dx = p.x - circumcenter.x;
         double dy = p.y - circumcenter.y;
         return (dx * dx + dy * dy) <= circumradius2;
     }
 
+    //判断某个点索引idx是否是当前三角形的顶点之一
     bool containsVertex(size_t idx) {
         return a == idx || b == idx || c == idx;
     }

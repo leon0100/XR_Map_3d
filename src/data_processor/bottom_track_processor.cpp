@@ -337,7 +337,7 @@ void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1,
 }
 
 void BottomTrackProcessor::bottomTrackProcessing_CSV(const DatasetChannel &channel1,
-                                                     const BottomTrackParam& btP, bool manual, bool redrawAll)
+                                const BottomTrackParam& btP, bool manual, bool redrawAll)
 {
     // qDebug() << "bottomTrackProcessing_CSV::bottomTrackProcessing...........";
     QMetaObject::invokeMethod(dataProcessor_, "postLastBottomTrackEpochChanged", Qt::QueuedConnection,

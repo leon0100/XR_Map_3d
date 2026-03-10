@@ -136,7 +136,6 @@ public:
 
     bool channelsListIsEmpty() const {
         QReadLocker locker(&lock_);
-
         return channelsSetup_.isEmpty();
     }
 
