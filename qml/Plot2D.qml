@@ -1147,7 +1147,6 @@ WaterFall {
         }
 
         CheckButton {
-            icon.source: "qrc:/icons/ui/eraser.svg"
             backColor: theme.controlBackColor
             implicitWidth: theme.controlHeight
 

@@ -38,31 +38,31 @@ ApplicationWindow  {
     }
 
 
-    // menuBar: MenuBar_XR {
-    //    id: menuToolBar
-
-    //    onFullScreenToggled: function(isFull) {
-    //        window.visibility = isFull ? Window.FullScreen : Window.Windowed
-    //    }
-    // }
+    MenuBar_XR {
+       id: menuToolBar
+       visible: false
+    }
 
     header: ToolBar_XR {
         id: toolBarXR
-        Component.onCompleted: toolBarXR.targetPlot = waterViewFirst //把qPlot2D类与ToolBar_XR绑定
+        Component.onCompleted: {
+            toolBarXR.menuPopup = menuToolBar
+            toolBarXR.targetPlot = waterViewFirst //把qPlot2D类与ToolBar_XR绑定
+        }
     }
 
     footer: Rectangle {
         height: footHeight
         color: "#88363636"
-        opacity: 0.4
 
         RowLayout {
             anchors.fill: parent
             anchors.margins: 1
 
             Label {
-                text: qsTr("Lat:%1°   Lon:%2°").arg(renderer.currLat.toFixed(6)).arg(renderer.currLon.toFixed(6))
+                text: qsTr(" Lat:%1°   Lon:%2°").arg(renderer.currLat.toFixed(6)).arg(renderer.currLon.toFixed(6))
                 color: "white"
+                font.bold: true
                 font.pixelSize: footHeight * 0.55
             }
 
@@ -76,6 +76,7 @@ ApplicationWindow  {
             Label {
                 text: qsTr(" Zoom: %1").arg(core.currMapLevel)
                 color: "white"
+                font.bold: true
                 font.pixelSize: footHeight * 0.55
             }
         }
@@ -754,7 +755,6 @@ ApplicationWindow  {
                     }
 
                     CheckButton {
-                        icon.source: "qrc:/icons/ui/eraser.svg"
                         backColor: theme.controlBackColor
                         checkable: false
                         implicitWidth: theme.controlHeight
@@ -799,8 +799,7 @@ ApplicationWindow  {
                     Plot2D {
                         id: waterViewFirst
                         Layout.fillHeight: true
-                        Layout.fillWidth: true
-
+                        Layout.fillWidth:  true
                         Layout.rowSpan   : 1
                         Layout.columnSpan: 1
                         focus: true
@@ -820,7 +819,6 @@ ApplicationWindow  {
 
                     Plot2D {
                         id: waterViewSecond
-
                         enabled: menuBar.numPlots === 2
                         visible: menuBar.numPlots === 2
 

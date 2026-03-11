@@ -188,16 +188,17 @@ int main(int argc, char *argv[])
     engine.load(url);
     qCritical() << "App is created";
 
-    QScreen *screen = QGuiApplication::primaryScreen();
-    QSize size = screen->size();                 // 分辨率（像素）
-    QRect geometry = screen->geometry();         // 屏幕区域
-    qreal dpi = screen->logicalDotsPerInch();    // 逻辑 DPI
-    qreal dpiPhysical = screen->physicalDotsPerInch(); // 物理 DPI
-    qreal ratio = screen->devicePixelRatio();    // 像素比
-    qDebug() << "屏幕分辨率(px):" << size.width() << "x" << size.height();
-    qDebug() << "屏幕geometry:" << geometry;
-    qDebug() << "逻辑DPI:" << dpi;
-    qDebug() << "物理DPI:" << dpiPhysical;
-    qDebug() << "devicePixelRatio:" << ratio;
+    // QScreen *screen = QGuiApplication::primaryScreen();
+    // QSize size = screen->size();                 // 分辨率（像素）
+    // QRect geometry = screen->geometry();         // 屏幕区域
+    // qreal dpi = screen->logicalDotsPerInch();    // 逻辑 DPI
+    // qreal dpiPhysical = screen->physicalDotsPerInch(); // 物理 DPI
+    // qreal ratio = screen->devicePixelRatio();    // 像素比
+    // qDebug() << "屏幕分辨率(px):" << size.width() << "x" << size.height();
+    // qDebug() << "屏幕geometry:" << geometry;
+    // qDebug() << "逻辑DPI:" << dpi;
+    // qDebug() << "物理DPI:" << dpiPhysical;
+    // qDebug() << "devicePixelRatio:" << ratio;
+
     return app.exec();
 }

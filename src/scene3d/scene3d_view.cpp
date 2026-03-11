@@ -873,13 +873,11 @@ void GraphicsScene3dView::setPolygonEditingMode()
 
 void GraphicsScene3dView::setDataset(Dataset *dataset)
 {
-    if (!dataset) {
+    if (!dataset || !datasetPtr_) {
         return;
     }
 
-    if (datasetPtr_) {
-        QObject::disconnect(datasetPtr_);
-    }
+    QObject::disconnect(datasetPtr_);
 
     datasetPtr_ = dataset;
 

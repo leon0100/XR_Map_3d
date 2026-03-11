@@ -20,9 +20,8 @@ void CoordinateAxes::setPosition(const QVector3D &pos)
     Q_EMIT changed();
 }
 
-void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions *ctx,
-                                                                const QMatrix4x4 &mvp,
-                                                                const QMap<QString, std::shared_ptr<QOpenGLShaderProgram> > &shaderProgramMap) const
+void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions *ctx, const QMatrix4x4 &mvp,
+                    const QMap<QString, std::shared_ptr<QOpenGLShaderProgram> > &shaderProgramMap) const
 {
     if(!shaderProgramMap.contains("static"))
         return;
@@ -65,11 +64,10 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     TextRenderer::instance().render3D(QString('z'), 0.07, axis_z.last(), QVector3D(0.0f,1.0f,0.0f),ctx,mvp,shaderProgramMap);
 }
 
+
 void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions *ctx,
-                                                                const QMatrix4x4 &model,
-                                                                const QMatrix4x4 &view,
-                                                                const QMatrix4x4 &projection,
-                                                                const QMap<QString,std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
+                            const QMatrix4x4 &model, const QMatrix4x4 &view, const QMatrix4x4 &projection,
+                            const QMap<QString,std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
 {
     if(!shaderProgramMap.contains("static"))
         return;
@@ -88,15 +86,16 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     shaderProgram->setUniformValue(matrixLoc, projection * view * model );
     shaderProgram->enableAttributeArray(posLoc);
 
-    QVector<QVector3D> axis_x{{0.0f, 0.0f, 0.0f},       {m_position.x()+10.0f, m_position.y(),       m_position.z()}};
-    QVector<QVector3D> axis_y{{0.0f, 0.0f, 0.0f},       {m_position.x(),       m_position.y()+10.0f, m_position.z()}};
-    QVector<QVector3D> axis_z{{0.0f, 0.0f, 0.0f},       {m_position.x(),       m_position.y(),       m_position.z()+10.0f}};
+    QVector<QVector3D> axis_x{{0.0f, 0.0f, 0.0f}, {m_position.x()+10.0f, m_position.y(),       m_position.z()}};
+    QVector<QVector3D> axis_y{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y()+10.0f, m_position.z()}};
+    QVector<QVector3D> axis_z{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y(),       m_position.z()+10.0f}};
 
-    ctx->glLineWidth(4.0f);
+    ctx->glLineWidth(8.0f);
     shaderProgram->setAttributeArray(posLoc, axis_x.constData());
     shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(239, 55, 82)));
     ctx->glDrawArrays(GL_LINE_STRIP, 0, axis_x.size());
     shaderProgram->setAttributeArray(posLoc, axis_y.constData());
+
     shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(109, 157, 30)));
     ctx->glDrawArrays(GL_LINE_STRIP, 0, axis_y.size());
     shaderProgram->setAttributeArray(posLoc, axis_z.constData());
@@ -122,7 +121,8 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     yLabelPos.setY(vport.height() - yLabelPos.y());
     zLabelPos.setY(vport.height() - zLabelPos.y());
 
-    TextRenderer::instance().render("n", scale, xLabelPos, false, ctx, textProjection,shaderProgramMap);
-    TextRenderer::instance().render("e", scale, yLabelPos, false, ctx, textProjection,shaderProgramMap);
-    TextRenderer::instance().render("a", scale, zLabelPos, false, ctx, textProjection,shaderProgramMap);
+    TextRenderer::instance().render("X", scale, xLabelPos, false, ctx, textProjection,shaderProgramMap);
+    TextRenderer::instance().render("Y", scale, yLabelPos, false, ctx, textProjection,shaderProgramMap);
+    TextRenderer::instance().render("Z", scale, zLabelPos, false, ctx, textProjection,shaderProgramMap);
+
 }

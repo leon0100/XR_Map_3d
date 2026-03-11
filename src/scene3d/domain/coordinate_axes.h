@@ -20,14 +20,12 @@ public:
         CoordinateAxesRenderImplementation();
         virtual ~CoordinateAxesRenderImplementation();
         virtual void render(QOpenGLFunctions* ctx,
-                          const QMatrix4x4& mvp,
-                          const QMap <QString, std::shared_ptr <QOpenGLShaderProgram>>& shaderProgramMap) const override;
+                        const QMatrix4x4& mvp,
+                        const QMap <QString, std::shared_ptr <QOpenGLShaderProgram>>& shaderProgramMap) const override;
 
         virtual void render(QOpenGLFunctions* ctx,
-                            const QMatrix4x4& model,
-                            const QMatrix4x4& view,
-                            const QMatrix4x4& projection,
-                            const QMap <QString, std::shared_ptr <QOpenGLShaderProgram>>& shaderProgramMap) const override;
+                        const QMatrix4x4& model,const QMatrix4x4& view,const QMatrix4x4& projection,
+                        const QMap <QString, std::shared_ptr <QOpenGLShaderProgram>>& shaderProgramMap) const override;
     private:
         friend class CoordinateAxes;
         QVector3D m_position = {0.0f, 0.0f, 0.0f};

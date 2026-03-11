@@ -5,11 +5,11 @@ import QtQuick.Layouts 1.3
 ColumnLayout {
     id: root
 
-    function loadComponent(path : url){
+    function loadComponent(path : url) {
         loader.setSource(path)
     }
 
-    function reset(){
+    function reset() {
         loader.setSource(initialComponent)
     }
 

@@ -12,9 +12,6 @@
         <file>icons/ui/direction.svg</file>
         <file>icons/ui/direction_arrows.svg</file>
         <file>icons/ui/direction_horizontal.svg</file>
-        <file>icons/ui/double_route.svg</file>
-        <file>icons/ui/eraser.svg</file>
-        <file>icons/ui/eye_cog.svg</file>
         <file>icons/ui/file.svg</file>
         <file>icons/ui/file_download.svg</file>
         <file>icons/ui/file_export.svg</file>
@@ -94,5 +91,6 @@
         <file>XR/TOSLON2.png</file>
         <file>XR/serialPort.png</file>
         <file>XR/boat.png</file>
+	<file>XR/config.png</file>
     </qresource>
 </RCC>

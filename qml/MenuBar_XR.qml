@@ -1,133 +1,208 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Window 2.15
 
-MenuBar {
-    id: root
-    height: barHeight
+Popup {
+    id: mainMenuPopup
 
-    // ================== 全局参数 ==================
-    readonly property int barHeight: 72
+    width: menuSize
+    height: menuSize * 0.75
+    x: start
+    y: start
+    padding: 10
 
-    readonly property int menuBarHeight: barHeight
-    readonly property int menuItemHeight: barHeight - 2
-    readonly property int menuItemWidth: barHeight * 2
 
-    signal openClicked()
-    signal fullScreenToggled(bool isFull)
-
-    delegate: MenuBarItem {
-        id: barItem
-        implicitHeight: menuBarHeight
-        contentItem: Text {
-            text: barItem.text
-            font.pixelSize: barHeight * 0.5
-            font.bold: true
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-        }
-        background: Rectangle {
-            color: barItem.highlighted ? "#87ceff" : "transparent"
-        }
+    background: Rectangle {
+        color: "#ffffff"
+        border.color: "#d0d0d0"
+        radius: 4
+        layer.enabled: true
     }
 
-    Component {
-        id: myMenuItemDelegate
+    property int menuSize: Math.min(Screen.width, Screen.height) * 0.2
+    property int itemFontSize: menuSize / 6
+    property int start: 2
+
+    // 内容区域：使用 Column 布局
+    contentItem: Column {
+        width: parent.availableWidth
+        spacing: 2
+
+        // 菜单项 1------------------------------------------
         MenuItem {
-            id: mItem
-            implicitWidth:  menuItemWidth
-            implicitHeight: menuItemHeight
+            text: qsTr("File")
+            width: parent.width
+            font.pixelSize: itemFontSize
 
-            arrow: Text {
-                x: mItem.width - width - 10
-                y: (mItem.height - height) / 2
-                text: "›"
-                font.pixelSize: barHeight * 0.4
+            onClicked: fileSubMenu.open()
+
+            Menu {
+                id: fileSubMenu
+                width: parent.width
+                x: parent.width + start
+                y: 0
+
+                MenuItem {
+                    text: qsTr("Open")
+                    font.pixelSize: itemFontSize
+                    onClicked: core.openFileFromMenu()
+                }
+
+                MenuItem {
+                    text: qsTr("Save")
+                    font.pixelSize: itemFontSize
+                }
+
+                MenuItem {
+                    text: qsTr("Exit")
+                    font.pixelSize: itemFontSize
+                    onClicked: Qt.quit()
+                }
             }
-
-            contentItem: Text {
-                text: mItem.text
-                font.pixelSize: barHeight * 0.4
-                verticalAlignment: Text.AlignVCenter
-                leftPadding: 10
-            }
-            background: Rectangle {
-                color: mItem.highlighted ? "#87ceff" : "transparent"
-            }
-        }
-    }
-
-
-
-
-/*----------------------------------------------------------------------*/
-    Menu {
-        title: qsTr("File")
-        delegate: myMenuItemDelegate
-
-        MenuItem {
-            text: qsTr("Open")
-            onTriggered:core.openFileFromMenu()
-        }
-
-        Menu {
-            title: qsTr("Save")
-            delegate: myMenuItemDelegate
-            MenuItem { text: qsTr("Chinese") }
-            MenuItem { text: qsTr("English") }
         }
 
         MenuSeparator {
-            contentItem: Rectangle { implicitHeight: 1; color: "#e0e0e0" }
+            width: parent.width;
+            contentItem: Rectangle {
+                implicitHeight: 1;
+                color: "#c0c0c0"
+            }
         }
 
+
+
+        // 菜单项 2--------------------------------------------------------
         MenuItem {
-            text: qsTr("Exit")
-            onTriggered: Qt.quit()
+            text: qsTr("Settings")
+            width: parent.width + start
+            font.pixelSize: itemFontSize
+            onClicked: settingsSubMenu.open()
+
+            Menu {
+                id: settingsSubMenu
+                width: parent.width
+                x: parent.width + start
+                y: 0
+
+                MenuItem {
+                    text: qsTr("Language")
+                    font.pixelSize: itemFontSize
+                    onClicked: langSubsubMenu.open()
+
+                    Menu {
+                        id: langSubsubMenu
+                        width: parent.width
+                        x: 0
+                        // y: 0
+
+                        MenuItem {
+                            text: qsTr("English")
+                            font.pixelSize: itemFontSize
+                        }
+
+                        MenuItem {
+                            text: qsTr("Chinese")
+                            font.pixelSize: itemFontSize
+                        }
+                    }
+
+                }
+
+                MenuItem {
+                    text: qsTr("Map")
+                    font.pixelSize: itemFontSize
+                    onClicked: mapSubsubMenu.open()
+
+
+                    Menu {
+                        id: mapSubsubMenu
+                        width: parent.width
+                        x: 0
+
+                        MenuItem {
+                            text: qsTr("OpenStreet")
+                            font.pixelSize: itemFontSize
+                        }
+
+                        MenuItem {
+                            text: qsTr("Google")
+                            font.pixelSize: itemFontSize
+                        }
+
+                        MenuItem {
+                            text: qsTr("User Defined")
+                            font.pixelSize: itemFontSize
+                        }
+                    }
+                }
+
+                MenuItem {
+                    text: qsTr("Units")
+                    font.pixelSize: itemFontSize
+                    onClicked: unitsSubsubMenu.open()
+
+                    Menu {
+                        id: unitsSubsubMenu
+                        width: parent.width
+                        x: 0
+
+                        MenuItem {
+                            text: qsTr("Metres")
+                            font.pixelSize: itemFontSize
+                        }
+
+                        MenuItem {
+                            text: qsTr("Feet")
+                            font.pixelSize: itemFontSize
+                        }
+                    }
+                }
+            }
+
         }
+
+        MenuSeparator {
+            width: parent.width
+            contentItem: Rectangle {
+                implicitHeight: 1
+                color: "#c0c0c0"
+            }
+        }
+
+
+
+
+
+        // 菜单项 3---------------------------------------------------
+        MenuItem {
+            text: qsTr("Help")
+            width: parent.width
+            font.pixelSize: itemFontSize
+            onClicked: helpSubMenu.open()
+
+            Menu {
+                id: helpSubMenu
+                width: parent.width
+                x: parent.width + start
+                y: 0
+
+                MenuItem {
+                    text: qsTr("Registration")
+                    font.pixelSize: itemFontSize
+                }
+
+                MenuItem {
+                    text: qsTr("About")
+                    font.pixelSize: itemFontSize
+                }
+
+            }
+        }
+
+
+
+
+
     }
 
-    Menu {
-        title: qsTr("Setting")
-        delegate: myMenuItemDelegate
-
-        Menu {
-            title: qsTr("Language")
-            delegate: myMenuItemDelegate
-            MenuItem { text: qsTr("English") }
-            MenuItem { text: qsTr("Chinese") }
-        }
-
-        Menu {
-            title: qsTr("Map")
-            delegate: myMenuItemDelegate
-
-            MenuItem { text: qsTr("Openstreet") }
-            MenuItem { text: qsTr("User Defined") }
-        }
-
-
-        Menu {
-            title: qsTr("Units")
-            delegate: myMenuItemDelegate
-
-            MenuItem { text: qsTr("Metres") }
-            MenuItem { text: qsTr("Feet") }
-        }
-    }
-
-    Menu {
-        title: qsTr("Help")
-        delegate: myMenuItemDelegate
-
-        Menu {
-            title: qsTr("Registration")
-        }
-
-        Menu {
-            title: qsTr("About")
-        }
-
-    }
 }
-
-

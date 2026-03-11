@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
+import QtQuick.Layouts 1.15
 
 import Bluetooth 1.0
 
@@ -15,7 +16,7 @@ Rectangle {
     signal openClicked()
     signal saveClicked()
 
-
+    property  var    menuPopup:     null
     property  var    targetPlot:    null
     property  var    lastItem:      menuSettings
     property  bool   is3DVisible:   visible3DButton.checked
@@ -27,8 +28,7 @@ Rectangle {
     property  string filePath:      devSettings.filePath
     property  bool   extraInfoVis:  appSettings.extraInfoVis
     property  bool   autopilotInfofVis: appSettings.autopilotInfofVis
-
-    property int iconSize: Math.min(Screen.width, Screen.height) * 0.05
+    property  int    iconSize: Math.min(Screen.width, Screen.height) * 0.05
 
     signal languageChanged(string langStr)
     signal menuBarSettingOpened()
@@ -92,7 +92,51 @@ Rectangle {
     Row {
         anchors.fill: parent
         anchors.margins: 2
-        spacing: 2
+        spacing: 3
+
+        MenuButton {  //菜单
+            id: menuBtn
+            icon.source: "qrc:/XR/config.png"
+            icon.width:  toolBar_XR.iconSize
+            icon.height: toolBar_XR.iconSize
+            width:       toolBar_XR.iconSize
+            height:      toolBar_XR.iconSize
+
+            CMouseOpacityArea {
+                id: btn0
+                toolTipText: qsTr("Menu")
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                radius: 2
+                color: frameSlectBtn.screenMode ? "#a8d8ff" : btn0.containsMouse ? "#d6e6ff" : "transparent"
+            }
+
+            onPressed: {
+                if(menuPopup) {
+                    if (menuPopup.visible) {
+                        menuPopup.close()
+                    } else {
+                        menuPopup.open()
+                    }
+                } else {
+                    console.log("2026menuPopup.........................")
+                }
+
+            }
+        }
+
+        // 垂直分割线
+        Rectangle {
+            width: 2
+            height: parent.height * 0.8
+            color: "#d0d0d0"
+            anchors.verticalCenter: parent.verticalCenter
+
+            // leftMargin: 5
+            // rightMargin: 5
+        }
 
         MenuButton {  // 截图
             id: frameSlectBtn
