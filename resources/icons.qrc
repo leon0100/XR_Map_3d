@@ -92,5 +92,7 @@
         <file>XR/serialPort.png</file>
         <file>XR/boat.png</file>
 	<file>XR/config.png</file>
+	<file>XR/triangle.svg</file>
+	<file>XR/check.svg</file>
     </qresource>
 </RCC>

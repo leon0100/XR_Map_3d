@@ -16,9 +16,9 @@ Button {
 
     property color baseBackColor: "#f0fff0"
 
-    function mixWithRed(base, t) {
-        return Qt.rgba(base.r * (1-t) + 1.0 * t, base.g * (1-t) + 0.0 * t, base.b * (1-t) + 0.0 * t, base.a);
-    }
+    // function mixWithRed(base, t) {
+    //     return Qt.rgba(base.r * (1-t) + 1.0 * t, base.g * (1-t) + 0.0 * t, base.b * (1-t) + 0.0 * t, base.a);
+    // }
 
 
     background: Rectangle {
@@ -27,9 +27,7 @@ Button {
         height: parent.height
         width: parent.width
 
-        color: control.isKlfLogging
-               ? control.mixWithRed(control.baseBackColor, control.klfTint)
-               : control.baseBackColor
+        color: control.baseBackColor
 
         border.color: theme.controlBorderColor
         border.width: borderWidth

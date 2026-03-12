@@ -43,13 +43,42 @@ ApplicationWindow  {
        visible: false
     }
 
-    header: ToolBar_XR {
-        id: toolBarXR
-        Component.onCompleted: {
-            toolBarXR.menuPopup = menuToolBar
-            toolBarXR.targetPlot = waterViewFirst //把qPlot2D类与ToolBar_XR绑定
+
+    header: Item {
+        id: headerContainer
+        implicitHeight: toolBarExpanded ? toolBarXR.height: 0
+        clip: true
+
+        property bool toolBarExpanded: true
+
+        Behavior on implicitHeight {
+            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+        }
+
+        ToolBar_XR {
+            id: toolBarXR
+            width: parent.width
+            anchors.top: parent.top
+            Component.onCompleted: {
+                toolBarXR.menuPopup = menuToolBar
+                toolBarXR.targetPlot = waterViewFirst  //把qPlot2D类与ToolBar_XR绑定
+            }
+        }
+
+    }
+
+    CollapseRectangle {
+        id: collapseBar
+        anchors.top: expandSate ? toolBarXR.bottom : parent.top
+        property bool expandSate: true
+        isExpanded: expandSate
+        onToggleClicked: {
+            headerContainer.toolBarExpanded = state
+            collapseBar.expandSate = state
         }
     }
+
+
 
     footer: Rectangle {
         height: footHeight
@@ -120,6 +149,7 @@ ApplicationWindow  {
                         visibility: "Windowed"
                     }
                 }
+
             ]
         }
     }

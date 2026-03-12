@@ -109,5 +109,6 @@
         <file>Bluetooth/SerialPort.qml</file>
         <file>Bluetooth/qmldir</file>
         <file>Bluetooth/loading.qml</file>
+        <file>CollapseRectangle.qml</file>
     </qresource>
 </RCC>

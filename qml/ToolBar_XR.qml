@@ -9,7 +9,6 @@ Rectangle {
     id: toolBar_XR
     objectName:  "toolBar_XR"
     height: iconSize + 3
-    // width: parent ? parent.width : 400
     color: "#f5f5f5"
     border.color: "#c0c0c0"
 
@@ -29,6 +28,8 @@ Rectangle {
     property  bool   extraInfoVis:  appSettings.extraInfoVis
     property  bool   autopilotInfofVis: appSettings.autopilotInfofVis
     property  int    iconSize: Math.min(Screen.width, Screen.height) * 0.05
+
+    property color backColor: "#d6e6ff"
 
     signal languageChanged(string langStr)
     signal menuBarSettingOpened()
@@ -68,23 +69,24 @@ Rectangle {
     }
 
     function itemChangeActive(currentItem) {
-        let wasOpen = currentItem.active
-        let lastItemTmp = lastItem
+           let wasOpen = currentItem.active
+           let lastItemTmp = lastItem
 
-        if (currentItem) {
-            currentItem.active = !(currentItem.active)
-        }
+           if (currentItem) {
+               currentItem.active = !(currentItem.active)
+           }
 
-        if (lastItem && lastItem !== currentItem) {
-            lastItem.active = false
-        }
+           if (lastItem && lastItem !== currentItem) {
+               lastItem.active = false
+           }
 
-        lastItem = currentItem
+           lastItem = currentItem
 
-        if (!wasOpen && currentItem.active && (currentItem === menuSettings || currentItem === menuDisplay)) {
-            menuBarSettingOpened()
-        }
-    }
+           if (!wasOpen && currentItem.active && (currentItem === menuSettings || currentItem === menuDisplay)) {
+               menuBarSettingOpened()
+           }
+       }
+
 
 
 
@@ -102,16 +104,12 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            CMouseOpacityArea {
-                id: btn0
-                toolTipText: qsTr("Menu")
-            }
-
-            Rectangle {
-                anchors.fill: parent
-                radius: 2
-                color: frameSlectBtn.screenMode ? "#a8d8ff" : btn0.containsMouse ? "#d6e6ff" : "transparent"
-            }
+            // property bool configMode: false
+            // Rectangle {
+            //     anchors.fill: parent
+            //     radius: 2
+            //     color: menuBtn.configMode ? backColor : "transparent"
+            // }
 
             onPressed: {
                 if(menuPopup) {
@@ -120,10 +118,7 @@ Rectangle {
                     } else {
                         menuPopup.open()
                     }
-                } else {
-                    console.log("2026menuPopup.........................")
                 }
-
             }
         }
 
@@ -133,9 +128,6 @@ Rectangle {
             height: parent.height * 0.8
             color: "#d0d0d0"
             anchors.verticalCenter: parent.verticalCenter
-
-            // leftMargin: 5
-            // rightMargin: 5
         }
 
         MenuButton {  // 截图
@@ -146,16 +138,12 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            CMouseOpacityArea {
-                id: btn1
-                toolTipText: qsTr("Screetshot")
-            }
 
             property bool screenMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: frameSlectBtn.screenMode ? "#a8d8ff" : btn1.containsMouse ? "#d6e6ff" : "transparent"
+                color: frameSlectBtn.screenMode ? backColor : "transparent"
             }
 
             onPressed: {
@@ -179,17 +167,17 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            CMouseOpacityArea {
-                id: btn2
-                toolTipText: qsTr("History Screen")
-            }
+
+            property bool historyScreenMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: btn2.containsMouse ? "#d6e6ff" : "transparent"
+                color: historyScreenBtn.historyScreenMode ? backColor : "transparent"
             }
 
-            onPressed: itemChangeActive(historyScreenBtn)
+            onPressed: {
+                historyScreenMode = !historyScreenMode
+            }
         }
 
         MenuButton {  // 测距
@@ -200,17 +188,21 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            CMouseOpacityArea {
-                id: btn3
-                toolTipText: qsTr("Measure")
-            }
+            // CMouseOpacityArea {
+            //     id: btn3
+            //     toolTipText: qsTr("Measure")
+            // }
+
+            property bool measureMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: btn3.containsMouse ? "#d6e6ff" : "transparent"
+                color: measureBtn.measureMode ? backColor : "transparent"
             }
 
-            onPressed: itemChangeActive(measureBtn)
+            onPressed: {
+                measureMode = !measureMode
+            }
         }
 
         MenuButton { // 定位
@@ -221,17 +213,20 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            CMouseOpacityArea {
-                id: btn4
-                toolTipText: qsTr("Location")
-            }
+            // CMouseOpacityArea {
+            //     id: btn4
+            //     toolTipText: qsTr("Location")
+            // }
+            property bool locationMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: btn4.containsMouse ? "#d6e6ff" : "transparent"
+                color: locationBtn.locationMode ? backColor : "transparent"
             }
 
-            onPressed: itemChangeActive(locationBtn)
+            onPressed: {
+                locationMode = !locationMode
+            }
         }
 
         MenuButton { //兴趣点
@@ -246,13 +241,16 @@ Rectangle {
                 id: btn5
                 toolTipText: qsTr("LandMark")
             }
+            property bool landMarkMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: btn5.containsMouse ? "#d6e6ff" : "transparent"
+                color: landMarkBtn.landMarkMode ? backColor : "transparent"
             }
 
-            onPressed: itemChangeActive(landMarkBtn)
+            onPressed: {
+                landMarkMode = !landMarkMode
+            }
         }
 
         MenuButton { //等值线
@@ -267,13 +265,17 @@ Rectangle {
                 id: btn6
                 toolTipText: qsTr("Contours")
             }
+            property bool contourMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: btn6.containsMouse ? "#d6e6ff" : "transparent"
+                color: contourBtn.contourMode ? backColor : "transparent"
             }
 
-            onPressed: itemChangeActive(contourBtn)
+            onPressed: {
+                contourMode = !contourMode
+                itemChangeActive(contourBtn)
+            }
         }
 
 
@@ -324,9 +326,19 @@ Rectangle {
 
             CMouseOpacityArea {
                 toolTipText: qsTr("SerialPort")
-                onContainsMouseChanged: hoverBackgroundColor
             }
-            onPressed: itemChangeActive(serialPortBtn)
+
+            property bool serialPortMode: false
+            Rectangle {
+                anchors.fill: parent
+                radius: 2
+                color: serialPortBtn.serialPortMode ? backColor : "transparent"
+            }
+
+            onPressed: {
+                serialPortMode = !serialPortMode
+            }
+
         }
 
         MenuButton {
@@ -339,13 +351,19 @@ Rectangle {
 
             CMouseOpacityArea {
                 toolTipText: qsTr("Bluetooth")
-                onContainsMouseChanged: hoverBackgroundColor
+            }
+
+            property bool bluetoothMode: false
+            Rectangle {
+                anchors.fill: parent
+                radius: 2
+                color: blueToothBtn.bluetoothMode ? backColor : "transparent"
             }
 
             onPressed: {
+                bluetoothMode = !bluetoothMode
                 itemChangeActive(blueToothBtn)
-                blueToothBtn = !blueToothBtn
-                blueToothClicked(blueToothBtn.active)
+                blueToothClicked(bluetoothMode)
             }
         }
 
@@ -368,7 +386,7 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: Qt.openUrlExternally("https://www.Toslon.com")
+                onClicked:   Qt.openUrlExternally("https://www.Toslon.com")
             }
         }
 
