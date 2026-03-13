@@ -409,7 +409,6 @@ void BLEManager::setBleLiveScanningVisible(bool visible)
 {
     liveScanVisble_ = visible;
     if(visible) {
-        qDebug() << "BLEManager::setBleLiveScanning............." << visible;
         if(!connected()) {
             startStopScan(true);
         }

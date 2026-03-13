@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 
 Text {
     property bool small: false
-    font: small ? theme.textFontS : theme.textFont
+    // font: small ? theme.textFontS : theme.textFont
     color: theme.textColor
+    font.pixelSize: theme.iconSize
 }

@@ -105,8 +105,8 @@ GridLayout {
                     property int currValue: value
 
                     validator: DoubleValidator {
-                        bottom: Math.min(fixBlackStripesForwardStepsSpinBox.from, fixBlackStripesForwardStepsSpinBox.to)
-                        top:  Math.max(fixBlackStripesForwardStepsSpinBox.from, fixBlackStripesForwardStepsSpinBox.to)
+                        // bottom: Math.min(fixBlackStripesForwardStepsSpinBox.from, fixBlackStripesForwardStepsSpinBox.to)
+                        // top:  Math.max(fixBlackStripesForwardStepsSpinBox.from, fixBlackStripesForwardStepsSpinBox.to)
                     }
 
                     textFromValue: function(value, locale) {
@@ -137,8 +137,8 @@ GridLayout {
                     property int currValue: value
 
                     validator: DoubleValidator {
-                        bottom: Math.min(fixBlackStripesBackwardStepsSpinBox.from, fixBlackStripesBackwardStepsSpinBox.to)
-                        top:  Math.max(fixBlackStripesBackwardStepsSpinBox.from, fixBlackStripesBackwardStepsSpinBox.to)
+                        // bottom: Math.min(fixBlackStripesBackwardStepsSpinBox.from, fixBlackStripesBackwardStepsSpinBox.to)
+                        // top:  Math.max(fixBlackStripesBackwardStepsSpinBox.from, fixBlackStripesBackwardStepsSpinBox.to)
                     }
 
                     textFromValue: function(value, locale) {
@@ -222,7 +222,7 @@ GridLayout {
                 SpinBoxCustom {
                     visible: false
                     id: sonarOffsetValueZ
-                    spinner: false
+                    // spinner: false
                     implicitWidth: 65
                     from: -9999
                     to: 9999
@@ -341,8 +341,8 @@ GridLayout {
                     property real realValue: value / 100
 
                     validator: DoubleValidator {
-                        bottom: Math.min(bottomTrackGainSlopeValue.from, bottomTrackGainSlopeValue.to)
-                        top:  Math.max(bottomTrackGainSlopeValue.from, bottomTrackGainSlopeValue.to)
+                        // bottom: Math.min(bottomTrackGainSlopeValue.from, bottomTrackGainSlopeValue.to)
+                        // top:  Math.max(bottomTrackGainSlopeValue.from, bottomTrackGainSlopeValue.to)
                     }
 
                     textFromValue: function(value, locale) {
@@ -397,8 +397,8 @@ GridLayout {
                     property real realValue: value / 100
 
                     validator: DoubleValidator {
-                        bottom: Math.min(bottomTrackThresholdValue.from, bottomTrackThresholdValue.to)
-                        top:  Math.max(bottomTrackThresholdValue.from, bottomTrackThresholdValue.to)
+                        // bottom: Math.min(bottomTrackThresholdValue.from, bottomTrackThresholdValue.to)
+                        // top:  Math.max(bottomTrackThresholdValue.from, bottomTrackThresholdValue.to)
                     }
 
                     textFromValue: function(value, locale) {
@@ -535,8 +535,8 @@ GridLayout {
                     property real realValue: value / 1000
 
                     validator: DoubleValidator {
-                        bottom: Math.min(bottomTrackMinRangeValue.from, bottomTrackMinRangeValue.to)
-                        top:    Math.max(bottomTrackMinRangeValue.from, bottomTrackMinRangeValue.to)
+                        // bottom: Math.min(bottomTrackMinRangeValue.from, bottomTrackMinRangeValue.to)
+                        // top:    Math.max(bottomTrackMinRangeValue.from, bottomTrackMinRangeValue.to)
                     }
 
                     textFromValue: function(value, locale) {
@@ -591,8 +591,8 @@ GridLayout {
                     property real realValue: value / 1000
 
                     validator: DoubleValidator {
-                        bottom: Math.min(bottomTrackMaxRangeValue.from, bottomTrackMaxRangeValue.to)
-                        top:  Math.max(bottomTrackMaxRangeValue.from, bottomTrackMaxRangeValue.to)
+                        // bottom: Math.min(bottomTrackMaxRangeValue.from, bottomTrackMaxRangeValue.to)
+                        // top:  Math.max(bottomTrackMaxRangeValue.from, bottomTrackMaxRangeValue.to)
                     }
 
                     textFromValue: function(value, locale) {
@@ -640,7 +640,7 @@ GridLayout {
 
                 SpinBoxCustom {
                     id: bottomTrackSensorOffsetValueX
-                    spinner: false
+                    // spinner: false
                     implicitWidth: 65
                     from: -9999
                     to: 9999
@@ -661,7 +661,7 @@ GridLayout {
 
                 SpinBoxCustom {
                     id: bottomTrackSensorOffsetValueY
-                    spinner: false
+                    // spinner: false
                     implicitWidth: 65
                     from: -9999
                     to: 9999
@@ -682,7 +682,7 @@ GridLayout {
 
                 SpinBoxCustom {
                     id: bottomTrackSensorOffsetValueZ
-                    spinner: false
+                    // spinner: false
                     implicitWidth: 65
                     from: -9999
                     to: 9999

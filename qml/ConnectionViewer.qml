@@ -40,7 +40,7 @@ ColumnLayout
             Item {
                 id: wrapper
                 width: filesList.width;
-                height: theme.controlHeight+4
+                height: theme.menuWidth+4
 
                 Rectangle {
                     anchors.fill: parent
@@ -61,11 +61,11 @@ ColumnLayout
 
                     CheckButton {
                         id: linkSettingsButton
-                        width: theme.controlHeight
-                        height: theme.controlHeight
+                        width: theme.menuWidth
+                        height: theme.menuWidth
                         icon.source: "qrc:/icons/ui/settings.svg"
                         borderWidth: 0
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         ToolTip.visible: hovered
                         ToolTip.text: qsTr("Settings")
@@ -76,7 +76,7 @@ ColumnLayout
                         Layout.alignment: Qt.AlignLeft
                         icon.source: "qrc:/icons/ui/pin.svg"
                         checked: IsPinned
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         onToggled: {
                             linkManagerWrapper.sendUpdatePinnedState(Uuid, checked)
@@ -91,7 +91,7 @@ ColumnLayout
                         Layout.alignment: Qt.AlignLeft
                         icon.source: "qrc:/icons/ui/repeat.svg"
                         checked: ControlType
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         onToggled: {
                             linkManagerWrapper.sendUpdateControlType(Uuid, Number(checked))
@@ -106,7 +106,7 @@ ColumnLayout
                         Layout.alignment: Qt.AlignLeft
                         icon.source: "qrc:/icons/ui/x.svg"
                         checked: false
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         onToggled: {
                             if(checked) {
@@ -177,7 +177,7 @@ ColumnLayout
                         id: autoSpeedCheckBox
                         visible: LinkType == 1
                         icon.source: "qrc:/icons/ui/refresh.svg"
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         checked: AutoSpeedSelection
 
@@ -402,9 +402,9 @@ ColumnLayout
             Layout.bottomMargin: 0
             Layout.fillWidth: true
             Layout.fillHeight: true
-            height: count*theme.controlHeight
-            Layout.preferredHeight: count*(theme.controlHeight+4)
-            Layout.maximumHeight: 10*(theme.controlHeight+4)
+            height: count*theme.menuWidth
+            Layout.preferredHeight: count*(theme.menuWidth+4)
+            Layout.maximumHeight: 10*(theme.menuWidth+4)
             delegate: fileItem
             focus: true
 
@@ -760,7 +760,7 @@ ColumnLayout
                 text: ".."
                 Layout.fillWidth: false
                 //visible: true // connectionTypeCombo.currentText === "File"
-                implicitHeight: theme.controlHeight
+                implicitHeight: theme.menuWidth
                 implicitWidth: implicitHeight*1.1
                 onClicked: importTrackFileDialog.open()
 
@@ -882,7 +882,7 @@ ColumnLayout
             icon.source: "qrc:/icons/ui/propeller_off.svg"
             backColor: theme.controlSolidBackColor
             borderWidth: 0
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
             visible: theme.isFakeCoords
 
             onCheckedChanged: {
@@ -926,7 +926,7 @@ ColumnLayout
             checkable: false
             backColor: theme.controlSolidBackColor
             borderWidth: 0
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onClicked: newFileDialog.open()
 
@@ -964,7 +964,7 @@ ColumnLayout
             checkable: false
             backColor: theme.controlSolidBackColor
             borderWidth: 0
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onClicked: {
                 appendFileDialog.open()
@@ -999,7 +999,7 @@ ColumnLayout
             checkable: false
             backColor: theme.controlSolidBackColor
             borderWidth: 0
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
             onClicked: core.closeLogFile();
         }
     }

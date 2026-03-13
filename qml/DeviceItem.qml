@@ -21,8 +21,8 @@ ColumnLayout {
                 to: 100
                 stepSize: 10
                 value: 0
-                devValue: dev !== null ? dev.chartResolution : 0
-                isValid: dev !== null ? dev.chartSetupState : false
+                // devValue: dev !== null ? dev.chartResolution : 0
+                // isValid: dev !== null ? dev.chartSetupState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -41,8 +41,8 @@ ColumnLayout {
                 to: 15000
                 stepSize: 100
                 value: 0
-                devValue: dev !== null ? dev.chartSamples : 0
-                isValid: dev !== null ? dev.chartSetupState : false
+                // devValue: dev !== null ? dev.chartSamples : 0
+                // isValid: dev !== null ? dev.chartSetupState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -61,8 +61,8 @@ ColumnLayout {
                 to: 10000
                 stepSize: 100
                 value:0
-                devValue: dev !== null ? dev.chartOffset : 0
-                isValid: dev !== null ? dev.chartSetupState : false
+                // devValue: dev !== null ? dev.chartOffset : 0
+                // isValid: dev !== null ? dev.chartSetupState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -85,8 +85,8 @@ ColumnLayout {
                 to: 50000;
                 stepSize: 1000
                 value: 0
-                devValue: dev !== null ? dev.distMax : 0
-                isValid: dev !== null ? dev.distSetupState : false
+                // devValue: dev !== null ? dev.distMax : 0
+                // isValid: dev !== null ? dev.distSetupState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -105,8 +105,8 @@ ColumnLayout {
                 to: 50000
                 stepSize: 100
                 value: 0
-                devValue: dev !== null ? dev.distDeadZone : 0
-                isValid: dev !== null ? dev.distSetupState : false
+                // devValue: dev !== null ? dev.distDeadZone : 0
+                // isValid: dev !== null ? dev.distSetupState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -125,8 +125,8 @@ ColumnLayout {
                 to: 100
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? dev.distConfidence : 0
-                isValid: dev !== null ? dev.distSetupState : false
+                // devValue: dev !== null ? dev.distConfidence : 0
+                // isValid: dev !== null ? dev.distSetupState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -149,8 +149,8 @@ ColumnLayout {
                 to: 5000
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? dev.transPulse : 0
-                isValid: dev !== null ? dev.transcState : false
+                // devValue: dev !== null ? dev.transPulse : 0
+                // isValid: dev !== null ? dev.transcState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -169,8 +169,8 @@ ColumnLayout {
                 to: 6000
                 stepSize: 5
                 value: 0
-                devValue: dev !== null ? dev.transFreq : 0
-                isValid: dev !== null ? dev.transcState : false
+                // devValue: dev !== null ? dev.transFreq : 0
+                // isValid: dev !== null ? dev.transcState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -191,8 +191,8 @@ ColumnLayout {
                 to: 1
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? dev.transBoost : 0
-                isValid: dev !== null ? dev.transcState : false
+                // devValue: dev !== null ? dev.transBoost : 0
+                // isValid: dev !== null ? dev.transcState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -235,8 +235,8 @@ ColumnLayout {
                 to: 4
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? dev.dspHorSmooth : 0
-                isValid: dev !== null ? dev.dspState : false
+                // devValue: dev !== null ? dev.dspHorSmooth : 0
+                // isValid: dev !== null ? dev.dspState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -255,8 +255,8 @@ ColumnLayout {
                 to: 6000
                 stepSize: 5
                 value: 0
-                devValue: dev !== null ? dev.soundSpeed / 1000 : 0
-                isValid: dev !== null ? dev.soundState : false
+                // devValue: dev !== null ? dev.soundSpeed / 1000 : 0
+                // isValid: dev !== null ? dev.soundState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -279,8 +279,8 @@ ColumnLayout {
                 to: 2000
                 stepSize: 50
                 value: 0
-                devValue: dev !== null ? dev.ch1Period : 0
-                isValid: dev !== null ? dev.datasetState : false
+                // devValue: dev !== null ? dev.ch1Period : 0
+                // isValid: dev !== null ? dev.datasetState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -299,8 +299,8 @@ ColumnLayout {
                 to: 1
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? dev.datasetChart === 1 : 0
-                isValid: dev !== null ? dev.datasetState : false
+                // devValue: dev !== null ? dev.datasetChart === 1 : 0
+                // isValid: dev !== null ? dev.datasetState : false
                 editable: false
 
                 onValueChanged: {
@@ -330,8 +330,8 @@ ColumnLayout {
                 to: 2
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? (dev.datasetDist === 1 ? 1 : dev.datasetSDDBT === 1 ? 2 : 0) : 0
-                isValid: dev !== null ? dev.datasetState : false
+                // devValue: dev !== null ? (dev.datasetDist === 1 ? 1 : dev.datasetSDDBT === 1 ? 2 : 0) : 0
+                // isValid: dev !== null ? dev.datasetState : false
                 editable: false
 
                 onValueChanged: {
@@ -366,8 +366,8 @@ ColumnLayout {
                 stepSize: 1
                 editable: false
                 value: 0
-                devValue: dev !== null ? ((dev.datasetEuler & 1) === 1) : 0
-                isValid: dev !== null ? dev.datasetState : false
+                // devValue: dev !== null ? ((dev.datasetEuler & 1) === 1) : 0
+                // isValid: dev !== null ? dev.datasetState : false
 
                 onValueChanged: {
                     if (!isDriverChanged) {
@@ -396,8 +396,8 @@ ColumnLayout {
                 to: 1
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? ((dev.datasetTemp & 1) === 1) : 0
-                isValid: dev !== null ? dev.datasetState : false
+                // devValue: dev !== null ? ((dev.datasetTemp & 1) === 1) : 0
+                // isValid: dev !== null ? dev.datasetState : false
                 editable: false
 
                 onValueChanged: {
@@ -427,8 +427,8 @@ ColumnLayout {
                 to: 1
                 stepSize: 1
                 value: 0
-                devValue: dev !== null ? ((dev.datasetTimestamp & 1) === 1) : 0
-                isValid: dev !== null ? dev.datasetState : false
+                // devValue: dev !== null ? ((dev.datasetTimestamp & 1) === 1) : 0
+                // isValid: dev !== null ? dev.datasetState : false
                 editable: false
 
                 onValueChanged: {

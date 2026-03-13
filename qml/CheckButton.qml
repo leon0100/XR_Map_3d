@@ -17,8 +17,7 @@ Button {
     property string iconSource: ""
     property real   iconScale: 0.80
 
-    implicitHeight: theme.controlHeight
-    //implicitWidth: icon.width + textWidth + leftPadding + rightPadding
+    implicitHeight: theme.menuWidth
 
     icon.source: iconSource
     icon.width:  control.height * iconScale
@@ -29,8 +28,8 @@ Button {
     rightPadding: text === "" ? 2 : 6
     leftPadding: icon.source === "" ? 6 : 2
 
-    //height: theme.controlHeight
-    //width: text === "" ? theme.controlHeight : undefined
+    //height: theme.menuWidth
+    //width: text === "" ? theme.menuWidth : undefined
 
 
     font: theme.textFont

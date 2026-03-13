@@ -873,11 +873,13 @@ void GraphicsScene3dView::setPolygonEditingMode()
 
 void GraphicsScene3dView::setDataset(Dataset *dataset)
 {
-    if (!dataset || !datasetPtr_) {
+    if (!dataset) {
         return;
     }
 
-    QObject::disconnect(datasetPtr_);
+    if(datasetPtr_) {
+        QObject::disconnect(datasetPtr_);
+    }
 
     datasetPtr_ = dataset;
 
@@ -888,21 +890,20 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
     forceUpdateDatasetLlaRef();
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
-                this,      [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll) -> void {
-                    auto chList = datasetPtr_->channelsList();
-                    //暂时注释
-                    // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
-                    //     return;
-                    // }
-                    // clearComboSelectionRect();
-                    m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll);//最终触发了绘制等高线
-
-            }, Qt::DirectConnection);
+            this,  [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll) -> void {
+                auto chList = datasetPtr_->channelsList();
+                //暂时注释
+                // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
+                //     return;
+                // }
+                // clearComboSelectionRect();
+                m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
+        }, Qt::DirectConnection);
 
     QObject::connect(datasetPtr_, &Dataset::updatedLlaRef,this,      [this]() -> void {
-                surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
-                forceUpdateDatasetLlaRef();
-                fitAllInView();
+            surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
+            forceUpdateDatasetLlaRef();
+            fitAllInView();
         }, Qt::DirectConnection);
 }
 
@@ -1168,7 +1169,6 @@ void GraphicsScene3dView::onPositionAdded(uint64_t indx)
     if (!datasetPtr_) {
         return;
     }
-
     auto* epPtr = datasetPtr_->fromIndex(indx);
     if (!epPtr) {
         return;
@@ -1178,7 +1178,6 @@ void GraphicsScene3dView::onPositionAdded(uint64_t indx)
     if (!boatPos.ned.isCoordinatesValid()) {
         return;
     }
-
     boatTrack_->onPositionAdded(indx);
 
     if (float lastYaw = datasetPtr_->getLastYaw(); std::isfinite(lastYaw)) {

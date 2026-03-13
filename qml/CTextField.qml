@@ -6,8 +6,8 @@ TextField {
     property bool small: false
 
     id: control
-    implicitHeight: theme.controlHeight
-    height: theme.controlHeight
+    implicitHeight: theme.menuWidth
+    height: theme.menuWidth
     padding: 0
     rightPadding: 10
     leftPadding: 10

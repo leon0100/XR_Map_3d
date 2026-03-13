@@ -1,60 +1,63 @@
 import QtQuick 2.15
+import QtQuick.Window 2.15
+
 
 Rectangle {
     id: triggerBar
 
-    width: isExpanded ? 300 : 500
-    height: isExpanded ? smallCollapseHeight : bigCollapseHeight
-    color: Qt.rgba(0.2, 0.2, 0.2, 0.6)
+    width:  collapseWidth
+    height: collapseHeight
     anchors.horizontalCenter: parent.horizontalCenter
-    z: 3
-    radius: 4
-    border.color: "#c0c0c0"
-    anchors.topMargin: 3
+    radius: collapseHeight * 0.5
+    color: "#fffafa"
     visible: true
+    z: 3
+    opacity: 0.4
 
-
-    readonly property int bigCollapseHeight: 80
-    readonly property int smallCollapseHeight: 60
-
+    readonly property int collapseWidth: Math.min(Screen.width, Screen.height) * 0.125
+    readonly property int collapseHeight: collapseWidth * 0.125
     property bool isExpanded: true
+    property bool opacityHold: false
 
     signal toggleClicked(bool state)
 
 
-    // 动画配置：监听 width 和 height 的变化
-    Behavior on width { NumberAnimation { duration: 400; easing.type: Easing.OutBack } }
-    Behavior on height { NumberAnimation { duration: 400; easing.type: Easing.OutBack } }
+    Behavior on opacity { NumberAnimation { duration: 200 } }
 
-    // 点击后的逻辑：由小变大 -> 保持 3 秒 -> 变小
     MouseArea {
         anchors.fill: parent
         onClicked: {
-
-
-            // 触发外部逻辑（控制工具栏）
             isExpanded = !isExpanded
             toggleClicked(isExpanded)
 
-            // 如果点击后变大了，启动 3 秒计时器回到小状态
-            if (!isExpanded) {
-                restoreTimer.restart()
-            }
+            opacityHold = true
+            triggerBar.opacity = 0.85
+            opacityHoldTimer.restart()
         }
 
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
-        onEntered: parent.color = "#d0d0d0"
-        onExited: parent.color = "#e0e0e0"
-    }
-
-    // 计时器：3秒后自动恢复“小且细”的状态
-    Timer {
-        id: restoreTimer
-        interval: 3000
-        repeat: false
-        onTriggered: {
-            isExpanded = true
+        onEntered: {
+            if (!opacityHold) {
+                parent.opacity = 0.85
+            }
+        }
+        onExited: {
+            if (!opacityHold) {
+                parent.opacity = 0.4
+            }
         }
     }
+
+    Timer {
+        id: opacityHoldTimer
+        interval: 2000
+        repeat: false
+        onTriggered: {
+            opacityHold = false
+            triggerBar.opacity = 0.4
+        }
+    }
+
+
 }

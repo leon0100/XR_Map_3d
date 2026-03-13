@@ -53,7 +53,7 @@ MenuFrame {
                 icon.source: "qrc:/icons/ui/tag.svg"
                 backColor: theme.menuBackColor
                 borderColor: theme.menuBackColor
-                implicitWidth: theme.controlHeight
+                implicitWidth: theme.menuWidth
                 checkable: false
                 onClicked: {
                     inputDialog.visible = false
@@ -75,7 +75,7 @@ MenuFrame {
                 id: setButton
                 icon.source: "qrc:/icons/ui/plus.svg"
                 backColor: theme.controlBackColor
-                implicitWidth: theme.controlHeight
+                implicitWidth: theme.menuWidth
                 checkable: false
                 onClicked: {
                     inputDialog.accepted = true;
@@ -88,7 +88,7 @@ MenuFrame {
                 id: deleteButton
                 icon.source: "qrc:/icons/ui/x.svg"
                 backColor: theme.controlBackColor
-                implicitWidth: theme.controlHeight
+                implicitWidth: theme.menuWidth
                 checkable: false
                 onClicked: {
                     inputDialog.visible = false;
@@ -103,7 +103,7 @@ MenuFrame {
                 icon.source: "qrc:/icons/ui/gps.svg"
                 backColor: theme.menuBackColor
                 borderColor: theme.menuBackColor
-                implicitWidth: theme.controlHeight
+                implicitWidth: theme.menuWidth
                 checkable: false
                 enabled: false
             }
@@ -121,7 +121,7 @@ MenuFrame {
                 id: copyButton
                 icon.source: "qrc:/icons/ui/click.svg"
                 backColor: theme.controlBackColor
-                implicitWidth: theme.controlHeight
+                implicitWidth: theme.menuWidth
                 checkable: false
                 onClicked: {
                     textEdit.text = latLonText.text
@@ -139,7 +139,7 @@ MenuFrame {
                 icon.source: "qrc:/icons/ui/arrow_bar_down.svg"
                 backColor: theme.menuBackColor
                 borderColor: theme.menuBackColor
-                implicitWidth: theme.controlHeight
+                implicitWidth: theme.menuWidth
                 checkable: false
                 enabled: false
             }

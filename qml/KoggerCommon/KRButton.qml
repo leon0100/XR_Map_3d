@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.3
 RadioButton {
     id: radioDel
     Layout.fillWidth: true
-    implicitHeight: theme.controlHeight
+    implicitHeight: theme.menuWidth
     implicitWidth: 200
 
     contentItem: Text {

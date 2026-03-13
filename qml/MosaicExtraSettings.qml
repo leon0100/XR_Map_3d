@@ -79,7 +79,7 @@ MenuFrame {
                 CText {
                     Layout.fillWidth: true
                     Layout.topMargin: 0
-                    Layout.preferredWidth: theme.controlHeight*1.2
+                    Layout.preferredWidth: theme.menuWidth
                     horizontalAlignment: Text.AlignHCenter
                     text: mosaicLevelsSlider.stopValue
                     small: true
@@ -87,7 +87,7 @@ MenuFrame {
                 ChartLevel {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    Layout.preferredWidth: theme.controlHeight * 1.2
+                    Layout.preferredWidth: theme.menuWidth
                     id: mosaicLevelsSlider
                     Layout.alignment: Qt.AlignHCenter
 
@@ -110,7 +110,7 @@ MenuFrame {
                 }
                 CText {
                     Layout.fillWidth: true
-                    Layout.preferredWidth: theme.controlHeight * 1.2
+                    Layout.preferredWidth: theme.menuWidth
                     Layout.bottomMargin: 0
                     horizontalAlignment: Text.AlignHCenter
 

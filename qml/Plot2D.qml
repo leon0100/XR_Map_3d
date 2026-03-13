@@ -311,7 +311,7 @@ WaterFall {
                     borderColor: theme.controlBackColor
                     checkedBorderColor: theme.controlBorderColor
                     iconSource: "qrc:/icons/ui/settings.svg"
-                    implicitWidth: theme.controlHeight*1.2
+                    implicitWidth: theme.menuWidth
 
                     onCheckedChanged: {
                         if (checked) {
@@ -324,7 +324,7 @@ WaterFall {
                 CText {
                     Layout.fillWidth: true
                     Layout.topMargin: 0
-                    Layout.preferredWidth: theme.controlHeight*1.2
+                    Layout.preferredWidth: theme.menuWidth
                     // visible: chartEnable.checked // TODO
                     horizontalAlignment: Text.AlignHCenter
                     text: echogramLevelsSlider.stopValue
@@ -334,7 +334,7 @@ WaterFall {
                 ChartLevel {
                     // opacity: 0.8
                     Layout.fillWidth: true
-                    Layout.preferredWidth: theme.controlHeight*1.2
+                    Layout.preferredWidth: theme.menuWidth
                     id: echogramLevelsSlider
                     // visible: chartEnable.checked // TODO
                     Layout.alignment: Qt.AlignHCenter
@@ -361,7 +361,7 @@ WaterFall {
 
                 CText {
                     Layout.fillWidth: true
-                    Layout.preferredWidth: theme.controlHeight*1.2
+                    Layout.preferredWidth: theme.menuWidth
                     Layout.bottomMargin: 0
                     // visible: chartEnable.checked // TODO
                     horizontalAlignment: Text.AlignHCenter
@@ -865,8 +865,8 @@ WaterFall {
                             property int currValue: value
 
                             validator: DoubleValidator {
-                                bottom: Math.min(angleRange.from, angleRange.to)
-                                top:  Math.max(angleRange.from, angleRange.to)
+                                // bottom: Math.min(angleRange.from, angleRange.to)
+                                // top:  Math.max(angleRange.from, angleRange.to)
                             }
 
                             textFromValue: function(value, locale) {
@@ -916,8 +916,8 @@ WaterFall {
                             property real realValue: value / 1000
 
                             validator: DoubleValidator {
-                                bottom: Math.min(velocityRange.from, velocityRange.to)
-                                top:  Math.max(velocityRange.from, velocityRange.to)
+                                // bottom: Math.min(velocityRange.from, velocityRange.to)
+                                // top:  Math.max(velocityRange.from, velocityRange.to)
                             }
 
                             textFromValue: function(value, locale) {
@@ -1093,7 +1093,7 @@ WaterFall {
             icon.source: "qrc:/icons/ui/direction_arrows.svg"
             checked: true
             backColor: theme.controlBackColor
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onCheckedChanged: {
                 if (checked) {
@@ -1107,7 +1107,7 @@ WaterFall {
         CheckButton {
             icon.source: "qrc:/icons/ui/arrow_bar_to_down.svg"
             backColor: theme.controlBackColor
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onCheckedChanged: {
                 if (checked) {
@@ -1121,7 +1121,7 @@ WaterFall {
         CheckButton {
             icon.source: "qrc:/icons/ui/pencil.svg"
             backColor: theme.controlBackColor
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onCheckedChanged: {
                 if (checked) {
@@ -1135,7 +1135,7 @@ WaterFall {
         CheckButton {
             icon.source: "qrc:/icons/ui/arrow_bar_to_up.svg"
             backColor: theme.controlBackColor
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onCheckedChanged: {
                 if (checked) {
@@ -1148,7 +1148,7 @@ WaterFall {
 
         CheckButton {
             backColor: theme.controlBackColor
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onCheckedChanged: {
                 if (checked) {
@@ -1162,7 +1162,7 @@ WaterFall {
         CheckButton {
             icon.source: "qrc:/icons/ui/anchor.svg"
             backColor: theme.controlBackColor
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
             checkable: false
 
             onClicked: {
@@ -1181,7 +1181,7 @@ WaterFall {
             icon.source: "qrc:/icons/ui/x.svg"
             backColor: theme.controlBackColor
             checkable: false
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onClicked: {
                 menuBlock.visible = false

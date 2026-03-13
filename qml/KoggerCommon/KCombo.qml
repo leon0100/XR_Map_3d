@@ -8,7 +8,7 @@ ComboBox {
     delegate: ItemDelegate {
         id: itemDelegate
         width: control.width
-        implicitHeight: theme.controlHeight
+        implicitHeight: theme.menuWidth
         contentItem: KText {
             text: modelData
             small: false
@@ -32,8 +32,8 @@ ComboBox {
         id: canvas
         x: control.width - width - control.rightPadding
         y: control.topPadding + (control.availableHeight - height) / 2
-        width: theme.controlHeight/2
-        height: theme.controlHeight/3
+        width: theme.menuWidth/2
+        height: theme.menuWidth/3
         contextType: "2d"
 
         Connections {
@@ -81,7 +81,7 @@ ComboBox {
     background:  Rectangle {
         id: backRect
         implicitWidth: 100
-        implicitHeight: theme.controlHeight
+        implicitHeight: theme.menuWidth
         radius: 1
         color: contentText.highlighted ? theme.controlSolidBackColor : theme.controlBackColor
         border.color: contentText.highlighted ? theme.controlSolidBorderColor : theme.controlBorderColor
@@ -110,7 +110,7 @@ ComboBox {
         background: Rectangle {
             id: popupRect
             implicitWidth: 100
-            implicitHeight: theme.controlHeight
+            implicitHeight: theme.menuWidth
             radius: 1
             color: theme.controlBackColor
             border.color: theme.controlBorderColor

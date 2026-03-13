@@ -18,7 +18,7 @@ Item {
     property  int    numPlots:      appSettings.numPlots
     property  bool   syncPlots:     appSettings.syncPlots
     property  int    instruments:   appSettings.instruments
-    property  int    settingsWidth: theme.controlHeight*20
+    property  int    settingsWidth: theme.menuWidth*20
     property  string filePath:      devSettings.filePath
     property  bool   extraInfoVis:  appSettings.extraInfoVis
     property  bool   autopilotInfofVis: appSettings.autopilotInfofVis
@@ -85,7 +85,7 @@ Item {
         ColumnLayout {
             id: mainLayout
             Layout.alignment: Qt.AlignTop
-            Layout.preferredWidth: theme.controlHeight*1.2
+            Layout.preferredWidth: theme.menuWidth
             Layout.topMargin: 6
             spacing: 4
             Layout.margins: 4
@@ -130,7 +130,7 @@ Item {
 
             CheckButton {
                 id: visible3DButton
-                implicitWidth: theme.controlHeight * 1.2
+                implicitWidth: theme.menuWidth
                 icon.source: "qrc:/icons/ui/map.svg"
                 backColor: theme.controlBackColor
                 borderColor:  theme.controlBackColor
@@ -156,7 +156,7 @@ Item {
 
             CheckButton {
                 id: visible2DButton
-                implicitWidth: theme.controlHeight * 1.2
+                implicitWidth: theme.menuWidth
                 icon.source: "qrc:/icons/ui/ripple.svg"
                 backColor: theme.controlBackColor
                 borderColor:  theme.controlBackColor

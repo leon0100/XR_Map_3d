@@ -2,7 +2,6 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Dialogs 1.3
-// import QtCore
 import Qt.labs.settings 1.1
 
 
@@ -13,18 +12,13 @@ MenuFrame {
 
     property CheckButton isobathsCheckButton
 
-    visible: Qt.platform.os === "android"
-             ? (isobathsCheckButton.isobathsLongPressTriggered || isobathsTheme.activeFocus)
-             : (isobathsCheckButton.hovered                    ||
-                isHovered                                      ||
-                isobathsTheme.activeFocus)
-
-    z: isobathsSettings.visible
-    width: 630
-    height: 550
+    width:  isobathSize
+    height: isobathSize
     margins: 15
+    z: 99
 
-    Layout.alignment: Qt.AlignCenter
+
+    property int isobathSize: theme.screenSize * 0.3
 
     onIsHoveredChanged: {
         if (Qt.platform.os === "android") {
@@ -53,6 +47,8 @@ MenuFrame {
         CButton {
             id: updateBottomTrackButton
             text: qsTr("Processing")
+            font.pixelSize: theme.iconSize
+            height: theme.menuWidth * 0.6
             Layout.fillWidth: true
             onClicked: {
                 if (targetPlot) {
@@ -111,7 +107,7 @@ MenuFrame {
             }
             SpinBoxCustom {
                 id: isobathsEdgeLimitSpinBox
-                implicitWidth: 200
+                implicitWidth: isobathSize * 0.6
                 from: 10
                 to: 1000
                 stepSize: 5
@@ -145,7 +141,7 @@ MenuFrame {
             }
             SpinBoxCustom {
                 id: isobathsSurfaceLineStepSizeSpinBox
-                implicitWidth: 200
+                implicitWidth: isobathSize * 0.6
                 from: 1
                 to: 200
                 stepSize: 1
@@ -195,7 +191,7 @@ MenuFrame {
             }
             SpinBoxCustom {
                 id: extraWidthSpinBox
-                implicitWidth: 200
+                implicitWidth: isobathSize * 0.6
                 from: 5
                 to: 100
                 stepSize: 5
@@ -229,7 +225,7 @@ MenuFrame {
             Slider {
                 id: verticalScaleSlider
                 Layout.fillWidth: true
-                Layout.preferredWidth: 300
+                Layout.preferredWidth: isobathSize * 0.7
                 from: 0.5
                 to: 10.0
                 value: IsobathsViewControlMenuController.verticalScale()

@@ -1,17 +1,30 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
 
 Item {
     id: root
-    width: 600
-    height: 500
+    width: bleSize * 1.1
+    height: bleSize * 0.8
+    z: 99
+
+    property int bleSize: Math.min(Screen.width, Screen.height) * 0.35
+    property int layoutHeight: bleSize * 0.1
+    property int iconSize: bleSize * 0.06
 
     signal signalCheckBoxToggle(int checkBoxId, bool checked)
     signal signalBleOnOff(bool on)
 
-    function slotSetBleConnected(connected) {
-        switchControl.isOn = connected
+    onVisibleChanged: {
+        BleManager.setBleLiveScanningVisible(visible)
+    }
+
+    Connections {
+        target: BleManager
+        function onConnectedChanged(connected) {
+            switchControl.isOn = connected
+        }
     }
 
     Rectangle {
@@ -47,21 +60,39 @@ Item {
                     // 第一个复选框
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        radius: 6
+                        Layout.preferredHeight: layoutHeight
+                        radius: layoutHeight * 0.2
                         color: "#f9f9fb"
                         border.color: "#b0b3b8"
-                        border.width: 1
+                        border.width: 2
+
 
                         CheckBox {
+                            id: check1
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.left: parent.left
-                            anchors.leftMargin: 6
+                            anchors.leftMargin: iconSize * 0.5
                             text: qsTr("Direction Arrow")
                             checked: true
-                            font.pixelSize: 20
-                            onCheckedChanged: root.signalCheckBoxToggle(0,checked)
+                            font.pixelSize: iconSize
+                            onCheckedChanged: root.signalCheckBoxToggle(0, checked)
 
+                            indicator: Rectangle {
+                                implicitWidth: iconSize * 1.1
+                                implicitHeight: iconSize * 1.1
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                radius: 5
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#4CD964"
+                                    visible: check1.checked
+                                }
+                            }
                         }
 
                         MouseArea {
@@ -76,20 +107,38 @@ Item {
                     // 第二个复选框
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        radius: 6
+                        Layout.preferredHeight: layoutHeight
+                        radius: layoutHeight * 0.2
                         color: "#f9f9fb"
                         border.color: "#b0b3b8"
-                        border.width: 1
+                        border.width: 2
 
                         CheckBox {
+                            id: check2
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.left: parent.left
-                            anchors.leftMargin: 20
+                            anchors.leftMargin: iconSize * 0.5
                             text: qsTr("Keep Boat in View")
                             checked: true
-                            font.pixelSize: 16
-                            onCheckedChanged: root.signalCheckBoxToggle(1,checked)
+                            font.pixelSize: iconSize
+                            onCheckedChanged: root.signalCheckBoxToggle(0, checked)
+
+                            indicator: Rectangle {
+                                implicitWidth: iconSize * 1.1
+                                implicitHeight: iconSize * 1.1
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                radius: 5
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#4CD964"
+                                    visible: check2.checked
+                                }
+                            }
                         }
 
                         MouseArea {
@@ -104,22 +153,40 @@ Item {
                     // 第三个复选框
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        radius: 6
+                        Layout.preferredHeight: layoutHeight
+                        radius: layoutHeight * 0.2
                         color: "#f9f9fb"
                         border.color: "#b0b3b8"
-                        border.width: 1
-
+                        border.width: 2
 
                         CheckBox {
+                            id: check3
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.left: parent.left
-                            anchors.leftMargin: 6
+                            anchors.leftMargin: iconSize * 0.5
                             text: qsTr("Show Data Panel")
                             checked: true
-                            font.pixelSize: 20
-                            onCheckedChanged: root.signalCheckBoxToggle(2,checked)
+                            font.pixelSize: iconSize
+                            onCheckedChanged: root.signalCheckBoxToggle(0, checked)
+
+                            indicator: Rectangle {
+                                implicitWidth: iconSize * 1.1
+                                implicitHeight: iconSize * 1.1
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                radius: 5
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#4CD964"
+                                    visible: check3.checked
+                                }
+                            }
                         }
+
 
                         MouseArea {
                             anchors.fill: parent
@@ -140,8 +207,7 @@ Item {
                 Rectangle {
                     id: centerRect
                     color: "transparent"
-                    width: 70
-                    height: mainCol.implicitHeight
+                    width: layoutHeight * 2
                     anchors.centerIn: parent
 
 
@@ -151,33 +217,33 @@ Item {
                         spacing: 2
 
                         Rectangle {
-                            width: 100
-                            height: 30
+                            width: layoutHeight * 2
+                            height: iconSize * 1.1
                             color: "transparent"
                             Text {
                                 anchors.centerIn: parent
                                 text: qsTr("Bluetooth")
-                                font.pixelSize: 20
+                                font.pixelSize: iconSize * 0.9
                                 verticalAlignment: Text.AlignVCenter
                             }
                         }
 
                         Rectangle {
                             id: switchControl
-                            width: 100
-                            height: 50
-                            radius: 10
+                            width:  layoutHeight * 2.2
+                            height: layoutHeight
+                            radius: layoutHeight * 0.3
                             color: hovered ? (switchControl.isOn ? "#4CD964" : "#D6E6FF")
-                                           : (switchControl.isOn ? "#4CD964" : "#E9E9EA")
+                                           : (switchControl.isOn? "#4CD964" : "#E9E9EA")
                             property bool isOn: false
                             property bool hovered: false
 
                             // 滑块
                             Rectangle {
                                 id: slider
-                                width: 64
-                                height: 64
-                                radius: 32
+                                width: layoutHeight
+                                height: layoutHeight
+                                radius: layoutHeight * 0.5
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: switchControl.isOn ? parent.width-width-2 : 2
                                 color: "#FAFAFA"
@@ -198,7 +264,7 @@ Item {
                                     verticalCenter: parent.verticalCenter
                                 }
                                 text: qsTr("ON")
-                                font.pixelSize: 20
+                                font.pixelSize: iconSize
                                 font.bold: true
                                 opacity: switchControl.isOn ? 1 : 0
                                 Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -211,7 +277,7 @@ Item {
                                     verticalCenter: parent.verticalCenter
                                 }
                                 text: qsTr("OFF")
-                                font.pixelSize: 20
+                                font.pixelSize: iconSize
                                 font.bold: true
                                 opacity: switchControl.isOn ? 0 : 1
                                 Behavior on opacity { NumberAnimation { duration: 150 } }
@@ -224,10 +290,7 @@ Item {
                                 onClicked: {
                                     if(switchControl.isOn) {
                                         switchControl.isOn = false;
-                                        root.signalBleOnOff(false);
-                                    }
-                                    else {
-                                        root.signalBleOnOff(true);
+                                        BleManager.disconnectDevice();
                                     }
 
                                 }
@@ -247,7 +310,7 @@ Item {
         }
 
 
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 2; color: "#7f8c8d" }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 3; color: "#7f8c8d" }
 
 
         ColumnLayout
@@ -257,7 +320,7 @@ Item {
 
             Text {
                 anchors.margins: 5
-                font.pixelSize: 20
+                font.pixelSize: iconSize * 0.9
                 text: qsTr("Toslon BLE Devices List:")
                 verticalAlignment: Text.AlignVCenter
             }
@@ -265,10 +328,10 @@ Item {
             // 设备列表
             GroupBox {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 150
+                Layout.preferredHeight: layoutHeight * 3
                 background: Rectangle {
                     color: "#F5F5F5"
-                    radius: 8
+                    radius: layoutHeight * 0.3
                     border.color: "#bdc3c7"
                 }
 
@@ -277,13 +340,12 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 5
                     model: BleManager ? BleManager.devices : ""
-                    // model: typeof BleManager !== 'undefined' && BleManager ? BleManager.devices : []
                     clip: true
 
                     delegate: Rectangle
                     {
                         width: deviceList.width
-                        height: 30
+                        height: layoutHeight * 0.8
                         radius: 4
 
                         readonly property bool noDevices: (modelData === "No Devices Found")
@@ -301,14 +363,14 @@ Item {
                                 Layout.fillWidth: true
                                 text: modelData
                                 color: "#2c3e50"
-                                font.pixelSize: 20
+                                font.pixelSize: iconSize * 0.9
                                 verticalAlignment: Text.AlignVCenter
                             }
                             Text {
                                 visible: !noDevices
                                 text: switchControl.isOn ? "Connected" : "Disconnected"
                                 color: switchControl.isOn ? "#27ae60" : "#7f8c8d"
-                                font.pixelSize: 20
+                                font.pixelSize: iconSize * 0.6
                                 verticalAlignment: Text.AlignVCenter
                             }
                         }

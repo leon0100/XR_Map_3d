@@ -4,7 +4,9 @@
 #include <QObject>
 #include <QFont>
 #include <QColor>
+#include <QGuiApplication>
 #include <QScreen>
+#include <QtAlgorithms>
 #include <QDebug>
 
 
@@ -23,7 +25,6 @@ public:
         isFakeCoords_ = true;
 #endif
 
-        setTheme();
         _isConsoleVisible = false;
     }
 
@@ -47,8 +48,9 @@ public:
     Q_PROPERTY(QColor controlBorderColor READ controlBorderColor NOTIFY changed)
     Q_PROPERTY(QColor controlSolidBackColor READ controlSolidBackColor NOTIFY changed)
     Q_PROPERTY(QColor controlSolidBorderColor READ controlSolidBorderColor NOTIFY changed)
-    Q_PROPERTY(int controlHeight READ controlHeight NOTIFY changed)
-    Q_PROPERTY(int menuWidth READ menuWidth NOTIFY changed)
+    Q_PROPERTY(int screenSize READ screenSize NOTIFY changed)
+    Q_PROPERTY(int menuWidth  READ menuWidth  NOTIFY changed)
+    Q_PROPERTY(int iconSize   READ iconSize  NOTIFY changed)
 
     Q_PROPERTY(int themeID READ themeId WRITE setTheme NOTIFY changed)
 
@@ -82,8 +84,9 @@ public:
     QColor controlBorderColor() { return *_controlBorderColor; }
     QColor controlSolidBackColor() { return *_controlSolidBackColor; }
     QColor controlSolidBorderColor() { return *_controlSolidBorderColor; }
-    int controlHeight() { return _controlHeight; }
-    int menuWidth() { return _menuWidth; }
+    int screenSize() { return screenSize_; }
+    int menuWidth()  { return menuWidth_; }
+    int iconSize()   { return iconSize_;  }
 
     void setTheme(int theme_id = 0) {
         _id = theme_id;
@@ -152,13 +155,19 @@ public:
             _disabledTextColor = new QColor(150, 150, 150);
             _disabledBackColor = new QColor(50, 50, 50);
         }
-#if defined(Q_OS_ANDROID)
-        _controlHeight = 60;
-#elif defined(LINUX_ES)
-        _controlHeight = 38;
-#else
-        _controlHeight = 26;
-#endif
+
+        QScreen *screen = QGuiApplication::primaryScreen();
+        if (screen) {
+            QSize size = screen->size();
+            screenSize_ = qMin(size.width(), size.height());
+            menuWidth_ = screenSize_ * 0.06;
+            iconSize_  = menuWidth_  * 0.3;
+        } else {
+            screenSize_ = 600;
+        }
+
+
+
         emit changed();
     }
 
@@ -207,8 +216,9 @@ protected:
     QColor* _controlBorderColor;
     QColor* _controlSolidBackColor;
     QColor* _controlSolidBorderColor;
-    int32_t _controlHeight;
-    int32_t _menuWidth;
+    int32_t screenSize_;
+    int32_t menuWidth_ = 70;
+    int32_t iconSize_ = 18;
 
     bool _isConsoleVisible;
     int instrumentsGrade_;

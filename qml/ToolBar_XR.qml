@@ -3,7 +3,6 @@ import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 import QtQuick.Layouts 1.15
 
-import Bluetooth 1.0
 
 Rectangle {
     id: toolBar_XR
@@ -23,7 +22,7 @@ Rectangle {
     property  int    numPlots:      appSettings.numPlots
     property  bool   syncPlots:     appSettings.syncPlots
     property  int    instruments:   appSettings.instruments
-    property  int    settingsWidth: theme.controlHeight*20
+    property  int    settingsWidth: theme.menuWidth*20
     property  string filePath:      devSettings.filePath
     property  bool   extraInfoVis:  appSettings.extraInfoVis
     property  bool   autopilotInfofVis: appSettings.autopilotInfofVis
@@ -31,11 +30,14 @@ Rectangle {
 
     property color backColor: "#d6e6ff"
 
+    property bool contourMode: false
+    property bool bluetoothMode: false
+
     signal languageChanged(string langStr)
     signal menuBarSettingOpened()
     signal syncPlotEnabled()
 
-    signal blueToothClicked(bool active)
+    // signal blueToothClicked(bool active)
 
     function updateBottomTrack() {
         appSettings.updateBottomTrack()
@@ -85,7 +87,7 @@ Rectangle {
            if (!wasOpen && currentItem.active && (currentItem === menuSettings || currentItem === menuDisplay)) {
                menuBarSettingOpened()
            }
-       }
+    }
 
 
 
@@ -265,16 +267,16 @@ Rectangle {
                 id: btn6
                 toolTipText: qsTr("Contours")
             }
-            property bool contourMode: false
+
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: contourBtn.contourMode ? backColor : "transparent"
+                color: contourMode ? backColor : "transparent"
             }
 
             onPressed: {
                 contourMode = !contourMode
-                itemChangeActive(contourBtn)
+                // itemChangeActive(contourBtn)
             }
         }
 
@@ -353,17 +355,16 @@ Rectangle {
                 toolTipText: qsTr("Bluetooth")
             }
 
-            property bool bluetoothMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: blueToothBtn.bluetoothMode ? backColor : "transparent"
+                color: bluetoothMode ? backColor : "transparent"
             }
 
             onPressed: {
                 bluetoothMode = !bluetoothMode
-                itemChangeActive(blueToothBtn)
-                blueToothClicked(bluetoothMode)
+                // itemChangeActive(blueToothBtn)
+                // blueToothClicked(bluetoothMode)
             }
         }
 
@@ -390,21 +391,10 @@ Rectangle {
             }
         }
 
-
     }
 
 
 
-    IsobathsExtraSettings {
-        id: isobathsSet
-        isobathsCheckButton: isobathsCheckButton
-        visible: contourBtn.active
-        // anchors.bottom:           isobathsCheckButton.top
-        // anchors.horizontalCenter: isobathsCheckButton.horizontalCenter
-        x: contourBtn.x
-        y: toolBar_XR.iconSize+5
-        z: 2
-    }
 
     // //（串口连接、文件导入等）
     // DeviceSettingsViewer {
@@ -424,18 +414,6 @@ Rectangle {
     //     y: 62
     //     targetPlot: toolBar_XR.targetPlot
     // }
-
-    BleLivedataScanning {
-        id: bleLivedata
-        visible: blueToothBtn.active
-        x: parent.width - width - 10
-        y: toolBar_XR.iconSize+5
-
-        onVisibleChanged: {
-            BleManager.setBleLiveScanningVisible(visible)
-            MapViewControlMenuController.onUpdateClicked()
-        }
-    }
 
 
 }

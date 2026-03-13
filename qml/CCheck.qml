@@ -4,7 +4,7 @@ import QtQuick.Controls 2.15
 CheckBox {
      id: control
      text: qsTr("Check")
-     implicitHeight: theme.controlHeight
+     implicitHeight: theme.menuWidth
 
      indicator: Rectangle {
          id: backRect

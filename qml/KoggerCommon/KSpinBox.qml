@@ -12,7 +12,7 @@ SpinBox {
     font.pixelSize: 16
     padding: 2
 
-    implicitHeight: theme.controlHeight
+    implicitHeight: theme.menuWidth
     implicitWidth: implicitHeight*6
 
     valueFromText: function(text, locale) { return Number.fromLocaleString(locale, text); }

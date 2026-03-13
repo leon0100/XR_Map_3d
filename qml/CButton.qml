@@ -6,7 +6,7 @@ Button {
     text: qsTr("Ok")
     checkable: false
     highlighted: true
-    implicitHeight: theme.controlHeight
+    implicitHeight: theme.menuWidth
     property bool active: (!control.checkable) || (control.checked && control.checkable)
     property var backColor: active ? theme.controlSolidBackColor : theme.controlBackColor
     property int borderRadius: 2

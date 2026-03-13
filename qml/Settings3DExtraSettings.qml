@@ -15,8 +15,7 @@ MenuFrame {
 
     visible: Qt.platform.os === "android"
              ? (settings3DCheckButton.settings3DLongPressTriggered)
-             : (settings3DCheckButton.hovered ||
-                isHovered)
+             : (settings3DCheckButton.hovered || isHovered)
 
     z: settings3DSettings.visible
     Layout.alignment: Qt.AlignCenter
@@ -53,6 +52,7 @@ MenuFrame {
 
             CText {
                 text: qsTr("3d scene settings")
+                font.pixelSize: theme.iconSize
             }
 
             Rectangle {
@@ -87,6 +87,7 @@ MenuFrame {
             checkedBorderColor: theme.controlBorderColor
             iconSource: "qrc:/icons/ui/location_pin.svg"
             text: qsTr("North mode")
+            font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 
             onToggled: {
@@ -114,6 +115,7 @@ MenuFrame {
             checkedBorderColor: theme.controlBorderColor
             iconSource: "qrc:/icons/ui/click.svg"
             text: qsTr("Sync with echogram")
+            font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 
             onToggled: {
@@ -134,33 +136,34 @@ MenuFrame {
         }
 
 
-        CheckButton {
-            id: gridCheckButton
-            objectName: "gridCheckButton"
-            backColor: theme.controlBackColor
-            borderColor: theme.controlBackColor
-            checkedBorderColor: theme.controlBorderColor
-            checked: false
-            iconSource: "qrc:/icons/ui/grid_4x4.svg"
-            text: qsTr("Grid visibility")
-            Layout.fillWidth: true
+        // CheckButton {
+        //     id: gridCheckButton
+        //     objectName: "gridCheckButton"
+        //     backColor: theme.controlBackColor
+        //     borderColor: theme.controlBackColor
+        //     checkedBorderColor: theme.controlBorderColor
+        //     checked: false
+        //     iconSource: "qrc:/icons/ui/grid_4x4.svg"
+        //     text: qsTr("Grid visibility")
+        //     font.pixelSize: theme.iconSize
+        //     Layout.fillWidth: true
 
-            onToggled: {
-                Scene3dToolBarController.onGridVisibilityCheckedChanged(checked)
-            }
+        //     onToggled: {
+        //         Scene3dToolBarController.onGridVisibilityCheckedChanged(checked)
+        //     }
 
-            onFocusChanged: {
-                settings3DSettings.focus = true
-            }
+        //     onFocusChanged: {
+        //         settings3DSettings.focus = true
+        //     }
 
-            Component.onCompleted: {
-                Scene3dToolBarController.onGridVisibilityCheckedChanged(checked)
-            }
+        //     Component.onCompleted: {
+        //         Scene3dToolBarController.onGridVisibilityCheckedChanged(checked)
+        //     }
 
-            // Settings {
-            //     property alias gridCheckButton: gridCheckButton.checked
-            // }
-        }
+        //     // Settings {
+        //     //     property alias gridCheckButton: gridCheckButton.checked
+        //     // }
+        // }
 
         CheckButton {
             id: navigationArrowCheckButton
@@ -171,6 +174,7 @@ MenuFrame {
             checked: true
             iconSource: "qrc:/icons/ui/speedboat.png"
             text: qsTr("Boat visibility")
+            font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 
             onToggled: {
@@ -199,9 +203,10 @@ MenuFrame {
             checked: true
             iconSource: "qrc:/icons/ui/map.svg"
             text: qsTr("Map visibility")
+            font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 
-            implicitWidth: theme.controlHeight
+            implicitWidth: theme.menuWidth
 
             onToggled: {
                 MapViewControlMenuController.onVisibilityChanged(checked)

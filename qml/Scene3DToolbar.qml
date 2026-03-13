@@ -2,18 +2,14 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Dialogs 1.3
-// import QtCore
 import Qt.labs.settings 1.1
-
-
 
 
 //下方中间位置的工具栏
 Item  {
     id: toolbarRoot
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.bottom:           parent.bottom
-    anchors.bottomMargin:     8
+    anchors.left:  parent.left
+    anchors.leftMargin: 8
 
     width: rowButtons.implicitWidth
     height: rowButtons.implicitHeight
@@ -31,26 +27,20 @@ Item  {
 
     property bool toolbarHovered:
         Qt.platform.os === "android" ?
-    (   setCameraIsometricView.down
-     || boatTrackCheckButton.down
-     // || bottomTrackCheckButton.down
-     ) :
-    (   isBoatTrackCheckButtonHovered
-     // || isBottomTrackCheckButtonHovered
-     || isFitViewCheckButtonHovered )
+        (setCameraIsometricView.down|| boatTrackCheckButton.down) :
+        (isBoatTrackCheckButtonHovered || isFitViewCheckButtonHovered)
 
     property bool menuOpened: settings3DSettings.visible || locationSettings.visible
             || isobathsSettings.visible
-    // || mosaicViewSettings.visible
 
     opacity: (toolbarHovered || menuOpened) ? 1.0 : 0.5
     Behavior on opacity { NumberAnimation { duration: 120 } }
 
 
     // buttons
-    RowLayout {
+    ColumnLayout {
         id: rowButtons
-        spacing: 8
+        spacing: 10
         Layout.alignment: Qt.AlignHCenter
 
         // CheckButton {
@@ -61,8 +51,8 @@ Item  {
         //     checkedBorderColor: theme.controlBorderColor
         //     checkable: false
         //     checked: false
-        //     implicitHeight: theme.controlHeight * 1.3
-        //     implicitWidth: theme.controlHeight * 1.3
+        //     implicitHeight: theme.menuWidth
+        //     implicitWidth: theme.menuWidth
 
         //     CMouseOpacityArea {
         //         toolTipText: qsTr("Reset camera")
@@ -93,8 +83,8 @@ Item  {
         //         borderColor:        theme.controlBackColor
         //         checkedBorderColor: theme.controlBorderColor
         //         checked:            false
-        //         implicitHeight:     theme.controlHeight * 1.3
-        //         implicitWidth:      theme.controlHeight * 1.3
+        //         implicitHeight:     theme.menuWidth
+        //         implicitWidth:      theme.menuWidth
 
         //         onCheckedChanged: {
         //             Scene3dToolBarController.onTrackLastDataCheckButtonCheckedChanged(checked)
@@ -173,8 +163,8 @@ Item  {
                 checkedBorderColor: theme.controlBorderColor
                 checkable: false
                 checked: false
-                implicitHeight: theme.controlHeight * 1.3
-                implicitWidth:  theme.controlHeight * 1.3
+                implicitHeight: theme.menuWidth
+                implicitWidth:  theme.menuWidth
 
                 property bool settings3DLongPressTriggered: false
 
@@ -218,8 +208,8 @@ Item  {
             Settings3DExtraSettings {
                 id: settings3DSettings
                 settings3DCheckButton: settings3DCheckButton
-                anchors.bottom:        settings3DCheckButton.top
-                anchors.horizontalCenter: settings3DCheckButton.horizontalCenter
+                anchors.left:        settings3DCheckButton.right
+                anchors.verticalCenter: settings3DCheckButton.verticalCenter
                 z: 2
             }
         }
@@ -233,8 +223,8 @@ Item  {
             borderColor: theme.controlBackColor
             checkedBorderColor: theme.controlBorderColor
             checked: true
-            implicitHeight: theme.controlHeight * 1.3
-            implicitWidth: theme.controlHeight * 1.3
+            implicitHeight: theme.menuWidth
+            implicitWidth: theme.menuWidth
 
             hoverEnabled: true
             onHoveredChanged: {
@@ -268,8 +258,8 @@ Item  {
         //     borderColor:         theme.controlBackColor
         //     checkedBorderColor:  theme.controlBorderColor
         //     checked:             false
-        //     implicitHeight:      theme.controlHeight * 1.3
-        //     implicitWidth:       theme.controlHeight * 1.3
+        //     implicitHeight:      theme.menuWidth
+        //     implicitWidth:       theme.menuWidth
 
         //     hoverEnabled:        true
 
@@ -327,8 +317,8 @@ Item  {
                 borderColor:        theme.controlBackColor
                 checkedBorderColor: theme.controlBorderColor
                 checked: false
-                implicitHeight:     theme.controlHeight * 1.3
-                implicitWidth:      theme.controlHeight * 1.3
+                implicitHeight:     theme.menuWidth
+                implicitWidth:      theme.menuWidth
 
                 // property bool pulse: (core.dataProcessorState === 2) || (core.dataProcessorState === 4)
                 property bool pulse: core.dataProcessorState === 2
@@ -401,13 +391,6 @@ Item  {
 
             }
 
-            // IsobathsExtraSettings {
-            //     id: isobathsSettings
-            //     isobathsCheckButton: isobathsCheckButton
-            //     anchors.bottom:           isobathsCheckButton.top
-            //     anchors.horizontalCenter: isobathsCheckButton.horizontalCenter
-            //     z: 2
-            // }
         }
 
 
@@ -425,8 +408,8 @@ Item  {
         //         borderColor: theme.controlBackColor
         //         checkedBorderColor: theme.controlBorderColor
         //         checked: false
-        //         implicitHeight: theme.controlHeight * 1.3
-        //         implicitWidth: theme.controlHeight * 1.3
+        //         implicitHeight: theme.menuWidth
+        //         implicitWidth: theme.menuWidth
 
         //         property bool pulse: core.dataProcessorState === 3
 

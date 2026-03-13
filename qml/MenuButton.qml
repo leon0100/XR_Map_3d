@@ -9,7 +9,7 @@ Button {
     property real klfTint: 1.0
 
     id: control
-    Layout.preferredHeight: theme.controlHeight
+    Layout.preferredHeight: theme.menuWidth
     padding: 0
 
     icon.color:"transparent"

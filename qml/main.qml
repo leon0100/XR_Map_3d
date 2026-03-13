@@ -10,6 +10,8 @@ import BottomTrack 1.0
 import Qt.labs.settings 1.1
 
 
+import Bluetooth 1.0
+
 
 ApplicationWindow  {
     id:            mainview
@@ -76,6 +78,17 @@ ApplicationWindow  {
             headerContainer.toolBarExpanded = state
             collapseBar.expandSate = state
         }
+    }
+
+
+    IsobathsExtraSettings {
+        visible: toolBarXR.contourMode
+        x: toolBarXR.iconSize * 4
+    }
+
+    BleLivedataScanning {
+        visible: toolBarXR.bluetoothMode
+        x: parent.width - width - 10
     }
 
 
@@ -523,7 +536,7 @@ ApplicationWindow  {
 
         handle: Rectangle {
             // implicitWidth:  5
-            implicitHeight: theme.controlHeight/2
+            implicitHeight: theme.menuWidth/2
             color:          SplitHandle.pressed ? "#A0A0A0" : "#707070"
 
             Rectangle {
@@ -685,9 +698,9 @@ ApplicationWindow  {
                 }
 
                 Scene3DToolbar{
-                    id:                       scene3DToolbar
-                    y:renderer.height - height - 2
-                    Keys.forwardTo:           [mousearea3D]
+                    id: scene3DToolbar
+                    y: renderer.height - height * 2
+                    Keys.forwardTo:  [mousearea3D]
                 }
 
                 CContact {
@@ -760,7 +773,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/arrow_bar_to_down.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.MinDistProc)
@@ -774,7 +787,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/arrow_bar_to_up.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.MaxDistProc)
@@ -787,7 +800,7 @@ ApplicationWindow  {
                     CheckButton {
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.ClearDistProc)
@@ -801,7 +814,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/x.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        implicitWidth: theme.menuWidth
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.Undefined)
@@ -885,8 +898,8 @@ ApplicationWindow  {
                         Layout.fillWidth: true
                         Layout.fillHeight: false
                         Layout.columnSpan: parent.columns
-                        implicitHeight: theme.controlHeight
-                        height: theme.controlHeight
+                        implicitHeight: theme.menuWidth
+                        height: theme.menuWidth
                         //value: waterViewFirst.timelinePosition
                         stepSize: 0.0001
                         from: 0
@@ -1064,7 +1077,7 @@ ApplicationWindow  {
                     // checkedBackColor: "transparent"
                     borderColor: "transparent"
                     checkedBorderColor: theme.textColor
-                    implicitWidth: theme.controlHeight
+                    implicitWidth: theme.menuWidth
                 }
 
                 ButtonGroup { id: autopilotModeGroup }
@@ -1076,7 +1089,7 @@ ApplicationWindow  {
                     onCheckedChanged: {
                     }
                     ButtonGroup.group: autopilotModeGroup
-                    implicitWidth: theme.controlHeight
+                    implicitWidth: theme.menuWidth
                 }
 
                 CheckButton {
@@ -1086,7 +1099,7 @@ ApplicationWindow  {
                     onCheckedChanged: {
                     }
                     ButtonGroup.group: autopilotModeGroup
-                    implicitWidth: theme.controlHeight
+                    implicitWidth: theme.menuWidth
                 }
 
                 CheckButton {
@@ -1096,7 +1109,7 @@ ApplicationWindow  {
                     onCheckedChanged: {
                     }
                     ButtonGroup.group: autopilotModeGroup
-                    implicitWidth: theme.controlHeight
+                    implicitWidth: theme.menuWidth
                 }
 
                 CheckButton {
@@ -1106,7 +1119,7 @@ ApplicationWindow  {
                     onCheckedChanged: {
                     }
                     ButtonGroup.group: autopilotModeGroup
-                    implicitWidth: theme.controlHeight
+                    implicitWidth: theme.menuWidth
                 }
 
                 CheckButton {
@@ -1116,7 +1129,7 @@ ApplicationWindow  {
                     onCheckedChanged: {
                     }
                     ButtonGroup.group: autopilotModeGroup
-                    implicitWidth: theme.controlHeight
+                    implicitWidth: theme.menuWidth
                 }
 
             }

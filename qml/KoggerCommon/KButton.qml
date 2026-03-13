@@ -5,7 +5,7 @@ Button {
     id: control
     text: qsTr("Ok")
     highlighted: true
-    implicitHeight: theme.controlHeight
+    implicitHeight: theme.menuWidth
 
 
     contentItem: KText {
