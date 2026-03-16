@@ -7,7 +7,6 @@ Rectangle {
 
     width:  collapseWidth
     height: collapseHeight
-    anchors.horizontalCenter: parent.horizontalCenter
     radius: collapseHeight * 0.5
     color: "#fffafa"
     visible: true

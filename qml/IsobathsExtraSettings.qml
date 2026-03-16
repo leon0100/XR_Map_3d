@@ -12,13 +12,12 @@ MenuFrame {
 
     property CheckButton isobathsCheckButton
 
-    width:  isobathSize
-    height: isobathSize
+    width:  isobathSize * 1.1
+    height: isobathSize * 0.65
     margins: 15
     z: 99
 
-
-    property int isobathSize: theme.screenSize * 0.3
+    property int isobathSize: theme.screenSize * 0.35
 
     onIsHoveredChanged: {
         if (Qt.platform.os === "android") {
@@ -41,28 +40,30 @@ MenuFrame {
     }
 
     ColumnLayout {
-        spacing: 10
+        spacing: 8
 
         property var targetPlot: null
         CButton {
             id: updateBottomTrackButton
             text: qsTr("Processing")
             font.pixelSize: theme.iconSize
-            height: theme.menuWidth * 0.6
-            Layout.fillWidth: true
+            implicitWidth: isobathSize * 0.9
+            Layout.alignment: Qt.AlignCenter
+            Layout.preferredHeight: theme.iconSize * 1.4
+
             onClicked: {
                 if (targetPlot) {
                         targetPlot.doDistProcessing(
-                             0,  // preset
-                             1,  // window_size
-                             0,  // vertical_gap
-                             0,  // range_min
+                             0,     // preset
+                             1,     // window_size
+                             0,     // vertical_gap
+                             0,     // range_min
                              1000,  // range_max
-                             1,  // gain_slope
-                             0,  // threshold
-                             0,  // offsetx
-                             0,  // offsety
-                             0,  // offsetz
+                             1,     // gain_slope
+                             0,     // threshold
+                             0,     // offsetx
+                             0,     // offsety
+                             0,     // offsetz
                              false  // manual
                         )
                 }
@@ -116,9 +117,7 @@ MenuFrame {
 
                 property int decimals: 1
 
-                onFocusChanged: {
-                    isobathsSettings.focus = true
-                }
+                onFocusChanged: isobathsSettings.focus = true
 
                 Component.onCompleted: {
                     IsobathsViewControlMenuController.onEdgeLimitChanged(isobathsEdgeLimitSpinBox.value)
@@ -164,9 +163,7 @@ MenuFrame {
                     return Number.fromLocaleString(locale, text) * 10
                 }
 
-                onFocusChanged: {
-                    isobathsSettings.focus = true
-                }
+                onFocusChanged:  isobathsSettings.focus = true
 
                 Component.onCompleted: {
                     IsobathsViewControlMenuController.onSetSurfaceLineStepSize(isobathsSurfaceLineStepSizeSpinBox.realValue)
@@ -215,6 +212,15 @@ MenuFrame {
             }
         }
 
+        Rectangle {
+            width: parent.width
+            height: 2
+            color: "#9c9c9c"
+            Layout.fillWidth: true
+            Layout.topMargin: 5
+            Layout.bottomMargin: 5
+        }
+
         RowLayout {
             spacing: 20
             CText {
@@ -227,23 +233,35 @@ MenuFrame {
                 Layout.fillWidth: true
                 Layout.preferredWidth: isobathSize * 0.7
                 from: 0.5
-                to: 10.0
+                to:   10.0
                 value: IsobathsViewControlMenuController.verticalScale()
                 stepSize: 0.1
+
+                background: Rectangle {
+                    x: verticalScaleSlider.leftPadding
+                    y: verticalScaleSlider.topPadding + verticalScaleSlider.availableHeight/2 - height/2
+                    implicitWidth: isobathSize * 0.7
+                    implicitHeight: theme.iconSize * 0.33
+                    width: verticalScaleSlider.availableWidth
+                    height: isobathSize * 0.02
+                    radius: 5
+                    color: "#828282"
+                }
+
+                handle: Rectangle {
+                    x: verticalScaleSlider.leftPadding + verticalScaleSlider.visualPosition
+                       * (verticalScaleSlider.availableWidth - width)
+                    y: verticalScaleSlider.topPadding + verticalScaleSlider.availableHeight/2 - height/2
+                    implicitWidth: theme.iconSize
+                    implicitHeight: theme.iconSize
+                    radius: theme.iconSize * 0.5
+                    color: verticalScaleSlider.pressed ? "#f0f0f0" : "#f6f6f6"
+                }
 
                 onValueChanged: {
                     IsobathsViewControlMenuController.onVerticalScaleSliderValueChanged(value)
                 }
-
-                // // 显示当前值
-                // Label {
-                //     text: verticalScaleSlider.value.toFixed(1) + "x"
-                //     anchors.centerIn: parent
-                //     font.pixelSize: 12
-                //     color: "#333333"
-                // }
             }
-
         }
 
         // RowLayout {

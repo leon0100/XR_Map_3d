@@ -10,10 +10,10 @@ Item {
     property int horizontalMargins: margins
     property int verticalMargins: margins
     property int spacing: 10
-    property color backgroundColor: theme.menuBackColor
+    property color backgroundColor: "transparent"
 
-    implicitWidth: columnItem.width + horizontalMargins*2
-    implicitHeight: columnItem.height + verticalMargins*2
+    implicitWidth: columnItem.width
+    implicitHeight: columnItem.height
 
     default property alias content: columnItem.data
     property bool isMouseAccepted: true
@@ -23,16 +23,24 @@ Item {
     property bool isHovered: false
 
     Rectangle {
-        id: backgroundRect
-        color: backgroundColor
-        anchors.fill: columnItem
-        anchors.leftMargin: -horizontalMargins
-        anchors.rightMargin: -horizontalMargins
-        anchors.topMargin: -verticalMargins
-        anchors.bottomMargin: -verticalMargins
-        opacity: columnItem.opacity
-        radius: 2
+        anchors.fill: parent
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#f5f7fa" }
+            GradientStop { position: 1.0; color: "#c3cfe2" }
+        }
     }
+
+    // Rectangle {
+    //     id: backgroundRect
+    //     color: backgroundColor
+    //     anchors.fill: columnItem
+    //     anchors.leftMargin: -horizontalMargins
+    //     anchors.rightMargin: -horizontalMargins
+    //     anchors.topMargin: -verticalMargins
+    //     anchors.bottomMargin: -verticalMargins
+    //     opacity: columnItem.opacity
+    //     radius: 2
+    // }
 
     MouseArea {
         id: mouseDragArea

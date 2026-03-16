@@ -4,12 +4,13 @@ import QtQuick.Controls 2.15
 Button {
     id: control
     text: qsTr("Ok")
-    checkable: false
+    checkable:   false
     highlighted: true
     implicitHeight: theme.menuWidth
     property bool active: (!control.checkable) || (control.checked && control.checkable)
-    property var backColor: active ? theme.controlSolidBackColor : theme.controlBackColor
+    property color backColor: "#b9c6db"
     property int borderRadius: 2
+
 
     contentItem: CText {
         text: control.text
@@ -22,10 +23,11 @@ Button {
         id: backRect
 
         implicitHeight: control.height
-        implicitWidth: implicitHeight
+        implicitWidth:  implicitHeight
         radius: borderRadius
-        color: backColor
+        color: control.backColor
         border.color: theme.controlSolidBorderColor
         border.width: (!control.checkable && control.down) ? 2 : 0
     }
+
 }

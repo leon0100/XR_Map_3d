@@ -2,7 +2,6 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Dialogs 1.3
-// import QtCore
 import Qt.labs.settings 1.1
 
 
@@ -86,7 +85,7 @@ MenuFrame {
             borderColor: theme.controlBackColor
             checkedBorderColor: theme.controlBorderColor
             iconSource: "qrc:/icons/ui/location_pin.svg"
-            text: qsTr("North mode")
+            text: qsTr("North Mode")
             font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 
@@ -114,7 +113,7 @@ MenuFrame {
             borderColor: theme.controlBackColor
             checkedBorderColor: theme.controlBorderColor
             iconSource: "qrc:/icons/ui/click.svg"
-            text: qsTr("Sync with echogram")
+            text: qsTr("Sync Echogram")
             font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 
@@ -172,8 +171,8 @@ MenuFrame {
             borderColor: theme.controlBackColor
             checkedBorderColor: theme.controlBorderColor
             checked: true
-            iconSource: "qrc:/icons/ui/speedboat.png"
-            text: qsTr("Boat visibility")
+            iconSource: "qrc:/icons/ui/speedboat.svg"
+            text: qsTr("Boat Visibility")
             font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 
@@ -202,7 +201,7 @@ MenuFrame {
             checkedBorderColor: theme.controlBorderColor
             checked: true
             iconSource: "qrc:/icons/ui/map.svg"
-            text: qsTr("Map visibility")
+            text: qsTr("Map Visibility")
             font.pixelSize: theme.iconSize
             Layout.fillWidth: true
 

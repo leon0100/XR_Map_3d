@@ -5,33 +5,33 @@ import QtQuick.Dialogs 1.3
 import Qt.labs.settings 1.1
 
 
+
 //下方中间位置的工具栏
 Item  {
     id: toolbarRoot
-    anchors.left:  parent.left
+    anchors.left: parent.left
     anchors.leftMargin: 8
 
-    width: rowButtons.implicitWidth
+    width:  rowButtons.implicitWidth
     height: rowButtons.implicitHeight
 
     signal updateBottomTrack()
 
     function updateMosaic() {
-        mosaicViewSettings.updateMosaic()
+       mosaicViewSettings.updateMosaic()
     }
 
     // opacity
-    property bool isFitViewCheckButtonHovered: false
-    property bool isBoatTrackCheckButtonHovered: false
+    property bool isFitViewCheckButtonHovered:     false
+    property bool isBoatTrackCheckButtonHovered:   false
     property bool isBottomTrackCheckButtonHovered: false
 
-    property bool toolbarHovered:
-        Qt.platform.os === "android" ?
-        (setCameraIsometricView.down|| boatTrackCheckButton.down) :
-        (isBoatTrackCheckButtonHovered || isFitViewCheckButtonHovered)
+    property bool toolbarHovered: Qt.platform.os === "android" ?
+                (setCameraIsometricView.down|| boatTrackCheckButton.down) :
+                (isBoatTrackCheckButtonHovered || isFitViewCheckButtonHovered)
 
     property bool menuOpened: settings3DSettings.visible || locationSettings.visible
-            || isobathsSettings.visible
+                              || isobathsSettings.visible
 
     opacity: (toolbarHovered || menuOpened) ? 1.0 : 0.5
     Behavior on opacity { NumberAnimation { duration: 120 } }
@@ -195,20 +195,17 @@ Item  {
 
                 Timer {
                     id: settings3DLongPressTimer
-                    interval: 100 // ms
+                    interval: 100
                     repeat: false
                     running : false
-
-                    onTriggered: {
-                        settings3DCheckButton.settings3DLongPressTriggered = true;
-                    }
+                    onTriggered: settings3DCheckButton.settings3DLongPressTriggered = true;
                 }
             }
 
             Settings3DExtraSettings {
                 id: settings3DSettings
-                settings3DCheckButton: settings3DCheckButton
-                anchors.left:        settings3DCheckButton.right
+                settings3DCheckButton:  settings3DCheckButton
+                anchors.left:           settings3DCheckButton.right
                 anchors.verticalCenter: settings3DCheckButton.verticalCenter
                 z: 2
             }

@@ -71,7 +71,8 @@ ApplicationWindow  {
 
     CollapseRectangle {
         id: collapseBar
-        anchors.top: expandSate ? toolBarXR.bottom : parent.top
+        anchors.top: expandSate ? headerContainer.bottom : parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
         property bool expandSate: true
         isExpanded: expandSate
         onToggleClicked: {
