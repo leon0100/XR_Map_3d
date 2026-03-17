@@ -8,7 +8,8 @@
 #include <QScreen>
 #include <QtAlgorithms>
 #include <QDebug>
-
+#include <QFontDatabase>
+#include <QApplication>
 
 class Themes : public QObject
 {
@@ -91,17 +92,15 @@ public:
     void setTheme(int theme_id = 0) {
         _id = theme_id;
 
-#if defined(Q_OS_ANDROID)
-        _textFont = new QFont("Times", 14);
-        _textFont->setPixelSize(30);
-        _textFontS = new QFont("Times", 12);
-        _textFontS->setPixelSize(24);
-#else
-        _textFont = new QFont("PT Sans Caption", 14);
-        _textFont->setPixelSize(22);
-        _textFontS = new QFont("PT Sans Caption", 12);
-        _textFont->setPixelSize(18);
-#endif
+        int fontId = QFontDatabase::addApplicationFont(":/fonts/AlibabaPuHuiTi-3-55-Regular.ttf");
+        if (fontId == 0) {
+            QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
+            QFont font(fontFamily, 12);
+            QApplication::setFont(font);
+            _textFont  = new QFont(fontFamily, 26);
+            _textFontS = new QFont(fontFamily, 20);
+        }
+
         _textErrorColor = new QColor(250, 0, 0);
 
         _frameBackColor = new QColor(45, 45, 45, 50);
@@ -165,8 +164,6 @@ public:
         } else {
             screenSize_ = 600;
         }
-
-
 
         emit changed();
     }

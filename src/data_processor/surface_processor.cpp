@@ -102,7 +102,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         const int iy = qRound((pnt.y() - origin_.y()) / cellPx_);
         const QPair<int,int> cid(ix, iy);
 
-        if (auto it = cellPointsInTri_.find(cid); it != cellPointsInTri_.end()) { // 更新中心点的 Z 坐标
+        if (auto it = cellPointsInTri_.find(cid); it != cellPointsInTri_.end()) {  // 更新中心点的 Z坐标
             const int pIdx = it.value();
             auto& dp = delaunayProc_.getPointsRef()[pIdx];
             if (!qFuzzyCompare(static_cast<float>(dp.z), pnt.z())) {
@@ -112,13 +112,12 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
                 for (int triIdx : relatedTris) {
                     updsTrIndx.insert(triIdx);
                 }
-            } else {
             }
         }
         else { // 添加新点
             const auto res = delaunayProc_.addPoint({pnt.x(), pnt.y(), pnt.z()});
             for (int triIdx : res.newTriIdx) {
-                registerTriangle(triIdx); //注册加入新三角形
+                registerTriangle(triIdx); // 注册加入新三角形
                 updsTrIndx.insert(triIdx);
             }
             cellPointsInTri_[cid] = res.pointIdx;
@@ -133,7 +132,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
         //边界检查，防止崩溃
         if (itm.second < 0 || itm.second >= bTrData.size()) {
-            qDebug() << "SurfaceProcessor Index out of range:" << itm.second << ">=" << bTrData.size();
+            qDebug() << "SurfaceProcessor Index out of range:" << itm.second << ">= " << bTrData.size();
             continue;
         }
 

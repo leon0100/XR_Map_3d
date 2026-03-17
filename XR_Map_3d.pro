@@ -78,6 +78,7 @@ RESOURCES += \
 windows {
     message("Building for Windows with full OpenGL")
     LIBS += -lopengl32
+    RC_FILE += resources/file.rc
     RESOURCES += shaders/windows/shaders.qrc
 }
 

@@ -91,8 +91,10 @@
         <file>XR/TOSLON2.png</file>
         <file>XR/serialPort.png</file>
         <file>XR/boat.png</file>
-	<file>XR/config.png</file>
-	<file>XR/triangle.svg</file>
-	<file>XR/check.svg</file>
+        <file>XR/config.png</file>
+        <file>XR/triangle.svg</file>
+        <file>XR/check.svg</file>
+        <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
+        <file>fonts/PTSansCaption-Regular.ttf</file>
     </qresource>
 </RCC>

@@ -3,8 +3,7 @@
 #include "text_renderer.h"
 
 
-IsobathsView::IsobathsView(QObject* parent)
-    : SceneObject(new IsobathsViewRenderImplementation, parent)
+IsobathsView::IsobathsView(QObject* parent) : SceneObject(new IsobathsViewRenderImplementation, parent)
 {}
 
 IsobathsView::~IsobathsView()
@@ -98,6 +97,7 @@ void IsobathsView::IsobathsViewRenderImplementation::render(QOpenGLFunctions *ct
         const float scale = qBound(0.15f, qMin(sizeFromStep, sizeFromDist), 0.30f);
 
         for (const auto& lbl : labels_) {
+            qDebug() << "Labels count:" << labels_.size() << "scale:" << scale;
             const QString txt = QString::number(lbl.depth, 'f', 1);
             TextRenderer::instance().render3D(txt, scale, lbl.pos, lbl.dir, ctx, mvp, spMap);
         }

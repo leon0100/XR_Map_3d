@@ -317,16 +317,7 @@ Item  {
                 implicitHeight:     theme.menuWidth
                 implicitWidth:      theme.menuWidth
 
-                // property bool pulse: (core.dataProcessorState === 2) || (core.dataProcessorState === 4)
                 property bool pulse: core.dataProcessorState === 2
-
-                SequentialAnimation {
-                    id: pulseIsobathsAnimation
-                    running: isobathsCheckButton.pulse
-                    loops: Animation.Infinite
-                    NumberAnimation { target: isobathsCheckButton; property: "opacity"; to: 0.2; duration: 500 }
-                    NumberAnimation { target: isobathsCheckButton; property: "opacity"; to: 1.0; duration: 500 }
-                }
 
                 onPulseChanged: {
                     if (!pulse) {
@@ -381,9 +372,7 @@ Item  {
                     interval: 100 // ms
                     repeat: false
                     running : false
-                    onTriggered: {
-                        isobathsCheckButton.isobathsLongPressTriggered = true;
-                    }
+                    onTriggered: isobathsCheckButton.isobathsLongPressTriggered = true;
                 }
 
             }

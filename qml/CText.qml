@@ -5,5 +5,5 @@ import QtQuick.Controls 2.15
 Text {
     property bool small: false
     color: "black"
-    font.pixelSize: theme.iconSize
+    font: small ? theme.textFontS : theme.textFont
 }

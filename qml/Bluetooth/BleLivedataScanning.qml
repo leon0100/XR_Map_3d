@@ -66,7 +66,6 @@ Item {
                         border.color: "#b0b3b8"
                         border.width: 2
 
-
                         CheckBox {
                             id: check1
                             anchors.verticalCenter: parent.verticalCenter
@@ -209,7 +208,6 @@ Item {
                     color: "transparent"
                     width: layoutHeight * 2
                     anchors.centerIn: parent
-
 
                     ColumnLayout {
                         id: mainCol

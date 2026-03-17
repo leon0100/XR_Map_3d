@@ -1141,7 +1141,7 @@ void Dataset::onDistCompleted(int epIndx, const ChannelId& channelId, float dist
         }
     }
 
-    settedChart = true;//test!!
+    settedChart = true;
     if (settedChart) {
         setLastDepth(dist);
 

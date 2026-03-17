@@ -93,7 +93,6 @@ ApplicationWindow  {
     }
 
 
-
     footer: Rectangle {
         height: footHeight
         color: "#88363636"

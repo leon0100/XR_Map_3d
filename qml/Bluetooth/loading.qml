@@ -8,8 +8,8 @@ Rectangle {
     anchors.centerIn: parent
     width: 75
     height: 75
-    // radius: 16
     color: "#d6e6ff"
+
 
     BusyIndicator {
         anchors.centerIn: parent

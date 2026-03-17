@@ -406,7 +406,8 @@ void DataProcessor::runCoalescedWork()
     const bool wantIsobaths = maskNow & WF_Isobaths;
 
     WorkBundle wb;
-    if (wantSurface && !pendingSurfaceIndxs_.isEmpty() && (updateIsobaths_ || updateMosaic_)) {
+    // if (wantSurface && !pendingSurfaceIndxs_.isEmpty() && (updateIsobaths_ || updateMosaic_)) {
+    if (wantSurface && !pendingSurfaceIndxs_.isEmpty()) {
         wb.surfaceVec.reserve(pendingSurfaceIndxs_.size());
 
         for (auto it = pendingSurfaceIndxs_.cbegin(); it != pendingSurfaceIndxs_.cend(); ++it) {
@@ -676,7 +677,8 @@ void DataProcessor::onDepthAddedForIsobaths(uint64_t indx)
     pendingIsobathsWork_ = true;
 
     // 触发处理
-    scheduleLatest(WorkSet(WF_Surface | WF_Isobaths));
-    updateIsobaths_ = true;
-
+    if(!jobRunning_.load()) {
+       scheduleLatest(WorkSet(WF_Surface | WF_Isobaths));
+    }
+    // updateIsobaths_ = true;
 }
