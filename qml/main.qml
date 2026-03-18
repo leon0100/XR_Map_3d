@@ -5,10 +5,9 @@ import QtQuick.Layouts 1.15
 import QtQuick.Dialogs 1.3
 import QtQuick.Controls 2.15
 import WaterFall 1.0
-import KoggerCommon 1.0
+import QmlCommon 1.0
 import BottomTrack 1.0
 import Qt.labs.settings 1.1
-
 
 import Bluetooth 1.0
 
@@ -167,12 +166,22 @@ ApplicationWindow  {
         }
     }
 
+    KProgress {
+        id: fileProgress
+        showCancelButton: true
+
+        onCancelRequested: {
+            core.cancelFileOpening()
+        }
+    }
+
     function handleUpdateBottomTrack() {
         menuBar.updateBottomTrack()
     }
 
     Component.onCompleted: {
         theme.updateResCoeff()
+        core.progress = fileProgress
 
         scene3DToolbar.updateBottomTrack.connect(handleUpdateBottomTrack)
         menuBar.languageChanged.connect(handleChildSignal)
@@ -188,7 +197,8 @@ ApplicationWindow  {
         waterViewFirst.settingsClicked.connect(onPlotSettingsClicked)
         waterViewSecond.settingsClicked.connect(onPlotSettingsClicked)
         menuBar.menuBarSettingOpened.connect(onMenuBarSettingsOpened)
-        ToolBar_XR.menuBarSettingOpened.connect(onMenuBarSettingsOpened)
+        toolBarXR.menuBarSettingOpened.connect(onMenuBarSettingsOpened)
+
 
         if (Qt.platform.os !== "windows") {
             if (appSettings.isFullScreen) {
@@ -196,7 +206,6 @@ ApplicationWindow  {
             }
         }
 
-        // contacts
         function setupConnections() {
             if (typeof contacts !== "undefined") {
                 contactConnections.target = contacts;
@@ -205,7 +214,7 @@ ApplicationWindow  {
                 Qt.callLater(setupConnections);
             }
         }
-        Qt.callLater(setupConnections);
+        Qt.callLater(setupConnections);     
     }
 
     // banner on languageChanged

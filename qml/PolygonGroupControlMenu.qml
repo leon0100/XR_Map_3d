@@ -4,7 +4,7 @@ import QtQuick.Controls 2.12
 import QtQuick.Dialogs 1.3
 import QtQuick.Controls 1.4
 
-import KoggerCommon 1.0
+import QmlCommon 1.0
 
 Item {
     readonly property var controller : PolygonGroupControlMenuController

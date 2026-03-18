@@ -1093,7 +1093,7 @@
 <context>
     <name>KButton</name>
     <message>
-        <location filename="../qml/KoggerCommon/KButton.qml" line="6"/>
+        <location filename="../qml/QmlCommon/KButton.qml" line="6"/>
         <source>Ok</source>
         <translation>Ок</translation>
     </message>
@@ -1101,7 +1101,7 @@
 <context>
     <name>KCheck</name>
     <message>
-        <location filename="../qml/KoggerCommon/KCheck.qml" line="6"/>
+        <location filename="../qml/QmlCommon/KCheck.qml" line="6"/>
         <source>Check</source>
         <translation>Проверить</translation>
     </message>
@@ -1109,7 +1109,7 @@
 <context>
     <name>KParamGroup</name>
     <message>
-        <location filename="../qml/KoggerCommon/KParamGroup.qml" line="8"/>
+        <location filename="../qml/QmlCommon/KParamGroup.qml" line="8"/>
         <source>Group</source>
         <translation>Группа</translation>
     </message>
@@ -1117,7 +1117,7 @@
 <context>
     <name>KParamSetup</name>
     <message>
-        <location filename="../qml/KoggerCommon/KParamSetup.qml" line="9"/>
+        <location filename="../qml/QmlCommon/KParamSetup.qml" line="9"/>
         <source>Param</source>
         <translation>Параметр</translation>
     </message>
@@ -1125,7 +1125,7 @@
 <context>
     <name>KProgressButton</name>
     <message>
-        <location filename="../qml/KoggerCommon/KProgressButton.qml" line="7"/>
+        <location filename="../qml/QmlCommon/KProgressButton.qml" line="7"/>
         <source>Ok</source>
         <translation>Ок</translation>
     </message>
@@ -1133,7 +1133,7 @@
 <context>
     <name>KWaitProgressBar</name>
     <message>
-        <location filename="../qml/KoggerCommon/KWaitProgressBar.qml" line="6"/>
+        <location filename="../qml/QmlCommon/KWaitProgressBar.qml" line="6"/>
         <source>Please, wait...</source>
         <translation>Пожалуйста, подождите...</translation>
     </message>

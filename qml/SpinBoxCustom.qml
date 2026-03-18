@@ -67,9 +67,6 @@ SpinBox {
         }
     }
 
-
-
-
     down.onPressedChanged: downCanvas.requestPaint()
     down.indicator: Rectangle {
         id: downControl
@@ -87,9 +84,6 @@ SpinBox {
         }
     }
 
-
-
-
     background: Rectangle {
         x: control.spinner ? down.indicator.width : 0
         y: 0
@@ -98,7 +92,6 @@ SpinBox {
         color: isValid ? theme.controlBackColor : "red"
         border.color: theme.controlBorderColor
     }
-
 
     onDevValueChanged: {
         if (value !== devValue) {

@@ -3,7 +3,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.12
 import QtQuick.Dialogs 1.3
 
-import KoggerCommon 1.0
+import QmlCommon 1.0
 
 Item {
     readonly property var controller : NpdFilterControlMenuController

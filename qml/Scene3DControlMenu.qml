@@ -1,7 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Layouts 1.3
 
-import KoggerCommon 1.0
+import QmlCommon 1.0
 
 Item {
     readonly property var controller : Scene3DControlMenuController

@@ -60,23 +60,24 @@ public:
     Core();
     ~Core();
 
-    Q_PROPERTY(bool              isGPSAlive                   READ getIsGPSAlive                   NOTIFY isGPSAliveChanged)
-    Q_PROPERTY(bool              isFactoryMode                READ isFactoryMode                   CONSTANT)
-    Q_PROPERTY(ConsoleListModel* consoleList                  READ consoleList                     CONSTANT)
-    Q_PROPERTY(bool              loggingKlf                   READ getKlfLogging                   WRITE setKlfLogging)
-    Q_PROPERTY(bool              isKlfLogging                 READ getKlfLogging                   NOTIFY loggingKlfChanged)
-    Q_PROPERTY(bool              loggingCsv                   READ getCsvLogging                   WRITE setCsvLogging)
-    Q_PROPERTY(bool              useGPS                       READ getUseGPS                       WRITE setUseGPS)
-    Q_PROPERTY(bool              fixBlackStripesState         READ getFixBlackStripesState         WRITE setFixBlackStripesState)
-    Q_PROPERTY(int               fixBlackStripesForwardSteps  READ getFixBlackStripesForwardSteps  WRITE setFixBlackStripesForwardSteps)
-    Q_PROPERTY(int               fixBlackStripesBackwardSteps READ getFixBlackStripesBackwardSteps WRITE setFixBlackStripesBackwardSteps)
-    Q_PROPERTY(QString           filePath                     READ getFilePath                     NOTIFY filePathChanged)
-    Q_PROPERTY(bool              isFileOpening                READ getIsFileOpening                NOTIFY sendIsFileOpening)
-    Q_PROPERTY(bool              isSeparateReading            READ getIsSeparateReading            CONSTANT)
-    Q_PROPERTY(QString           ch1Name                      READ getChannel1Name                 NOTIFY channelListUpdated FINAL)
-    Q_PROPERTY(QString           ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
-    Q_PROPERTY(int               dataProcessorState           READ getDataProcessorState           NOTIFY dataProcessorStateChanged)
-    Q_PROPERTY(int               currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
+    Q_PROPERTY(bool      isGPSAlive                   READ getIsGPSAlive                   NOTIFY isGPSAliveChanged)
+    Q_PROPERTY(bool      isFactoryMode                READ isFactoryMode                   CONSTANT)
+    Q_PROPERTY(ConsoleListModel* consoleList          READ consoleList                     CONSTANT)
+    Q_PROPERTY(bool      loggingKlf                   READ getKlfLogging                   WRITE setKlfLogging)
+    Q_PROPERTY(bool      isKlfLogging                 READ getKlfLogging                   NOTIFY loggingKlfChanged)
+    Q_PROPERTY(bool      loggingCsv                   READ getCsvLogging                   WRITE setCsvLogging)
+    Q_PROPERTY(bool      useGPS                       READ getUseGPS                       WRITE setUseGPS)
+    Q_PROPERTY(bool      fixBlackStripesState         READ getFixBlackStripesState         WRITE setFixBlackStripesState)
+    Q_PROPERTY(int       fixBlackStripesForwardSteps  READ getFixBlackStripesForwardSteps  WRITE setFixBlackStripesForwardSteps)
+    Q_PROPERTY(int       fixBlackStripesBackwardSteps READ getFixBlackStripesBackwardSteps WRITE setFixBlackStripesBackwardSteps)
+    Q_PROPERTY(QString   filePath                     READ getFilePath                     NOTIFY filePathChanged)
+    Q_PROPERTY(bool      isFileOpening                READ getIsFileOpening                NOTIFY sendIsFileOpening)
+    Q_PROPERTY(bool      isSeparateReading            READ getIsSeparateReading            CONSTANT)
+    Q_PROPERTY(QString   ch1Name                      READ getChannel1Name                 NOTIFY channelListUpdated FINAL)
+    Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
+    Q_PROPERTY(int       dataProcessorState           READ getDataProcessorState           NOTIFY dataProcessorStateChanged)
+    Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
+    Q_PROPERTY(QObject*  progress       READ progress     WRITE setProgress     NOTIFY  progressChanged)
 
 
     void setEngine(QQmlApplicationEngine *engine);
@@ -154,6 +155,19 @@ public slots:
     void createDatasetConnections();
     void createScene3dConnections();
 
+    QObject* progress() const;
+    Q_INVOKABLE void setProgress(QObject* dialog);
+    void cancelFileOpening();
+    Q_PROPERTY(double fileProgress READ fileProgress WRITE setFileProgress NOTIFY fileProgressChanged)
+    Q_PROPERTY(QString fileProgressStatus READ fileProgressStatus WRITE setFileProgressStatus
+                   NOTIFY fileProgressStatusChanged)
+    double fileProgress() const;
+    void setFileProgress(double progress);
+    QString fileProgressStatus() const;
+    void setFileProgressStatus(const QString& status);
+    double fileProgress_ = 0.0;
+    QString fileProgressStatus_;
+
 #ifdef FLASHER
     void connectOpenedLinkAsFlasher(QString pn);
     void setFlasherData(QString data);
@@ -184,11 +198,18 @@ signals:
     void scrrenModeChanged();
     void currentMapLevelChanged();
 
+    void progressChanged();
+    void fileProgressChanged();
+    void fileProgressStatusChanged();
+
     void drawRealtimeContour();
 
-#ifdef SEPARATE_READING
-    void sendCloseLogFile(bool onOpen = false);
-#endif
+
+
+
+private:
+    QObject* progress_ = nullptr;
+
 
 private slots:
     void onFileStopsOpening();

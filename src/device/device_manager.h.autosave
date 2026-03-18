@@ -39,14 +39,6 @@ public:
     QObject* progressDialog() const;
     void setProgressDialog(QObject* dialog);
 
-    Q_PROPERTY(double fileProgress READ fileProgress WRITE setFileProgress NOTIFY fileProgressChanged)
-    Q_PROPERTY(QString fileProgressStatus READ fileProgressStatus WRITE setFileProgressStatus
-                   NOTIFY fileProgressStatusChanged)
-    double fileProgress() const;
-    void setFileProgress(double progress);
-    QString fileProgressStatus() const;
-    void setFileProgressStatus(const QString& status);
-
 
 
 public slots:

@@ -6,12 +6,14 @@ Button {
     property real progress: 0
     text: qsTr("Ok")
 
-    font.family: "Bahnschrift"; font.pointSize: 10;
+    font.family:    "Bahnschrift";
+    font.pointSize: 10
+
 
     contentItem: Text {
         width: control.width
-        text: control.text
-        font: control.font
+        text:  control.text
+        font:  control.font
         color: "#F07000"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -23,9 +25,11 @@ Button {
         implicitHeight: 30
 
         Rectangle {
-           width: (control.width*progress)/100
+           width:  control.width * progress / 100
            height: control.height
            color: "#5080AA"
         }
     }
+
+
 }

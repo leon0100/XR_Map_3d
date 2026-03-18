@@ -478,7 +478,7 @@ void BLEManager::slotTrackTimeout()
 
 void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
 {
-    if(bleCount_++ % 2 != 0) {
+    if(bleCount_++ % 5 != 0) {
         return;
     }
     // qDebug() << "trackIndex_....." << trackIndex_;

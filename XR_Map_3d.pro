@@ -147,8 +147,8 @@ DISTFILES += \
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
-android {
 
+android {
     QT += androidextras
 
     include($$PWD/android_openssl-master/openssl.pri)

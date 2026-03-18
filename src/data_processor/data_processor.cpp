@@ -400,14 +400,13 @@ void DataProcessor::onMosaicUpdated()
 void DataProcessor::runCoalescedWork()
 {
     // qDebug() << "DataProcessor::runCoalescedWork..................";
-    const uint32_t maskNow = requestedMask_.exchange(0);
+    const uint32_t maskNow  = requestedMask_.exchange(0);
     const bool wantSurface  = maskNow & WF_Surface;
     const bool wantMosaic   = maskNow & WF_Mosaic;
     const bool wantIsobaths = maskNow & WF_Isobaths;
 
     WorkBundle wb;
-    // if (wantSurface && !pendingSurfaceIndxs_.isEmpty() && (updateIsobaths_ || updateMosaic_)) {
-    if (wantSurface && !pendingSurfaceIndxs_.isEmpty()) {
+    if (wantSurface && !pendingSurfaceIndxs_.isEmpty() && (updateIsobaths_ || updateMosaic_)) {
         wb.surfaceVec.reserve(pendingSurfaceIndxs_.size());
 
         for (auto it = pendingSurfaceIndxs_.cbegin(); it != pendingSurfaceIndxs_.cend(); ++it) {

@@ -188,7 +188,6 @@ signals:
     void depthComplete(float depth);
     void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ);
 
-
 private slots:
     void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
     void onScanFinished();

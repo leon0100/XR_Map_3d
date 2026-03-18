@@ -735,8 +735,10 @@ bool Core::exportUSBLToCSV(QString filePath)
             row_data.append(QString("%1").arg(i));
             row_data.append(QString(",%1,%2,%3").arg(epoch->yaw()).arg(epoch->pitch()).arg(epoch->roll()));
             row_data.append(QString(",%1,%2").arg(boatPosNed.n).arg(boatPosNed.e));
-            row_data.append(QString(",%1,%2,%3").arg(epoch->usblSolution().ping_counter).arg(epoch->usblSolution().carrier_counter).arg(epoch->usblSolution().snr));
-            row_data.append(QString(",%1,%2,%3").arg(epoch->usblSolution().azimuth_deg).arg(epoch->usblSolution().elevation_deg).arg(epoch->usblSolution().distance_m));
+            row_data.append(QString(",%1,%2,%3").arg(epoch->usblSolution().ping_counter).
+                            arg(epoch->usblSolution().carrier_counter).arg(epoch->usblSolution().snr));
+            row_data.append(QString(",%1,%2,%3").arg(epoch->usblSolution().azimuth_deg).
+                            arg(epoch->usblSolution().elevation_deg).arg(epoch->usblSolution().distance_m));
 
             row_data.append("\n");
             logger_.dataExport(row_data);
@@ -750,7 +752,8 @@ bool Core::exportUSBLToCSV(QString filePath)
 
 bool Core::exportPlotAsCVS(QString filePath, const ChannelId& channelId, float decimation)
 {
-    QString export_file_name = isOpenedFile() ? openedfilePath_.section('/', -1).section('.', 0, 0) : QDateTime::currentDateTime().toString("yyyy.MM.dd_hh:mm:ss").replace(':', '.');
+    QString export_file_name = isOpenedFile() ? openedfilePath_.section('/', -1).section('.', 0, 0)
+                        : QDateTime::currentDateTime().toString("yyyy.MM.dd_hh:mm:ss").replace(':', '.');
     logger_.creatExportStream(filePath + "/" + export_file_name + ".csv");
 
     bool meas_nbr = true;
@@ -896,7 +899,8 @@ bool Core::exportPlotAsCVS(QString filePath, const ChannelId& channelId, float d
         }
 
         if (rangefinder)
-            epoch->distAvail() ? row_data.append(QString("%1,").arg((float)epoch->rangeFinder())) : row_data.append("0,");
+            epoch->distAvail() ? row_data.append(QString("%1,").arg((float)epoch->rangeFinder()))
+                               : row_data.append("0,");
 
         if (bottom_depth) {
             prev_dist_proc = epoch->distProccesing(channelId);
@@ -930,7 +934,8 @@ bool Core::exportPlotAsCVS(QString filePath, const ChannelId& channelId, float d
 
                     row_data.append(QString("%1-%2-%3").arg(t_sep.tm_year).arg(t_sep.tm_mon).arg(t_sep.tm_mday));
                     row_data.append(",");
-                    row_data.append(QString("%1:%2:%3").arg(t_sep.tm_hour).arg(t_sep.tm_min).arg((double)t_sep.tm_sec+(double)dt->nanoSec/1e9));
+                    row_data.append(QString("%1:%2:%3").arg(t_sep.tm_hour).arg(t_sep.tm_min)
+                                        .arg((double)t_sep.tm_sec+(double)dt->nanoSec/1e9));
                     row_data.append(",");
                 }
                 else {
@@ -1008,7 +1013,8 @@ bool Core::exportPlotAsXTF(QString filePath)
         return false;
     }
 
-    QString export_file_name = isOpenedFile() ? openedfilePath_.section('/', -1).section('.', 0, 0) : QDateTime::currentDateTime().toString("yyyy.MM.dd_hh:mm:ss").replace(':', '.');
+    QString export_file_name = isOpenedFile() ? openedfilePath_.section('/', -1).section('.', 0, 0)
+           : QDateTime::currentDateTime().toString("yyyy.MM.dd_hh:mm:ss").replace(':', '.');
     logger_.creatExportStream(filePath + "/_" + export_file_name + ".xtf");
 
     auto ch1 = plot2dList_[0]->plotDatasetChannel();
@@ -1140,7 +1146,8 @@ void Core::UILoad(QObject* object, const QUrl& url)
     createMapTileManagerConnections();
     createScene3dConnections();
 
-    QMetaObject::invokeMethod(dataProcessor_, "setBottomTrackPtr", Qt::QueuedConnection, Q_ARG(BottomTrack*, scene3dViewPtr_->bottomTrack().get()));
+    QMetaObject::invokeMethod(dataProcessor_, "setBottomTrackPtr", Qt::QueuedConnection,
+                              Q_ARG(BottomTrack*, scene3dViewPtr_->bottomTrack().get()));
     QMetaObject::invokeMethod(deviceManagerWrapperPtr_->getWorker(), "createLocationReader", Qt::QueuedConnection);
 }
 
@@ -1154,7 +1161,8 @@ void Core::setMosaicChannels(const QString& firstChStr, const QString& secondChS
         Q_UNUSED(name1)
         Q_UNUSED(name2)
 
-        QMetaObject::invokeMethod(dataProcessor_, "setMosaicChannels", Qt::QueuedConnection, Q_ARG(ChannelId, ch1), Q_ARG(uint8_t, sub1), Q_ARG(ChannelId, ch2), Q_ARG(uint8_t, sub2));
+        QMetaObject::invokeMethod(dataProcessor_, "setMosaicChannels", Qt::QueuedConnection,
+                Q_ARG(ChannelId, ch1), Q_ARG(uint8_t, sub1), Q_ARG(ChannelId, ch2), Q_ARG(uint8_t, sub2));
     }
 }
 
@@ -1300,29 +1308,35 @@ void Core::setIsAttitudeExpected(bool state)
     dataHorizon_->setIsAttitudeExpected(state);
 }
 
- void Core::openFileFromMenu()
+void Core::openFileFromMenu()
 {
+    QStringList fileNames;
+    if(lastOpenFilePath_.isNull()) {
+        fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), qApp->applicationDirPath().append("/data/"),
+            "Toslon Sonar Log(*.csv);;Toslon Sonar Log(*.tsl3);;Toslon Sonar Log(*.tslw);;Toslon Sonar(*.kml *.kmz)");
+    }
+    else {
+        fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), lastOpenFilePath_,
+            "Toslon Sonar Log(*.csv);;Toslon Sonar Log(*.tsl3);;Toslon Sonar Log(*.tslw);;Toslon Sonar(*.kml *.kmz)");
+    }
 
-     QStringList fileNames;
-     if(lastOpenFilePath_.isNull()) {
-         fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), qApp->applicationDirPath().append("/data/"),
-                                                   "Toslon Sonar Log(*.csv);;Toslon Sonar Log(*.tsl3);;Toslon Sonar Log(*.tslw);;Toslon Sonar(*.kml *.kmz)");
-     } else {
-         fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), lastOpenFilePath_,
-                                                   "Toslon Sonar Log(*.csv);;Toslon Sonar Log(*.tsl3);;Toslon Sonar Log(*.tslw);;Toslon Sonar(*.kml *.kmz)");
-     }
+    int fileCnt = fileNames.count();
+    if(fileCnt < 1) {
+        return;
+    }
+    /*-先保存住地址-*/
+    QFileInfo fi = QFileInfo(fileNames.last());
+    lastOpenFilePath_ = fi.absolutePath();
 
-     int fileCnt = fileNames.count();
-     if(fileCnt < 1) {
-         return;
-     }
-     /*-先保存住地址-*/
-     QFileInfo fi = QFileInfo(fileNames.last());
-     lastOpenFilePath_ = fi.absolutePath();
+    if (progress_) {
+        progress_->setProperty("title", tr("Opening Files..."));
+        progress_->setProperty("statusText", tr("Preparing to open files..."));
+        progress_->setProperty("indeterminate", true);
+        QMetaObject::invokeMethod(progress_, "open");
+    }
 
-     /*-----------------------open kml/kmz--------------------------*/
-     if(fileNames.last().endsWith("kml") || fileNames.last().endsWith("kmz"))
-     {
+    /*-----------------------open kml/kmz--------------------------*/
+    if(fileNames.last().endsWith("kml") || fileNames.last().endsWith("kmz")) {
          // currentFileType = filetype_kmlkmz;
          // if(fileCnt > 1){
          //     // QMessageBox::information(NULL, tr("Hint"), tr("Only One file in this format Allowed!"), tr("OK"));
@@ -1363,21 +1377,30 @@ void Core::setIsAttitudeExpected(bool state)
          // }
 
          // return;
-     }
-     /*-----------------------open tsl3/tslw/csv--------------------------*/
-     else
-     {
-         /*-检查一下当前打开的总大小-*/
-         int size_sum = 0;
-         for(int i = 0; i < fileCnt; i++) {
-             QFile file(fileNames.at(i));
-             size_sum += file.size()/1024/1024;
-             if(size_sum > 1024) {
-                 // QMessageBox::information(NULL, tr("Hint"), tr("File size is too large!"), tr("OK"));
-                 // GIF->dialogInfo(Dialog_OK, tr("File size is too large!"));
-                 return;
-             }
-         }
+    }
+    /*-----------------------open tsl3/tslw/csv--------------------------*/
+    else
+    {
+        int size_sum = 0;
+        for(int i = 0; i < fileCnt; i++) {
+            QFile file(fileNames.at(i));
+
+            size_sum += file.size() / 1024 / 1024;
+            if(size_sum > 1024) {
+                // QMessageBox::information(NULL, tr("Hint"), tr("File size is too large!"), tr("OK"));
+                // GIF->dialogInfo(Dialog_OK, tr("File size is too large!"));
+                return;
+            }
+
+            if (progress_) {
+                QString statusText = tr("Opening file %1 of %2").arg(i+1).arg(fileCnt);
+                progress_->setProperty("setStatus", statusText);
+                double progress = static_cast<double>(i) / fileCnt;
+                progress_->setProperty("setProgress", progress);
+                progress_->setProperty("setIndeterminate", false);
+            }
+
+        }
 
         if(fileNames.last().endsWith("csv")) {
             currentFileType_ = filetype_CSV;
@@ -1467,6 +1490,25 @@ void Core::createControllers()
 #else
     bleManager_ = std::make_shared<BLEManager>();  // Android平台上也创建实例，但内部会处理平台兼容性
 #endif
+
+
+
+    if (deviceManagerWrapperPtr_) {
+        DeviceManager* deviceManager = deviceManagerWrapperPtr_->getWorker();
+        if (deviceManager) {
+            connect(deviceManager, &DeviceManager::progressUpdate,
+                    this, [this](double progress, QString statusText) {
+                        setFileProgress(progress);
+                        setFileProgressStatus(statusText);
+                    });
+
+            connect(deviceManager, &DeviceManager::progressComplete,
+                    this, [this]() {
+                        setFileProgress(1.0);
+                        setFileProgressStatus(tr("Processing completed"));
+                    });
+        }
+    }
 }
 
 #ifdef SEPARATE_READING
@@ -1601,6 +1643,7 @@ QHash<QUuid, QString> Core::getLinkNames() const
 
     return retVal;
 }
+
 
 bool Core::isOpenedFile() const
 {
@@ -1779,6 +1822,57 @@ int Core::getDataProcessorState() const
 void Core::initStreamList()
 {
     deviceManagerWrapperPtr_->initStreamList();
+}
+
+
+QObject* Core::progress() const
+{
+    return progress_;
+}
+
+void Core::setProgress(QObject* dialog)
+{
+    if (progress_ != dialog) {
+        progress_ = dialog;
+        DeviceManager* deviceManager = deviceManagerWrapperPtr_->getWorker();
+        if (deviceManager) {
+            deviceManager->setProgressDialog(dialog);
+        }
+        emit progressChanged();
+    }
+}
+
+void Core::cancelFileOpening()
+{
+    // 实现取消文件打开的逻辑
+    qDebug() << "File opening cancelled by user";
+    // 可以设置一个标志位来中断文件打开过程
+}
+
+double Core::fileProgress() const
+{
+    return fileProgress_;
+}
+
+void Core::setFileProgress(double progress)
+{
+    if (fileProgress_ != progress) {
+        fileProgress_ = progress;
+        emit fileProgressChanged();
+    }
+}
+
+QString Core::fileProgressStatus() const
+{
+    return fileProgressStatus_;
+}
+
+void Core::setFileProgressStatus(const QString& status)
+{
+    if (fileProgressStatus_ != status) {
+        fileProgressStatus_ = status;
+        emit fileProgressStatusChanged();
+    }
 }
 
 void Core::createDataProcessor()
