@@ -6,7 +6,7 @@
 #endif
 
 // #include "serialport.h"
-
+#include "console.h"
 
 // FiFoTModem fifoTModem_;
 quint64 totalRxCount = 0;
@@ -535,6 +535,18 @@ void BLEManager::disconnectDevice()
     }
 
     QMetaObject::invokeMethod(parser_, "stop", Qt::QueuedConnection);
+}
+
+void BLEManager::operateBleOnOff(bool isOn)
+{
+    qDebug() << "Manager::operateBleOnOff.........";
+    if(isOn) {
+        GIF->dialogInfo(Dialog_OK, tr("Please Click the Device Name in the List below to Establish Connection."));
+    }
+    else {
+        disconnectDevice();
+    }
+
 }
 
 

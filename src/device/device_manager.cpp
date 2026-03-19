@@ -88,16 +88,11 @@ int DeviceManager::calcAverageChartLosses()
     return retVal;
 }
 
-QObject* DeviceManager::progressDialog() const
-{
-    return progressDialog_;
-}
 
 void DeviceManager::setProgressDialog(QObject* dialog)
 {
     if (progressDialog_ != dialog) {
         progressDialog_ = dialog;
-        emit progressDialogChanged();
     }
 }
 
@@ -598,7 +593,6 @@ double DeviceManager::dm_to_dd(double ddmmmmmmm)
 
 void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 {
-
     tslByteArray.remove(0, 64);
 
     /*-将去掉文件头的所有剩下的声呐数据按照一帧一帧的模式放入临时容器-*/
@@ -620,20 +614,12 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     // double last_lon = dm_to_dd((double)tslSingleStru.boat.longitude/100000.0f);
     // double last_lat = dm_to_dd((double)tslSingleStru.boat.latitude/100000.0f);
 
-    // 初始化进度对话框
-    if (progressDialog_) {
-        QMetaObject::invokeMethod(progressDialog_, "setTitle", Q_ARG(QString, tr("Processing Data...")));
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QString, tr("Processing %1 frames...").arg(tslWCnt)));
-        QMetaObject::invokeMethod(progressDialog_, "setIndeterminate", Q_ARG(bool, false));
-        QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(double, 0.0));
-    }
-
     QList<Position> track;
     QVector<float> vec_CSV;
     double minZ = 0.0, maxZ = 0.0;
 
     tslWCnt -= 230;
-    int progressUpdateInterval = qMax(1, tslWCnt / 100);
+    int progressInterval = qMax(1, tslWCnt / 100);
     for(int z = 0; z < tslWCnt; z++)
     {
         QByteArray tslDataTemp = tslByteList.at(z);
@@ -647,29 +633,21 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
             continue;
         }
 
-        // if((z%100) == 0) {
-        //     mapGraphicsView_->objFileProgress_->setProperty("value",z+1);
-        //     QApplication::processEvents();
-        // }
+
         // 更新进度条（按照百分比）
-        if (progressDialog_ && (z % progressUpdateInterval == 0 || z == tslWCnt - 1)) {
+        if (progressDialog_ && (z % progressInterval == 0 || z == (tslWCnt - 1))) {
             double progress = static_cast<double>(z + 1) / tslWCnt;
-            // QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(double, progress));
-
-            QString statusText = tr("Processing frame %1 of %2 (%3%)").arg(z + 1).arg(tslWCnt)
-                                    .arg(static_cast<int>(progress * 100));
-            // QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QString, statusText));
-
-            progressDialog_->setProperty("setStatus", statusText);
-            progressDialog_->setProperty("setProgress", progress);
-
-            emit progressUpdate(progress, statusText);
+            QString statusText = tr("Processing frame %1 of %2 (%3%)")
+                            .arg(z + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+            QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
+            QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
+            QCoreApplication::processEvents();
         }
 
         tsl_w tslSingleStruct;
         memcpy(&tslSingleStruct, tslDataTemp, sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w));
         tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f)*100000;
-        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude/100000.0f)*100000;
+        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f)*100000;
 
         Position pos;
         pos.lla.latitude = tslSingleStruct.boat.latitude / 100000.f;
@@ -680,14 +658,16 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         minZ = std::min(minZ, pos.lla.altitude);
         maxZ = std::max(maxZ, pos.lla.altitude);
         vec_CSV.append(pos.lla.altitude);
-        // qDebug() << "pos.lla.altitude........." << pos.lla.altitude;
 
-        emit positionComplete_tslw(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude);
+        bool enableReander = (z + 1) == tslWCnt ? true : false;
+        emit positionComplete_tslw(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude, enableReander);
     }
     // qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 
-    progressDialog_->setProperty("setProgress", 1.0);
-    progressDialog_->setProperty("setStatus", tr("Processing completed"));
+    if (progressDialog_) {
+        QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
+        QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
+    }
 
     emit fileStopsOpening2(vec_CSV, minZ, maxZ);
 }

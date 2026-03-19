@@ -221,7 +221,7 @@ public slots:
     void addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
     void addPosition_realTime(double lat, double lon, double depth);
     void addPosition_CSV(double lat, double lon, int depth);
-    void addPosition_tslw(double lat, double lon, int depth);
+    void addPosition_tslw(double lat, double lon, int depth, bool enableRender);
     void addPositionRTK(Position position);
 
     void addDepth(float depth);

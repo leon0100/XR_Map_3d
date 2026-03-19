@@ -74,7 +74,7 @@
         <file>QmlCommon/KText.qml</file>
         <file>QmlCommon/KTextField.qml</file>
         <file>QmlCommon/KSpinBox.qml</file>
-	<file>QmlCommon/KWaitProgressBar.qml</file>
+        <file>QmlCommon/KWaitProgressBar.qml</file>
         <file>SceneControlMenu.qml</file>
         <file>BottomTrackControlMenu.qml</file>
         <file>MpcFilterControlMenu.qml</file>
@@ -110,5 +110,8 @@
         <file>Bluetooth/qmldir</file>
         <file>Bluetooth/loading.qml</file>
         <file>CollapseRectangle.qml</file>
+        <file>QmlCommon/KDialogOK.qml</file>
+        <file>QmlCommon/KDialogYesNo.qml</file>
+        <file>QmlCommon/KDialogCheck.qml</file>
     </qresource>
 </RCC>

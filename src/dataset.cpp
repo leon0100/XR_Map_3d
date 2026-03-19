@@ -719,7 +719,7 @@ void Dataset::addPosition_CSV(double lat, double lon, int depth)
 
 }
 
-void Dataset::addPosition_tslw(double lat, double lon, int depth)
+void Dataset::addPosition_tslw(double lat, double lon, int depth, bool enableRender)
 {
     Epoch* lastEp = last();
     if (!lastEp) {
@@ -748,7 +748,10 @@ void Dataset::addPosition_tslw(double lat, double lon, int depth)
         boatLatitute_  = pos.lla.latitude;
         boatLongitude_ = pos.lla.longitude;
 
-        emit positionAdded(lastIndx); //nie:test
+        if(enableRender) {
+            emit positionAdded(lastIndx); //nie:test
+        }
+
     }
 }
 

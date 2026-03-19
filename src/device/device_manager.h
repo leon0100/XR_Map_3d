@@ -34,19 +34,7 @@ public:
     int calcAverageChartLosses();
 
 
-
-    Q_PROPERTY(QObject* progressDialog READ progressDialog WRITE setProgressDialog NOTIFY progressDialogChanged)
-    QObject* progressDialog() const;
     void setProgressDialog(QObject* dialog);
-
-    Q_PROPERTY(double fileProgress READ fileProgress WRITE setFileProgress NOTIFY fileProgressChanged)
-    Q_PROPERTY(QString fileProgressStatus READ fileProgressStatus WRITE setFileProgressStatus
-                   NOTIFY fileProgressStatusChanged)
-    double fileProgress() const;
-    void setFileProgress(double progress);
-    QString fileProgressStatus() const;
-    void setFileProgressStatus(const QString& status);
-
 
 
 public slots:
@@ -122,7 +110,7 @@ signals:
     void rangefinderComplete(const ChannelId& channelId, float distance);
     void positionComplete(double lat, double lon, uint32_t date, uint32_t time);
     void positionComplete_CSV(double lat, double lon,int depth);
-    void positionComplete_tslw(double lat, double lon,int depth);
+    void positionComplete_tslw(double lat, double lon,int depth, bool enableRender);
     void positionCompleteRTK(Position position);
     void depthComplete(float depth);
     void gnssVelocityComplete(double hSpeed, double course);
@@ -136,16 +124,8 @@ signals:
     // logger
     void sendProtoFrame(const Parsers::ProtoBinOut& protoOut);
 
-#ifdef SEPARATE_READING
-    void fileStartOpening();
-    void fileBreaked(bool);
-    void onFileReadEnough();
-#endif
     void fileOpened();
 
-    void progressDialogChanged();
-    void progressUpdate(double progress, QString statusText);
-    void progressComplete();
 
 
 private:
@@ -200,9 +180,6 @@ private:
     int progress_;
     bool isConsoled_;
     volatile bool break_;
-#ifdef SEPARATE_READING
-    bool onOpen_{ false };
-#endif
 
     bool isUSBLBeaconDirectAsk = false;
     QTimer* beacon_timer = nullptr;

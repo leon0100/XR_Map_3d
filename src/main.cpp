@@ -154,6 +154,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("linkManagerWrapper", corePtr->getLinkManagerWrapperPtr());
     engine.rootContext()->setContextProperty("deviceManagerWrapper", corePtr->getDeviceManagerWrapperPtr());
     engine.rootContext()->setContextProperty("logViewer", corePtr->getConsolePtr());
+    engine.rootContext()->setContextProperty("GetInterface", GetInterface::getInterface());
 
     corePtr->consoleInfo("Run...");
     corePtr->setEngine(&engine);
@@ -162,7 +163,7 @@ int main(int argc, char *argv[])
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &app,[url](QObject *obj, const QUrl &objUrl) {
         corePtr->refreshMap();
-        if (!obj && url == objUrl)  {
+        if (!obj && url == objUrl) {
             QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);

@@ -79,7 +79,6 @@ public:
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
     Q_PROPERTY(QObject*  progress       READ progress     WRITE setProgress     NOTIFY  progressChanged)
 
-
     void setEngine(QQmlApplicationEngine *engine);
     Console* getConsolePtr();
     Dataset* getDatasetPtr();
@@ -156,34 +155,13 @@ public slots:
     void createScene3dConnections();
 
     QObject* progress() const;
-    Q_INVOKABLE void setProgress(QObject* dialog);
-    void cancelFileOpening();
-    Q_PROPERTY(double fileProgress READ fileProgress WRITE setFileProgress NOTIFY fileProgressChanged)
-    Q_PROPERTY(QString fileProgressStatus READ fileProgressStatus WRITE setFileProgressStatus
-                   NOTIFY fileProgressStatusChanged)
-    double fileProgress() const;
-    void setFileProgress(double progress);
-    QString fileProgressStatus() const;
-    void setFileProgressStatus(const QString& status);
-    double fileProgress_ = 0.0;
-    QString fileProgressStatus_;
-
-#ifdef FLASHER
-    void connectOpenedLinkAsFlasher(QString pn);
-    void setFlasherData(QString data);
-    void releaseFlasherLink();
-#endif
-
-#if defined(FAKE_COORDS)
-    Q_INVOKABLE void setPosZeroing(bool state);
-#endif
+    void setProgress(QObject* dialog);
 
     Q_INVOKABLE QString getChannel1Name() const;
     Q_INVOKABLE QString getChannel2Name() const;
     Q_INVOKABLE QVariant getConvertedMousePos(int indx, int mouseX, int mouseY);
 
     Q_INVOKABLE void setIsAttitudeExpected(bool state);
-
     Q_INVOKABLE void openFileFromMenu();
 
 signals:
@@ -199,8 +177,8 @@ signals:
     void currentMapLevelChanged();
 
     void progressChanged();
-    void fileProgressChanged();
-    void fileProgressStatusChanged();
+    // void fileProgressChanged();
+    // void fileProgressStatusChanged();
 
     void drawRealtimeContour();
 
@@ -209,6 +187,8 @@ signals:
 
 private:
     QObject* progress_ = nullptr;
+    // double fileProgress_ = 0.0;
+    // QString fileProgressStatus_;
 
 
 private slots:
@@ -221,6 +201,7 @@ private slots:
     void onZoomLevelChanged(int level);
 
     void slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ);
+
 
 private:
     /*methods*/

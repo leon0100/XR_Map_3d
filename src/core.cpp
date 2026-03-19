@@ -1328,10 +1328,8 @@ void Core::openFileFromMenu()
     QFileInfo fi = QFileInfo(fileNames.last());
     lastOpenFilePath_ = fi.absolutePath();
 
+
     if (progress_) {
-        progress_->setProperty("title", tr("Opening Files..."));
-        progress_->setProperty("statusText", tr("Preparing to open files..."));
-        progress_->setProperty("indeterminate", true);
         QMetaObject::invokeMethod(progress_, "open");
     }
 
@@ -1393,13 +1391,13 @@ void Core::openFileFromMenu()
             }
 
             if (progress_) {
-                QString statusText = tr("Opening file %1 of %2").arg(i+1).arg(fileCnt);
-                progress_->setProperty("setStatus", statusText);
+                QString statusText = tr("Opening file %1 / %2").arg(i+1).arg(fileCnt);
+                QMetaObject::invokeMethod(progress_, "setStatus", Q_ARG(QVariant, statusText));
                 double progress = static_cast<double>(i) / fileCnt;
-                progress_->setProperty("setProgress", progress);
-                progress_->setProperty("setIndeterminate", false);
+                QMetaObject::invokeMethod(progress_, "setProgress", Q_ARG(QVariant, progress));
+                QMetaObject::invokeMethod(progress_, "setIndeterminate", Q_ARG(QVariant, false));
+                QCoreApplication::processEvents();
             }
-
         }
 
         if(fileNames.last().endsWith("csv")) {
@@ -1426,6 +1424,10 @@ void Core::openFileFromMenu()
             emit deviceManagerWrapperPtr_->sendOpenFile_tslw(nowFileName);
             openedfilePath_ = nowFileName;
         }
+
+        // if (progress_) {
+        //     QMetaObject::invokeMethod(progress_, "close");
+        // }
     }
 
 }
@@ -1485,30 +1487,7 @@ void Core::createControllers()
     scene3dToolBarController_             = std::make_shared<Scene3dToolBarController>();
     usblViewControlMenuController_        = std::make_shared<UsblViewControlMenuController>();
 
-#ifndef Q_OS_ANDROID
     bleManager_                           = std::make_shared<BLEManager>();
-#else
-    bleManager_ = std::make_shared<BLEManager>();  // Android平台上也创建实例，但内部会处理平台兼容性
-#endif
-
-
-
-    if (deviceManagerWrapperPtr_) {
-        DeviceManager* deviceManager = deviceManagerWrapperPtr_->getWorker();
-        if (deviceManager) {
-            connect(deviceManager, &DeviceManager::progressUpdate,
-                    this, [this](double progress, QString statusText) {
-                        setFileProgress(progress);
-                        setFileProgressStatus(statusText);
-                    });
-
-            connect(deviceManager, &DeviceManager::progressComplete,
-                    this, [this]() {
-                        setFileProgress(1.0);
-                        setFileProgressStatus(tr("Processing completed"));
-                    });
-        }
-    }
 }
 
 #ifdef SEPARATE_READING
@@ -1839,39 +1818,6 @@ void Core::setProgress(QObject* dialog)
             deviceManager->setProgressDialog(dialog);
         }
         emit progressChanged();
-    }
-}
-
-void Core::cancelFileOpening()
-{
-    // 实现取消文件打开的逻辑
-    qDebug() << "File opening cancelled by user";
-    // 可以设置一个标志位来中断文件打开过程
-}
-
-double Core::fileProgress() const
-{
-    return fileProgress_;
-}
-
-void Core::setFileProgress(double progress)
-{
-    if (fileProgress_ != progress) {
-        fileProgress_ = progress;
-        emit fileProgressChanged();
-    }
-}
-
-QString Core::fileProgressStatus() const
-{
-    return fileProgressStatus_;
-}
-
-void Core::setFileProgressStatus(const QString& status)
-{
-    if (fileProgressStatus_ != status) {
-        fileProgressStatus_ = status;
-        emit fileProgressStatusChanged();
     }
 }
 

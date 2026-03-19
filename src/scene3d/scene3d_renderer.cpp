@@ -183,11 +183,14 @@ void GraphicsScene3dRenderer::drawObjects()
     m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
     glDisable(GL_DEPTH_TEST);
 
-    // navigation arrow
+    // navigation arrow - 应用相同的 zOffset，保持与等值线同一高度
     {
         QMatrix4x4 nModel;
         nModel.setToIdentity();
-        nModel.translate(navigationArrowRenderImpl_.getPosition());
+        // 在 position 的 Z 坐标上添加 zOffset，使导航箭头提升到与等值线相同高度
+        QVector3D elevatedPos = navigationArrowRenderImpl_.getPosition();
+        elevatedPos.setZ(elevatedPos.z() - zOffset);
+        nModel.translate(elevatedPos);
         nModel.rotate(navigationArrowRenderImpl_.getAngle(), 0.f, 0.f, 1.f);
         float distance =  m_camera.distToFocusPoint();
         float perspFixFovRad = qDegreesToRadians(perspFixFov);

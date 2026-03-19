@@ -49,9 +49,11 @@ public:
     Q_PROPERTY(QColor controlBorderColor READ controlBorderColor NOTIFY changed)
     Q_PROPERTY(QColor controlSolidBackColor READ controlSolidBackColor NOTIFY changed)
     Q_PROPERTY(QColor controlSolidBorderColor READ controlSolidBorderColor NOTIFY changed)
-    Q_PROPERTY(int screenSize READ screenSize NOTIFY changed)
-    Q_PROPERTY(int menuWidth  READ menuWidth  NOTIFY changed)
-    Q_PROPERTY(int iconSize   READ iconSize  NOTIFY changed)
+    Q_PROPERTY(int screenSize   READ screenSize   NOTIFY changed)
+    Q_PROPERTY(int screenWidth  READ screenWidth  NOTIFY changed)
+    Q_PROPERTY(int screenHeight READ screenHeight NOTIFY changed)
+    Q_PROPERTY(int menuWidth    READ menuWidth    NOTIFY changed)
+    Q_PROPERTY(int iconSize     READ iconSize     NOTIFY changed)
 
     Q_PROPERTY(int themeID READ themeId WRITE setTheme NOTIFY changed)
 
@@ -60,7 +62,6 @@ public:
 
     Q_INVOKABLE void updateResCoeff() {
         qreal currCoeff = checkResolutionCoeff();
-
         if (!qFuzzyCompare(1.0 + currCoeff, 1.0 + resolutionCoeff_)) {
             resolutionCoeff_ = currCoeff;
             emit changed();
@@ -78,16 +79,18 @@ public:
     QFont textFont() { return *_textFont; }
     QFont textFontS() { return *_textFontS; }
 
-    QColor menuBackColor() { return *_menuBackColor; }
+    QColor menuBackColor()  { return *_menuBackColor; }
     QColor frameBackColor() { return *_frameBackColor; }
 
-    QColor controlBackColor() { return *_controlBackColor; }
-    QColor controlBorderColor() { return *_controlBorderColor; }
-    QColor controlSolidBackColor() { return *_controlSolidBackColor; }
+    QColor controlBackColor()        { return *_controlBackColor; }
+    QColor controlBorderColor()      { return *_controlBorderColor; }
+    QColor controlSolidBackColor()   { return *_controlSolidBackColor; }
     QColor controlSolidBorderColor() { return *_controlSolidBorderColor; }
-    int screenSize() { return screenSize_; }
-    int menuWidth()  { return menuWidth_; }
-    int iconSize()   { return iconSize_;  }
+    int screenSize()   { return screenSize_; }
+    int screenWidth()  { return screenWidth_; }
+    int screenHeight() { return screenHeight_; }
+    int menuWidth()    { return menuWidth_; }
+    int iconSize()     { return iconSize_;  }
 
     void setTheme(int theme_id = 0) {
         _id = theme_id;
@@ -158,9 +161,11 @@ public:
         QScreen *screen = QGuiApplication::primaryScreen();
         if (screen) {
             QSize size = screen->size();
-            screenSize_ = qMin(size.width(), size.height());
-            menuWidth_ = screenSize_ * 0.06;
-            iconSize_  = menuWidth_  * 0.3;
+            screenWidth_  = size.width();
+            screenHeight_ = size.height();
+            screenSize_   = qMin(screenWidth_, screenHeight_);
+            menuWidth_    = screenSize_ * 0.06;
+            iconSize_     = menuWidth_  * 0.3;
         } else {
             screenSize_ = 600;
         }
@@ -213,7 +218,7 @@ protected:
     QColor* _controlBorderColor;
     QColor* _controlSolidBackColor;
     QColor* _controlSolidBorderColor;
-    int32_t screenSize_;
+    int32_t screenSize_, screenWidth_, screenHeight_;
     int32_t menuWidth_ = 70;
     int32_t iconSize_ = 18;
 

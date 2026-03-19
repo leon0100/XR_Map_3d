@@ -328,11 +328,7 @@ void TextRenderer::initFont()
 {
     m_chars.clear();
 
-
     QFont font;
-    //设置文字字体
-    font.setFamily("宋体");
-
     font.setPixelSize(m_fontPixelSize);
 
     QFontMetrics metrics(font);
@@ -362,6 +358,15 @@ void TextRenderer::initFont()
         tex->setMinificationFilter(QOpenGLTexture::Linear);
         tex->setMagnificationFilter(QOpenGLTexture::Linear);
         tex->setWrapMode(QOpenGLTexture::ClampToEdge);
+
+        Character character;
+        character.texture = tex;
+        character.num = c;
+        character.advance = metrics.horizontalAdvance(ch) << 6;
+        character.size = QVector2D(w, h);
+        character.bearing = QVector2D(0, metrics.ascent());
+
+        m_chars.insert(c, character);
     };
 
     auto loadRange = [&](ushort start, ushort end)

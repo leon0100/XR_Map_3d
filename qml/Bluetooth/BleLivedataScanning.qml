@@ -14,7 +14,6 @@ Item {
     property int iconSize: bleSize * 0.06
 
     signal signalCheckBoxToggle(int checkBoxId, bool checked)
-    signal signalBleOnOff(bool on)
 
     onVisibleChanged: {
         BleManager.setBleLiveScanningVisible(visible)
@@ -288,7 +287,9 @@ Item {
                                 onClicked: {
                                     if(switchControl.isOn) {
                                         switchControl.isOn = false;
-                                        BleManager.disconnectDevice();
+                                        BleManager.operateBleOnOff(false)
+                                    } else {
+                                        BleManager.operateBleOnOff(true)
                                     }
 
                                 }

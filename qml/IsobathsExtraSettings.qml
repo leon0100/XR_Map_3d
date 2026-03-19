@@ -12,6 +12,8 @@ MenuFrame {
 
     property CheckButton isobathsCheckButton
 
+    property var targetPlot: null
+
     width:  isobathSize * 1.1
     height: isobathSize * 0.65
     margins: 15
@@ -41,8 +43,6 @@ MenuFrame {
 
     ColumnLayout {
         spacing: 8
-
-        property var targetPlot: null
         CButton {
             id: updateBottomTrackButton
             text: qsTr("Processing")

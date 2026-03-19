@@ -84,6 +84,7 @@ ApplicationWindow  {
     IsobathsExtraSettings {
         visible: toolBarXR.contourMode
         x: toolBarXR.iconSize * 4
+        targetPlot: toolBarXR.targetPlot
     }
 
     BleLivedataScanning {
@@ -169,10 +170,6 @@ ApplicationWindow  {
     KProgress {
         id: fileProgress
         showCancelButton: true
-
-        onCancelRequested: {
-            core.cancelFileOpening()
-        }
     }
 
     function handleUpdateBottomTrack() {
@@ -216,6 +213,60 @@ ApplicationWindow  {
         }
         Qt.callLater(setupConnections);     
     }
+
+
+    KDialogOK {
+        id: dialogOK
+    }
+
+    KDialogYesNo {
+        id: dialogYesNo
+    }
+
+    KDialogCheck {
+        id: checkDialog
+    }
+
+    Connections
+    {
+        target: GetInterface
+
+        function onShowDialogInfo(type, msg) {
+            switch (type)
+            {
+                case 0:
+                    dialogOK.show(msg)
+                    break
+
+                case 1:
+                    dialogYesNo.show(msg)
+                    break
+
+                case 2:
+                    checkDialog.show(msg)
+                    break
+            }
+        }
+
+        function onFlashDialog(type) {
+            switch (type)
+            {
+                case 0:
+                    dialogOK.flash()
+                    break
+
+                case 1:
+                    dialogYesNo.flash()
+                    break
+
+                case 2:
+                    checkDialog.flash()
+                    break
+            }
+        }
+    }
+
+
 
     // banner on languageChanged
     property bool showBanner: false

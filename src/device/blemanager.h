@@ -159,6 +159,7 @@ public: //qml传给class
     Q_INVOKABLE void startStopScan(bool scan);
     Q_INVOKABLE void connectToDevice(int index);
     Q_INVOKABLE void disconnectDevice();
+    Q_INVOKABLE void operateBleOnOff(bool isOn);
     Q_INVOKABLE void sendData(const QString &datas);
     Q_INVOKABLE void sendData2(const QByteArray &data);
     Q_INVOKABLE void clearRealData();
