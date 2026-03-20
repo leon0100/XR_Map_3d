@@ -61,6 +61,9 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     if (indxs.empty()) {
         return;
     }
+
+    //autoAdjustEdgeLimit(indxs.size()); //这里暂时注释掉，不如一开始就给edgeLimit一个初始值100，然后让用户自己来调
+
     // Delaunay processing
     QVector<QVector3D> bTrData;
     {
@@ -427,8 +430,15 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
             int iFrom = rowFrom * hvSide + k;
             int iTo   = rowTo   * hvSide + k;
             if (!qFuzzyIsNull(vSrc[iFrom].z())) {
-                vDst[iTo][2] = vSrc[iFrom][2];
-                mDst[iTo]    = HeightType::kExrtapolation;
+                //使用加权平均平滑边界
+                float srcZ = vSrc[iFrom].z();
+                float dstZ = vDst[iTo].z();
+                if(!qFuzzyIsNull(dstZ)) {
+                    vDst[iTo][2] = 0.5f * srcZ + 0.5f * dstZ;
+                } else {
+                    vDst[iTo][2] = srcZ;
+                }
+                mDst[iTo] = HeightType::kExrtapolation;
             }
         }
     };
@@ -441,8 +451,15 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
             int iFrom = k * hvSide + colFrom;
             int iTo   = k * hvSide + colTo;
             if (!qFuzzyIsNull(vSrc[iFrom].z())) {
-                vDst[iTo][2] = vSrc[iFrom][2];
-                mDst[iTo]    = HeightType::kExrtapolation;
+                //使用加权平均平滑边界
+                float srcZ = vSrc[iFrom].z();
+                float dstZ = vDst[iTo].z();
+                if(!qFuzzyIsNull(dstZ)) {
+                    vDst[iTo][2] = 0.5f * srcZ + 0.5f * dstZ;
+                } else {
+                    vDst[iTo][2] = srcZ;
+                }
+                mDst[iTo] = HeightType::kExrtapolation;
             }
         }
     };
@@ -494,7 +511,9 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
             }
         }
     }
+
 }
+
 
 void SurfaceProcessor::refreshAfterEdgeLimitChange()
 {
@@ -564,6 +583,32 @@ void SurfaceProcessor::refreshAfterEdgeLimitChange()
     }
 
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
+}
+
+
+void SurfaceProcessor::autoAdjustEdgeLimit(int pointCount)
+{
+    const int minTrackPoints = 50;
+    const float maxEdgeLimit = 100.0f;
+    const float minEdgeLimit = 20.0f;
+
+    if(pointCount < minTrackPoints) {
+        float newEdgeLimit = maxEdgeLimit;
+        if(newEdgeLimit != edgeLimit_) {
+            edgeLimit_ = newEdgeLimit;
+            refreshAfterEdgeLimitChange();
+            qDebug() << "Auto-adjusted EdgeLimit to" << edgeLimit_ << "for" << pointCount << "points";
+        }
+    } else {
+        float newEdgeLimit = minEdgeLimit;
+        if(newEdgeLimit != edgeLimit_) {
+            edgeLimit_ = newEdgeLimit;
+            refreshAfterEdgeLimitChange();
+            qDebug() << "Auto-adjusted EdgeLimit to" << edgeLimit_ << "  for"
+                     << "for" << pointCount << "points";
+        }
+    }
+
 }
 
 bool SurfaceProcessor::canceled() const noexcept

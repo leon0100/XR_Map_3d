@@ -47,7 +47,7 @@ MenuFrame {
             id: updateBottomTrackButton
             text: qsTr("Processing")
             font.pixelSize: theme.iconSize
-            implicitWidth: isobathSize * 0.9
+            implicitWidth:  isobathSize * 0.9
             Layout.alignment: Qt.AlignCenter
             Layout.preferredHeight: theme.iconSize * 1.4
 
@@ -101,9 +101,10 @@ MenuFrame {
         //     }
         // }
 
+
         RowLayout {
             CText {
-                text: qsTr("Edge limit, m:") //定义了Delaunay三角剖分中的三角形边长的最大允许值
+                text: qsTr("Edge limit(m):") //定义了Delaunay三角剖分中的三角形边长的最大允许值
                 Layout.fillWidth: true
             }
             SpinBoxCustom {
@@ -112,7 +113,7 @@ MenuFrame {
                 from: 10
                 to: 1000
                 stepSize: 5
-                value: 20
+                value: 100
                 editable: false
 
                 property int decimals: 1
@@ -135,7 +136,7 @@ MenuFrame {
 
         RowLayout {
             CText {
-                text: qsTr("Step, m:") //控制等值线的步长，即相邻两条等值线之间的高度差。该参数直接影响等值线的密度和详细程度
+                text: qsTr("Step(m):") //控制等值线的步长，即相邻两条等值线之间的高度差。该参数直接影响等值线的密度和详细程度
                 Layout.fillWidth: true
             }
             SpinBoxCustom {
@@ -181,7 +182,7 @@ MenuFrame {
 
         RowLayout {
             CText {
-                text: qsTr("Extra width, m:")
+                text: qsTr("Extra width(m):")
             }
             Item {
                 Layout.fillWidth: true

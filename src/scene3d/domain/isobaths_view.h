@@ -28,7 +28,7 @@ public:
         QVector3D color_;
         float distToFocusPoint_;
         float lineStepSize_; // from dataprocessor
-        bool mVis_ = false;
+        bool  mVis_ = false;
     };
 
     explicit IsobathsView(QObject* parent = nullptr);

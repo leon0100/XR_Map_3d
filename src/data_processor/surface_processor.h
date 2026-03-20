@@ -39,12 +39,14 @@ public:
     int getThemeId() const;
     int getExtraWidth() const;
 
+
 private:
     void writeTriangleToMesh(const QVector3D& A, const QVector3D& B, const QVector3D& C, QSet<SurfaceTile*>& updatedTiles);
     QVector<QVector3D> generateExpandedPalette(int totalColors) const;
     void updateTexture() const;
     void propagateBorderHeights(QSet<SurfaceTile*>& changedTiles);
     void refreshAfterEdgeLimitChange();
+    void autoAdjustEdgeLimit(int pointCount);
     bool canceled() const noexcept;
 
 private:
@@ -71,4 +73,5 @@ private:
     int extraWidth_;
     bool originSet_;
     QSet<TileKey> visibleTileKeys_;
+
 };

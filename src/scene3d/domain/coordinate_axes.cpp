@@ -86,9 +86,9 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     shaderProgram->setUniformValue(matrixLoc, projection * view * model );
     shaderProgram->enableAttributeArray(posLoc);
 
-    QVector<QVector3D> axis_x{{0.0f, 0.0f, 0.0f}, {m_position.x()+10.0f, m_position.y(),       m_position.z()}};
-    QVector<QVector3D> axis_y{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y()+10.0f, m_position.z()}};
-    QVector<QVector3D> axis_z{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y(),       m_position.z()+10.0f}};
+    QVector<QVector3D> axis_x{{0.0f, 0.0f, 0.0f}, {m_position.x()+8.0f,  m_position.y(),      m_position.z()}};
+    QVector<QVector3D> axis_y{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y()+8.0f, m_position.z()}};
+    QVector<QVector3D> axis_z{{0.0f, 0.0f, 0.0f}, {m_position.x(),       m_position.y(),      m_position.z()+8.0f}};
 
     ctx->glLineWidth(8.0f);
     shaderProgram->setAttributeArray(posLoc, axis_x.constData());
@@ -111,7 +111,7 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     QMatrix4x4 textProjection;
     textProjection.ortho(vport.toRect());
 
-    const float scale = 1.0;
+    const float scale = 0.75;
 
     QVector2D xLabelPos = axis_x.last().project(view * model, projection, vport.toRect()).toVector2D();
     QVector2D yLabelPos = axis_y.last().project(view * model, projection, vport.toRect()).toVector2D();
@@ -121,8 +121,8 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     yLabelPos.setY(vport.height() - yLabelPos.y());
     zLabelPos.setY(vport.height() - zLabelPos.y());
 
-    TextRenderer::instance().render("X", scale, xLabelPos, false, ctx, textProjection,shaderProgramMap);
-    TextRenderer::instance().render("Y", scale, yLabelPos, false, ctx, textProjection,shaderProgramMap);
+    TextRenderer::instance().render("Y", scale, xLabelPos, false, ctx, textProjection,shaderProgramMap);
+    TextRenderer::instance().render("X", scale, yLabelPos, false, ctx, textProjection,shaderProgramMap);
     TextRenderer::instance().render("Z", scale, zLabelPos, false, ctx, textProjection,shaderProgramMap);
 
 }

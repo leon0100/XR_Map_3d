@@ -9,8 +9,7 @@ Item {
     readonly property var controller : NpdFilterControlMenuController
 
     function setFilter(filter){
-        if(!filter)
-            return
+        if(!filter) return
 
         distanceValueSpinBox.signalsBlocked = true
         distanceValueSpinBox.value          = filter.distance
@@ -23,11 +22,10 @@ Item {
 
     KParamSetup {
         anchors.fill: root
-        paramName:    qsTr("Distance: ")
+        paramName: qsTr("Distance: ")
 
         KSpinBox {
             property bool signalsBlocked : false
-
             id:         distanceValueSpinBox
             objectName: "distanceValueSpinBox"
             from:       1

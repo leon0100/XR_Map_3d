@@ -619,6 +619,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     double minZ = 0.0, maxZ = 0.0;
 
     tslWCnt -= 230;
+    // tslWCnt = 200;
     int progressInterval = qMax(1, tslWCnt / 100);
     for(int z = 0; z < tslWCnt; z++)
     {

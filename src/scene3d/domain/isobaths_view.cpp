@@ -88,7 +88,7 @@ void IsobathsView::IsobathsViewRenderImplementation::render(QOpenGLFunctions *ct
     sp.release();
 
     if (!labels_.isEmpty()) {
-        // glDisable(GL_DEPTH_TEST);
+        glDisable(GL_DEPTH_TEST);
         const QColor oldCol = TextRenderer::instance().getColor();
         TextRenderer::instance().setColor(QColor::fromRgbF(color_.x(), color_.y(), color_.z()));
 
@@ -98,14 +98,12 @@ void IsobathsView::IsobathsViewRenderImplementation::render(QOpenGLFunctions *ct
 
         for (const auto& lbl : labels_) {
             const QString txt = QString::number(lbl.depth, 'f', 1);
-            // TextRenderer::instance().render3D(txt, scale, lbl.pos, lbl.dir, ctx, mvp, spMap);
-            QVector3D elevatedPos = model * lbl.pos;
-            float zOffset = elevatedPos.z() - lbl.pos.z();
-            elevatedPos.setZ(elevatedPos.z() - zOffset);
-            TextRenderer::instance().render3D(txt, scale, elevatedPos, lbl.dir, ctx, mvp, spMap);
+            TextRenderer::instance().render3D(txt, scale, lbl.pos, lbl.dir, ctx, mvp, spMap);
         }
 
         TextRenderer::instance().setColor(oldCol);
-        // glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST);
     }
+
+
 }

@@ -31,7 +31,6 @@ Item  {
                 (isBoatTrackCheckButtonHovered || isFitViewCheckButtonHovered)
 
     property bool menuOpened: settings3DSettings.visible || locationSettings.visible
-                              || isobathsSettings.visible
 
     opacity: (toolbarHovered || menuOpened) ? 1.0 : 0.5
     Behavior on opacity { NumberAnimation { duration: 120 } }

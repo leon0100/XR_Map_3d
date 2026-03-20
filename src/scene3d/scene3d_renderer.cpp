@@ -125,7 +125,7 @@ void GraphicsScene3dRenderer::render()
     drawObjects();
 
     TextRenderer::instance();
-    TextRenderer::instance().setColor("white");  
+    TextRenderer::instance().setColor("white");
 }
 
 void GraphicsScene3dRenderer::drawObjects()
@@ -178,8 +178,8 @@ void GraphicsScene3dRenderer::drawObjects()
     QMatrix4x4 upModel = m_model;
     upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
 
-    isobathsViewRenderImpl_.render(this, upModel, view, m_projection, m_shaderProgramMap);    //等值线
     surfaceViewRenderImpl_.render(this,  m_projection * view * upModel, m_shaderProgramMap);  //高度场
+    isobathsViewRenderImpl_.render(this, upModel, view, m_projection, m_shaderProgramMap);    //等值线
     m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
     glDisable(GL_DEPTH_TEST);
 
@@ -210,7 +210,7 @@ void GraphicsScene3dRenderer::drawObjects()
     //-----------Draw axes-------------
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
-    glViewport(viewport[2]-150,0,120,120);
+    glViewport(viewport[2]-120,0,90,90);
 
     QMatrix4x4 axesView;
     QMatrix4x4 axesProjection;
@@ -218,7 +218,7 @@ void GraphicsScene3dRenderer::drawObjects()
 
     m_axesThumbnailCamera.setDistance(25);
     axesView = m_axesThumbnailCamera.m_view;
-    axesProjection.perspective(m_camera.fov(), 100/100, 1.0f, 11000.0f);
+    axesProjection.perspective(m_camera.fov(), 150/150, 1.0f, 11000.0f);
     m_coordAxesRenderImpl.render(this, axesModel, axesView, axesProjection, m_shaderProgramMap);
 
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
@@ -334,7 +334,7 @@ void GraphicsScene3dRenderer::drawObjects()
 
         const float halfWidth = viewport[2] / 2.0f;
         const float halfHeight = viewport[3] / 2.0f;
-        
+
         // 计算框选矩形的四个顶点
         QVector<QVector2D> rectVert = {
             { (m_boxSelectStart.x() / halfWidth) - 1.0f, (m_boxSelectStart.y() / halfHeight) - 1.0f },

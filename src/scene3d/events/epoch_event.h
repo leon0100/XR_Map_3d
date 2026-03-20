@@ -14,10 +14,7 @@ class Epoch;
 class EpochEvent : public QEvent
 {
 public:
-    EpochEvent(QEvent::Type eventType,
-               Epoch* epoch,
-               int epochIndex,
-               const DatasetChannel& channelId);
+    EpochEvent(QEvent::Type eventType, Epoch* epoch, int epochIndex, const DatasetChannel& channelId);
 
     Epoch* epoch() const;
     int epochIndex() const;

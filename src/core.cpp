@@ -1668,7 +1668,7 @@ void Core::saveLLARefToSettings()
     try {
         auto ref = datasetPtr_->getLlaRef();
 
-        QSettings settings("KOGGER", "KoggerApp");
+        QSettings settings("Toslon", "ToslonApp");
         QString group{"LLARef"};
 
         settings.beginGroup(group);

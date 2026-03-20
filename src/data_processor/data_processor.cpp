@@ -257,7 +257,7 @@ void DataProcessor::setSurfaceEdgeLimit(int val)
         pendingSurfaceIndxs_.insert(qMakePair('0', *it));
     }
 
-    scheduleLatest(WorkSet(WF_All), /*replace*/true);
+    scheduleLatest(WorkSet(WF_All), true);
 }
 
 void DataProcessor::setExtraWidth(int val)

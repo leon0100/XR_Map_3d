@@ -10,7 +10,7 @@ IsobathsViewControlMenuController::IsobathsViewControlMenuController(QObject* pa
     surfaceLineStepSize_(3.0f),
     themeId_(0),
     labelStepSize_(100),
-    edgeLimit_(20),
+    edgeLimit_(100),
     extraWidth_(0),
     visibility_(false),
     edgesVisible_(false),
@@ -45,7 +45,7 @@ void IsobathsViewControlMenuController::findComponent()
 
 void IsobathsViewControlMenuController::tryInitPendingLambda()
 {
-    qDebug() << "tryInitPendingLambda.............";
+    // qDebug() << "tryInitPendingLambda.............";
     if (!pendingLambda_) {
         pendingLambda_ = [this] () -> void {
             if (graphicsSceneViewPtr_) {
@@ -213,7 +213,7 @@ void IsobathsViewControlMenuController::onEdgeLimitChanged(int val)
 
     if (graphicsSceneViewPtr_) {
         if (dataProcessorPtr_) {
-            QMetaObject::invokeMethod(dataProcessorPtr_, "setSurfaceEdgeLimit", Qt::QueuedConnection, Q_ARG(int, edgeLimit_));
+            QMetaObject::invokeMethod(dataProcessorPtr_, "setSurfaceEdgeLimit", Qt::QueuedConnection, Q_ARG(int, val));
         }
     }
     else {
