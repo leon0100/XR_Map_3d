@@ -46,7 +46,6 @@ private:
     void updateTexture() const;
     void propagateBorderHeights(QSet<SurfaceTile*>& changedTiles);
     void refreshAfterEdgeLimitChange();
-    void autoAdjustEdgeLimit(int pointCount);
     bool canceled() const noexcept;
 
 private:

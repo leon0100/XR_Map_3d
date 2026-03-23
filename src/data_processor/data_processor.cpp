@@ -661,23 +661,3 @@ void DataProcessor::requestCancel() noexcept
     nextRunPending_.store(true);
     cancelRequested_.store(true);
 }
-
-
-// data_processor.cpp
-void DataProcessor::onDepthAddedForIsobaths(uint64_t indx)
-{
-    // qDebug() << "DataProcessor::onDepthAddedForIsobaths........";
-    if (!updateIsobaths_) {
-        return;
-    }
-
-    // 添加到待处理队列
-    pendingSurfaceIndxs_.insert(qMakePair('0', static_cast<int>(indx)));
-    pendingIsobathsWork_ = true;
-
-    // 触发处理
-    if(!jobRunning_.load()) {
-       scheduleLatest(WorkSet(WF_Surface | WF_Isobaths));
-    }
-    // updateIsobaths_ = true;
-}

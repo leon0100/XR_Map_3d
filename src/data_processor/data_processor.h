@@ -33,7 +33,6 @@
 //     WF_All      = WF_Surface | WF_Mosaic | WF_Isobaths
 // };
 Q_DECLARE_FLAGS(WorkSet, WorkFlag)
-// Q_DECLARE_OPERATORS_FOR_FLAGS(WorkSet)
 
 class Dataset;
 class BottomTrack;
@@ -71,7 +70,6 @@ public slots:
     void setExtraWidth(int val);
     // IsobathsProcessor
     void setIsobathsLabelStepSize(float val);
-    // void slot_RealtimeDrawContour(bool isDraw);
 
     // Surface/IsobathsProcessor
     void setSurfaceIsobathsStepSize(float val);
@@ -89,8 +87,6 @@ public slots:
     void onIsobathsUpdated();
     void onMosaicUpdated();
     void requestCancel() noexcept;
-
-    void onDepthAddedForIsobaths(uint64_t indx);
 
 signals:
     // this

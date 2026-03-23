@@ -61,22 +61,23 @@ MenuFrame {
             }
         }
 
-        CheckButton{
-            id: cancelZoomViewButton
-            iconSource: "qrc:/icons/ui/zoom_cancel.svg"
-            backColor: theme.controlBackColor
-            borderColor: theme.controlBackColor
-            checkedBorderColor: theme.controlBorderColor
-            checkable: false
-            checked: false
-            text: qsTr("Reset depth zoom")
-            Layout.fillWidth: true
-            visible: Qt.platform.os !== "android"
+        // CheckButton {
+        //     id: cancelZoomViewButton
+        //     iconSource: "qrc:/icons/ui/zoom_cancel.svg"
 
-            onClicked: {
-                Scene3dToolBarController.onCancelZoomButtonClicked()
-            }
-        }
+        //     backColor: theme.controlBackColor
+        //     borderColor: theme.controlBackColor
+        //     checkedBorderColor: theme.controlBorderColor
+        //     checkable: false
+        //     checked: false
+        //     text: qsTr("Reset depth zoom")
+        //     Layout.fillWidth: true
+        //     visible: Qt.platform.os !== "android"
+
+        //     onClicked: {
+        //         Scene3dToolBarController.onCancelZoomButtonClicked()
+        //     }
+        // }
 
         CheckButton {
             id: isNorthViewButton
@@ -106,33 +107,33 @@ MenuFrame {
             // }
         }
 
-        CheckButton {
-            id: selectionToolButton
-            objectName: "selectionToolButton"
-            backColor: theme.controlBackColor
-            borderColor: theme.controlBackColor
-            checkedBorderColor: theme.controlBorderColor
-            iconSource: "qrc:/icons/ui/click.svg"
-            text: qsTr("Sync Echogram")
-            font.pixelSize: theme.iconSize
-            Layout.fillWidth: true
+        // CheckButton {
+        //     id: selectionToolButton
+        //     objectName: "selectionToolButton"
+        //     backColor: theme.controlBackColor
+        //     borderColor: theme.controlBackColor
+        //     checkedBorderColor: theme.controlBorderColor
+        //     iconSource: "qrc:/icons/ui/click.svg"
+        //     text: qsTr("Sync Echogram")
+        //     font.pixelSize: theme.iconSize
+        //     Layout.fillWidth: true
 
-            onToggled: {
-                Scene3dToolBarController.onBottomTrackVertexEditingModeButtonChecked(checked)
-            }
+        //     onToggled: {
+        //         Scene3dToolBarController.onBottomTrackVertexEditingModeButtonChecked(checked)
+        //     }
 
-            onFocusChanged: {
-                settings3DSettings.focus = true
-            }
+        //     onFocusChanged: {
+        //         settings3DSettings.focus = true
+        //     }
 
-            Component.onCompleted: {
-                Scene3dToolBarController.onBottomTrackVertexEditingModeButtonChecked(checked)
-            }
+        //     Component.onCompleted: {
+        //         Scene3dToolBarController.onBottomTrackVertexEditingModeButtonChecked(checked)
+        //     }
 
-            // Settings {
-            //     property alias selectionToolButton: selectionToolButton.checked
-            // }
-        }
+        //     Settings {
+        //         property alias selectionToolButton: selectionToolButton.checked
+        //     }
+        // }
 
 
         // CheckButton {

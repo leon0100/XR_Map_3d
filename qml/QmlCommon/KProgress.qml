@@ -95,7 +95,7 @@ Rectangle {
         // Cancel Button
         Button {
             id: cancelButton
-            text: qsTr("Cancel")
+            text: qsTr("Close")
             font.pixelSize: iconSize
             visible: showCancelButton
             Layout.alignment: Qt.AlignRight

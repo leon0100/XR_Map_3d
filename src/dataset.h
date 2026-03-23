@@ -225,11 +225,10 @@ public slots:
     void addPositionRTK(Position position);
 
     void addDepth(float depth);
-    void addDepth_realTime(float depth);
+    // void addDepth_realTime(float depth);
 
     void addGnssVelocity(double h_speed, double course);
 
-//    void addDateTime(int year, );
     void addTemp(float temp_c);
 
     void mergeGnssTrack(QList<Position> track);
@@ -286,8 +285,6 @@ signals:
     void speedChanged();
 
     void channelListUpdated();
-
-    void depthAddedForIsobaths(uint64_t lastIndx);
 
 
 protected:

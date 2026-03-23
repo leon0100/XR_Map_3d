@@ -679,8 +679,6 @@ void Dataset::addPosition_realTime(double lat, double lon, double depth)
         boatLongitude_ = pos.lla.longitude;
 
         emit positionAdded(lastIndx);
-        // emit dataUpdate();
-        // emit lastPositionChanged();
     }
 }
 
@@ -777,19 +775,19 @@ void Dataset::addDepth(float depth) {
     last_epoch->setDepth(depth);
 }
 
-void Dataset::addDepth_realTime(float depth)
-{
-    Epoch* last_epoch = last();
-    if(!last_epoch) {
-        return;
-    }
+// void Dataset::addDepth_realTime(float depth)
+// {
+//     Epoch* last_epoch = last();
+//     if(!last_epoch) {
+//         return;
+//     }
 
-    last_epoch->setDepth(depth);
+//     last_epoch->setDepth(depth);
 
-    // 触发等高线处理
-    uint64_t lastIndx = pool_.size() - 1;
-    emit depthAddedForIsobaths(lastIndx);
-}
+//     // 触发等高线处理
+//     uint64_t lastIndx = pool_.size() - 1;
+//     emit depthAddedForIsobaths(lastIndx);
+// }
 
 void Dataset::addGnssVelocity(double h_speed, double course) {
     // qDebug() << "Dataset::addGnssVelocity............";

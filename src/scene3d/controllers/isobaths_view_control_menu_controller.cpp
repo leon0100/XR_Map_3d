@@ -207,6 +207,13 @@ void IsobathsViewControlMenuController::onResetIsobathsButtonClicked()
     }
 }
 
+void IsobathsViewControlMenuController::setEdgeLimitChanged(int val)
+{
+    if(edgeLimit_ > val) {
+        emit edgeLimitChanged(val);
+    }
+}
+
 void IsobathsViewControlMenuController::onEdgeLimitChanged(int val)
 {
     edgeLimit_ = val;

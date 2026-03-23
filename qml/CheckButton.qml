@@ -20,16 +20,13 @@ Button {
     implicitHeight: theme.menuWidth
 
     icon.source: iconSource
-    icon.width:  control.height * iconScale
-    icon.height: control.height * iconScale
+    icon.width:  implicitHeight * control.iconScale
+    icon.height: implicitHeight * control.iconScale
 
     hoverEnabled: true
     padding: 0
     rightPadding: text === "" ? 2 : 6
     leftPadding: icon.source === "" ? 6 : 2
-
-    //height: theme.menuWidth
-    //width: text === "" ? theme.menuWidth : undefined
 
 
     font: theme.textFont
@@ -37,6 +34,32 @@ Button {
     palette.brightText: active ? checkedColor : color
 
     icon.color: active ? checkedColor : color
+
+    contentItem: RowLayout {
+        Item {
+            Layout.preferredWidth: control.height
+            Layout.fillHeight: true
+
+            Image {
+                source: control.iconSource
+                anchors.centerIn: parent
+                width: icon.width
+                height: icon.height
+            }
+        }
+
+        Text {
+            text: control.text
+            font: control.font
+            color: control.active ? control.checkedColor : control.color
+            elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignLeft
+            Layout.fillWidth: true
+        }
+    }
+
+
 
     background: Rectangle {
         id: backRect

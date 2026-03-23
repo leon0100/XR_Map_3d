@@ -186,7 +186,6 @@ signals:
     void resetCurrentDepthVal();
 
     void positionComplete(double lat, double lon, double depth);
-    void depthComplete(float depth);
     void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ);
 
 private slots:

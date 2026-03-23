@@ -17,6 +17,7 @@ public:
 
     void setGraphicsSceneView(GraphicsScene3dView* sceneView);
     void setDataProcessorPtr(DataProcessor *dataProcessorPtr);
+    void setEdgeLimitChanged(int val);
 
     Q_INVOKABLE void onIsobathsVisibilityCheckBoxCheckedChanged(bool checked);
     Q_INVOKABLE void onUpdateIsobathsButtonClicked();
@@ -39,6 +40,11 @@ protected:
 
 private:
     void tryInitPendingLambda();
+
+
+signals:
+    void edgeLimitChanged(int val);
+
 
 private:
     GraphicsScene3dView* graphicsSceneViewPtr_;

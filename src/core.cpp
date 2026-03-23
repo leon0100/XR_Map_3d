@@ -1385,8 +1385,7 @@ void Core::openFileFromMenu()
 
             size_sum += file.size() / 1024 / 1024;
             if(size_sum > 1024) {
-                // QMessageBox::information(NULL, tr("Hint"), tr("File size is too large!"), tr("OK"));
-                // GIF->dialogInfo(Dialog_OK, tr("File size is too large!"));
+                GIF->dialogInfo(Dialog_OK, tr("File size is too large!"));
                 return;
             }
 
@@ -1425,9 +1424,14 @@ void Core::openFileFromMenu()
             openedfilePath_ = nowFileName;
         }
 
-        // if (progress_) {
-        //     QMetaObject::invokeMethod(progress_, "close");
-        // }
+
+        QTimer::singleShot(5000, []() {
+            qDebug() << "After 5s: " << QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+        });
+
+        if (progress_) {
+            QMetaObject::invokeMethod(progress_, "close");
+        }
     }
 
 }
@@ -1559,9 +1563,7 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_tslw, datasetPtr_, &Dataset::addPosition_tslw,     deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionCompleteRTK,  datasetPtr_, &Dataset::addPositionRTK,  deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::depthComplete, datasetPtr_, &Dataset::addDepth,        deviceManagerConnection);
-    QObject::connect(bleManager_.get(), &BLEManager::depthComplete, datasetPtr_, &Dataset::addDepth_realTime,        deviceManagerConnection);
     // core.cpp
-    QObject::connect(datasetPtr_, &Dataset::depthAddedForIsobaths, dataProcessor_, &DataProcessor::onDepthAddedForIsobaths, Qt::QueuedConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::gnssVelocityComplete, datasetPtr_, &Dataset::addGnssVelocity, deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::attitudeComplete, datasetPtr_, &Dataset::addAtt,          deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::tempComplete, datasetPtr_, &Dataset::addTemp,         deviceManagerConnection);
@@ -1768,6 +1770,15 @@ void Core::onZoomLevelChanged(int level)
 
 void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ)
 {
+    int vecSize = depthVec.size();
+    if(vecSize == 200) {
+        isobathsViewControlMenuController_->setEdgeLimitChanged(80);
+    } else if(vecSize == 400) {
+        isobathsViewControlMenuController_->setEdgeLimitChanged(60);
+    } else if(vecSize == 800) {
+        isobathsViewControlMenuController_->setEdgeLimitChanged(40);
+    }
+
     datasetPtr_->vec_CSV_  = depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
@@ -1887,17 +1898,16 @@ void Core::setDataProcessorConnections()
 {
     // from dataHorizon
     auto connType = Qt::QueuedConnection;
-    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::chartAdded,                    dataProcessor_, &DataProcessor::onChartsAdded,           connType));
-    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::bottomTrack3DAdded,            dataProcessor_, &DataProcessor::onBottomTrack3DAdded,      connType));
-    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::mosaicCanCalc,                 dataProcessor_, &DataProcessor::onMosaicCanCalc,         connType));
+    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::chartAdded,  dataProcessor_, &DataProcessor::onChartsAdded, connType));
+    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::bottomTrack3DAdded, dataProcessor_, &DataProcessor::onBottomTrack3DAdded, connType));
+    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::mosaicCanCalc, dataProcessor_, &DataProcessor::onMosaicCanCalc, connType));
 
-    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::sonarPosCanCalc,               datasetPtr_,    &Dataset::onSonarPosCanCalc,             connType));
+    dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::sonarPosCanCalc,  datasetPtr_, &Dataset::onSonarPosCanCalc, connType));
 
-    dataProcessorConnections_.append(QObject::connect(dataProcessor_,     &DataProcessor::distCompletedByProcessing,   datasetPtr_,    &Dataset::onDistCompleted,               connType));
-    dataProcessorConnections_.append(QObject::connect(dataProcessor_,     &DataProcessor::lastBottomTrackEpochChanged, datasetPtr_,    &Dataset::onLastBottomTrackEpochChanged, connType));
+    dataProcessorConnections_.append(QObject::connect(dataProcessor_,     &DataProcessor::distCompletedByProcessing,   datasetPtr_, &Dataset::onDistCompleted, connType));
+    dataProcessorConnections_.append(QObject::connect(dataProcessor_, &DataProcessor::lastBottomTrackEpochChanged, datasetPtr_, &Dataset::onLastBottomTrackEpochChanged, connType));
 
-    dataProcessorConnections_.append(QObject::connect(dataProcessor_,     &DataProcessor::sendState,                   this,           &Core::onDataProcesstorStateChanged,     connType));
-
+    dataProcessorConnections_.append(QObject::connect(dataProcessor_,     &DataProcessor::sendState,   this,  &Core::onDataProcesstorStateChanged, connType));
 }
 
 void Core::resetDataProcessorConnections()

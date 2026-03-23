@@ -128,8 +128,11 @@ MenuFrame {
                     IsobathsViewControlMenuController.onEdgeLimitChanged(isobathsEdgeLimitSpinBox.value)
                 }
 
-                Settings {
-                    property alias isobathsEdgeLimitSpinBox: isobathsEdgeLimitSpinBox.value
+                Connections {
+                    target: IsobathsViewControlMenuController
+                    function onEdgeLimitChanged(val) {
+                        isobathsEdgeLimitSpinBox.value = val
+                    }
                 }
             }
         }

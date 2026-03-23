@@ -268,16 +268,16 @@ GridLayout {
             function updateProcessing() {
                 if (targetPlot) {
                     targetPlot.doDistProcessing(bottomTrackList.currentIndex,
-                                        bottomTrackWindow.checked ? bottomTrackWindowValue.value : 1,
-                                        bottomTrackVerticalGap.checked ? bottomTrackVerticalGapValue.value*0.01 : 0,
-                                        bottomTrackMinRange.checked ? bottomTrackMinRangeValue.realValue : 0,
-                                        bottomTrackMaxRange.checked ? bottomTrackMaxRangeValue.realValue : 1000,
-                                        bottomTrackGainSlope.checked ? bottomTrackGainSlopeValue.realValue : 1,
-                                        bottomTrackThreshold.checked ? bottomTrackThresholdValue.realValue : 0,
-                                        bottomTrackSensorOffset.checked ? bottomTrackSensorOffsetValueX.value*0.001 : 0,
-                                        bottomTrackSensorOffset.checked ? bottomTrackSensorOffsetValueY.value*0.001 : 0,
-                                        bottomTrackSensorOffset.checked ? -bottomTrackSensorOffsetValueZ.value*0.001 : 0,
-                                        false);
+                            bottomTrackWindow.checked       ?  bottomTrackWindowValue.value : 1,
+                            bottomTrackVerticalGap.checked  ?  bottomTrackVerticalGapValue.value*0.01 : 0,
+                            bottomTrackMinRange.checked     ?  bottomTrackMinRangeValue.realValue : 0,
+                            bottomTrackMaxRange.checked     ?  bottomTrackMaxRangeValue.realValue : 1000,
+                            bottomTrackGainSlope.checked    ?  bottomTrackGainSlopeValue.realValue : 1,
+                            bottomTrackThreshold.checked    ?  bottomTrackThresholdValue.realValue : 0,
+                            bottomTrackSensorOffset.checked ?  bottomTrackSensorOffsetValueX.value*0.001 : 0,
+                            bottomTrackSensorOffset.checked ?  bottomTrackSensorOffsetValueY.value*0.001 : 0,
+                            bottomTrackSensorOffset.checked ? -bottomTrackSensorOffsetValueZ.value*0.001 : 0,
+                            false);
                 }
             }
 
