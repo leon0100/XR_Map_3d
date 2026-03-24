@@ -37,8 +37,4 @@ RadioDelegate {
         }
     }
 
-//    background: Rectangle {
-//        color: theme.menuBackColor
-////        border.color: theme.controlBorderColor
-//    }
 }

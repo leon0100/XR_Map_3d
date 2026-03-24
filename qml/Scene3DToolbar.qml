@@ -17,10 +17,6 @@ Item  {
 
     signal updateBottomTrack()
 
-    function updateMosaic() {
-       mosaicViewSettings.updateMosaic()
-    }
-
     // opacity
     property bool isFitViewCheckButtonHovered:     false
     property bool isBoatTrackCheckButtonHovered:   false
@@ -161,44 +157,13 @@ Item  {
                 borderColor: theme.controlBackColor
                 checkedBorderColor: theme.controlBorderColor
                 checkable: false
-                checked: false
                 implicitHeight: theme.menuWidth
                 implicitWidth:  theme.menuWidth
 
-                property bool settings3DLongPressTriggered: false
+                property bool settingsPressTriggered: false
 
-                MouseArea {
-                    id: settings3DTouchArea
-                    anchors.fill: parent
-                    enabled: Qt.platform.os === "android"
-
-                    onPressed: {
-                        if (enabled) {
-                            settings3DLongPressTimer.start()
-                            settings3DCheckButton.settings3DLongPressTriggered = false
-                        }
-                    }
-
-                    onReleased: {
-                        if (enabled) {
-                            settings3DLongPressTimer.stop()
-                        }
-                    }
-
-                    onCanceled: {
-                        if (enabled) {
-                            settings3DLongPressTimer.stop()
-                        }
-                    }
-                }
-
-                Timer {
-                    id: settings3DLongPressTimer
-                    interval: 100
-                    repeat: false
-                    running : false
-                    onTriggered: settings3DCheckButton.settings3DLongPressTriggered = true;
-                }
+                onClicked: settings3DCheckButton.settingsPressTriggered =
+                             !settings3DCheckButton.settingsPressTriggered
             }
 
             Settings3DExtraSettings {
@@ -334,149 +299,51 @@ Item  {
                     IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(checked)
                 }
 
-                property bool isobathsLongPressTriggered: false
-
-                // MouseArea {
-                //     id: isobathsTouchArea
-                //     anchors.fill: parent
-                //     enabled: Qt.platform.os === "android"
-
-                //     onPressed: {
-                //         if (enabled) {
-                //             isobathsLongPressTimer.start()
-                //             isobathsCheckButton.isobathsLongPressTriggered = false
-                //         }
-                //         IsobathsViewControlMenuController.onProcessStateChanged(checked);
-                //         IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(checked)
-                //     }
-
-                //     onReleased: {
-                //         if (enabled) {
-                //             if (!isobathsCheckButton.isobathsLongPressTriggered) {
-                //                 isobathsCheckButton.checked = !isobathsCheckButton.checked
-                //             }
-                //             isobathsLongPressTimer.stop()
-                //         }
-                //     }
-
-                //     onCanceled: {
-                //         if (enabled) {
-                //             isobathsLongPressTimer.stop()
-                //         }
-                //     }
-                // }
-
-                Timer {
-                    id: isobathsLongPressTimer
-                    interval: 100 // ms
-                    repeat: false
-                    running : false
-                    onTriggered: isobathsCheckButton.isobathsLongPressTriggered = true;
-                }
-
             }
 
         }
 
 
 
+        // erase route
+        Item {
+            id: eraseViewWrapper
+            width : eraseRouteButton.implicitWidth
+            height: eraseRouteButton.implicitHeight
 
-        // Item {
-        //     id: mosaicViewWrapper
-        //     width : mosaicViewCheckButton.implicitWidth
-        //     height: mosaicViewCheckButton.implicitHeight
+            CheckButton {
+                id: eraseRouteButton
+                iconSource: "qrc:/icons/ui/erase.svg"
+                backColor: theme.controlBackColor
+                borderColor: theme.controlBackColor
+                checkedBorderColor: theme.controlBorderColor
+                // checked: false
+                checkable: false
+                implicitHeight: theme.menuWidth
+                implicitWidth: theme.menuWidth
 
-        //     CheckButton { // side scan
-        //         id: mosaicViewCheckButton
-        //         iconSource: "qrc:/icons/ui/side_scan.svg"
-        //         backColor: theme.controlBackColor
-        //         borderColor: theme.controlBackColor
-        //         checkedBorderColor: theme.controlBorderColor
-        //         checked: false
-        //         implicitHeight: theme.menuWidth
-        //         implicitWidth: theme.menuWidth
+                property bool pulse: core.dataProcessorState === 3
 
-        //         property bool pulse: core.dataProcessorState === 3
+                SequentialAnimation {
+                    running: eraseRouteButton.pulse
+                    loops: Animation.Infinite
+                    NumberAnimation { target: eraseRouteButton; property: "opacity"; to: 0.2; duration: 500 }
+                    NumberAnimation { target: eraseRouteButton; property: "opacity"; to: 1.0; duration: 500 }
+                }
 
-        //         SequentialAnimation {
-        //             id: pulseMosaicAnimation
-        //             running: mosaicViewCheckButton.pulse
-        //             loops: Animation.Infinite
-        //             NumberAnimation { target: mosaicViewCheckButton; property: "opacity"; to: 0.2; duration: 500 }
-        //             NumberAnimation { target: mosaicViewCheckButton; property: "opacity"; to: 1.0; duration: 500 }
-        //         }
+                onPulseChanged: {
+                    if (!pulse) {
+                        eraseRouteButton.opacity = 1.0;
+                    }
+                }
 
-        //         onPulseChanged: {
-        //             if (!pulse) {
-        //                 mosaicViewCheckButton.opacity = 1.0;
-        //             }
-        //         }
+                onClicked: {
+                    core.clearRouteData()
+                }
+            }
 
-        //         onCheckedChanged: {
-        //             MosaicViewControlMenuController.onUpdateStateChanged(checked) // calc state/calc
-        //             MosaicViewControlMenuController.onVisibilityChanged(checked)
-        //         }
+        }
 
-        //         Component.onCompleted: {
-        //             MosaicViewControlMenuController.onVisibilityChanged(checked)
-        //             MosaicViewControlMenuController.onUpdateStateChanged(checked)
-        //         }
-
-        //         property bool mosaicLongPressTriggered: false
-
-        //         MouseArea {
-        //             id: mosaicViewTouchArea
-        //             anchors.fill: parent
-        //             enabled: Qt.platform.os === "android"
-
-        //             onPressed: {
-        //                 if (enabled) {
-        //                     mosaicViewLongPressTimer.start()
-        //                     mosaicViewCheckButton.mosaicLongPressTriggered = false
-        //                 }
-        //             }
-
-        //             onReleased: {
-        //                 if (enabled) {
-        //                     if (!mosaicViewCheckButton.mosaicLongPressTriggered) {
-        //                         mosaicViewCheckButton.checked = !mosaicViewCheckButton.checked
-        //                     }
-        //                     mosaicViewLongPressTimer.stop()
-        //                 }
-        //             }
-
-        //             onCanceled: {
-        //                 if (enabled) {
-        //                     mosaicViewLongPressTimer.stop()
-        //                 }
-        //             }
-        //         }
-
-        //         Timer {
-        //             id: mosaicViewLongPressTimer
-        //             interval: 100 // ms
-        //             repeat: false
-        //             running: false
-
-        //             onTriggered: {
-        //                 mosaicViewCheckButton.mosaicLongPressTriggered = true;
-        //             }
-        //         }
-
-        //         Settings {
-        //             //property alias mosaicViewCheckButton: mosaicViewCheckButton.checked
-        //         }
-        //     }
-
-        //     MosaicExtraSettings {
-        //         id: mosaicViewSettings
-        //         mosaicViewCheckButton: mosaicViewCheckButton
-
-        //         anchors.bottom:           mosaicViewCheckButton.top
-        //         anchors.horizontalCenter: mosaicViewCheckButton.horizontalCenter
-        //         z: 2
-        //     }
-        // }
 
         ButtonGroup {
             property bool buttonChangeFlag : false

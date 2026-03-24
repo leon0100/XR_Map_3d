@@ -163,6 +163,7 @@ public slots:
 
     Q_INVOKABLE void setIsAttitudeExpected(bool state);
     Q_INVOKABLE void openFileFromMenu();
+    Q_INVOKABLE void clearRouteData();
 
 signals:
     void connectionChanged(bool duplex = false);

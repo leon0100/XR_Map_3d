@@ -715,8 +715,8 @@ ApplicationWindow  {
                             startMousePos = Qt.point(mouse.x, mouse.y)
                             wasMoved = false
                             vertexMode = false
-                            longPressTimer.start()
-                            renderer.longPressTriggered = false
+                            // longPressTimer.start()
+                            // renderer.longPressTriggered = false
 
                             lastMouseKeyPressed = mouse.buttons
                             renderer.mousePressTrigger(mouse.buttons, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
@@ -725,7 +725,7 @@ ApplicationWindow  {
                         onReleased: function(mouse) {
                             startMousePos = Qt.point(-1, -1)
                             wasMoved = false
-                            longPressTimer.stop()
+                            // longPressTimer.stop()
 
                             renderer.mouseReleaseTrigger(lastMouseKeyPressed, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
 
@@ -742,20 +742,20 @@ ApplicationWindow  {
                             startMousePos = Qt.point(-1, -1)
                             wasMoved = false
                             vertexMode = false
-                            longPressTimer.stop()
+                            // longPressTimer.stop()
                         }
                     }
                 }
 
-                Timer {
-                    id: longPressTimer
-                    interval: 500 // ms
-                    repeat: false
+                // Timer {
+                //     id: longPressTimer
+                //     interval: 500 // ms
+                //     repeat: false
 
-                    onTriggered: {
-                        renderer.longPressTriggered = true
-                    }
-                }
+                //     onTriggered: {
+                //         renderer.longPressTriggered = true
+                //     }
+                // }
 
                 Scene3DToolbar{
                     id: scene3DToolbar

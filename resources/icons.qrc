@@ -8,10 +8,10 @@
         <file>icons/ui/arrow_bar_to_up.svg</file>
         <file>icons/ui/click.svg</file>
         <file>icons/ui/cone.svg</file>
-        <file>icons/ui/diagonal_stripe.png</file>
         <file>icons/ui/direction.svg</file>
         <file>icons/ui/direction_arrows.svg</file>
         <file>icons/ui/direction_horizontal.svg</file>
+	<file>icons/ui/erase.svg</file>
         <file>icons/ui/file.svg</file>
         <file>icons/ui/file_download.svg</file>
         <file>icons/ui/file_export.svg</file>
@@ -37,7 +37,6 @@
         <file>icons/ui/map_pin_cog.svg</file>
         <file>icons/ui/map_route.svg</file>
         <file>icons/ui/overline.svg</file>
-        <file>icons/ui/pencil.svg</file>
         <file>icons/ui/photo.svg</file>
         <file>icons/ui/pin.svg</file>
         <file>icons/ui/plug.svg</file>
@@ -58,7 +57,6 @@
         <file>icons/ui/satellite.svg</file>
         <file>icons/ui/separator_horizontal.svg</file>
         <file>icons/ui/settings.svg</file>
-        <file>icons/ui/side_scan.svg</file>
         <file>icons/ui/speedboat.svg</file>
         <file>icons/ui/stack.svg</file>
         <file>icons/ui/stack_backward.svg</file>
@@ -90,10 +88,11 @@
         <file>XR/bluetooth.png</file>
         <file>XR/TOSLON2.png</file>
         <file>XR/serialPort.png</file>
-        <file>XR/boat.png</file>
         <file>XR/config.png</file>
         <file>XR/triangle.svg</file>
         <file>XR/check.svg</file>
+	<file>XR/icon_XR_map.png</file>
+	<file>XR/warning.png</file>
         <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
         <file>fonts/PTSansCaption-Regular.ttf</file>
     </qresource>

@@ -5,15 +5,14 @@ import QtQuick.Layouts 1.15
 Button {
     id: control
     checkable: true    
-    property bool active: checked || down
-
-    property int borderWidth: 1
-    property color color: theme.textColor
-    property color checkedColor: "black"
-    property color checkedBackColor: "white"
-    property color backColor: "transparent"
-    property color checkedBorderColor: "transparent"
-    property color borderColor: theme.controlSolidBorderColor
+    property bool   active: checked || down
+    property int    borderWidth: 1
+    property color  color: theme.textColor
+    property color  checkedColor: "black"
+    property color  checkedBackColor: "white"
+    property color  backColor: "transparent"
+    property color  checkedBorderColor: "transparent"
+    property color  borderColor: theme.controlSolidBorderColor
     property string iconSource: ""
     property real   iconScale: 0.80
 

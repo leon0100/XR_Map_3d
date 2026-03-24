@@ -12,9 +12,7 @@ MenuFrame {
 
     property CheckButton settings3DCheckButton
 
-    visible: Qt.platform.os === "android"
-             ? (settings3DCheckButton.settings3DLongPressTriggered)
-             : (settings3DCheckButton.hovered || isHovered)
+    visible: settings3DCheckButton.settingsPressTriggered
 
     z: settings3DSettings.visible
     Layout.alignment: Qt.AlignCenter
@@ -34,8 +32,8 @@ MenuFrame {
     }
 
     onFocusChanged: {
-        if (Qt.platform.os === "android" && !focus) {
-            settings3DCheckButton.settings3DLongPressTriggered = false
+        if (!focus) {
+            settings3DCheckButton.settingsPressTriggered = false
         }
     }
 

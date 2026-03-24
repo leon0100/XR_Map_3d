@@ -1436,6 +1436,29 @@ void Core::openFileFromMenu()
 
 }
 
+void Core::clearRouteData()
+{
+    GIF->dialogYesNo(tr("Confirm clear historical trajectories or contours?"),[this](bool confirmed) {
+        qDebug() << "11111111111111111";
+        if(confirmed) {
+            if (datasetPtr_) {
+                datasetPtr_->resetDataset();
+                dataHorizon_->clear();
+            }
+
+            QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
+
+            if (scene3dViewPtr_) {
+                scene3dViewPtr_->clear();
+                scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+            }
+            qDebug() << "Realtime data cleared";
+        }
+        qDebug() << "222222222222222";
+    });
+
+}
+
 void Core::onFileStopsOpening()
 {
     qDebug() << "Core::onFileStopsOpening.................";

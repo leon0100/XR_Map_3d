@@ -6,7 +6,7 @@ Item {
     id: control
 
     property int offsetOpacityArea: 0
-    property int margins: 5
+    property int margins: 1
     property int horizontalMargins: margins
     property int verticalMargins: margins
     property int spacing: 10

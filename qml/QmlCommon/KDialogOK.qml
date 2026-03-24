@@ -130,7 +130,7 @@ Rectangle {
 
                     onClicked: {
                         root.visible = false
-                        GetInterface.finish()
+                        // GetInterface.finish()
                     }
                 }
             }
