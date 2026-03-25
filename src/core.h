@@ -52,6 +52,9 @@ typedef enum
     filetype_kmlkmz
 }EnumFileType;
 
+
+
+
 class Core : public QObject
 {
     Q_OBJECT
@@ -87,34 +90,21 @@ public:
     LinkManagerWrapper* getLinkManagerWrapperPtr() const;
     void stopLinkManagerTimer() const;
     void refreshMap();
-#ifdef SEPARATE_READING
-    QString getTryOpenedfilePath() const;
-    void stopDeviceManagerThread() const;
-#endif
+
     void consoleInfo(QString msg);
     void consoleWarning(QString msg);
     void consoleProto(FrameParser& parser, bool isIn = true);
     void saveLLARefToSettings();
     void removeLinkManagerConnections();
-#ifdef SEPARATE_READING
-    void removeDeviceManagerConnections();
-#endif
+
     QHash<QUuid, QString> getLinkNames() const;
+
 
 public slots:    
     void setIsGPSAlive(bool state) { qDebug() << "Core::setIsGPSAlive" << state; isGPSAlive_ = state; emit isGPSAliveChanged(); }
     bool getIsGPSAlive() const { return isGPSAlive_; };
-
-#ifdef SEPARATE_READING
-    void openLogFile(const QString& filePath, bool isAppend = false, bool onCustomEvent = false);
-    bool closeLogFile(bool onOpen = false);
-    void onFileStartOpening();
-    void onFileReadEnough();
-    void onFileOpenBreaked(bool onOpen);
-#else
     void openLogFile(const QString& filePath, bool isAppend = false, bool onCustomEvent = false);
     bool closeLogFile();
-#endif
     void onFileOpened();
     bool openXTF(const QByteArray& data);
     bool openCSV(QString name, int separatorType, int row = -1, int colTime = -1, bool isUtcTime = true, int colLat = -1, int colLon = -1, int colAltitude = -1, int colNorth = -1, int colEast = -1, int colUp = -1);
@@ -164,6 +154,7 @@ public slots:
     Q_INVOKABLE void setIsAttitudeExpected(bool state);
     Q_INVOKABLE void openFileFromMenu();
     Q_INVOKABLE void clearRouteData();
+    Q_INVOKABLE void location(uint8_t type);
 
 signals:
     void connectionChanged(bool duplex = false);
@@ -178,18 +169,14 @@ signals:
     void currentMapLevelChanged();
 
     void progressChanged();
-    // void fileProgressChanged();
-    // void fileProgressStatusChanged();
 
-    void drawRealtimeContour();
+    void drawRealtimeContour(bool isRead);
 
 
 
 
 private:
     QObject* progress_ = nullptr;
-    // double fileProgress_ = 0.0;
-    // QString fileProgressStatus_;
 
 
 private slots:
@@ -201,7 +188,7 @@ private slots:
 
     void onZoomLevelChanged(int level);
 
-    void slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ);
+    void slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ, bool isRead);
 
 
 private:

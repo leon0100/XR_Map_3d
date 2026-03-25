@@ -4,178 +4,206 @@ import QtQuick.Layouts 1.15
 import QtGraphicalEffects 1.15
 import QmlCommon 1.0
 
+
 Rectangle {
     id: root
-    z: 999
-    width: 400
-    height: 140
-    radius: 10
-    color: "#d6e6ff"
-    anchors.centerIn: parent
+    anchors.fill: parent
+    color: "transparent"
     visible: false
+    z: 9999
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+        preventStealing: true   // 阻止事件传递到下层
+
+        onPressed: {
+            flashAnim.restart()
+        }
+
+        onWheel: {
+            flashAnim.restart()
+        }
+
+        onPressedChanged: {
+            if (pressed) {
+                flashAnim.restart()
+            }
+        }
+    }
+
+
+    property int dialogWidth: theme.screenSize * 0.40
+    property int dialogHeight: theme.screenSize * 0.16
+    property int iconSize: theme.iconSize
 
 
     Rectangle {
-        id: flashBorder
-        anchors.fill: parent
-        radius: root.radius
-        color: "transparent"
-        border.width: 0
-        border.color: "transparent"
-        z: 1000
-        visible: true
-    }
+        id: dialogRoot
+        anchors.centerIn: parent
+        width:  dialogWidth
+        height: dialogHeight
+        radius: 10
+        color: "#d6e6ff"
 
 
-    ColumnLayout {
-        anchors.fill: parent
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 30
-            Layout.alignment: Qt.AlignTop
-            color: "#a0c4ff"
-            radius: 10
-
-            /* 遮挡矩形（盖掉下半圆角）*/
-            Rectangle {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                height: parent.radius
-                color: parent.color
-            }
-
-            Row {
-                anchors.fill: parent
-                anchors.margins: 8
-                spacing: 2
-
-                Image {
-                    width: 20
-                    height: 20
-                    source: "qrc:/exe/icon-XR-map.png"
-                    fillMode: Image.PreserveAspectFit
-                }
-
-                Text {
-                    text: qsTr("Hint")
-                    font.pixelSize: 14
-                    color: "black"
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
-        }
-
-
-        Rectangle {
-            Layout.fillWidth: true
-            color: "transparent"
-            implicitHeight: 50
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 12
-                spacing: 10
-
-                Image {
-                    source: "qrc:/sonar/warning.png"
-                    Layout.preferredWidth: 27
-                    Layout.preferredHeight: 27
-                    fillMode: Image.PreserveAspectFit
-                    Layout.alignment: Qt.AlignTop
-                }
-
-                Text {
-                    id: messageText
-                    Layout.fillWidth: true
-                    font.bold: true
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: 18
-                    color: "black"
-                }
-            }
-        }
-
-
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
+        ColumnLayout {
+            anchors.fill: parent
 
             Rectangle {
-                width: 70
-                height: 25
+                Layout.fillWidth: true
+                Layout.preferredHeight: iconSize * 2
+                Layout.alignment: Qt.AlignTop
+                color: "#a0c4ff"
                 radius: 10
-                border.color: "#6b8fd6"
-                border.width: 1
-                color: closeBtn.hovered ? "#a0c4ff" : "#d6e6ff"
 
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.rightMargin: 20
-                anchors.bottomMargin: 20
+                /* ===== 遮挡矩形（盖掉下半圆角）===== */
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    height: parent.radius
+                    color: parent.color
+                }
 
-                Button {
-                    id: closeBtn
+                Row {
                     anchors.fill: parent
-                    background: null
-                    hoverEnabled: true
-                    contentItem: Text {
-                        text: qsTr("OK")
-                        font.pixelSize: 16
+                    anchors.margins: 8
+                    spacing: 2
+
+                    Image {
+                        width: iconSize * 1.2
+                        height: iconSize * 1.2
+                        source: "qrc:/XR/icon_XR_map.png"
+                        fillMode: Image.PreserveAspectFit
+                    }
+
+                    Text {
+                        text: qsTr("Hint")
+                        font.pixelSize: iconSize
                         color: "black"
-                        horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
+                }
+            }
 
-                    onClicked: {
-                        root.visible = false
-                        // GetInterface.finish()
+
+            Rectangle {
+                Layout.fillWidth: true
+                color: "transparent"
+                implicitHeight: iconSize * 3
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: iconSize
+                    spacing: 10
+
+                    Image {
+                        source: "qrc:/XR/warning.png"
+                        Layout.preferredWidth: iconSize * 2
+                        Layout.preferredHeight: iconSize * 2
+                        fillMode: Image.PreserveAspectFit
+                        Layout.alignment: Qt.AlignTop
                     }
+
+                    Text {
+                        id: messageText
+                        Layout.fillWidth: true
+                        font.bold: true
+                        wrapMode: Text.WordWrap
+                        font.pixelSize: iconSize
+                        color: "black"
+                    }
+                }
+            }
+
+
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: iconSize * 3
+
+                Rectangle {
+                    width:  dialogWidth * 0.2
+                    height: dialogHeight * 0.2
+                    radius: 10
+                    border.color: "#6b8fd6"
+                    border.width: 1
+                    color: okBtn.hovered ? "#a0c4ff" : "#d6e6ff"
+
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.rightMargin:  iconSize
+                    anchors.bottomMargin: iconSize
+
+                    Button {
+                        id: okBtn
+                        anchors.fill: parent
+                        background: null
+                        hoverEnabled: true
+                        contentItem: Text {
+                            text: qsTr("OK")
+                            font.pixelSize: iconSize
+                            color: "black"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: root.visible = false
+                    }
+                }
+            }
+
+        }
+
+
+        Rectangle {
+            id: flashBorder
+            anchors.fill: parent
+            radius: dialogRoot.radius
+            color: "transparent"
+            border.width: 0
+            border.color: "transparent"
+        }
+
+        SequentialAnimation {
+            id: flashAnim
+            running: false
+            loops: 6
+
+            ParallelAnimation {
+                ColorAnimation {
+                    target: flashBorder
+                    property: "border.color"
+                    to: "#FFFFFF"
+                    duration: 70
+                }
+
+                NumberAnimation {
+                    target: flashBorder
+                    property: "border.width"
+                    to: iconSize * 0.25
+                    duration: 70
+                }
+            }
+
+            ParallelAnimation {
+                ColorAnimation {
+                    target: flashBorder
+                    property: "border.color"
+                    to: "transparent"
+                    duration: 70
+                }
+
+                NumberAnimation {
+                    target: flashBorder
+                    property: "border.width"
+                    to: 0
+                    duration: 70
                 }
             }
         }
 
-    }
-
-
-
-    SequentialAnimation {
-        id: flashAnim
-        running: false
-        loops: 6
-
-        ParallelAnimation {
-            ColorAnimation {
-                target: flashBorder
-                property: "border.color"
-                to: "#FFFFFF"
-                duration: 70
-            }
-
-            NumberAnimation {
-                target: flashBorder
-                property: "border.width"
-                to: 3
-                duration: 70
-            }
-        }
-
-        ParallelAnimation {
-            ColorAnimation {
-                target: flashBorder
-                property: "border.color"
-                to: "transparent"
-                duration: 70
-            }
-
-            NumberAnimation {
-                target: flashBorder
-                property: "border.width"
-                to: 0
-                duration: 70
-            }
-        }
     }
 
 
@@ -185,7 +213,31 @@ Rectangle {
 
     function show(msg) {
         messageText.text = msg
-        visible = true
+        root.visible = true
     }
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

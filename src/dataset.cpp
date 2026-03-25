@@ -647,7 +647,7 @@ void Dataset::addPosition(double lat, double lon, uint32_t unix_time, int32_t na
     }
 }
 
-void Dataset::addPosition_realTime(double lat, double lon, double depth)
+void Dataset::addPosition_realTime(double lat, double lon, double depth, bool isRead)
 {
     Epoch* lastEp = last();
     if (!lastEp) {
@@ -677,8 +677,9 @@ void Dataset::addPosition_realTime(double lat, double lon, double depth)
         //qDebug() << "add pos for" << lastIndx;
         boatLatitute_  = pos.lla.latitude;
         boatLongitude_ = pos.lla.longitude;
-
-        emit positionAdded(lastIndx);
+        if(isRead) {
+            emit positionAdded(lastIndx);
+        }
     }
 }
 
@@ -750,6 +751,24 @@ void Dataset::addPosition_tslw(double lat, double lon, int depth, bool enableRen
             emit positionAdded(lastIndx); //nie:test
         }
 
+    }
+}
+
+void Dataset::location(double lat, double lon)
+{
+    const double eps = 1e-6;
+    if(std::abs(lat) < eps || std::abs(lon) < eps){
+        GIF->dialogInfo(Dialog_OK, tr("Invalid Coordinates!"));
+        return;
+    }
+
+    LLA lla = LLA(lat, lon);
+    if (lla.isCoordinatesValid()) {
+        _llaRef = LLARef(lla);
+        emit updatedLlaRef();
+    }
+    else {
+        GIF->dialogInfo(Dialog_OK, tr("Invalid Coordinates!"));
     }
 }
 

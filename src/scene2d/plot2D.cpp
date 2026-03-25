@@ -337,39 +337,39 @@ int Plot2D::getThemeId() const
 }
 
 void Plot2D::setEchogramLowLevel(float low) {
-    qDebug() << "Plot2D::setEchogramLowLevel........." << low;
+    // qDebug() << "Plot2D::setEchogramLowLevel........." << low;
     echogram_.setLowLevel(low);
     plotUpdate();
 }
 
 void Plot2D::setEchogramHightLevel(float high) {
-    qDebug() << "Plot2D::setEchogramHightLevel........." << high;
+    // qDebug() << "Plot2D::setEchogramHightLevel........." << high;
     echogram_.setHightLevel(high);
     plotUpdate();
 }
 
 void Plot2D::setEchogramVisible(bool visible) {
-    qDebug() << "Plot2D::setEchogramVisible.........";
+    // qDebug() << "Plot2D::setEchogramVisible.........";
     echogram_.setVisible(visible);
     echogram_.resetCash();
     plotUpdate();
 }
 
 void Plot2D::setEchogramTheme(int theme_id) {
-    qDebug() << "Plot2D::setEchogramTheme.........";
+    // qDebug() << "Plot2D::setEchogramTheme.........";
     echogram_.setThemeId(theme_id);
     plotUpdate();
 }
 
 void Plot2D::setEchogramCompensation(int compensation_id) {
-    qDebug() << "Plot2D::setEchogramCompensation.........";
+    // qDebug() << "Plot2D::setEchogramCompensation.........";
     echogram_.setCompensation(compensation_id);
     echogram_.resetCash();
     plotUpdate();
 }
 
 void Plot2D::setBottomTrackVisible(bool visible) {
-    qDebug() << "Plot2D::setBottomTrackVisible.........";
+    // qDebug() << "Plot2D::setBottomTrackVisible.........";
     bottomProcessing_.setVisible(visible);
     plotUpdate();
 }
@@ -379,45 +379,45 @@ void Plot2D::setBottomTrackTheme(int theme_id) {
 }
 
 void Plot2D::setRangefinderVisible(bool visible) {
-    qDebug() << "Plot2D::setRangefinderVisible.........";
+    // qDebug() << "Plot2D::setRangefinderVisible.........";
     rangefinder_.setVisible(visible);
     grid_.setRangeFinderVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setRangefinderTheme(int theme_id) {
-    qDebug() << "Plot2D::setRangefinderTheme.........";
+    // qDebug() << "Plot2D::setRangefinderTheme.........";
     rangefinder_.setTheme(theme_id);
     plotUpdate();
 }
 
 void Plot2D::setAttitudeVisible(bool visible) {
-    qDebug() << "Plot2D::setAttitudeVisible.........";
+    // qDebug() << "Plot2D::setAttitudeVisible.........";
     attitude_.setVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setTemperatureVisible(bool visible) {
-    qDebug() << "Plot2D::setTemperatureVisible.........";
+    // qDebug() << "Plot2D::setTemperatureVisible.........";
     grid_.setTemperatureVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setDopplerBeamVisible(bool visible, int beam_filter) {
-    qDebug() << "Plot2D::setDopplerBeamVisible.........";
+    // qDebug() << "Plot2D::setDopplerBeamVisible.........";
     dvlBeamVelocity_.setVisible(visible);
     dvlBeamVelocity_.setBeamFilter(beam_filter);
     plotUpdate();
 }
 
 void Plot2D::setDopplerInstrumentVisible(bool visible) {
-    qDebug() << "Plot2D::setDopplerInstrumentVisible.........";
+    // qDebug() << "Plot2D::setDopplerInstrumentVisible.........";
     dvlSolution_.setVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setGNSSVisible(bool visible, int flags) {
-    qDebug() << "Plot2D::setGNSSVisible.........";
+    // qDebug() << "Plot2D::setGNSSVisible.........";
     Q_UNUSED(flags);
 
     gnss_.setVisible(visible);
@@ -425,13 +425,13 @@ void Plot2D::setGNSSVisible(bool visible, int flags) {
 }
 
 void Plot2D::setAcousticAngleVisible(bool visible) {
-    qDebug() << "Plot2D::setAcousticAngleVisible.........";
+    // qDebug() << "Plot2D::setAcousticAngleVisible.........";
     usblSolution_.setVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setGridVetricalNumber(int grids) {
-    qDebug() << "Plot2D::setGridVetricalNumber.........";
+    // qDebug() << "Plot2D::setGridVetricalNumber.........";
     grid_.setVisible(grids > 0);
     grid_.setVetricalNumber(grids);
     plotUpdate();
@@ -439,41 +439,41 @@ void Plot2D::setGridVetricalNumber(int grids) {
 
 void Plot2D::setGridFillWidth(bool state)
 {
-    qDebug() << "Plot2D::setGridFillWidth.........";
+    // qDebug() << "Plot2D::setGridFillWidth.........";
     grid_.setFillWidth(state);
     plotUpdate();
 }
 
 void Plot2D::setGridInvert(bool state)
 {
-    qDebug() << "Plot2D::setGridInvert.........";
+    // qDebug() << "Plot2D::setGridInvert.........";
     grid_.setInvert(state);
     plotUpdate();
 }
 
 void Plot2D::setAngleVisibility(bool state)
 {
-    qDebug() << "Plot2D::setAngleVisibility.........";
+    // qDebug() << "Plot2D::setAngleVisibility.........";
     grid_.setAngleVisibility(state);
     plotUpdate();
 }
 
 void Plot2D::setAngleRange(int angleRange)
 {
-    qDebug() << "Plot2D::setAngleRange.........";
+    // qDebug() << "Plot2D::setAngleRange.........";
     cursor_.attitude.from = static_cast<float>(-angleRange);
     cursor_.attitude.to = static_cast<float>(angleRange);
     plotUpdate();
 }
 
 void Plot2D::setVelocityVisible(bool visible) {
-    qDebug() << "Plot2D::setVelocityVisible.........";
+    // qDebug() << "Plot2D::setVelocityVisible.........";
     grid_.setVelocityVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setVelocityRange(float velocity) {
-    qDebug() << "Plot2D::setVelocityRange.........";
+    // qDebug() << "Plot2D::setVelocityRange.........";
     cursor_.velocity.from = -velocity;
     cursor_.velocity.to = velocity;
     plotUpdate();

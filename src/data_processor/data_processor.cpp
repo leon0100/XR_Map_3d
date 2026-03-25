@@ -10,7 +10,7 @@
 #include "dataset.h"
 
 
-static inline uint32_t toMask(WorkSet s){ return static_cast<uint32_t>(s); }
+static inline uint32_t toMask(WorkSet s) { return static_cast<uint32_t>(s); }
 
 DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     : QObject(parent),
@@ -79,13 +79,12 @@ void DataProcessor::setDatasetPtr(Dataset *datasetPtr)
 
 void DataProcessor::setBottomTrackPtr(BottomTrack *bottomTrackPtr)
 {
-    qDebug() << "DataProcessor::setBottomTrackPtr............";
+    // qDebug() << "DataProcessor::setBottomTrackPtr............";
     QMetaObject::invokeMethod(worker_, "setBottomTrackPtr", Qt::QueuedConnection, Q_ARG(BottomTrack*, bottomTrackPtr));
 }
 
 void DataProcessor::clearProcessing(DataProcessorType procType)
 {
-    // TODO отдельный сброс настроек
     requestCancel();
 
     switch (procType) {
@@ -109,7 +108,7 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
 
 void DataProcessor::setUpdateBottomTrack(bool state)
 {
-    qDebug() << "DataProcessor::setUpdateBottomTrack(bool state)..........";
+    // qDebug() << "DataProcessor::setUpdateBottomTrack(bool state)..........";
     updateBottomTrack_ = state;
 
     // if ((updateBottomTrack_ || updateIsobaths_ || updateMosaic_) && !pendingSurfaceIndxs_.empty()) {
@@ -123,7 +122,7 @@ void DataProcessor::setUpdateBottomTrack(bool state)
 
 void DataProcessor::setUpdateIsobaths(bool state)
 {
-    qDebug() << "setUpdateIsobaths is ........ " << state;
+    // qDebug() << "setUpdateIsobaths is ........ " << state;
     updateIsobaths_ = state;
     if (state) {
         scheduleLatest(WorkSet(WF_Isobaths));
@@ -248,7 +247,7 @@ void DataProcessor::setSurfaceColorTableThemeById(int id)
 
 void DataProcessor::setSurfaceEdgeLimit(int val)
 {
-    qDebug() << "DataProcessor::setSurfaceEdgeLimit...........";
+    // qDebug() << "DataProcessor::setSurfaceEdgeLimit...........";
     QMetaObject::invokeMethod(worker_, "setSurfaceEdgeLimit", Qt::QueuedConnection, Q_ARG(float, float(val)));
 
     pendingIsobathsWork_ = true;
@@ -272,7 +271,7 @@ void DataProcessor::setIsobathsLabelStepSize(float val)
 
 void DataProcessor::setSurfaceIsobathsStepSize(float val)
 {
-    qDebug() << "ataProcessor::setSurfaceIsobathsStepSize............";
+    // qDebug() << "ataProcessor::setSurfaceIsobathsStepSize............";
     QMetaObject::invokeMethod(worker_, "setSurfaceIsobathsStepSize", Qt::QueuedConnection, Q_ARG(float, val));
 
     pendingIsobathsWork_ = true;

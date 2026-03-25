@@ -98,9 +98,6 @@ private:
 
 
 
-
-
-
 /*-----------------------------------------------BLEManager-------------------------------------------------*/
 class BLEManager : public QObject
 {
@@ -118,8 +115,7 @@ public:
     Q_PROPERTY(QString speed READ speed NOTIFY dataPanelUpdate)
     Q_PROPERTY(QString depth READ depth NOTIFY dataPanelUpdate)
 
-    Q_PROPERTY(bool dataPaused READ dataPaused WRITE setDataPaused NOTIFY dataPausedChanged)
-
+    Q_PROPERTY(bool dataReading READ dataReading WRITE setDataReading NOTIFY dataReadingChanged)
 
     //class传给liveDataColor.qml
     Q_PROPERTY(double maxDepthValue READ maxDepthValue WRITE setMaxDepthValue NOTIFY maxDepthValueChanged)
@@ -134,16 +130,19 @@ public:
     bool connected() const { return m_connected; }
     QString scanStatus() const { return m_scanStatus; }
 
-    QString latitude() const { return QString::number(parser_->getCurrentBoatPoint().latitude, 'f', 6); }
-    QString longitude() const { return QString::number(parser_->getCurrentBoatPoint().longitude, 'f', 6); }
+    QString latitude() {  latitude_ = parser_->getCurrentBoatPoint().latitude;
+                                    return QString::number(latitude_, 'f', 6); }
+    QString longitude() { longitude_ = parser_->getCurrentBoatPoint().longitude;
+                                    return QString::number(longitude_, 'f', 6); }
     QString angle() const { return QString::number(parser_->getCurrentBoatPoint().heading, 'f', 2); }
     QString speed() const { return QString::number(parser_->getCurrentBoatPoint().speed, 'f', 2); }
     QString depth() const { return QString::number(parser_->getCurrentBoatPoint().depth, 'f', 2); }
 
-    bool dataPaused() const { return realDataPause_; }
-    void setDataPaused(bool paused) { realDataPause_ = paused; emit dataPausedChanged(paused);}
+    bool dataReading() const { return readingDrawTrack_; }
+    Q_INVOKABLE void setDataReading(bool isReading) { readingDrawTrack_ = isReading;
+                                                        emit dataReadingChanged(isReading);}
 
-    double maxDepthValue() const { return m_maxDepthValue;}
+    double maxDepthValue() const { return maxDepth_;}
     double currentDepthValue() const { return 0.0; };
 
 
@@ -170,7 +169,6 @@ public: //qml传给class
 
 
 
-
 signals:
     void scanCanceled();
     void devicesChanged();
@@ -180,13 +178,13 @@ signals:
 
     void dataPanelUpdate();
     void parsedPoint(const BoatPoint &pt);
-    void dataPausedChanged(bool realDataPause);
+    void dataReadingChanged(bool isReading);
 
     void maxDepthValueChanged();
     void resetCurrentDepthVal();
 
-    void positionComplete(double lat, double lon, double depth);
-    void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ);
+    void positionComplete(double lat, double lon, double depth, bool isRead);
+    void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ, bool isRead);
 
 private slots:
     void onDeviceDiscovered(const QBluetoothDeviceInfo &deviceInfo);
@@ -260,15 +258,13 @@ private:
 
     quint64 lastElapsed_ = 0;
     quint32 bleCount_ = 0;
-    bool realDataPause_ = false;
-
-    double m_maxDepthValue = 0.0;
 
     QList<Position> track_;
     QTimer *trackTimer_;
 
-    QVector<float> depthHistory_; // 存储深度历史数据
+    QVector<float> depthHistory_;
     double minDepth_ = 0.0, maxDepth_ = 0.0;
+    bool readingDrawTrack_ = false;
 
 
 };

@@ -72,7 +72,7 @@ void IsobathsViewControlMenuController::tryInitPendingLambda()
 
 void IsobathsViewControlMenuController::onIsobathsVisibilityCheckBoxCheckedChanged(bool checked)
 {
-    qDebug() << "onIsobathsVisibilityCheckBoxCheckedChanged " << checked;
+    // qDebug() << "onIsobathsVisibilityCheckBoxCheckedChanged " << checked;
     visibility_ = checked;
 
     if (graphicsSceneViewPtr_) {
@@ -129,7 +129,7 @@ void IsobathsViewControlMenuController::onEdgesVisible(bool state)
 
 void IsobathsViewControlMenuController::onSetSurfaceLineStepSize(float val)
 {
-    qDebug() << "IsobathsViewControlMenuController::onSetSurfaceLi  val:  " << val;
+    // qDebug() << "IsobathsViewControlMenuController::onSetSurfaceLi  val:  " << val;
     surfaceLineStepSize_ = val;
 
     if (graphicsSceneViewPtr_) {
@@ -183,7 +183,7 @@ void IsobathsViewControlMenuController::onDebugModeView(bool state)
 
 void IsobathsViewControlMenuController::onProcessStateChanged(bool state)
 {
-    qDebug() << "onProcessStateChanged ......is...... " << state;
+    // qDebug() << "onProcessStateChanged ......is...... " << state;
     processState_ = state;
 
     if (graphicsSceneViewPtr_) {

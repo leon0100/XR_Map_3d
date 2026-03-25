@@ -471,7 +471,7 @@ void BLEManager::slotTrackTimeout()
 
     const Position& pos = track_[bleCount_];
 
-    emit positionComplete(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude);
+    emit positionComplete(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude,true);
 
     bleCount_++;
 }
@@ -483,13 +483,16 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
     }
     // qDebug() << "trackIndex_....." << trackIndex_;
     // qDebug() << "pt..........." << pt.latitude << "  " << pt.longitude;
-    emit positionComplete(pt.latitude, pt.longitude, pt.depth);
+
+    latitude_  = pt.latitude;
+    longitude_ = pt.longitude;
+    emit positionComplete(pt.latitude, pt.longitude, pt.depth, readingDrawTrack_);
 
     depthHistory_.append(static_cast<float>(pt.depth));
     minDepth_ = std::min(minDepth_, pt.depth);
     maxDepth_ = std::max(maxDepth_, pt.depth);
 
-    emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_);
+    emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
 }
 
 
@@ -546,9 +549,7 @@ void BLEManager::operateBleOnOff(bool isOn)
     else {
         disconnectDevice();
     }
-
 }
-
 
 void BLEManager::sendData(const QString &data)
 {
@@ -570,7 +571,10 @@ void BLEManager::sendData2(const QByteArray &data)
 
 void BLEManager::clearRealData()
 {
-    parser_->setHasLast(false);
+    // parser_->setHasLast(false);
+    depthHistory_.clear();
+    minDepth_ = 0.0;
+    maxDepth_ = 0.0;
 }
 
 QStringList BLEManager::getDeviceNames() const
@@ -581,14 +585,14 @@ QStringList BLEManager::getDeviceNames() const
 
 void BLEManager::setMaxDepthValue(double depth)
 {
-    m_maxDepthValue = depth > m_maxDepthValue ? depth : m_maxDepthValue;
+    maxDepth_ = depth > maxDepth_ ? depth : maxDepth_;
     emit maxDepthValueChanged();
     emit resetCurrentDepthVal();
 }
 
-void BLEManager::resetCurrentDepthValue(double)
+void BLEManager::resetCurrentDepthValue(double )
 {
-    m_maxDepthValue = 0.0;
+    maxDepth_ = 0.0;
     emit maxDepthValueChanged();
     emit resetCurrentDepthVal();
 }
@@ -676,6 +680,7 @@ void BLEManager::onServiceScanDone()
     QMetaObject::invokeMethod(loadingQuickView_, [this]() {
         loadingQuickView_->hide();
         m_connected = true;
+        readingDrawTrack_ = true;
         emit connectedChanged(m_connected);
     }, Qt::QueuedConnection);
 

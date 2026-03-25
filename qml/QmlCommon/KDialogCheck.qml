@@ -57,7 +57,7 @@ Rectangle {
                 Image {
                     width: 20
                     height: 20
-                    source: "qrc:/exe/icon-XR-map.png"
+                    source: "qrc:/XR/icon_XR_map.png"
                     fillMode: Image.PreserveAspectFit
                 }
 
@@ -82,7 +82,7 @@ Rectangle {
                 spacing: 10
 
                 Image {
-                    source: "qrc:/sonar/warning.png"
+                    source: "qrc:/XR/warning.png"
                     Layout.preferredWidth: 27
                     Layout.preferredHeight: 27
                     fillMode: Image.PreserveAspectFit

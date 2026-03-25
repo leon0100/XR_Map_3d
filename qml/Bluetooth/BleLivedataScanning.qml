@@ -5,8 +5,9 @@ import QtQuick.Window 2.15
 
 Item {
     id: root
-    width: bleSize * 1.1
+    width: bleSize * 1.15
     height: bleSize * 0.8
+    x: Screen.width - width - 5
     z: 99
 
     property int bleSize: Math.min(Screen.width, Screen.height) * 0.35
@@ -23,6 +24,7 @@ Item {
         target: BleManager
         function onConnectedChanged(connected) {
             switchControl.isOn = connected
+            pauseControl.isReading  = connected
         }
     }
 
@@ -56,8 +58,8 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 4
 
-                    // 第一个复选框
                     Rectangle {
+                        id: keepBoatView
                         Layout.fillWidth: true
                         Layout.preferredHeight: layoutHeight
                         radius: layoutHeight * 0.2
@@ -65,45 +67,76 @@ Item {
                         border.color: "#b0b3b8"
                         border.width: 2
 
-                        CheckBox {
-                            id: check1
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.left: parent.left
-                            anchors.leftMargin: iconSize * 0.5
-                            text: qsTr("Direction Arrow")
-                            checked: true
-                            font.pixelSize: iconSize
-                            onCheckedChanged: root.signalCheckBoxToggle(0, checked)
+                        property bool checked: true
 
-                            indicator: Rectangle {
-                                implicitWidth: iconSize * 1.1
-                                implicitHeight: iconSize * 1.1
+                        SequentialAnimation {
+                           id: flashAnim1
+                           running: false
+                           loops: 1
+
+                           ColorAnimation {
+                               target: keepBoatView
+                               property: "color"
+                               to: "#9ecbff"
+                               duration: 100
+                           }
+                           ColorAnimation {
+                               target: keepBoatView
+                               property: "color"
+                               to: "#d6e6ff"
+                               duration: 100
+                           }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: iconSize * 0.5
+                            anchors.rightMargin: iconSize * 0.5
+                            spacing: iconSize * 0.5
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Rectangle {
+                                width: iconSize * 1.1
+                                height: iconSize * 1.1
+                                radius: 5
                                 border.color: "#b0b3b8"
                                 border.width: 1
-                                radius: 5
+                                anchors.verticalCenter: parent.verticalCenter
 
                                 Rectangle {
                                     anchors.centerIn: parent
                                     width: parent.width * 0.8
                                     height: parent.height * 0.8
                                     radius: parent.height * 0.4
-                                    color: "#4CD964"
-                                    visible: check1.checked
+                                    color: "#66E07A"
                                 }
+                            }
+
+                            Text {
+                                text: qsTr("Keep Boat in View")
+                                font.pixelSize: iconSize
+                                color: "black"
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
 
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
-                            acceptedButtons: Qt.NoButton
+
+                            onClicked: {
+                                flashAnim1.restart()
+                                core.location(1)
+                            }
+
                             onEntered: parent.color = "#d6e6ff"
-                            onExited:  parent.color = "#f9f9fb"
+                            onExited: parent.color = "#f9f9fb"
                         }
                     }
 
-                    // 第二个复选框
+
                     Rectangle {
+                        id: showDataPanel
                         Layout.fillWidth: true
                         Layout.preferredHeight: layoutHeight
                         radius: layoutHeight * 0.2
@@ -111,89 +144,73 @@ Item {
                         border.color: "#b0b3b8"
                         border.width: 2
 
-                        CheckBox {
-                            id: check2
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.left: parent.left
-                            anchors.leftMargin: iconSize * 0.5
-                            text: qsTr("Keep Boat in View")
-                            checked: true
-                            font.pixelSize: iconSize
-                            onCheckedChanged: root.signalCheckBoxToggle(0, checked)
+                        property bool checked: true
 
-                            indicator: Rectangle {
-                                implicitWidth: iconSize * 1.1
-                                implicitHeight: iconSize * 1.1
+                        SequentialAnimation {
+                           id: flashAnim2
+                           running: false
+                           loops: 1
+
+                           ColorAnimation {
+                               target: showDataPanel
+                               property: "color"
+                               to: "#9ecbff"
+                               duration: 100
+                           }
+                           ColorAnimation {
+                               target: showDataPanel
+                               property: "color"
+                               to: "#d6e6ff"
+                               duration: 100
+                           }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: iconSize * 0.5
+                            anchors.rightMargin: iconSize * 0.5
+                            spacing: iconSize * 0.6
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Rectangle {
+                                width: iconSize * 1.1
+                                height: iconSize * 1.1
+                                radius: 5
                                 border.color: "#b0b3b8"
                                 border.width: 1
-                                radius: 5
+                                anchors.verticalCenter: parent.verticalCenter
 
                                 Rectangle {
                                     anchors.centerIn: parent
                                     width: parent.width * 0.8
                                     height: parent.height * 0.8
                                     radius: parent.height * 0.4
-                                    color: "#4CD964"
-                                    visible: check2.checked
+                                    color: "#66E07A"
                                 }
+                            }
+
+                            Text {
+                                text: qsTr("Show Data Panel")
+                                font.pixelSize: iconSize
+                                color: "black"
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
 
                         MouseArea {
                             anchors.fill: parent
                             hoverEnabled: true
-                            acceptedButtons: Qt.NoButton
-                            onEntered: parent.color = "#d6e6ff"
-                            onExited:  parent.color = "#f9f9fb"
-                        }
-                    }
 
-                    // 第三个复选框
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: layoutHeight
-                        radius: layoutHeight * 0.2
-                        color: "#f9f9fb"
-                        border.color: "#b0b3b8"
-                        border.width: 2
-
-                        CheckBox {
-                            id: check3
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.left: parent.left
-                            anchors.leftMargin: iconSize * 0.5
-                            text: qsTr("Show Data Panel")
-                            checked: true
-                            font.pixelSize: iconSize
-                            onCheckedChanged: root.signalCheckBoxToggle(0, checked)
-
-                            indicator: Rectangle {
-                                implicitWidth: iconSize * 1.1
-                                implicitHeight: iconSize * 1.1
-                                border.color: "#b0b3b8"
-                                border.width: 1
-                                radius: 5
-
-                                Rectangle {
-                                    anchors.centerIn: parent
-                                    width: parent.width * 0.8
-                                    height: parent.height * 0.8
-                                    radius: parent.height * 0.4
-                                    color: "#4CD964"
-                                    visible: check3.checked
-                                }
+                            onClicked: {
+                                flashAnim2.restart()
                             }
-                        }
 
-
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            acceptedButtons: Qt.NoButton
                             onEntered: parent.color = "#d6e6ff"
                             onExited:  parent.color = "#f9f9fb"
                         }
                     }
+
+
                 }
             }
 
@@ -211,40 +228,28 @@ Item {
                     ColumnLayout {
                         id: mainCol
                         anchors.centerIn: parent
-                        spacing: 2
-
-                        Rectangle {
-                            width: layoutHeight * 2
-                            height: iconSize * 1.1
-                            color: "transparent"
-                            Text {
-                                anchors.centerIn: parent
-                                text: qsTr("Bluetooth")
-                                font.pixelSize: iconSize * 0.9
-                                verticalAlignment: Text.AlignVCenter
-                            }
-                        }
+                        spacing: 10
 
                         Rectangle {
                             id: switchControl
                             width:  layoutHeight * 2.2
                             height: layoutHeight
                             radius: layoutHeight * 0.3
-                            color: hovered ? (switchControl.isOn ? "#4CD964" : "#D6E6FF")
-                                           : (switchControl.isOn? "#4CD964" : "#E9E9EA")
+                            color: hovered ? (switchControl.isOn ? "#36D85A" : "#D6E6FF")
+                                           : (switchControl.isOn?  "#66E07A" : "#D0D0D2")
                             property bool isOn: false
                             property bool hovered: false
 
                             // 滑块
                             Rectangle {
                                 id: slider
-                                width: layoutHeight
-                                height: layoutHeight
-                                radius: layoutHeight * 0.5
+                                width:  layoutHeight * 0.9
+                                height: layoutHeight * 0.9
+                                radius: layoutHeight * 0.45
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: switchControl.isOn ? parent.width-width-2 : 2
                                 color: "#FAFAFA"
-                                scale: mouseArea.pressed ? 0.9 : 1.0
+                                scale: mouse1Area.pressed ? 0.9 : 1.0
 
                                 Behavior on x {
                                     NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
@@ -261,9 +266,9 @@ Item {
                                     verticalCenter: parent.verticalCenter
                                 }
                                 text: qsTr("ON")
-                                font.pixelSize: iconSize
+                                font.pixelSize: iconSize * 0.8
                                 font.bold: true
-                                opacity: switchControl.isOn ? 1 : 0
+                                visible: switchControl.isOn
                                 Behavior on opacity { NumberAnimation { duration: 150 } }
                             }
 
@@ -274,14 +279,14 @@ Item {
                                     verticalCenter: parent.verticalCenter
                                 }
                                 text: qsTr("OFF")
-                                font.pixelSize: iconSize
+                                font.pixelSize: iconSize * 0.8
                                 font.bold: true
-                                opacity: switchControl.isOn ? 0 : 1
+                                visible: !switchControl.isOn
                                 Behavior on opacity { NumberAnimation { duration: 150 } }
                             }
 
                             MouseArea {
-                                id: mouseArea
+                                id: mouse1Area
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 onClicked: {
@@ -291,7 +296,6 @@ Item {
                                     } else {
                                         BleManager.operateBleOnOff(true)
                                     }
-
                                 }
                                 onEntered: switchControl.hovered = true
                                 onExited: switchControl.hovered = false
@@ -302,6 +306,84 @@ Item {
                                 ColorAnimation { duration: 200 }
                             }
                         }
+
+
+
+
+                        Rectangle {
+                            id: readControl
+                            width:  layoutHeight * 2.2
+                            height: layoutHeight
+                            radius: layoutHeight * 0.3
+                            color: hovered ? (readControl.isReading ? "#36D85A" : "#D6E6FF")
+                                           : (readControl.isReading?  "#66E07A" : "#D0D0D2")
+                            property bool isReading: false
+                            property bool hovered: false
+
+                            // 滑块
+                            Rectangle {
+                                id: readPause
+                                width:  layoutHeight * 0.9
+                                height: layoutHeight * 0.9
+                                radius: layoutHeight * 0.45
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: readControl.isReading ? parent.width-width-2 : 2
+                                color: "#FAFAFA"
+                                scale: mouse2Area.pressed ? 0.9 : 1.0
+
+                                Behavior on x {
+                                    NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                }
+                                Behavior on scale {
+                                    NumberAnimation { duration: 100 }
+                                }
+                            }
+
+                            Text {
+                                anchors {
+                                    left: parent.left
+                                    leftMargin: 5
+                                    verticalCenter: parent.verticalCenter
+                                }
+                                text: qsTr("Read")
+                                font.pixelSize: iconSize * 0.8
+                                font.bold: true
+                                visible: readControl.isReading
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                            }
+
+                            Text {
+                                anchors {
+                                    right: parent.right
+                                    rightMargin: 5
+                                    verticalCenter: parent.verticalCenter
+                                }
+                                text: qsTr("Pause")
+                                font.pixelSize: iconSize * 0.8
+                                font.bold: true
+                                visible: !readControl.isReading
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                            }
+
+                            MouseArea {
+                                id: mouse2Area
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: {
+                                    readControl.isReading = !readControl.isReading
+                                    BleManager.setDataReading(readControl.isReading)
+                                }
+                                onEntered: readControl.hovered = true
+                                onExited:  readControl.hovered = false
+                            }
+
+                            Behavior on color {
+                                ColorAnimation { duration: 200 }
+                            }
+                        }
+
+
+
                     }
                 }
             }
@@ -368,7 +450,7 @@ Item {
                             Text {
                                 visible: !noDevices
                                 text: switchControl.isOn ? "Connected" : "Disconnected"
-                                color: switchControl.isOn ? "#27ae60" : "#7f8c8d"
+                                color: switchControl.isOn ? "#36D85A" : "#7f8c8d"
                                 font.pixelSize: iconSize * 0.6
                                 verticalAlignment: Text.AlignVCenter
                             }

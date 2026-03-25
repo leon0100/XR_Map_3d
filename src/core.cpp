@@ -1025,6 +1025,7 @@ bool Core::exportPlotAsXTF(QString filePath)
     QByteArray data_export = converterXtf_.toXTF(getDatasetPtr(), ch1, subCh1, ch2, subCh2);
     logger_.dataByteExport(data_export);
     logger_.endExportStream();
+
     return true;
 }
 
@@ -1235,14 +1236,12 @@ void Core::onChannelsUpdated()
     for (int i = 0; i < numPlots; i++) {
         if (chSize >= 2) {
             plot2dList_.at(i)->setDataChannel(false, chs[0].channelId_, chs[0].subChannelId_, fChName, chs[1].channelId_, chs[1].subChannelId_, sChName);
-            qDebug() << "chSize3333333333333333";
             plot2dList_.at(i)->plotUpdate();
             fChName_ = QString("%1|%2|%3").arg(fChName, QString::number(chs[0].channelId_.address), QString::number(chs[0].subChannelId_));
             sChName_ = QString("%1|%2|%3").arg(sChName, QString::number(chs[1].channelId_.address), QString::number(chs[1].subChannelId_));
         }
         if (chSize == 1) {
             plot2dList_.at(i)->setDataChannel(false, chs[0].channelId_, chs[0].subChannelId_, fChName);
-            qDebug() << "chSize4444444444444444444";
             plot2dList_.at(i)->plotUpdate();
             fChName_ = QString("%1|%2|%3").arg(fChName, QString::number(chs[0].channelId_.address), QString::number(chs[0].subChannelId_));
         }
@@ -1327,7 +1326,6 @@ void Core::openFileFromMenu()
     /*-先保存住地址-*/
     QFileInfo fi = QFileInfo(fileNames.last());
     lastOpenFilePath_ = fi.absolutePath();
-
 
     if (progress_) {
         QMetaObject::invokeMethod(progress_, "open");
@@ -1438,13 +1436,19 @@ void Core::openFileFromMenu()
 
 void Core::clearRouteData()
 {
-    GIF->dialogYesNo(tr("Confirm clear historical trajectories or contours?"),[this](bool confirmed) {
-        qDebug() << "11111111111111111";
+    if(!datasetPtr_) {
+        return;
+    }
+    if(datasetPtr_->size() == 0) {
+        GIF->dialogInfo(Dialog_OK, "No Trajectory Points Available!");
+        return;
+    }
+
+    GIF->dialogYesNo(tr("Confirm Clear Historical Trajectories?"),[this](bool confirmed) {
         if(confirmed) {
-            if (datasetPtr_) {
-                datasetPtr_->resetDataset();
-                dataHorizon_->clear();
-            }
+            bleManager_->clearRealData();
+            datasetPtr_->resetDataset();
+            dataHorizon_->clear();
 
             QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
 
@@ -1452,11 +1456,36 @@ void Core::clearRouteData()
                 scene3dViewPtr_->clear();
                 scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
             }
-            qDebug() << "Realtime data cleared";
-        }
-        qDebug() << "222222222222222";
-    });
 
+            emit isobathsViewControlMenuController_->edgeLimitChanged(100);
+            // GIF->dialogInfo(Dialog_OK, "Cleared successfully!");
+        }
+    });
+}
+
+void Core::location(uint8_t type)
+{
+    double latitude = 0.0, longitude = 0.0;
+    switch(type) {
+        case 0:
+            qDebug() << "powerOn..........";
+            break;
+        case 1:
+            qDebug() << "keepBoatView......";
+            latitude =  bleManager_->latitude_;
+            longitude = bleManager_->longitude_;
+            break;
+        case 2:
+            qDebug() << "locationManager......";
+            break;
+        case 3:
+            qDebug() << "screen......";
+            break;
+        default:
+            break;
+    }
+
+    datasetPtr_->location(latitude, longitude);
 }
 
 void Core::onFileStopsOpening()
@@ -1791,7 +1820,7 @@ void Core::onZoomLevelChanged(int level)
     emit currentMapLevelChanged();
 }
 
-void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ)
+void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
 {
     int vecSize = depthVec.size();
     if(vecSize == 200) {
@@ -1807,7 +1836,7 @@ void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, doubl
     datasetPtr_->maxDepth_ = maxZ;
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
-    emit drawRealtimeContour();
+    emit drawRealtimeContour(isRead);
 }
 
 void Core::createDatasetConnections()

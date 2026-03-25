@@ -115,7 +115,6 @@ public:
 signals:
     void showDialogInfo(int type, const QString &msg);
     void flashDialog(int type);
-    // void finished();
 
 
 };

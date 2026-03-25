@@ -385,7 +385,7 @@ ColumnLayout
 
                     Image {
                         anchors.fill: parent
-                        source: "qrc:/icons/ui/diagonal_stripe.png"
+                        source: "qrc:/icons/ui/direction.svg"
                         fillMode: Image.Tile
                         opacity: 0.5
                     }

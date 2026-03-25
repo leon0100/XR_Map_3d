@@ -188,7 +188,7 @@ public:
 
 public slots:
     friend class DataProcessor;
-    void onSonarPosCanCalc(uint64_t indx);
+    void  onSonarPosCanCalc(uint64_t indx);
     bool  isValidActiveContactIndx() const { return activeContactIndx_ != -1;  };
     bool  isValidBoatCoordinate() const    { return !qFuzzyIsNull(boatLatitute_) || !qFuzzyIsNull(boatLongitude_); };
     bool  isValidLastDepth() const         { return !qFuzzyIsNull(lastDepth_); };
@@ -199,9 +199,9 @@ public slots:
     float getAngleToContact() const        { return angleToActiveContact_;     };
     float getLastDepth() const             { return lastDepth_;                };
     float getSpeed() const                 { return speed_;                    };
-    void addEvent(int timestamp, int id, int unixt = 0);
-    void addEncoder(float angle1_deg, float angle2_deg = NAN, float angle3_deg = NAN);
-    void addTimestamp(int timestamp);
+    void  addEvent(int timestamp, int id, int unixt = 0);
+    void  addEncoder(float angle1_deg, float angle2_deg = NAN, float angle3_deg = NAN);
+    void  addTimestamp(int timestamp);
 
     void setChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
     void setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
@@ -219,7 +219,7 @@ public slots:
     void addDVLSolution(IDBinDVL::DVLSolution dvlSolution);
     void addAtt(float yaw, float pitch, float roll);
     void addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
-    void addPosition_realTime(double lat, double lon, double depth);
+    void addPosition_realTime(double lat, double lon, double depth, bool isRead);
     void addPosition_CSV(double lat, double lon, int depth);
     void addPosition_tslw(double lat, double lon, int depth, bool enableRender);
     void addPositionRTK(Position position);
@@ -316,6 +316,8 @@ public:
     Epoch* addNewEpoch();
 
     GraphicsScene3dView* scene3dViewPtr_ = nullptr;
+
+    void location(double lat, double lon);
 
 private:
     friend class DataInterpolator;

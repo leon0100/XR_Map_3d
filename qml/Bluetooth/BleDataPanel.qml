@@ -1,18 +1,24 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-
+import QtQuick.Window 2.15
 
 Item {
     id: root
-    width: 200
-    height: 160
+    width: bleSize * 0.6
+    height: bleSize * 0.5
+    x: Screen.width -  width - 3
+    y: Screen.height - 2 * height
+    z: 99
 
+    property int bleSize: Math.min(Screen.width, Screen.height) * 0.4
+    property int layoutHeight: bleSize * 0.1
+    property int iconSize: bleSize * 0.06
 
     property string defaultLatLon: "000.000"
     property string defaultValue: "0.0"
 
-    property bool paused: bleManager ? bleManager.dataPaused : false
+    property bool dataReading: BleManager ? BleManager.dataReading : false
 
 
     Rectangle {
@@ -21,65 +27,65 @@ Item {
         border.color: Qt.rgba(0.5,0.8,0.2,0.9)
         border.width: 1
         anchors.margins: 4
-        visible: true
     }
 
 
     GridLayout {
+        anchors.fill: parent
+        anchors.margins: 10
         columns: 2
         columnSpacing: 8
         rowSpacing: 5
-        anchors.centerIn: parent
 
 
         // 纬度
-        Text { text: qsTr("Lat:"); font.pixelSize: 17; color: "#102040" }
+        Text { text: qsTr("Lat:"); font.pixelSize: iconSize; color: "#102040" }
         Text {
             id: latiText
-            font.pixelSize: 18
+            font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: paused ? text : (bleManager.latitude + "°")
+            text: dataReading ? text : (BleManager.latitude + "°")
         }
 
 
         // 经度
-        Text { text: qsTr("Lon:"); font.pixelSize: 17; color: "#102040" }
+        Text { text: qsTr("Lon:"); font.pixelSize: iconSize; color: "#102040" }
         Text {
-            font.pixelSize: 18
+            font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: paused ? text : (bleManager.longitude + "°")
+            text: dataReading ? text : (BleManager.longitude + "°")
         }
 
 
         // 航向角
-        Text { text: qsTr("Course:"); font.pixelSize: 17; color: "#102040" }
+        Text { text: qsTr("Course:"); font.pixelSize: iconSize; color: "#102040" }
         Text {
-            font.pixelSize: 18
+            font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: paused ? text : (bleManager.angle + "°")
+            text: dataReading ? text : (BleManager.angle + "°")
         }
 
 
         // 速度
-        Text { text: qsTr("Speed:"); font.pixelSize: 17; color: "#102040" }
+        Text { text: qsTr("Speed:"); font.pixelSize: iconSize; color: "#102040" }
         Text {
-            font.pixelSize: 18
+            font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: paused ? text : (bleManager.speed + " m/s")
+            text: dataReading ? text : (BleManager.speed + " m/s")
         }
 
 
         //深度
-        Text { text: qsTr("Depth:"); font.pixelSize: 17; color: "#102040" }
+        Text { text: qsTr("Depth:"); font.pixelSize: iconSize; color: "#102040" }
         Text {
-            font.pixelSize: 18
+            font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: paused ? text : (bleManager.depth + " m")
+            text: dataReading ? (BleManager.depth + " m") : text
         }
 
     }

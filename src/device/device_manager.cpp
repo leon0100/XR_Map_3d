@@ -619,7 +619,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     double minZ = 0.0, maxZ = 0.0;
 
     qDebug() << "tslWCnt.size()........." << tslWCnt;
-    tslWCnt = 200;
+    // tslWCnt = 200;
     int progressInterval = qMax(1, tslWCnt / 100);
     for(int z = 0; z < tslWCnt; z++)
     {
@@ -660,9 +660,9 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         maxZ = std::max(maxZ, pos.lla.altitude);
         vec_CSV.append(pos.lla.altitude);
 
-        qDebug() << "11111pos.lla.latitude " << pos.lla.latitude << "  " << pos.lla.longitude;
-        bool enableReander = (z + 1) == tslWCnt ? true : false;
-        emit positionComplete_tslw(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude, enableReander);
+        // qDebug() << "11111pos.lla.latitude " << pos.lla.latitude << "  " << pos.lla.longitude;
+        bool enableRender = (z + 1) == tslWCnt ? true : false;
+        emit positionComplete_tslw(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude, enableRender);
     }
     // qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 

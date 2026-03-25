@@ -317,7 +317,6 @@ Item  {
                 backColor: theme.controlBackColor
                 borderColor: theme.controlBackColor
                 checkedBorderColor: theme.controlBorderColor
-                // checked: false
                 checkable: false
                 implicitHeight: theme.menuWidth
                 implicitWidth: theme.menuWidth
@@ -337,9 +336,7 @@ Item  {
                     }
                 }
 
-                onClicked: {
-                    core.clearRouteData()
-                }
+                onClicked: core.clearRouteData()
             }
 
         }

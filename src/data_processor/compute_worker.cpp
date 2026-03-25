@@ -101,7 +101,7 @@ void ComputeWorker::setSurfaceIsobathsStepSize(float v)
 
 void ComputeWorker::setIsobathsLabelStepSize(float v)
 {
-    qDebug() << "ComputeWorker::setIsobathsLabelStepSize " << v;
+    // qDebug() << "ComputeWorker::setIsobathsLabelStepSize " << v;
     isobaths_.setLabelStepSize(v);
 }
 

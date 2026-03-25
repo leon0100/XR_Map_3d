@@ -91,8 +91,8 @@
         <file>XR/config.png</file>
         <file>XR/triangle.svg</file>
         <file>XR/check.svg</file>
-	<file>XR/icon_XR_map.png</file>
 	<file>XR/warning.png</file>
+	<file>XR/icon_XR_map.png</file>
         <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
         <file>fonts/PTSansCaption-Regular.ttf</file>
     </qresource>
