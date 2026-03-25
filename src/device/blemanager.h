@@ -264,7 +264,7 @@ private:
 
     QVector<float> depthHistory_;
     double minDepth_ = 0.0, maxDepth_ = 0.0;
-    bool readingDrawTrack_ = false;
+    bool readingDrawTrack_ = true;
 
 
 };

@@ -18,7 +18,7 @@ Item {
     property string defaultLatLon: "000.000"
     property string defaultValue: "0.0"
 
-    property bool dataReading: BleManager ? BleManager.dataReading : false
+    property bool dataReading: BleManager ? BleManager.dataReading : true
 
 
     Rectangle {
@@ -39,48 +39,48 @@ Item {
 
 
         // 纬度
-        Text { text: qsTr("Lat:"); font.pixelSize: iconSize; color: "#102040" }
+        Text { text: qsTr("Lat:"); font.pixelSize: iconSize-1; color: "#102040" }
         Text {
             id: latiText
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? text : (BleManager.latitude + "°")
+            text: dataReading ? (BleManager.latitude + "°") : text
         }
 
 
         // 经度
-        Text { text: qsTr("Lon:"); font.pixelSize: iconSize; color: "#102040" }
+        Text { text: qsTr("Lon:"); font.pixelSize: iconSize-1; color: "#102040" }
         Text {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? text : (BleManager.longitude + "°")
+            text: dataReading ? (BleManager.longitude + "°") : text
         }
 
 
         // 航向角
-        Text { text: qsTr("Course:"); font.pixelSize: iconSize; color: "#102040" }
+        Text { text: qsTr("Course:"); font.pixelSize: iconSize-1; color: "#102040" }
         Text {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? text : (BleManager.angle + "°")
+            text: dataReading ? (BleManager.angle + "°") : text
         }
 
 
         // 速度
-        Text { text: qsTr("Speed:"); font.pixelSize: iconSize; color: "#102040" }
+        Text { text: qsTr("Speed:"); font.pixelSize: iconSize-1; color: "#102040" }
         Text {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? text : (BleManager.speed + " m/s")
+            text: dataReading ? (BleManager.speed + " m/s") : text
         }
 
 
         //深度
-        Text { text: qsTr("Depth:"); font.pixelSize: iconSize; color: "#102040" }
+        Text { text: qsTr("Depth:"); font.pixelSize: iconSize-1; color: "#102040" }
         Text {
             font.pixelSize: iconSize
             font.bold: true

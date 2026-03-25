@@ -24,7 +24,7 @@ Item {
         target: BleManager
         function onConnectedChanged(connected) {
             switchControl.isOn = connected
-            pauseControl.isReading  = connected
+            readControl.isReading  = connected
         }
     }
 
