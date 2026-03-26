@@ -12,7 +12,7 @@ Item {
     property int spacing: 10
     property color backgroundColor: "transparent"
 
-    implicitWidth: columnItem.width
+    implicitWidth:  columnItem.width
     implicitHeight: columnItem.height
 
     default property alias content: columnItem.data
@@ -22,6 +22,7 @@ Item {
     property real offOpacity: 0.5
     property bool isHovered: false
 
+
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
@@ -30,17 +31,17 @@ Item {
         }
     }
 
-    // Rectangle {
-    //     id: backgroundRect
-    //     color: backgroundColor
-    //     anchors.fill: columnItem
-    //     anchors.leftMargin: -horizontalMargins
-    //     anchors.rightMargin: -horizontalMargins
-    //     anchors.topMargin: -verticalMargins
-    //     anchors.bottomMargin: -verticalMargins
-    //     opacity: columnItem.opacity
-    //     radius: 2
-    // }
+    Rectangle {
+        id: backgroundRect
+        color: backgroundColor
+        anchors.fill: columnItem
+        anchors.leftMargin: -horizontalMargins
+        anchors.rightMargin: -horizontalMargins
+        anchors.topMargin: -verticalMargins
+        anchors.bottomMargin: -verticalMargins
+        opacity: columnItem.opacity
+        radius: 2
+    }
 
     MouseArea {
         id: mouseDragArea
@@ -64,14 +65,13 @@ Item {
 
     MouseArea {
         id: mouseOpacityArea
-        // enabled: control.visible
         propagateComposedEvents: true
         anchors.fill: columnItem
         anchors.margins: -10 - control.offsetOpacityArea
         hoverEnabled: true
-        onPressed: function(mouse) { mouse.accepted = false }
+        onPressed:  function(mouse) { mouse.accepted = false }
         onReleased: function(mouse) { mouse.accepted = false }
-        onClicked: function(mouse) { mouse.accepted = false }
+        onClicked:  function(mouse) { mouse.accepted = false }
 
         onContainsMouseChanged: {
             containsMouse ? isHovered = true : isHovered = false

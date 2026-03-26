@@ -88,12 +88,14 @@ ApplicationWindow  {
     }
 
     BleLivedataScanning {
+        id: bleLivedataScaning
         visible: toolBarXR.bluetoothMode
     }
 
     BleDataPanel {
-        visible: true
+        visible: bleLivedataScaning.isShowDataPanel
     }
+
 
     footer: Rectangle {
         height: footHeight

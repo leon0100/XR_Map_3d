@@ -155,6 +155,7 @@ public slots:
     Q_INVOKABLE void openFileFromMenu();
     Q_INVOKABLE void clearRouteData();
     Q_INVOKABLE void location(uint8_t type);
+    Q_INVOKABLE void setAutoRenderSpan(bool isAuto);
 
 signals:
     void connectionChanged(bool duplex = false);
@@ -272,6 +273,7 @@ private:
     int  fixBlackStripesBackwardSteps_;
 
     int currMapLevel_ = 0;
+    bool isAutoRenderSpan_ = true;
 
 #ifdef FLASHER
     Q_PROPERTY(QString flasherTextInfo READ flasherTextInfo NOTIFY dev_flasher_changed)

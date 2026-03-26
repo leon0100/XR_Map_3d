@@ -9,17 +9,24 @@ import Qt.labs.settings 1.1
 // isobaths extra settings
 MenuFrame {
     id: isobathsSettings
+    width:  isobathSize * 1.24
+    height: isobathSize * 0.6
+    z: 9999
 
-    property CheckButton isobathsCheckButton
-
-    property var targetPlot: null
-
-    width:  isobathSize * 1.1
-    height: isobathSize * 0.65
-    margins: 15
-    z: 99
 
     property int isobathSize: theme.screenSize * 0.35
+    property CheckButton isobathsCheckButton
+    property var targetPlot: null
+    property int iconSize: isobathSize * 0.06
+
+    Rectangle {
+        anchors.fill: parent
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#f5f7fa" }
+            GradientStop { position: 1.0; color: "#c3cfe2" }
+        }
+    }
+
 
     onIsHoveredChanged: {
         if (Qt.platform.os === "android") {
@@ -28,6 +35,7 @@ MenuFrame {
             }
         }
     }
+
 
     onVisibleChanged: {
         if (visible) {
@@ -41,15 +49,40 @@ MenuFrame {
         }
     }
 
+
     ColumnLayout {
         spacing: 8
-        CButton {
+
+        RowLayout {
+            spacing: 16
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: "#808080"
+            }
+
+            Text {
+                text: qsTr("Isobaths Settings")
+                color: "black"
+                font.pixelSize: iconSize * 0.9
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                height: 2
+                color: "#808080"
+            }
+        }
+
+        Button {
             id: updateBottomTrackButton
-            text: qsTr("Processing")
-            font.pixelSize: theme.iconSize
-            implicitWidth:  isobathSize * 0.9
+            text: qsTr("Draw Isobaths")
+            font.pixelSize: iconSize * 1.1
+            implicitWidth:  isobathSize
             Layout.alignment: Qt.AlignCenter
-            Layout.preferredHeight: theme.iconSize * 1.4
+            Layout.preferredHeight: iconSize * 1.1
+            palette.button: "#b9c6db"
 
             onClicked: {
                 if (targetPlot) {
@@ -103,18 +136,90 @@ MenuFrame {
 
 
         RowLayout {
-            CText {
-                text: qsTr("Edge limit(m):") //定义了Delaunay三角剖分中的三角形边长的最大允许值
+            spacing: 10
+
+            Text {
+                // text: qsTr("Edge limit(m):")
+                color: "black"
+                text: qsTr("Render Span") //定义了Delaunay三角剖分中的三角形边长的最大允许值
+                font.pixelSize: iconSize
                 Layout.fillWidth: true
             }
+
+            Rectangle {
+                id: renderSpanControl
+                width:  iconSize * 2.5
+                height: iconSize
+                radius: iconSize * 0.3
+                color:  hovered ? (renderSpanControl.isOn ? "#36D85A" : "#AFCFFF")
+                                : (renderSpanControl.isOn?  "#66E07A" : "#D0D0D2")
+                property bool isOn: true
+                property bool hovered: false
+
+                // 滑块
+                Rectangle {
+                    id: slider
+                    width:  iconSize
+                    height: iconSize
+                    radius: iconSize * 0.5
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: renderSpanControl.isOn ? parent.width-width-2 : 2
+                    color: "#FAFAFA"
+                    scale: mouse1Area.pressed ? 0.9 : 1.0
+
+                    Behavior on x {
+                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    }
+                    Behavior on scale {
+                        NumberAnimation { duration: 100 }
+                    }
+                }
+
+                Text {
+                    anchors {
+                        left: parent.left
+                        leftMargin: 5
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: qsTr("Auto")
+                    font.pixelSize: iconSize * 0.8
+                    visible: renderSpanControl.isOn
+                    Behavior on opacity { NumberAnimation { duration: 150 } }
+                }
+
+                MouseArea {
+                    id: mouse1Area
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: {
+                        if(renderSpanControl.isOn) {
+                            renderSpanControl.isOn = false;
+                            core.setAutoRenderSpan(false);
+                        } else {
+                            renderSpanControl.isOn = true
+                            core.setAutoRenderSpan(true);
+                        }
+                    }
+                    onEntered: renderSpanControl.hovered = true
+                    onExited:  renderSpanControl.hovered = false
+                }
+
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
+
+
             SpinBoxCustom {
                 id: isobathsEdgeLimitSpinBox
-                implicitWidth: isobathSize * 0.6
+                implicitWidth: isobathSize * 0.5
                 from: 10
                 to: 1000
                 stepSize: 5
                 value: 100
                 editable: false
+                Layout.rightMargin: 10
+                enabled: !renderSpanControl.isOn
 
                 property int decimals: 1
 
@@ -135,21 +240,26 @@ MenuFrame {
                     }
                 }
             }
+
         }
 
+
         RowLayout {
-            CText {
-                text: qsTr("Step(m):") //控制等值线的步长，即相邻两条等值线之间的高度差。该参数直接影响等值线的密度和详细程度
+            Text {
+                text: qsTr("Contour Interval") //控制等值线的步长，即相邻两条等值线之间的高度差。该参数直接影响等值线的密度和详细程度
+                font.pixelSize: iconSize
                 Layout.fillWidth: true
+                color: "black"
             }
             SpinBoxCustom {
                 id: isobathsSurfaceLineStepSizeSpinBox
-                implicitWidth: isobathSize * 0.6
+                implicitWidth: isobathSize * 0.5
                 from: 1
                 to: 200
                 stepSize: 1
                 value: 10
                 editable: false
+                Layout.rightMargin: 10
 
                 property int decimals: 1
                 property real realValue: value / 10
@@ -183,38 +293,38 @@ MenuFrame {
             }
         }
 
-        RowLayout {
-            CText {
-                text: qsTr("Extra width(m):")
-            }
-            Item {
-                Layout.fillWidth: true
-            }
-            SpinBoxCustom {
-                id: extraWidthSpinBox
-                implicitWidth: isobathSize * 0.6
-                from: 5
-                to: 100
-                stepSize: 5
-                value: 5
-                editable: false
+        // RowLayout {
+        //     CText {
+        //         text: qsTr("Extra width(m):")
+        //     }
+        //     Item {
+        //         Layout.fillWidth: true
+        //     }
+        //     SpinBoxCustom {
+        //         id: extraWidthSpinBox
+        //         implicitWidth: isobathSize * 0.6
+        //         from: 5
+        //         to: 100
+        //         stepSize: 5
+        //         value: 5
+        //         editable: false
 
-                onFocusChanged: {
-                    isobathsSettings.focus = true
-                }
+        //         onFocusChanged: {
+        //             isobathsSettings.focus = true
+        //         }
 
-                onValueChanged: {
-                    IsobathsViewControlMenuController.onSetExtraWidth(value)
-                }
-                Component.onCompleted: {
-                    IsobathsViewControlMenuController.onSetExtraWidth(value)
-                }
+        //         onValueChanged: {
+        //             IsobathsViewControlMenuController.onSetExtraWidth(value)
+        //         }
+        //         Component.onCompleted: {
+        //             IsobathsViewControlMenuController.onSetExtraWidth(value)
+        //         }
 
-                Settings {
-                    property alias extraWidthSpinBox: extraWidthSpinBox.value
-                }
-            }
-        }
+        //         Settings {
+        //             property alias extraWidthSpinBox: extraWidthSpinBox.value
+        //         }
+        //     }
+        // }
 
         Rectangle {
             width: parent.width
@@ -227,15 +337,17 @@ MenuFrame {
 
         RowLayout {
             spacing: 20
-            CText {
+            Text {
                 text: qsTr("Vertical scale:")
+                color: "black"
                 Layout.fillWidth: true
+                font.pixelSize: iconSize
             }
 
             Slider {
                 id: verticalScaleSlider
                 Layout.fillWidth: true
-                Layout.preferredWidth: isobathSize * 0.7
+                Layout.preferredWidth: isobathSize * 0.8
                 from: 0.5
                 to:   10.0
                 value: IsobathsViewControlMenuController.verticalScale()
@@ -244,8 +356,8 @@ MenuFrame {
                 background: Rectangle {
                     x: verticalScaleSlider.leftPadding
                     y: verticalScaleSlider.topPadding + verticalScaleSlider.availableHeight/2 - height/2
-                    implicitWidth: isobathSize * 0.7
-                    implicitHeight: theme.iconSize * 0.33
+                    implicitWidth: isobathSize * 0.8
+                    implicitHeight: iconSize * 0.5
                     width: verticalScaleSlider.availableWidth
                     height: isobathSize * 0.02
                     radius: 5
@@ -256,9 +368,9 @@ MenuFrame {
                     x: verticalScaleSlider.leftPadding + verticalScaleSlider.visualPosition
                        * (verticalScaleSlider.availableWidth - width)
                     y: verticalScaleSlider.topPadding + verticalScaleSlider.availableHeight/2 - height/2
-                    implicitWidth: theme.iconSize
-                    implicitHeight: theme.iconSize
-                    radius: theme.iconSize * 0.5
+                    implicitWidth: iconSize
+                    implicitHeight: iconSize
+                    radius: iconSize * 0.7
                     color: verticalScaleSlider.pressed ? "#f0f0f0" : "#f6f6f6"
                 }
 

@@ -12,7 +12,7 @@ Button {
     property int borderRadius: 2
 
 
-    contentItem: CText {
+    contentItem: Text {
         text: control.text
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -22,8 +22,8 @@ Button {
     background: Rectangle {
         id: backRect
 
-        implicitHeight: control.height
-        implicitWidth:  implicitHeight
+        implicitHeight: control.implicitHeight
+        // implicitWidth:  implicitHeight
         radius: borderRadius
         color: control.backColor
         border.color: theme.controlSolidBorderColor

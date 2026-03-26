@@ -17,15 +17,7 @@ Rectangle {
     property  var    menuPopup:     null
     property  var    targetPlot:    null
     property  var    lastItem:      menuSettings
-    // property  bool   is3DVisible:   visible3DButton.checked
-    // property  bool   is2DVisible:   visible2DButton.checked
-    // property  int    numPlots:      appSettings.numPlots
-    // property  bool   syncPlots:     appSettings.syncPlots
-    // property  int    instruments:   appSettings.instruments
     property  int    settingsWidth: theme.menuWidth*20
-    // property  string filePath:      devSettings.filePath
-    // property  bool   extraInfoVis:  appSettings.extraInfoVis
-    // property  bool   autopilotInfofVis: appSettings.autopilotInfofVis
     property  int    iconSize: Math.min(Screen.width, Screen.height) * 0.05
 
     property color backColor: "#d6e6ff"
@@ -37,7 +29,6 @@ Rectangle {
     signal menuBarSettingOpened()
     signal syncPlotEnabled()
 
-    // signal blueToothClicked(bool active)
 
     function updateBottomTrack() {
         appSettings.updateBottomTrack()

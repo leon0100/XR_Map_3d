@@ -10,11 +10,10 @@ Item {
     x: Screen.width - width - 5
     z: 99
 
-    property int bleSize: Math.min(Screen.width, Screen.height) * 0.35
-    property int layoutHeight: bleSize * 0.1
-    property int iconSize: bleSize * 0.06
-
-    signal signalCheckBoxToggle(int checkBoxId, bool checked)
+    property int  bleSize:         Math.min(Screen.width, Screen.height) * 0.35
+    property int  layoutHeight:    bleSize * 0.1
+    property int  iconSize:        bleSize * 0.06
+    property bool isShowDataPanel: false
 
     onVisibleChanged: {
         BleManager.setBleLiveScanningVisible(visible)
@@ -25,6 +24,8 @@ Item {
         function onConnectedChanged(connected) {
             switchControl.isOn = connected
             readControl.isReading  = connected
+            root.isShowDataPanel = true
+            // root.visible = false
         }
     }
 
@@ -186,6 +187,7 @@ Item {
                                     height: parent.height * 0.8
                                     radius: parent.height * 0.4
                                     color: "#66E07A"
+                                    visible: isShowDataPanel
                                 }
                             }
 
@@ -203,6 +205,7 @@ Item {
 
                             onClicked: {
                                 flashAnim2.restart()
+                                isShowDataPanel = !isShowDataPanel
                             }
 
                             onEntered: parent.color = "#d6e6ff"
@@ -228,15 +231,15 @@ Item {
                     ColumnLayout {
                         id: mainCol
                         anchors.centerIn: parent
-                        spacing: 10
+                        spacing: 20
 
                         Rectangle {
                             id: switchControl
                             width:  layoutHeight * 2.2
                             height: layoutHeight
                             radius: layoutHeight * 0.3
-                            color: hovered ? (switchControl.isOn ? "#36D85A" : "#D6E6FF")
-                                           : (switchControl.isOn?  "#66E07A" : "#D0D0D2")
+                            color:  hovered ? (switchControl.isOn ? "#36D85A" : "#D6E6FF")
+                                            : (switchControl.isOn?  "#66E07A" : "#D0D0D2")
                             property bool isOn: false
                             property bool hovered: false
 
@@ -301,13 +304,10 @@ Item {
                                 onExited: switchControl.hovered = false
                             }
 
-
                             Behavior on color {
                                 ColorAnimation { duration: 200 }
                             }
                         }
-
-
 
 
                         Rectangle {

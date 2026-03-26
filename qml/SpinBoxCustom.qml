@@ -8,7 +8,7 @@ T.SpinBox {
 
     property bool spinner: true
     property bool isValid: true
-    property int devValue: -2147483648
+    property int  devValue: -2147483648
     property bool isDriverChanged: true
 
     value: 50
@@ -18,8 +18,8 @@ T.SpinBox {
     font.pixelSize: 16
     padding: 2
 
-    implicitHeight: theme.menuWidth * 0.75
-    implicitWidth:  implicitHeight * 4
+    implicitHeight: theme.menuWidth * 0.65
+    implicitWidth:  implicitHeight * 3
 
     valueFromText: function(text, locale) {
         return Number.fromLocaleString(locale, text);
@@ -34,7 +34,7 @@ T.SpinBox {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
-        text: control.textFromValue(control.value, control.locale)
+        text: control.textFromValue(control.value, control.locale) + "(m)"
         font.pixelSize: theme.iconSize
         color: "black"
         selectedTextColor: theme.textColor

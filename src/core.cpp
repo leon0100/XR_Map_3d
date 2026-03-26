@@ -1463,6 +1463,11 @@ void Core::clearRouteData()
     });
 }
 
+void Core::setAutoRenderSpan(bool isAuto)
+{
+    isAutoRenderSpan_ = isAuto;
+}
+
 void Core::location(uint8_t type)
 {
     double latitude = 0.0, longitude = 0.0;
@@ -1822,13 +1827,17 @@ void Core::onZoomLevelChanged(int level)
 
 void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
 {
-    int vecSize = depthVec.size();
-    if(vecSize == 200) {
-        isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-    } else if(vecSize == 400) {
-        isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-    } else if(vecSize == 800) {
-        isobathsViewControlMenuController_->setEdgeLimitChanged(40);
+    if(isAutoRenderSpan_) {
+        int vecSize = depthVec.size();
+        if(vecSize == 200) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(80);
+        } else if(vecSize == 400) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(60);
+        } else if(vecSize == 600) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(50);
+        } else if(vecSize == 800) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(40);
+        }
     }
 
     datasetPtr_->vec_CSV_  = depthVec;

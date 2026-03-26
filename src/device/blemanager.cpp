@@ -405,6 +405,7 @@ void BLEManager::startStopScan(bool scan)
     doStartScan();  // 已有权限，直接启动
 }
 
+
 void BLEManager::setBleLiveScanningVisible(bool visible)
 {
     liveScanVisble_ = visible;
