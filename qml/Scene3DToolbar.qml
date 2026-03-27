@@ -26,7 +26,7 @@ Item  {
                 (setCameraIsometricView.down|| boatTrackCheckButton.down) :
                 (isBoatTrackCheckButtonHovered || isFitViewCheckButtonHovered)
 
-    property bool menuOpened: settings3DSettings.visible || locationSettings.visible
+    property bool menuOpened: settings3DSettings.visible
 
     opacity: (toolbarHovered || menuOpened) ? 1.0 : 0.5
     Behavior on opacity { NumberAnimation { duration: 120 } }
@@ -144,6 +144,7 @@ Item  {
         // }
 
 
+
         //Settings3DExtraSettings.qml
         Item {
             id: settings3DWrapper
@@ -151,7 +152,7 @@ Item  {
             height: settings3DCheckButton.implicitHeight
 
             CheckButton {
-                id: settings3DCheckButton
+                id:       settings3DCheckButton
                 iconSource: "qrc:/icons/ui/settings.svg"
                 backColor:   theme.controlBackColor
                 borderColor: theme.controlBackColor
@@ -162,8 +163,43 @@ Item  {
 
                 property bool settingsPressTriggered: false
 
-                onClicked: settings3DCheckButton.settingsPressTriggered =
-                             !settings3DCheckButton.settingsPressTriggered
+                onClicked: settingsPressTriggered  = !settingsPressTriggered
+
+                // MouseArea {
+                //     id: settings3DTouchArea
+                //     anchors.fill: parent
+                //     enabled: Qt.platform.os === "android"
+
+                //     onPressed: {
+                //         if (enabled) {
+                //             settingsPressTimer.start()
+                //             settings3DCheckButton.settingsPressTriggered = false
+                //         }
+                //     }
+
+                //     onReleased: {
+                //         if (enabled) {
+                //             settingsPressTimer.stop()
+                //         }
+                //     }
+
+                //     onCanceled: {
+                //         if (enabled) {
+                //             settingsPressTimer.stop()
+                //         }
+                //     }
+                // }
+
+                // Timer {
+                //     id: settingsPressTimer
+                //     interval: 5
+                //     repeat: false
+                //     running: false
+
+                //     onTriggered: {
+                //         settings3DCheckButton.settingsPressTriggered = true;
+                //     }
+                // }
             }
 
             Settings3DExtraSettings {
@@ -174,6 +210,7 @@ Item  {
                 z: 2
             }
         }
+
 
 
 

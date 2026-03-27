@@ -52,14 +52,12 @@ QVector<QVector3D> NavigationArrow::makeArrowVertices() const
     QVector<QVector3D> verts;
     verts.reserve(6 * 3);
 
-    QVector3D A( -2.0f, -1.0f,  0.0f );
-    QVector3D B(  0.0f,  0.0f,  0.0f );
-    QVector3D C(  2.0f, -1.0f,  0.0f );
-    QVector3D D(  0.0f,  5.0f,  0.0f );
-    QVector3D E(  0.0f,  1.0f,  1.0f );
+    QVector3D A( -3.0f, -2.0f,  0.0f );
+    QVector3D B(  0.0f, 0.5f,  0.0f );
+    QVector3D C(  3.0f, -2.0f,  0.0f );
+    QVector3D D(  0.0f, 10.0f,  0.0f );
+    QVector3D E(  0.0f,  2.0f,  2.0f );
 
-    //verts << A << B << D
-    //      << B << C << D
     verts << A << B << E << B << C << E << A << E << D << E << C << D;
 
     return verts;
@@ -70,20 +68,13 @@ QVector<QVector3D> NavigationArrow::makeArrowRibs() const
     QVector<QVector3D> ribs;
     ribs.reserve(6 * 3);
 
-    QVector3D A( -2.0f, -1.0f,  0.05f );
-    QVector3D B(  0.0f, -0.0f,  0.05f );
-    QVector3D C(  2.0f, -1.0f,  0.05f );
-    QVector3D D(  0.0f,  5.0f,  0.05f );
-    QVector3D E(  0.0f,  1.0f,  1.05f );
+    QVector3D A( -3.0f, -2.0f,  0.05f );
+    QVector3D B(  0.0f,  0.5f,  0.05f );
+    QVector3D C(  3.0f, -2.0f,  0.05f );
+    QVector3D D(  0.0f,  8.0f,  0.05f );
+    QVector3D E(  0.0f,  2.0f,  2.05f );
 
-    ribs << A << B
-         << B <<C
-         << C << D
-         << D << A
-         << D << E
-         << E << A
-         << E << C;
-//       << E << B;
+    ribs << A << B << B << C << C << D << D << A << D << E << E << A << E << C;
 
     return ribs;
 }
@@ -139,7 +130,7 @@ void NavigationArrow::NavigationArrowRenderImplementation::render(QOpenGLFunctio
             vertices << v.x() << v.y() << v.z();
         }
         shaderProgram->setAttributeArray(posLoc, vertices.constData(), 3);
-        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(235, 52, 52)));
+        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(173, 255, 47)));
         ctx->glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
     }
 
@@ -150,7 +141,7 @@ void NavigationArrow::NavigationArrowRenderImplementation::render(QOpenGLFunctio
             lineVertices << v.x() << v.y() << v.z();
         }
         shaderProgram->setAttributeArray(posLoc, lineVertices.constData(), 3);
-        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(99, 22, 22)));
+        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(52, 235, 52)));
 
         ctx->glLineWidth(2.0f);
         ctx->glDrawArrays(GL_LINES, 0, lineVertices.size() / 3);

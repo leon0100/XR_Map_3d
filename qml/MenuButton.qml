@@ -10,11 +10,11 @@ Button {
 
     id: control
     Layout.preferredHeight: theme.menuWidth
-    padding: 0
+    padding: 6
 
     icon.color:"transparent"
 
-    property color baseBackColor: "#f0fff0"
+    property color baseBackColor: "transparent"
 
     // function mixWithRed(base, t) {
     //     return Qt.rgba(base.r * (1-t) + 1.0 * t, base.g * (1-t) + 0.0 * t, base.b * (1-t) + 0.0 * t, base.a);

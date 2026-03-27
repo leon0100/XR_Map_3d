@@ -9,7 +9,7 @@ import Qt.labs.settings 1.1
 // isobaths extra settings
 MenuFrame {
     id: isobathsSettings
-    width:  isobathSize * 1.24
+    width:  isobathSize * 1.28
     height: isobathSize * 0.6
     z: 9999
 
@@ -19,15 +19,6 @@ MenuFrame {
     property var targetPlot: null
     property int iconSize: isobathSize * 0.06
 
-    Rectangle {
-        anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "#f5f7fa" }
-            GradientStop { position: 1.0; color: "#c3cfe2" }
-        }
-    }
-
-
     onIsHoveredChanged: {
         if (Qt.platform.os === "android") {
             if (isHovered) {
@@ -35,7 +26,6 @@ MenuFrame {
             }
         }
     }
-
 
     onVisibleChanged: {
         if (visible) {
@@ -51,7 +41,7 @@ MenuFrame {
 
 
     ColumnLayout {
-        spacing: 8
+        spacing: 16
 
         RowLayout {
             spacing: 16
@@ -75,6 +65,7 @@ MenuFrame {
             }
         }
 
+
         Button {
             id: updateBottomTrackButton
             text: qsTr("Draw Isobaths")
@@ -87,21 +78,22 @@ MenuFrame {
             onClicked: {
                 if (targetPlot) {
                         targetPlot.doDistProcessing(
-                             0,     // preset
-                             1,     // window_size
-                             0,     // vertical_gap
-                             0,     // range_min
-                             1000,  // range_max
-                             1,     // gain_slope
-                             0,     // threshold
-                             0,     // offsetx
-                             0,     // offsety
-                             0,     // offsetz
-                             false  // manual
+                            0,     // preset
+                            1,     // window_size
+                            0,     // vertical_gap
+                            0,     // range_min
+                            1000,  // range_max
+                            1,     // gain_slope
+                            0,     // threshold
+                            0,     // offsetx
+                            0,     // offsety
+                            0,     // offsetz
+                            false  // manual
                         )
                 }
             }
         }
+
         // RowLayout {
         //     CText {
         //         text: qsTr("Theme:")
@@ -148,9 +140,9 @@ MenuFrame {
 
             Rectangle {
                 id: renderSpanControl
-                width:  iconSize * 2.5
-                height: iconSize
-                radius: iconSize * 0.3
+                width:  iconSize * 3.2
+                height: iconSize * 1.3
+                radius: iconSize * 0.35
                 color:  hovered ? (renderSpanControl.isOn ? "#36D85A" : "#AFCFFF")
                                 : (renderSpanControl.isOn?  "#66E07A" : "#D0D0D2")
                 property bool isOn: true
@@ -159,9 +151,9 @@ MenuFrame {
                 // 滑块
                 Rectangle {
                     id: slider
-                    width:  iconSize
-                    height: iconSize
-                    radius: iconSize * 0.5
+                    width:  iconSize * 1.2
+                    height: iconSize * 1.2
+                    radius: iconSize * 0.6
                     anchors.verticalCenter: parent.verticalCenter
                     x: renderSpanControl.isOn ? parent.width-width-2 : 2
                     color: "#FAFAFA"
@@ -293,6 +285,7 @@ MenuFrame {
             }
         }
 
+
         // RowLayout {
         //     CText {
         //         text: qsTr("Extra width(m):")
@@ -338,7 +331,7 @@ MenuFrame {
         RowLayout {
             spacing: 20
             Text {
-                text: qsTr("Vertical scale:")
+                text: qsTr("Vertical Scale")
                 color: "black"
                 Layout.fillWidth: true
                 font.pixelSize: iconSize

@@ -8,7 +8,7 @@ Rectangle {
     id: toolBar_XR
     objectName:  "toolBar_XR"
     height: iconSize + 3
-    color: "#f5f5f5"
+    color: "#eeeeee"
     border.color: "#c0c0c0"
 
     signal openClicked()

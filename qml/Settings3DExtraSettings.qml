@@ -31,11 +31,16 @@ MenuFrame {
         }
     }
 
-    onFocusChanged: {
-        if (!focus) {
-            settings3DCheckButton.settingsPressTriggered = false
-        }
-    }
+    // onFocusChanged: {
+    //     if (Qt.platform.os === "android" && !focus) {
+    //         Qt.callLater(function() {
+    //             if (!settings3DSettings.focus) {
+    //                 settings3DCheckButton.settingsPressTriggered = false
+    //             }
+    //         })
+    //     }
+    // }
+
 
     ColumnLayout {
         RowLayout {
@@ -48,7 +53,7 @@ MenuFrame {
             }
 
             CText {
-                text: qsTr("3d scene settings")
+                text: qsTr("Scene Settings")
                 font.pixelSize: theme.iconSize
             }
 

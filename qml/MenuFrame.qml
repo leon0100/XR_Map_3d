@@ -1,15 +1,16 @@
 import QtQuick 2.15
-import QtQuick.Layouts 1.15
+import QtQuick.Layouts  1.15
 import QtQuick.Controls 2.15
+
 
 Item {
     id: control
 
     property int offsetOpacityArea: 0
-    property int margins: 1
+    property int margins: 12
     property int horizontalMargins: margins
-    property int verticalMargins: margins
-    property int spacing: 10
+    property int verticalMargins:   margins
+    property int spacing: 15
     property color backgroundColor: "transparent"
 
     implicitWidth:  columnItem.width
@@ -31,17 +32,19 @@ Item {
         }
     }
 
+
     Rectangle {
         id: backgroundRect
         color: backgroundColor
         anchors.fill: columnItem
-        anchors.leftMargin: -horizontalMargins
-        anchors.rightMargin: -horizontalMargins
-        anchors.topMargin: -verticalMargins
-        anchors.bottomMargin: -verticalMargins
+        anchors.leftMargin:   horizontalMargins
+        anchors.rightMargin:  horizontalMargins
+        anchors.topMargin:    verticalMargins / 2
+        anchors.bottomMargin: verticalMargins / 2
         opacity: columnItem.opacity
         radius: 2
     }
+
 
     MouseArea {
         id: mouseDragArea
@@ -55,11 +58,11 @@ Item {
         drag.axis: Drag.XandYAxis
     }
 
-    Item  {
+    Item {
         id: columnItem
-        x: horizontalMargins
-        y: verticalMargins
-        implicitWidth: childrenRect.width
+        anchors.centerIn: parent
+        anchors.top: parent.top
+        implicitWidth:  childrenRect.width
         implicitHeight: childrenRect.height
     }
 
@@ -82,4 +85,5 @@ Item {
             columnItem.opacity = !isOpacityControlled || containsMouse ? 1 : offOpacity
         }
     }
+
 }

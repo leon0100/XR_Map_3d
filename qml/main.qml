@@ -83,7 +83,7 @@ ApplicationWindow  {
 
     IsobathsExtraSettings {
         visible: toolBarXR.contourMode
-        x: toolBarXR.iconSize * 4
+        x: toolBarXR.iconSize * 3.5
         targetPlot: toolBarXR.targetPlot
     }
 
