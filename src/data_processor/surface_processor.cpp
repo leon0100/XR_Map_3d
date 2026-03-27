@@ -43,11 +43,6 @@ void SurfaceProcessor::clear()
     minZ_ = std::numeric_limits<float>::max();
     maxZ_ = std::numeric_limits<float>::lowest();
     originSet_ = false;
-
-    // —— 新增：历史缓冲区初始化 —— //
-    zHistory_.clear();
-    zHistory_.reserve(kZHistoryFrames);
-    // ———————————————————————————— //
 }
 
 void SurfaceProcessor::setBottomTrackPtr(BottomTrack *bottomTrackPtr)
@@ -215,45 +210,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
             maxZ_ = currMax;
         }
     }
-
-
-
-
-
-
-
-    // 收集本帧有效 z（只取通过过滤的三角形顶点）
-    QVector<float> thisFrameZs;
-    thisFrameZs.reserve(updsTrIndx.size() * 3);
-    auto& tr2 = delaunayProc_.getTriangles();
-    auto& pt2 = delaunayProc_.getPoints();
-    for (int triIdx : std::as_const(updsTrIndx)) {
-        if (triIdx < 0 || triIdx >= static_cast<int>(tr2.size())) continue;
-        const auto& t = tr2[triIdx];
-        if (t.a < 4 || t.b < 4 || t.c < 4 || t.is_bad || t.longest_edge_dist > edgeLimit_) continue;
-        thisFrameZs << pt2[t.a].z << pt2[t.b].z << pt2[t.c].z;
-    }
-
-    // 更新历史环形缓冲（超过容量则覆盖最旧帧）
-    if (zHistory_.size() >= kZHistoryFrames) {
-        zHistory_.removeFirst();
-    }
-    zHistory_.append(thisFrameZs);
-
-    // 计算分位数稳定的 min/max
-    auto [stableMin, stableMax] = computeStableMinMaxZ();
-
-    lastMinZ = minZ_;
-    lastMaxZ = maxZ_;
-    minZ_ = stableMin;
-    maxZ_ = stableMax;
-
-
-
-
-
-
-
 
     const bool zChanged = !qFuzzyCompare(1.0+minZ_, 1.0+lastMinZ) || !qFuzzyCompare(1.0+maxZ_, 1.0+lastMaxZ);
     if (zChanged) {
@@ -629,42 +585,4 @@ void SurfaceProcessor::refreshAfterEdgeLimitChange()
 bool SurfaceProcessor::canceled() const noexcept
 {
     return dataProcessor_ && dataProcessor_->isCancelRequested();
-}
-
-
-
-
-// ———————— 新增：分位数裁剪 min/max Z ———————— //
-static std::pair<float, float> computeQuantileMinMax(const QVector<float>& allZ,
-                                                     float lowQ, float highQ)
-{
-    if (allZ.isEmpty()) {
-        return { std::numeric_limits<float>::max(),
-                std::numeric_limits<float>::lowest() };
-    }
-    QVector<float> sorted = allZ;
-    std::sort(sorted.begin(), sorted.end());
-
-    auto quantile = [&](float q) -> float {
-        const int n = sorted.size();
-        const float idx = q * (n - 1);
-        const int lo = static_cast<int>(std::floor(idx));
-        const int hi = std::min(lo + 1, n - 1);
-        return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-    };
-
-    return { quantile(lowQ), quantile(highQ) };
-}
-// ——————————————————————————————————————————— //
-std::pair<float, float> SurfaceProcessor::computeStableMinMaxZ() const
-{
-    // 合并所有历史帧的 z
-    QVector<float> pool;
-    for (const auto& frame : zHistory_) {
-        pool.append(frame);
-    }
-    if (pool.isEmpty()) {
-        return { minZ_, maxZ_ };          // fallback：保当前值
-    }
-    return computeQuantileMinMax(pool, kZQuantileLow, kZQuantileHigh);
 }

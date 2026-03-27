@@ -73,14 +73,4 @@ private:
     bool originSet_;
     QSet<TileKey> visibleTileKeys_;
 
-
-    // —— 新增：分位数裁剪辅助 —— //
-    static constexpr float kZQuantileLow  = 0.02f;  // 丢弃最低 2%
-    static constexpr float kZQuantileHigh = 0.98f;  // 丢弃最高 2%
-    // 历史缓冲区，防止单帧抖动（保留最近 N 帧的 z 值池）
-    static constexpr int   kZHistoryFrames = 10;
-    QVector<QVector<float>> zHistory_;              // 每帧一列 z
-    // ———————————————————————— //
-        std::pair<float, float> computeStableMinMaxZ() const;
-
 };
