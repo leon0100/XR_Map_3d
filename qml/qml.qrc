@@ -44,19 +44,15 @@
         <file>ParamSetup.qml</file>
         <file>ParamGroup.qml</file>
         <file>CText.qml</file>
-        <file>code-working.svg</file>
-        <file>conn.png</file>
         <file>CRadioDel.qml</file>
         <file>CTextField.qml</file>
         <file>settings-outline.svg</file>
         <file>RecorderBox.qml</file>
         <file>DopplerBox.qml</file>
-        <file>3dcube.svg</file>
         <file>CalcMethodTINSettings.qml</file>
         <file>SmoothMethodUGINSettings.qml</file>
         <file>SmoothMethodTriDivideSettings.qml</file>
         <file>Scene3DToolbar.qml</file>
-        <file>one-finger.svg</file>
         <file>tool.svg</file>
         <file>QmlCommon/MenuBlockEx.qml</file>
         <file>QmlCommon/qmldir</file>
@@ -81,9 +77,7 @@
         <file>NpdFilterControlMenu.qml</file>
         <file>PointGroupControlMenu.qml</file>
         <file>PolygonGroupControlMenu.qml</file>
-        <file>fit-in-view.svg</file>
         <file>Plot2D.qml</file>
-        <file>combo-selection.svg</file>
         <file>Scene3DControlMenu.qml</file>
         <file>MenuRow.qml</file>
         <file>ConnectionButton.qml</file>

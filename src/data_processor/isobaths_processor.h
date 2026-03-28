@@ -33,6 +33,8 @@ private:
     void edgeIntersection(const QVector3D& u,const QVector3D& v,float L, QVector<QVector3D>& out) const;
     void filterNearbyLabels(const QVector<LabelParameters>& in, QVector<LabelParameters>& out) const;
 
+    void smoothPolyline(QList<QVector3D>& poly) const;
+
     bool canceled() const noexcept;
 
 private:

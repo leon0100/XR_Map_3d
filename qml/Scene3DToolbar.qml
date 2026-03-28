@@ -336,6 +336,10 @@ Item  {
                     IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(checked)
                 }
 
+                Settings {
+                    property alias isobathsCheckButton: isobathsCheckButton.checked
+                }
+
             }
 
         }

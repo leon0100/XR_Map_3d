@@ -335,9 +335,33 @@ void IsobathsProcessor::buildPolylines(const IsobathsSegVec& segs, IsobathsPolyl
 
         // qDebug() << "poly.size()............" << poly.size();
         if (poly.size() > 5) {
+            smoothPolyline(poly);
             polys << QVector<QVector3D>(poly.begin(), poly.end());
         }
     }
+}
+
+// 新增20260328：平滑折线，减少锯齿和碎片
+void IsobathsProcessor::smoothPolyline(QList<QVector3D>& poly) const
+{
+    if (poly.size() < 3) {
+        return;
+    }
+
+    // 使用简单的移动平均平滑
+    QList<QVector3D> smoothed;
+    smoothed.append(poly.first()); // 保持起点不变
+
+    for (int i = 1; i < poly.size() - 1; ++i) {
+        // 三点加权平均：当前点权重0.5，相邻点各0.25
+        QVector3D avg = 0.25f * poly[i-1] + 0.5f * poly[i] + 0.25f * poly[i+1];
+        // 保持原始Z值（等高线高度）
+        avg.setZ(poly[i].z());
+        smoothed.append(avg);
+    }
+
+    smoothed.append(poly.last()); // 保持终点不变
+    poly = smoothed;
 }
 
 //过滤掉彼此距离小于一定阈值的 Label

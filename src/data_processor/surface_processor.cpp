@@ -187,7 +187,10 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     propagateBorderHeights(changedTiles);
+    const int stepPix  = surfaceMeshPtr_->getStepSizeHeightMatrix();
+    const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
     for (SurfaceTile* t : std::as_const(changedTiles)) {
+        smoothTileHeights(t, hvSide);   // 对高度场进行平滑处理，减少噪声
         t->updateHeightIndices();
         t->setIsUpdated(false);
     }
@@ -427,11 +430,10 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
             int iFrom = rowFrom * hvSide + k;
             int iTo   = rowTo   * hvSide + k;
             if (!qFuzzyIsNull(vSrc[iFrom].z())) {
-                //使用加权平均平滑边界
                 float srcZ = vSrc[iFrom].z();
                 float dstZ = vDst[iTo].z();
                 if(!qFuzzyIsNull(dstZ)) {
-                    vDst[iTo][2] = 0.5f * srcZ + 0.5f * dstZ;
+                    vDst[iTo][2] = 0.7f * srcZ + 0.3f * dstZ;
                 } else {
                     vDst[iTo][2] = srcZ;
                 }
@@ -448,11 +450,10 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
             int iFrom = k * hvSide + colFrom;
             int iTo   = k * hvSide + colTo;
             if (!qFuzzyIsNull(vSrc[iFrom].z())) {
-                //使用加权平均平滑边界
                 float srcZ = vSrc[iFrom].z();
                 float dstZ = vDst[iTo].z();
                 if(!qFuzzyIsNull(dstZ)) {
-                    vDst[iTo][2] = 0.5f * srcZ + 0.5f * dstZ;
+                    vDst[iTo][2] = 0.7f * srcZ + 0.3f * dstZ;
                 } else {
                     vDst[iTo][2] = srcZ;
                 }
@@ -585,4 +586,67 @@ void SurfaceProcessor::refreshAfterEdgeLimitChange()
 bool SurfaceProcessor::canceled() const noexcept
 {
     return dataProcessor_ && dataProcessor_->isCancelRequested();
+}
+
+
+void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
+{
+    if (!tile || !tile->getIsInited()) {
+        return;
+    }
+
+    auto& vertices = tile->getHeightVerticesRef();
+    auto& marks = tile->getHeightMarkVerticesRef();
+
+    // 创建平滑后的高度副本
+    QVector<float> smoothedZ(vertices.size());
+    for (int i = 0; i < vertices.size(); ++i) {
+        smoothedZ[i] = vertices[i].z();
+    }
+
+    // 3x3高斯核平滑，但只对非边界点进行处理
+    const float kernel[3][3] = {
+        {0.0625f, 0.125f, 0.0625f},
+        {0.125f,  0.25f,  0.125f},
+        {0.0625f, 0.125f, 0.0625f}
+    };
+
+    for (int y = 1; y < hvSide - 1; ++y) {
+        for (int x = 1; x < hvSide - 1; ++x) {
+            int idx = y * hvSide + x;
+
+            // 只平滑有效的三角剖分点
+            if (marks[idx] != HeightType::kTriangulation) {
+                continue;
+            }
+
+            float newZ = 0.0f;
+            float weightSum = 0.0f;
+
+            for (int ky = -1; ky <= 1; ++ky) {
+                for (int kx = -1; kx <= 1; ++kx) {
+                    int nIdx = (y + ky) * hvSide + (x + kx);
+                    float z = vertices[nIdx].z();
+
+                    // 只考虑有效的邻居点
+                    if (!qFuzzyIsNull(z)) {
+                        float w = kernel[ky + 1][kx + 1];
+                        newZ += w * z;
+                        weightSum += w;
+                    }
+                }
+            }
+
+            if (weightSum > 0.0f) {
+                smoothedZ[idx] = newZ / weightSum;
+            }
+        }
+    }
+
+    // 应用平滑后的高度
+    for (int i = 0; i < vertices.size(); ++i) {
+        if (!qFuzzyIsNull(vertices[i].z())) {
+            vertices[i].setZ(smoothedZ[i]);
+        }
+    }
 }

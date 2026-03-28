@@ -45,6 +45,7 @@ private:
     QVector<QVector3D> generateExpandedPalette(int totalColors) const;
     void updateTexture() const;
     void propagateBorderHeights(QSet<SurfaceTile*>& changedTiles);
+    void smoothTileHeights(SurfaceTile* tile, int hvSide);
     void refreshAfterEdgeLimitChange();
     bool canceled() const noexcept;
 
