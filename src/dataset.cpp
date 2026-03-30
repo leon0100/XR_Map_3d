@@ -684,41 +684,9 @@ void Dataset::addPosition_realTime(double lat, double lon, double depth, bool is
 }
 
 
-void Dataset::addPosition_CSV(double lat, double lon, int depth)
-{
-    Epoch* lastEp = last();
-    if (!lastEp) {
-        return;
-    }
 
-    Position pos;
-    pos.lla = LLA(lat, lon);
-    if (pos.lla.isCoordinatesValid()) {
-        if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-            lastEp = addNewEpoch();  //不断累加帧数的下标index
-            lastEp->setDistProcesing_CSV(depth);
-        }
 
-        // qDebug() << "pool_size().............................. " << pool_.size();
-        uint64_t lastIndx = pool_.size() - 1;
-        if (!getLlaRef().isInit) {
-            LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
-                        (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
-            setLlaRef(LLARef(pos.lla), llaState);
-        }
-        lastEp->setPositionLLA(pos);
-        lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
-        lastEp->setPositionDataType(DataType::kRaw);
-
-        boatLatitute_  = pos.lla.latitude;
-        boatLongitude_ = pos.lla.longitude;
-
-        emit positionAdded(lastIndx); //nie:test
-    }
-
-}
-
-void Dataset::addPosition_tslw(double lat, double lon, int depth, bool enableRender)
+void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRender)
 {
     Epoch* lastEp = last();
     if (!lastEp) {

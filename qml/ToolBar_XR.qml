@@ -89,6 +89,7 @@ Rectangle {
         anchors.margins: 2
         spacing: 3
 
+
         MenuButton {  //菜单
             id: menuBtn
             icon.source: "qrc:/XR/config.png"

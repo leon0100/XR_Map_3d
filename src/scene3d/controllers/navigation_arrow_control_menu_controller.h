@@ -26,4 +26,6 @@ private:
     GraphicsScene3dView* graphicsSceneView_;
     std::function<void()> pendingLambda_;
     bool isVisible_;
+    int size_;
+
 };

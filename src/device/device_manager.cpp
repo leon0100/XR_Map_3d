@@ -525,9 +525,19 @@ void DeviceManager::openFile_CSV(QString filePath)
 
     QList<Position> track;
 
+    QTextStream counter(&file);
+    int totalLines = 0;
+    while(!counter.atEnd()) {
+        counter.readLine();
+        totalLines++;
+    }
+    file.seek(0);
     QTextStream in(&file);
     int skip_rows = 2;
+    int currentLine = 0;
 
+    int validTotal = qMax(1, totalLines - skip_rows);
+    int progressInterval = qMax(1, validTotal / 100);
     QVector<float> vec_CSV;
     double minZ = 0.0, maxZ = 0.0;
     while (!in.atEnd()) {
@@ -536,7 +546,7 @@ void DeviceManager::openFile_CSV(QString filePath)
             skip_rows--;
             continue;
         }
-
+        currentLine++;
         QStringList columns = row.split(",");
 
         Position pos;
@@ -548,17 +558,31 @@ void DeviceManager::openFile_CSV(QString filePath)
         minZ = std::min(minZ, pos.lla.altitude);
         maxZ = std::max(maxZ, pos.lla.altitude);
         vec_CSV.append(pos.lla.altitude);
+        if (currentLine > 0 && (currentLine % progressInterval == 0 || currentLine == validTotal))
+        {
+            double progress = static_cast<double>(currentLine) / validTotal;
 
-        emit positionComplete_CSV(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude);
+            QString statusText = tr("Processing CSV %1 / %2 (%3%)").arg(currentLine)
+                                    .arg(validTotal).arg(static_cast<int>(progress * 100));
+            if (progressDialog_) {
+                QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
+                QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
+            }
+
+            QCoreApplication::processEvents();
+        }
+        bool enableRender = currentLine == validTotal ? true : false;
+        emit positionComplete_file(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude,enableRender);
     }
+
     qDebug() << "vec_CSV.size()........." << vec_CSV.size();
 
     file.close();
 
-    // vru_.cleanVru();
-    // delAllDev();
-    // emit vruChanged();
-    // emit fileOpened();
+    if (progressDialog_) {
+        QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
+        QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
+    }
 
     emit fileStopsOpening2(vec_CSV, minZ, maxZ);  //这一步使得最后将读取到的轨迹内容绘制到scene3d_view上
 }
@@ -634,7 +658,6 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
             continue;
         }
 
-
         // 更新进度条
         if (progressDialog_ && (z % progressInterval == 0 || z == (tslWCnt - 1))) {
             double progress = static_cast<double>(z + 1) / tslWCnt;
@@ -647,8 +670,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 
         tsl_w tslSingleStruct;
         memcpy(&tslSingleStruct, tslDataTemp, sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w));
-        tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f)*100000;
-        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f)*100000;
+        tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
+        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;
 
         Position pos;
         pos.lla.latitude = tslSingleStruct.boat.latitude / 100000.f;
@@ -662,7 +685,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 
         // qDebug() << "11111pos.lla.latitude " << pos.lla.latitude << "  " << pos.lla.longitude;
         bool enableRender = (z + 1) == tslWCnt ? true : false;
-        emit positionComplete_tslw(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude, enableRender);
+        emit positionComplete_file(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude, enableRender);
     }
     // qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 

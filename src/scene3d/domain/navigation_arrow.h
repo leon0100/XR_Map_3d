@@ -18,6 +18,7 @@ public:
         QVector3D getPosition() const;
         float getAngle() const;
 
+
     private:
         friend class NavigationArrow;
 

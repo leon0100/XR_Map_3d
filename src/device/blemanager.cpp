@@ -451,7 +451,7 @@ void BLEManager::setBleLiveScanningVisible(bool visible)
     //         maxZ = std::max(maxZ, track_.last().lla.altitude);
     //         vec_CSV.append(track_.last().lla.altitude);
     //         // qDebug() << " track.last().lla.longitude:" << track.last().lla.longitude << "   latitude:" << track.last().lla.latitude;
-    //         // emit positionComplete_CSV(track.last().lla.latitude, track.last().lla.longitude,track.last().lla.altitude);
+    //         // emit positionComplete_file(track.last().lla.latitude, track.last().lla.longitude,track.last().lla.altitude);
     //     }
     //     qDebug() << "vec_CSV.size()........." << vec_CSV.size();
 

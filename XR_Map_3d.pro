@@ -1,5 +1,5 @@
 QT += core gui quick widgets quickwidgets network gui-private qml sql concurrent positioning quickcontrols2 \
-        bluetooth serialport  svg
+        bluetooth serialport svg
 
 CONFIG += c++17
 CONFIG += debug

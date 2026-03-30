@@ -30,7 +30,6 @@ Core::Core() : QObject(),
     fixBlackStripesForwardSteps_(0),
     fixBlackStripesBackwardSteps_(0)
 {
-
     qRegisterMetaType<uint8_t>("uint8_t");
     createControllers();
     logger_.setDatasetPtr(datasetPtr_);
@@ -1413,12 +1412,19 @@ void Core::openFileFromMenu()
 
         //读取内容并调用相应的处理函数
         fileNames.sort();
-        for(int i = 0;i < fileCnt;i++)
+        for(int i = 0;i < fileCnt; i++)
         {
             /*-按照已选择的文件名路径打开文件，给下一步做铺垫-*/
             QString nowFileName = fileNames.at(i);
 
-            emit deviceManagerWrapperPtr_->sendOpenFile_tslw(nowFileName);
+            if(currentFileType_ == filetype_tslw) {
+                emit deviceManagerWrapperPtr_->sendOpenFile_tslw(nowFileName);
+            }
+            else if(currentFileType_ == filetype_CSV) {
+                emit deviceManagerWrapperPtr_->sendOpenFile_CSV(nowFileName);
+            }
+
+
             openedfilePath_ = nowFileName;
         }
 
@@ -1427,9 +1433,9 @@ void Core::openFileFromMenu()
             qDebug() << "After 5s: " << QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
         });
 
-        if (progress_) {
-            QMetaObject::invokeMethod(progress_, "close");
-        }
+        // if (progress_) {
+        //     QMetaObject::invokeMethod(progress_, "close");
+        // }
     }
 
 }
@@ -1628,8 +1634,7 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete, datasetPtr_, &Dataset::addPosition,     deviceManagerConnection);
     QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,     deviceManagerConnection);
 
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_CSV, datasetPtr_, &Dataset::addPosition_CSV,     deviceManagerConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_tslw, datasetPtr_, &Dataset::addPosition_tslw,     deviceManagerConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file,     deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionCompleteRTK,  datasetPtr_, &Dataset::addPositionRTK,  deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::depthComplete, datasetPtr_, &Dataset::addDepth,        deviceManagerConnection);
     // core.cpp

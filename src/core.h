@@ -100,8 +100,8 @@ public:
     QHash<QUuid, QString> getLinkNames() const;
 
 
-public slots:    
-    void setIsGPSAlive(bool state) { qDebug() << "Core::setIsGPSAlive" << state; isGPSAlive_ = state; emit isGPSAliveChanged(); }
+public slots:
+    void setIsGPSAlive(bool state) { isGPSAlive_ = state; emit isGPSAliveChanged(); }
     bool getIsGPSAlive() const { return isGPSAlive_; };
     void openLogFile(const QString& filePath, bool isAppend = false, bool onCustomEvent = false);
     bool closeLogFile();
@@ -172,8 +172,6 @@ signals:
     void progressChanged();
 
     void drawRealtimeContour(bool isRead);
-
-
 
 
 private:

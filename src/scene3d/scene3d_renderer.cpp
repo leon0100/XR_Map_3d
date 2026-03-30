@@ -138,7 +138,7 @@ void GraphicsScene3dRenderer::drawObjects()
     const float nearPlaneOrthoCoeff{ 0.05f };
     const float farPlaneOrthoCoeff{ 1.2f };
 
-    float perspCoeff = m_camera.getHeightAboveGround() /  perspectiveEdge;
+    float perspCoeff = m_camera.getHeightAboveGround() / perspectiveEdge;
     qreal perspFixFov = m_camera.fov() + m_camera.fov() * perspCoeff;
 
     if (m_camera.getIsPerspective()) {
@@ -178,28 +178,29 @@ void GraphicsScene3dRenderer::drawObjects()
     QMatrix4x4 upModel = m_model;
     upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
 
+    glEnable(GL_DEPTH_TEST);
     surfaceViewRenderImpl_.render(this,  m_projection * view * upModel, m_shaderProgramMap);  //高度场
     isobathsViewRenderImpl_.render(this, upModel, view, m_projection, m_shaderProgramMap);    //等值线
     m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
-    glDisable(GL_DEPTH_TEST);
 
-    // navigation arrow - 应用相同的 zOffset，保持与等值线同一高度
-    {
+    // navigation arrow - 应用相同的 zOffset, 保持与等值线同一高度
+    // {
+        // 在 position 的 Z 坐标上添加 zOffset, 使导航箭头提升到与等值线相同高度
         QMatrix4x4 nModel;
         nModel.setToIdentity();
-        // 在 position 的 Z 坐标上添加 zOffset，使导航箭头提升到与等值线相同高度
-        QVector3D elevatedPos = navigationArrowRenderImpl_.getPosition();
-        elevatedPos.setZ(elevatedPos.z() - zOffset);
-        nModel.translate(elevatedPos);
+        // QVector3D elevatedPos = navigationArrowRenderImpl_.getPosition();
+        // elevatedPos.setZ(elevatedPos.z() - zOffset);
+        // nModel.translate(elevatedPos);
+        nModel.translate(navigationArrowRenderImpl_.getPosition());
         nModel.rotate(navigationArrowRenderImpl_.getAngle(), 0.f, 0.f, 1.f);
         float distance =  m_camera.distToFocusPoint();
         float perspFixFovRad = qDegreesToRadians(perspFixFov);
         float factor = 2.0f * distance * std::tan(perspFixFovRad * 0.5f) / m_viewSize.height();
         float worldScale = factor * 7.f * scaleFactor_;
         nModel.scale(worldScale);
-        navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
-    }
-    // glDisable(GL_DEPTH_TEST);
+        navigationArrowRenderImpl_.render(this, m_projection * view * nModel, m_shaderProgramMap);
+    // }
+
 
     //----------------Contacts-----------------
     // glEnable(GL_BLEND);

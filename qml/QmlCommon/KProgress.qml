@@ -26,7 +26,6 @@ Rectangle {
     property int     iconSize: theme.iconSize * 0.9
 
 
-
     function open() {
         visible = true
     }

@@ -52,11 +52,11 @@ QVector<QVector3D> NavigationArrow::makeArrowVertices() const
     QVector<QVector3D> verts;
     verts.reserve(6 * 3);
 
-    QVector3D A( -3.0f, -2.0f,  0.0f );
-    QVector3D B(  0.0f, 0.5f,  0.0f );
-    QVector3D C(  3.0f, -2.0f,  0.0f );
-    QVector3D D(  0.0f, 10.0f,  0.0f );
-    QVector3D E(  0.0f,  2.0f,  2.0f );
+    QVector3D A(-2.0f, -1.0f,  0.0f);
+    QVector3D B(0.0f,  0.0f,  0.0f);
+    QVector3D C(2.0f, -1.0f,  0.0f);
+    QVector3D D(0.0f,  5.0f,  0.0f);
+    QVector3D E(0.0f,  1.0f,  1.0f);
 
     verts << A << B << E << B << C << E << A << E << D << E << C << D;
 
@@ -68,11 +68,11 @@ QVector<QVector3D> NavigationArrow::makeArrowRibs() const
     QVector<QVector3D> ribs;
     ribs.reserve(6 * 3);
 
-    QVector3D A( -3.0f, -2.0f,  0.05f );
-    QVector3D B(  0.0f,  0.5f,  0.05f );
-    QVector3D C(  3.0f, -2.0f,  0.05f );
-    QVector3D D(  0.0f,  8.0f,  0.05f );
-    QVector3D E(  0.0f,  2.0f,  2.05f );
+    QVector3D A( -2.0f, -1.0f,  0.05f );
+    QVector3D B(  0.0f, -0.0f,  0.05f );
+    QVector3D C(  2.0f, -1.0f,  0.05f );
+    QVector3D D(  0.0f,  5.0f,  0.05f );
+    QVector3D E(  0.0f,  1.0f,  1.05f );
 
     ribs << A << B << B << C << C << D << D << A << D << E << E << A << E << C;
 
@@ -98,9 +98,8 @@ double NavigationArrow::calculateHeading(const QVector3D& prev, const QVector3D&
     return angleDeg;
 }
 
-void NavigationArrow::NavigationArrowRenderImplementation::render(QOpenGLFunctions *ctx,
-                                                                  const QMatrix4x4 &mvp,
-                                                                  const QMap<QString, std::shared_ptr<QOpenGLShaderProgram> > &shaderProgramMap) const
+void NavigationArrow::NavigationArrowRenderImplementation::render(QOpenGLFunctions *ctx, const QMatrix4x4 &mvp,
+                         const QMap<QString, std::shared_ptr<QOpenGLShaderProgram> > &shaderProgramMap) const
 {
 #if defined(FAKE_COORDS)
     return;
@@ -124,28 +123,74 @@ void NavigationArrow::NavigationArrowRenderImplementation::render(QOpenGLFunctio
     shaderProgram->enableAttributeArray(posLoc);
 
     { // edges
+        // QVector<GLfloat> vertices;
+        // vertices.reserve(arrowVertices_.size() * 3);
+        // for (const QVector3D &v : arrowVertices_) {
+        //     vertices << v.x() << v.y() << v.z();
+        // }
+        // shaderProgram->setAttributeArray(posLoc, vertices.constData(), 3);
+        // shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(235, 52, 52)));
+        // ctx->glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
+
+
         QVector<GLfloat> vertices;
         vertices.reserve(arrowVertices_.size() * 3);
-        for (const QVector3D &v : arrowVertices_) {
-            vertices << v.x() << v.y() << v.z();
+
+        QVector<QVector3D> leftTriangles;
+        QVector<QVector3D> rightTriangles;
+        for (int i = 0; i < arrowVertices_.size(); i += 3) {
+            QVector3D v1 = arrowVertices_[i];
+            QVector3D v2 = arrowVertices_[i + 1];
+            QVector3D v3 = arrowVertices_[i + 2];
+
+            vertices << v1.x() << v1.y() << v1.z();
+            vertices << v2.x() << v2.y() << v2.z();
+            vertices << v3.x() << v3.y() << v3.z();
+
+            // 计算三角形的中心点 X 坐标
+            float centerX = (v1.x() + v2.x() + v3.x()) / 3.0f;
+            if (centerX > 0.0f) {
+                rightTriangles << v1 << v2 << v3;
+            } else {
+                leftTriangles << v1 << v2 << v3;
+            }
         }
-        shaderProgram->setAttributeArray(posLoc, vertices.constData(), 3);
-        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(173, 255, 47)));
-        ctx->glDrawArrays(GL_TRIANGLES, 0, vertices.size() / 3);
+
+        if (!leftTriangles.isEmpty()) {
+            QVector<GLfloat> leftVertices;
+            leftVertices.reserve(leftTriangles.size() * 3);
+            for (const QVector3D &v : leftTriangles) {
+                leftVertices << v.x() << v.y() << v.z();
+            }
+            shaderProgram->setAttributeArray(posLoc, leftVertices.constData(), 3);
+            shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(99, 22, 22)));
+            ctx->glDrawArrays(GL_TRIANGLES, 0, leftVertices.size() / 3);
+        }
+
+        if (!rightTriangles.isEmpty()) {
+            QVector<GLfloat> rightVertices;
+            rightVertices.reserve(rightTriangles.size() * 3);
+            for (const QVector3D &v : rightTriangles) {
+                rightVertices << v.x() << v.y() << v.z();
+            }
+            shaderProgram->setAttributeArray(posLoc, rightVertices.constData(), 3);
+            shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(235, 52, 52)));
+            ctx->glDrawArrays(GL_TRIANGLES, 0, rightVertices.size() / 3);
+        }
     }
 
-    { // ribs
-        QVector<GLfloat> lineVertices;
-        lineVertices.reserve(arrowRibs_.size() * 3);
-        for (const QVector3D &v : arrowRibs_) {
-            lineVertices << v.x() << v.y() << v.z();
-        }
-        shaderProgram->setAttributeArray(posLoc, lineVertices.constData(), 3);
-        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(52, 235, 52)));
+    // { // ribs
+    //     QVector<GLfloat> lineVertices;
+    //     lineVertices.reserve(arrowRibs_.size() * 3);
+    //     for (const QVector3D &v : arrowRibs_) {
+    //         lineVertices << v.x() << v.y() << v.z();
+    //     }
+    //     shaderProgram->setAttributeArray(posLoc, lineVertices.constData(), 3);
+    //     shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(52, 235, 52)));
 
-        ctx->glLineWidth(2.0f);
-        ctx->glDrawArrays(GL_LINES, 0, lineVertices.size() / 3);
-    }
+    //     ctx->glLineWidth(2.0f);
+    //     ctx->glDrawArrays(GL_LINES, 0, lineVertices.size() / 3);
+    // }
 
     shaderProgram->disableAttributeArray(posLoc);
     shaderProgram->release();
@@ -160,3 +205,4 @@ float NavigationArrow::NavigationArrowRenderImplementation::getAngle() const
 {
     return angle_;
 }
+

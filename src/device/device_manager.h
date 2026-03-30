@@ -109,8 +109,7 @@ signals:
     void eventComplete(int timestamp, int id, int unixt);
     void rangefinderComplete(const ChannelId& channelId, float distance);
     void positionComplete(double lat, double lon, uint32_t date, uint32_t time);
-    void positionComplete_CSV(double lat, double lon,int depth);
-    void positionComplete_tslw(double lat, double lon,int depth, bool enableRender);
+    void positionComplete_file(double lat, double lon,int depth, bool enableRender);
     void positionCompleteRTK(Position position);
     void depthComplete(float depth);
     void gnssVelocityComplete(double hSpeed, double course);
