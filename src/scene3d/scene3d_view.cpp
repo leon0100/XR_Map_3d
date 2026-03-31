@@ -1290,7 +1290,6 @@ void GraphicsScene3dView::slotScreetGraphics()
 
             ScreenshotTask task(row, col, mapLevel_, minLat, maxLat, minLon, maxLon, baseDir); // 添加截图任务到队列
             screenshotQueue_.enqueue(task);
-
         }
     }
 

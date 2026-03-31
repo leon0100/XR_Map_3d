@@ -15,15 +15,16 @@ Rectangle {
     radius: 8
     color: "#E6F2FA"
 
-    property string  title: qsTr("Open File")
-    property string  statusText: qsTr("Openging")
-    property real    progress: 338
-    property bool    indeterminate: true
-    property bool    showProgressBar: true
-    property bool    showCancelButton: true
-    property int     dialogWidth: theme.screenSize * 0.36
-    property int     dialogHeight: theme.screenSize * 0.14
-    property int     iconSize: theme.iconSize * 0.9
+
+    property  string  title:            qsTr("Open File")
+    property  string  statusText:       qsTr("Openging")
+    property  real    progress:         338
+    property  bool    indeterminate:    true
+    property  bool    showProgressBar:  true
+    property  bool    showCancelButton: true
+    property  int     dialogWidth:      theme.screenSize * 0.36
+    property  int     dialogHeight:     theme.screenSize * 0.14
+    property  int     iconSize:         theme.iconSize * 0.9
 
 
     function open() {
@@ -83,12 +84,31 @@ Rectangle {
         }
 
         //Progress Bar
+        // ProgressBar {
+        //     id: progressBar
+        //     Layout.fillWidth: true
+        //     value: progressDialog.progress
+        //     indeterminate: indeterminate
+        //     visible: true
+        // }
         ProgressBar {
             id: progressBar
             Layout.fillWidth: true
             value: progressDialog.progress
             indeterminate: indeterminate
             visible: true
+
+            background: Rectangle {
+                implicitHeight: 6
+                color: "#E0E0E0"
+                radius: 3
+            }
+            contentItem: Rectangle {
+                implicitHeight: 6
+                width: progressBar.visualPosition * progressBar.width
+                color: "#00cd00"
+                radius: 3
+            }
         }
 
         // Cancel Button

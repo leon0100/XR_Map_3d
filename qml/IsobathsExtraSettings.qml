@@ -286,38 +286,42 @@ MenuFrame {
         }
 
 
-        // RowLayout {
-        //     CText {
-        //         text: qsTr("Extra width(m):")
-        //     }
-        //     Item {
-        //         Layout.fillWidth: true
-        //     }
-        //     SpinBoxCustom {
-        //         id: extraWidthSpinBox
-        //         implicitWidth: isobathSize * 0.6
-        //         from: 5
-        //         to: 100
-        //         stepSize: 5
-        //         value: 5
-        //         editable: false
+        RowLayout {
+            Text {
+                text: qsTr("Extra Width:")
+                font.pixelSize: iconSize
+                Layout.fillWidth: true
+                color: "black"
+            }
+            Item {
+                Layout.fillWidth: true
+            }
+            SpinBoxCustom {
+                id: extraWidthSpinBox
+                implicitWidth: isobathSize * 0.5
+                from: 5
+                to: 100
+                stepSize: 5
+                value: 5
+                editable: false
 
-        //         onFocusChanged: {
-        //             isobathsSettings.focus = true
-        //         }
+                onFocusChanged: {
+                    isobathsSettings.focus = true
+                }
 
-        //         onValueChanged: {
-        //             IsobathsViewControlMenuController.onSetExtraWidth(value)
-        //         }
-        //         Component.onCompleted: {
-        //             IsobathsViewControlMenuController.onSetExtraWidth(value)
-        //         }
+                onValueChanged: {
+                    IsobathsViewControlMenuController.onSetExtraWidth(value)
+                }
 
-        //         Settings {
-        //             property alias extraWidthSpinBox: extraWidthSpinBox.value
-        //         }
-        //     }
-        // }
+                Component.onCompleted: {
+                    IsobathsViewControlMenuController.onSetExtraWidth(value)
+                }
+
+                Settings {
+                    property alias extraWidthSpinBox: extraWidthSpinBox.value
+                }
+            }
+        }
 
         Rectangle {
             width: parent.width

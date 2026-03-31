@@ -171,35 +171,61 @@ void GraphicsScene3dRenderer::drawObjects()
     }
 
     glDisable(GL_DEPTH_TEST);
-    m_boatTrackRenderImpl.render(this,   m_model, view, m_projection, m_shaderProgramMap); //船轨迹
+    m_boatTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap); //船轨迹
 
+    glEnable(GL_DEPTH_TEST);
     float zOffset = surfaceViewRenderImpl_.getMaxZ() + 0.01f;
     zOffset = qMax(0.01f, zOffset);
     QMatrix4x4 upModel = m_model;
     upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
 
-    glEnable(GL_DEPTH_TEST);
     surfaceViewRenderImpl_.render(this,  m_projection * view * upModel, m_shaderProgramMap);  //高度场
     isobathsViewRenderImpl_.render(this, upModel, view, m_projection, m_shaderProgramMap);    //等值线
     m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
 
-    // navigation arrow - 应用相同的 zOffset, 保持与等值线同一高度
-    // {
-        // 在 position 的 Z 坐标上添加 zOffset, 使导航箭头提升到与等值线相同高度
+    // // navigation arrow - 应用相同的 zOffset, 保持与等值线同一高度
+    // // {
+    //     // 在 position 的 Z 坐标上添加 zOffset, 使导航箭头提升到与等值线相同高度
+    //     QMatrix4x4 nModel;
+    //     nModel.setToIdentity();
+    //     // QVector3D elevatedPos = navigationArrowRenderImpl_.getPosition();
+    //     // elevatedPos.setZ(elevatedPos.z() - zOffset);
+    //     // nModel.translate(elevatedPos);
+    //     nModel.translate(navigationArrowRenderImpl_.getPosition());
+    //     nModel.rotate(navigationArrowRenderImpl_.getAngle(), 0.f, 0.f, 1.f);
+    //     float distance = m_camera.distToFocusPoint();
+    //     float perspFixFovRad = qDegreesToRadians(perspFixFov);
+    //     float factor = 2.0f * distance * std::tan(perspFixFovRad * 0.5f) / m_viewSize.height();
+    //     float worldScale = factor * 7.f * scaleFactor_ * 2.5;
+    //     nModel.scale(worldScale);
+    //     navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
+    // // }
+    // glDisable(GL_DEPTH_TEST);
+    {
+        glEnable(GL_DEPTH_TEST);
+
         QMatrix4x4 nModel;
         nModel.setToIdentity();
-        // QVector3D elevatedPos = navigationArrowRenderImpl_.getPosition();
-        // elevatedPos.setZ(elevatedPos.z() - zOffset);
-        // nModel.translate(elevatedPos);
         nModel.translate(navigationArrowRenderImpl_.getPosition());
         nModel.rotate(navigationArrowRenderImpl_.getAngle(), 0.f, 0.f, 1.f);
         float distance =  m_camera.distToFocusPoint();
         float perspFixFovRad = qDegreesToRadians(perspFixFov);
         float factor = 2.0f * distance * std::tan(perspFixFovRad * 0.5f) / m_viewSize.height();
         float worldScale = factor * 7.f * scaleFactor_;
-        nModel.scale(worldScale);
-        navigationArrowRenderImpl_.render(this, m_projection * view * nModel, m_shaderProgramMap);
-    // }
+        float navigationArrowSizeFactor = 1.0f;
+        // switch (qBound(1, navigationArrowRenderImpl_.getSize(), 5)) {
+        // case 1: navigationArrowSizeFactor = 1.0f; break;
+        // case 2: navigationArrowSizeFactor = 2.0f; break;
+        // case 3: navigationArrowSizeFactor = 3.0f; break;
+        // case 4: navigationArrowSizeFactor = 4.0f; break;
+        // case 5: navigationArrowSizeFactor = 5.0f; break;
+        // default: break;
+        // }
+        nModel.scale(worldScale * navigationArrowSizeFactor);
+        navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
+
+        glDisable(GL_DEPTH_TEST);
+    }
 
 
     //----------------Contacts-----------------

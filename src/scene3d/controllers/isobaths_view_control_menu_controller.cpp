@@ -232,9 +232,9 @@ void IsobathsViewControlMenuController::onSetExtraWidth(int val)
 {
     extraWidth_ = val;
 
-    if (graphicsSceneViewPtr_) {
+    if (graphicsSceneViewPtr_)  {
         if (dataProcessorPtr_) {
-            QMetaObject::invokeMethod(dataProcessorPtr_, "setExtraWidth", Qt::QueuedConnection, Q_ARG(int, extraWidth_));
+            QMetaObject::invokeMethod(dataProcessorPtr_, "setExtraWidth", Qt::QueuedConnection, Q_ARG(int, val));
         }
     }
     else {

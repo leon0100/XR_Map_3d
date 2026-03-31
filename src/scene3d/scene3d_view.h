@@ -143,15 +143,14 @@ public:
     private:
         friend class GraphicsScene3dView;
 
-        // maps
-        void processMapTextures(GraphicsScene3dView* viewPtr) const;
-        // mosaic on surface
-        void processMosaicColorTableTexture(GraphicsScene3dView* viewPtr) const;
+        void processMapTextures(GraphicsScene3dView* viewPtr) const; // maps
+
+        void processMosaicColorTableTexture(GraphicsScene3dView* viewPtr) const; // mosaic on surface
         void processMosaicTileTexture(GraphicsScene3dView* viewPtr) const;
-        // image
-        void processImageTexture(GraphicsScene3dView* viewPtr) const;
-        // surface
-        void processSurfaceTexture(GraphicsScene3dView* viewPtr) const;
+
+        void processImageTexture(GraphicsScene3dView* viewPtr) const;  // image
+
+        void processSurfaceTexture(GraphicsScene3dView* viewPtr) const; // surface
 
         QString checkOpenGLError() const;
 
