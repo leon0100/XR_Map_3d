@@ -97,6 +97,11 @@ ApplicationWindow  {
     }
 
 
+
+
+
+
+
     footer: Rectangle {
         height: footHeight
         color: "#88363636"
@@ -647,6 +652,15 @@ ApplicationWindow  {
 
                 ScreetRect {
 
+                }
+
+
+                // 多边形工具
+                PolygonTool {
+                    id: polygonTool
+                    isEnabled: true
+                    x: toolBarXR.iconSize
+                    visible: toolBarXR.polygonMode
                 }
 
                 property bool longPressTriggered: false

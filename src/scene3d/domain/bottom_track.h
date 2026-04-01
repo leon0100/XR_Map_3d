@@ -21,6 +21,8 @@ public:
     };
     Q_ENUM(ActionEvent)
 
+    void drawPolygonOutline(QVector<LLA> polygonVec);
+
     class BottomTrackRenderImplementation : public SceneObject::RenderImplementation
     {
     public:
@@ -60,6 +62,7 @@ Q_SIGNALS:
     void epochListChanged();
     void updatedPoints(const QVector<int>& epIndx, const QVector<int>& vertIndx, bool isManual);
 
+
 protected:
     friend class GraphicsScene3dView;
 
@@ -69,9 +72,15 @@ protected:
     virtual void keyPressEvent(Qt::Key key) override;
     void updateRenderData(int lEpoch = 0, int rEpoch = 0, bool redrawAll = false, bool manually = false);
 
+
 private:
     QVector<QPair<int, int>> getSubarrays(const QVector<int>& sequenceVector); // TODO: to utils
     void clearCache();
+
+    QVector3D convertLLAToNED(const LLA& lla);
+    double calculateDistance(const LLA& lla1, const LLA& lla2);
+
+    double calculateAzimuth(const LLA& lla1, const LLA& lla2);
 
     using EpochIndex = int;
     using VerticeIndex = int;

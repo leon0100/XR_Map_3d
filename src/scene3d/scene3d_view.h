@@ -217,6 +217,7 @@ public:
     Q_INVOKABLE void pinchTrigger(const QPointF& prevCenter, const QPointF& currCenter, qreal scaleDelta, qreal angleDelta);
     Q_INVOKABLE void keyPressTrigger(Qt::Key key);
     Q_INVOKABLE void bottomTrackActionEvent(BottomTrack::ActionEvent actionEvent);
+    Q_INVOKABLE QVariantMap toCoordinate(int screenX, int screenY);
 
     void setTrackLastData(bool state);
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
@@ -382,6 +383,17 @@ private:
     int screenshotRetryCount_ = 0;
     static const int MAX_RETRY_COUNT = 100;  // 最大重试次数
 
+
+    PolygonManager polygonManager_;
+
+public:
+    // PolygonManager 多边形绘制控制
+    Q_INVOKABLE void setPolygonOutlineMode(bool enabled);
+    Q_INVOKABLE bool getPolygonOutlineMode() const;
+    Q_INVOKABLE void clearPolygonPoints();
+    Q_INVOKABLE int getPolygonPointCount() const;
+    Q_INVOKABLE QVariantList getPolygonPoints() const;
+    Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
 
 private:
     QOpenGLFramebufferObject* offscreenFbo_ = nullptr;

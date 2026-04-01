@@ -81,6 +81,7 @@ float IsobathsProcessor::getLabelStepSize() const
     return labelStepSize_;
 }
 
+
 //等值线边-平面求交函数
 void IsobathsProcessor::edgeIntersection(const QVector3D& a,const QVector3D& b, float L, QVector<QVector3D>& out) const
 {

@@ -45,6 +45,7 @@ public:
     Q_INVOKABLE void setCursorFromTo(float from, float to) { cursor_.distance.mode = AutoRangeNone; Plot2D::cursor_.distance.from = from; Plot2D::cursor_.distance.to = to; }
     Q_INVOKABLE void setIndx(int indx) { indx_ = indx; }
 
+
 protected:
     Dataset* m_plot = nullptr;
     QTimer* m_updateTimer;
@@ -88,10 +89,10 @@ public slots:
         plotUpdate();
     }
 
-    ChannelId plotDatasetChannel() { return cursor_.channel1; }
-    uint8_t plotDatasetSubChannel() { return cursor_.subChannel1; }
-    ChannelId plotDatasetChannel2() { return cursor_.channel2; }
-    uint8_t plotDatasetSubChannel2() { return cursor_.subChannel2; }
+    ChannelId plotDatasetChannel()     { return cursor_.channel1; }
+    uint8_t   plotDatasetSubChannel()  { return cursor_.subChannel1; }
+    ChannelId plotDatasetChannel2()    { return cursor_.channel2; }
+    uint8_t   plotDatasetSubChannel2() { return cursor_.subChannel2; }
 
     void plotEchogramVisible(bool visible) { setEchogramVisible(visible); }
     Q_INVOKABLE void plotEchogramTheme(int theme_id) { setEchogramTheme(theme_id); }
@@ -127,7 +128,7 @@ public slots:
 
     Q_INVOKABLE float getLowEchogramLevel() const;
     Q_INVOKABLE float getHighEchogramLevel() const;
-    Q_INVOKABLE int getThemeId() const;
+    Q_INVOKABLE int   getThemeId() const;
     void doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max,
                           float gain_slope, float threshold, float offsetx, float offsety, float offsetz, bool manual);
     void refreshDistParams(int preset, int windowSize, float verticalGap, float rangeMin, float rangeMax, float gainSlope, float threshold, float offsetX, float offsetY, float offsetZ);

@@ -68,11 +68,19 @@ public slots:
     void setSurfaceColorTableThemeById(int id);
     void setSurfaceEdgeLimit(int val);
     void setExtraWidth(int val);
+
     // IsobathsProcessor
     void setIsobathsLabelStepSize(float val);
 
     // Surface/IsobathsProcessor
     void setSurfaceIsobathsStepSize(float val);
+
+
+    // ── 多边形裁剪（QML 调用）────────────────────────
+    Q_INVOKABLE void setSurfaceIsobathsPolygon(const QVariantList& points);
+    Q_INVOKABLE void clearSurfaceIsobathsPolygon();
+
+
     // MosaicProcessor
     void setMosaicChannels(const ChannelId& ch1, uint8_t sub1, const ChannelId& ch2, uint8_t sub2);
     void setMosaicTheme(int indx);
@@ -196,4 +204,5 @@ private:
     std::atomic_bool nextRunPending_{false};
     std::atomic<uint32_t> requestedMask_{0};
     bool btBusy_{false};
+
 };

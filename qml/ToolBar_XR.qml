@@ -24,6 +24,7 @@ Rectangle {
 
     property bool contourMode: false
     property bool bluetoothMode: false
+    property bool polygonMode: false
 
     signal languageChanged(string langStr)
     signal menuBarSettingOpened()
@@ -244,6 +245,7 @@ Rectangle {
 
             onPressed: {
                 landMarkMode = !landMarkMode
+                polygonMode  = !polygonMode
             }
         }
 

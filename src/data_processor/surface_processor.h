@@ -11,6 +11,7 @@
 #include "math_defs.h"
 #include "isobaths_defs.h"
 #include "surface_tile.h"
+#include "outlinemanager.h"
 
 
 class BottomTrack;
@@ -49,6 +50,10 @@ private:
     void refreshAfterEdgeLimitChange();
     bool canceled() const noexcept;
 
+    void setPolygonManager(const PolygonManager& polygonManager);
+    PolygonManager& getPolygonManager();
+
+
 private:
     DataProcessor* dataProcessor_;
     BottomTrack* bottomTrackPtr_;
@@ -73,5 +78,8 @@ private:
     int extraWidth_;
     bool originSet_;
     QSet<TileKey> visibleTileKeys_;
+
+
+    PolygonManager polygonManager_;
 
 };

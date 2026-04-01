@@ -283,6 +283,20 @@ void DataProcessor::setSurfaceIsobathsStepSize(float val)
     scheduleLatest(WorkSet(WF_All), /*replace*/true);
 }
 
+// data_processor.cpp 中，约 Line 100 处（找一个合适的位置插入）
+void DataProcessor::setSurfaceIsobathsPolygon(const QVariantList& points)
+{
+    // 转发给跨线程的 ComputeWorker
+    QMetaObject::invokeMethod(worker_, "setSurfaceIsobathsPolygon",
+                              Qt::QueuedConnection, Q_ARG(QVariantList, points));
+}
+
+void DataProcessor::clearSurfaceIsobathsPolygon()
+{
+    QMetaObject::invokeMethod(worker_, "clearSurfaceIsobathsPolygon",
+                              Qt::QueuedConnection);
+}
+
 void DataProcessor::setMosaicChannels(const ChannelId &ch1, uint8_t sub1, const ChannelId &ch2, uint8_t sub2)
 {
     qDebug() << "DataProcessor::setMosaicChannels........";
@@ -660,3 +674,12 @@ void DataProcessor::requestCancel() noexcept
     nextRunPending_.store(true);
     cancelRequested_.store(true);
 }
+
+
+
+
+
+
+
+
+

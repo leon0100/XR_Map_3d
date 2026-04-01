@@ -72,6 +72,9 @@ void Core::setEngine(QQmlApplicationEngine *engine)
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",                           bleManager_.get());
 
+    // ── 注册 dataProcessor ──────────────────────────────
+    qmlAppEnginePtr_->rootContext()->setContextProperty("dataProcessor", dataProcessor_);
+
     bool flasherState = false;
 #ifdef FLASHER
     flasherState = true;

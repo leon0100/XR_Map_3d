@@ -167,6 +167,112 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     }
 }
 
+
+void BottomTrack::drawPolygonOutline(QVector<LLA> polygonVec)
+{
+    qDebug() << " BottomTrack::drawPolygonOutline..........";
+    // 检查多边形顶点数量，至少需要3个点
+    // if (polygonVec.size() < 3) {
+    //     qDebug() << "Polygon requires at least 3 points";
+    //     return;
+    // }
+
+    // // 准备顶点数据
+    // QVector<QVector3D> vertices;
+    // for (const LLA& lla : polygonVec) {
+    //     // 转换 LLA 坐标到 NED 坐标系（或项目使用的其他坐标系）
+    //     QVector3D nedPos = convertLLAToNED(lla);
+    //     vertices.append(nedPos);
+    // }
+
+    // // 闭合多边形（确保最后一个点连接到第一个点）
+    // if (!vertices.isEmpty()) {
+    //     vertices.append(vertices.first());
+    // }
+
+    // // 获取渲染器实例（假设项目中有类似的渲染器）
+    // Scene3DRenderer* renderer = getRenderer();
+    // if (!renderer) {
+    //     qDebug() << "Renderer not available";
+    //     return;
+    // }
+
+    // // 获取着色器程序
+    // QOpenGLShaderProgram* lineShaderProgram = renderer->getShaderProgram("line");
+    // if (!lineShaderProgram) {
+    //     qDebug() << "Line shader program not available";
+    //     return;
+    // }
+
+    // // 开始渲染
+    // lineShaderProgram->bind();
+
+    // // 设置 uniform 变量
+    // QMatrix4x4 modelViewProjection = renderer->getModelViewProjectionMatrix();
+    // lineShaderProgram->setUniformValue("mvp", modelViewProjection);
+
+    // // 设置颜色（蓝色轮廓）
+    // lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
+
+    // // 启用顶点属性
+    // int posLoc = lineShaderProgram->attributeLocation("pos");
+    // lineShaderProgram->enableAttributeArray(posLoc);
+
+    // // 准备顶点数据数组
+    // QVector<GLfloat> vertexData;
+    // for (const QVector3D& vertex : vertices) {
+    //     vertexData << vertex.x() << vertex.y() << vertex.z();
+    // }
+
+    // // 设置顶点数据
+    // lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
+
+    // // 绘制线段
+    // glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
+
+    // // 禁用顶点属性
+    // lineShaderProgram->disableAttributeArray(posLoc);
+
+    // // 释放着色器程序
+    // lineShaderProgram->release();
+}
+
+QVector3D BottomTrack::convertLLAToNED(const LLA& lla) {
+    // 这里需要实现 LLA（经纬度高度）到 NED（北东地）坐标系的转换
+    // 具体实现取决于项目的坐标系统设置
+    // 以下是一个简化的示例实现：
+
+    // 假设参考点（原点）
+    static const LLA originLLA(0.0, 0.0, 0.0);
+
+    // 计算距离和方位角
+    double distance = calculateDistance(originLLA, lla);
+    double azimuth = calculateAzimuth(originLLA, lla);
+
+    // 转换为 NED 坐标
+    double north = distance * cos(azimuth);
+    double east = distance * sin(azimuth);
+    double down = -lla.altitude; // 高度取负值作为深度
+
+    return QVector3D(north, east, down);
+}
+
+double BottomTrack::calculateDistance(const LLA& lla1, const LLA& lla2) {
+    // 实现两点之间的距离计算（如 Haversine 公式）
+    // 简化示例
+    return sqrt(pow(lla1.latitude - lla2.latitude, 2) + pow(lla1.longitude - lla2.longitude, 2)) * 111000; // 粗略估算
+}
+
+double BottomTrack::calculateAzimuth(const LLA& lla1, const LLA& lla2) {
+    // 实现方位角计算
+    // 简化示例
+    double dLon = lla2.longitude - lla1.longitude;
+    double dLat = lla2.latitude - lla1.latitude;
+    return atan2(dLon, dLat);
+}
+
+
+
 void BottomTrack::setData(const QVector<QVector3D> &data, int primitiveType)
 {
     qDebug() << "BottomTrack::setData................";

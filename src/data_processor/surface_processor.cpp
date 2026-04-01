@@ -305,6 +305,11 @@ void SurfaceProcessor::writeTriangleToMesh(const QVector3D &A, const QVector3D &
         return;
     }
 
+    if(!polygonManager_.isEmpty() && !polygonManager_.isTriangleInPolygon(A, B, C)) {
+        qDebug() << "polygonManager ............ is empty()";
+        return;
+    }
+
     const int stepPix     = surfaceMeshPtr_->getStepSizeHeightMatrix();
     const int tileSidePix = surfaceMeshPtr_->getTileSidePixelSize();
     const int hvSide      = tileSidePix / stepPix + 1;
@@ -586,6 +591,14 @@ void SurfaceProcessor::refreshAfterEdgeLimitChange()
 bool SurfaceProcessor::canceled() const noexcept
 {
     return dataProcessor_ && dataProcessor_->isCancelRequested();
+}
+
+void SurfaceProcessor::setPolygonManager(const PolygonManager& polygonManager) {
+    polygonManager_ = polygonManager;
+}
+
+PolygonManager& SurfaceProcessor::getPolygonManager() {
+    return polygonManager_;
 }
 
 

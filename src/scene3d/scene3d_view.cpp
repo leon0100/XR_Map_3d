@@ -252,6 +252,8 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 {
     Q_UNUSED(keyboardKey)
 
+    qDebug() << "mousePressTrigger x: " <<x << "  " << y;
+
     //当前点x,y的经纬度坐标
     calculateLatLong(x, y, currentLat_, currentLon_);
     emit currentLatChanged();
@@ -281,6 +283,89 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 
             return;
         }
+
+        /*- 绘制多边形轮廓模式 -*/
+        if(polygonManager_.getOutlineMode()) {
+            qDebug() << "3333333333333333333";
+            LLA lla;
+            lla.latitude  = currentLat_;
+            lla.longitude = currentLon_;
+            polygonManager_.addPoint(lla);
+            m_bottomTrack->drawPolygonOutline(polygonManager_.getPolygonOutlinePts());
+
+            QVector<LLA> polygonVec = polygonManager_.getPolygonOutlinePts();
+
+
+
+            if (polygonVec.size() < 3) {
+                qDebug() << "Polygon requires at least 3 points";
+                return;
+            }
+
+            // 准备顶点数据
+            QVector<QVector3D> vertices;
+            for (const LLA& lla : polygonVec) {
+                // 转换 LLA 坐标到 NED 坐标系（或项目使用的其他坐标系）
+                QVector3D nedPos = polygonManager_.convertLLAToNED(lla);
+                vertices.append(nedPos);
+            }
+
+            // 闭合多边形（确保最后一个点连接到第一个点）
+            if (!vertices.isEmpty()) {
+                vertices.append(vertices.first());
+            }
+
+            // 获取渲染器实例（假设项目中有类似的渲染器）
+
+            // Scene3DRenderer* renderer = getRenderer();
+            // if (!renderer) {
+            //     qDebug() << "Renderer not available";
+            //     return;
+            // }
+
+            // // 获取着色器程序
+            // QOpenGLShaderProgram* lineShaderProgram = renderer->getShaderProgram("line");
+            // if (!lineShaderProgram) {
+            //     qDebug() << "Line shader program not available";
+            //     return;
+            // }
+
+            // // 开始渲染
+            // lineShaderProgram->bind();
+
+            // // 设置 uniform 变量
+            // QMatrix4x4 modelViewProjection = renderer->getModelViewProjectionMatrix();
+            // lineShaderProgram->setUniformValue("mvp", modelViewProjection);
+
+            // // 设置颜色（蓝色轮廓）
+            // lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
+
+            // // 启用顶点属性
+            // int posLoc = lineShaderProgram->attributeLocation("pos");
+            // lineShaderProgram->enableAttributeArray(posLoc);
+
+            // // 准备顶点数据数组
+            // QVector<GLfloat> vertexData;
+            // for (const QVector3D& vertex : vertices) {
+            //     vertexData << vertex.x() << vertex.y() << vertex.z();
+            // }
+
+            // // 设置顶点数据
+            // lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
+
+            // // 绘制线段
+            // glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
+
+            // // 禁用顶点属性
+            // lineShaderProgram->disableAttributeArray(posLoc);
+
+            // // 释放着色器程序
+            // lineShaderProgram->release();
+
+
+        }
+
+
     }
 
     wasMoved_ = false;
@@ -424,6 +509,8 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
 
     m_lastMousePos = {x, y};
 
+
+    /*- 截图模式 -*/
     if(screetShot_.isScreenMode_)
     {
         if(!screetShot_.firstScreenDown_) {
@@ -435,6 +522,12 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
         // showShotOptionBox();
         qDebug() << "Screen capture completed";
         return;
+    }
+
+    /*- 绘制多边形轮廓模式 -*/
+    if(polygonManager_.getOutlineMode()) {
+
+        polygonManager_;
     }
 
     if (switchedToBottomTrackVertexComboSelectionMode_) {
@@ -526,6 +619,25 @@ void GraphicsScene3dView::setCurrentMapLevel(int mapLevel)
 {
     qDebug() << "mapLevel...." << mapLevel;
     screetShot_.currMapLevel_ = mapLevel;
+}
+
+// scene3d_view.cpp
+QVariantMap GraphicsScene3dView::toCoordinate(int screenX, int screenY)
+{
+    qDebug() << "screenX: " << screenX << "  " << screenY;
+    calculateLatLong(screenX, screenY, currentLat_, currentLon_);
+    QVariantMap result;
+    // 这里的逻辑取决于你的 3D 场景如何做地理坐标转换
+    // 常见做法：让 scene3d 渲染器返回射线与地形的交点坐标
+    // 简单占位（你需要替换为真实实现）：
+    QVector3D rayOrigin, rayDir;
+    // getRayFromScreen(screenX, screenY, rayOrigin, rayDir);
+    float t = rayOrigin.z() / (-rayDir.z() + 1e-6f);
+    QVector3D worldHit = rayOrigin + rayDir * t;
+    // 假设 worldHit 已经是 (lon, lat, depth) 格式
+    result["longitude"] = worldHit.x();
+    result["latitude"]  = worldHit.y();
+    return result;
 }
 
 void GraphicsScene3dView::setScreenMode(bool isScreen)
@@ -1477,6 +1589,55 @@ void GraphicsScene3dView::InFboRenderer::render()
     }
 
 
+
+
+
+
+
+
+
+
+
+    // 获取着色器程序
+    QOpenGLShaderProgram* lineShaderProgram = m_renderer->getShaderProgram("line");
+    if (!lineShaderProgram) {
+        qDebug() << "Line shader program not available";
+        return;
+    }
+
+    // 开始渲染
+    lineShaderProgram->bind();
+
+    // 设置 uniform 变量
+    QMatrix4x4 modelViewProjection = m_renderer->getModelViewProjectionMatrix();
+    lineShaderProgram->setUniformValue("mvp", modelViewProjection);
+
+    // 设置颜色（蓝色轮廓）
+    lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
+
+    // 启用顶点属性
+    int posLoc = lineShaderProgram->attributeLocation("pos");
+    lineShaderProgram->enableAttributeArray(posLoc);
+
+    // 准备顶点数据数组
+    QVector<GLfloat> vertexData;
+    for (const QVector3D& vertex : vertices) {
+        vertexData << vertex.x() << vertex.y() << vertex.z();
+    }
+
+    // 设置顶点数据
+    lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
+
+    // 绘制线段
+    glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
+
+    // 禁用顶点属性
+    lineShaderProgram->disableAttributeArray(posLoc);
+
+    // 释放着色器程序
+    lineShaderProgram->release();
+
+
 }
 
 void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject * fbo)
@@ -2228,4 +2389,37 @@ QString GraphicsScene3dView::InFboRenderer::checkOpenGLError() const {
     }
 
     return retVal;
+}
+
+
+
+void GraphicsScene3dView::setPolygonOutlineMode(bool enabled)
+{
+    polygonManager_.setOutlineMode(enabled);
+    update();
+}
+
+bool GraphicsScene3dView::getPolygonOutlineMode() const
+{
+    return polygonManager_.getOutlineMode();
+}
+
+void GraphicsScene3dView::clearPolygonPoints()
+{
+    polygonManager_.clear();
+    update();
+}
+
+int GraphicsScene3dView::getPolygonPointCount() const
+{
+    return polygonManager_.getPoints().size();
+}
+
+QVariantList GraphicsScene3dView::getPolygonPoints() const
+{
+    QVariantList list;
+    for (const LLA& point : polygonManager_.getPoints()) {
+        list.append(QVariant::fromValue(QVector3D(point.longitude, point.latitude, 0)));
+    }
+    return list;
 }

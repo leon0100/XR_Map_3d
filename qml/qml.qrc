@@ -106,5 +106,6 @@
         <file>QmlCommon/KDialogOK.qml</file>
         <file>QmlCommon/KDialogYesNo.qml</file>
         <file>QmlCommon/KDialogCheck.qml</file>
+        <file>PolygonTool.qml</file>
     </qresource>
 </RCC>

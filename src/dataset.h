@@ -287,7 +287,6 @@ signals:
 
 
 protected:
-
     int lastEventTimestamp = 0;
     int lastEventId = 0;
     float _lastEncoder = 0;
