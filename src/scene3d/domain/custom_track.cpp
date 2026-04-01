@@ -50,7 +50,7 @@ void CustomTrack::addLLAPoints(const QVector<LLA>& llaPoints)
     LLA llaa = llaPoints.first();
     LLARef llaRef = LLARef(llaa);
 
-
+    qDebug() << "ustomTrack::addLLAPoints..............";
 
     QVector<QVector3D> prepData;
     prepData.reserve(llaPoints.size());
@@ -60,6 +60,7 @@ void CustomTrack::addLLAPoints(const QVector<LLA>& llaPoints)
             // 使用新的坐标转换函数
             QVector3D point = llaToVector3D(lla, &llaRef);
             if (!point.isNull()) {
+                qDebug() << "ustomTrack::addLLAPoints.....333333333.........";
                 prepData.push_back(point);
             }
         }

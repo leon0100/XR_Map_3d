@@ -28,6 +28,7 @@ GraphicsScene3dView::GraphicsScene3dView() :
     m_planeGrid(std::make_shared<PlaneGrid>()),
     navigationArrow_(std::make_shared<NavigationArrow>()),
     usblView_(std::make_shared<UsblView>()),
+    customTrack_(std::make_shared<CustomTrack>()),
     wasMoved_(false),
     wasMovedMouseButton_(Qt::MouseButton::NoButton),
     qmlRootObject_(nullptr),
@@ -312,7 +313,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
             }
 
             addCustomTrackPoints(polygonVec);
-
         }
 
 
