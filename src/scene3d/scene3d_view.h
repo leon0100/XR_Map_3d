@@ -20,6 +20,7 @@
 #include "isobaths_view.h"
 #include "data_processor.h"
 #include "screetShot.h"
+#include "custom_track.h"
 
 
 
@@ -197,7 +198,8 @@ public:
     std::shared_ptr<PolygonGroup>    polygonGroup() const;
     std::shared_ptr<UsblView>        getUsblViewPtr() const;
     std::shared_ptr<NavigationArrow> getNavigationArrowPtr() const;
-    std::weak_ptr <Camera>           camera() const;
+    std::shared_ptr<CustomTrack>     customTrack_; //新增自定义轨迹
+    std::weak_ptr<Camera>            camera() const;
     float verticalScale() const;
     bool sceneBoundingBoxVisible() const;
     Dataset* dataset() const;
@@ -386,6 +388,7 @@ private:
 
     PolygonManager polygonManager_;
 
+
 public:
     // PolygonManager 多边形绘制控制
     Q_INVOKABLE void setPolygonOutlineMode(bool enabled);
@@ -394,6 +397,11 @@ public:
     Q_INVOKABLE int getPolygonPointCount() const;
     Q_INVOKABLE QVariantList getPolygonPoints() const;
     Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
+
+    void addCustomTrackPoints(const QVector<LLA>& llaPoints);
+    void clearCustomTrack();
+    void setCustomTrackColor(const QColor& color);
+    void setCustomTrackWidth(float width);
 
 private:
     QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
@@ -414,10 +422,8 @@ private:
 
 public:
     void saveTilesToOffscreenPng(const QString& filePath,
-        double minLat, double maxLat, double minLon, double maxLon,
-        int mapLevel, int outputWidth = 2048, int outputHeight = 2048);
-
-
+    double minLat, double maxLat, double minLon, double maxLon,
+    int mapLevel, int outputWidth = 2048, int outputHeight = 2048);
     float minZ_, maxZ_;
 
 };

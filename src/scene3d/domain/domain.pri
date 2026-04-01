@@ -10,6 +10,7 @@ HEADERS += \
     $$PWD/contour.h \
     $$PWD/coordinate_axes.h \
     $$PWD/cube.h \
+    $$PWD/custom_track.h \
     $$PWD/delaunay_triangulation.h \
     $$PWD/edge.h \
     $$PWD/equals.h \
@@ -41,6 +42,7 @@ SOURCES += \
     $$PWD/contour.cpp \
     $$PWD/coordinate_axes.cpp \
     $$PWD/cube.cpp \
+    $$PWD/custom_track.cpp \
     $$PWD/image_view.cpp \
     $$PWD/map_view.cpp \
     $$PWD/navigation_arrow.cpp \

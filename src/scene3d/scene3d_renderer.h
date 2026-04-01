@@ -74,6 +74,7 @@ private:
     BoatTrack::BoatTrackRenderImplementation           m_boatTrackRenderImpl;
     NavigationArrow::NavigationArrowRenderImplementation navigationArrowRenderImpl_;
     UsblView::UsblViewRenderImplementation             usblViewRenderImpl_;
+    CustomTrack::CustomTrackRenderImplementation customTrackRenderImpl_;
 
     QMatrix4x4 m_model;
     QMatrix4x4 m_projection;

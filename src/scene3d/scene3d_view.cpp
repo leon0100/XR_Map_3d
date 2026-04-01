@@ -47,8 +47,12 @@ GraphicsScene3dView::GraphicsScene3dView() :
 
     m_camera->setCameraListener(m_axesThumbnailCamera.get());
 
-    boatTrack_->setColor({80,0,180});
-    boatTrack_->setWidth(6.0f);
+    // boatTrack_->setColor({80,0,180});
+    boatTrack_->setColor({0, 0, 205});
+    boatTrack_->setWidth(4.0f);
+
+    customTrack_->setColor({255, 64, 64});
+    customTrack_->setWidth(4.0f);
 
     imageView_->setView(this);
 
@@ -68,6 +72,8 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(navigationArrow_.get(), &NavigationArrow::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(usblView_.get(),     &UsblView::changed,     this, &QQuickFramebufferObject::update);
 
+    QObject::connect(customTrack_.get(), &CustomTrack::changed, this, &QQuickFramebufferObject::update);
+
     QObject::connect(isobathsView_.get(), &IsobathsView::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(surfaceView_.get(),  &SurfaceView::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
     QObject::connect(imageView_.get(),    &ImageView::boundsChanged,    this, &GraphicsScene3dView::updateBounds);
@@ -80,6 +86,8 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(boatTrack_.get(),    &PlaneGrid::boundsChanged,    this, &GraphicsScene3dView::updateBounds);
     QObject::connect(navigationArrow_.get(), &NavigationArrow::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(usblView_.get(),     &UsblView::boundsChanged,     this, &GraphicsScene3dView::updateBounds);
+
+
 
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateMapView, Qt::DirectConnection);
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateViews, Qt::DirectConnection);
@@ -212,6 +220,7 @@ void GraphicsScene3dView::clear(bool cleanMap)
     navigationArrow_->clearData();
     usblView_->clearTracks();
     m_bounds = Cube();
+    customTrack_->clearData();
 
     //setMapView();
     updateBounds();
@@ -302,66 +311,7 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
                 return;
             }
 
-            // 准备顶点数据
-            QVector<QVector3D> vertices;
-            for (const LLA& lla : polygonVec) {
-                // 转换 LLA 坐标到 NED 坐标系（或项目使用的其他坐标系）
-                QVector3D nedPos = polygonManager_.convertLLAToNED(lla);
-                vertices.append(nedPos);
-            }
-
-            // 闭合多边形（确保最后一个点连接到第一个点）
-            if (!vertices.isEmpty()) {
-                vertices.append(vertices.first());
-            }
-
-            // 获取渲染器实例（假设项目中有类似的渲染器）
-
-            // Scene3DRenderer* renderer = getRenderer();
-            // if (!renderer) {
-            //     qDebug() << "Renderer not available";
-            //     return;
-            // }
-
-            // // 获取着色器程序
-            // QOpenGLShaderProgram* lineShaderProgram = renderer->getShaderProgram("line");
-            // if (!lineShaderProgram) {
-            //     qDebug() << "Line shader program not available";
-            //     return;
-            // }
-
-            // // 开始渲染
-            // lineShaderProgram->bind();
-
-            // // 设置 uniform 变量
-            // QMatrix4x4 modelViewProjection = renderer->getModelViewProjectionMatrix();
-            // lineShaderProgram->setUniformValue("mvp", modelViewProjection);
-
-            // // 设置颜色（蓝色轮廓）
-            // lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
-
-            // // 启用顶点属性
-            // int posLoc = lineShaderProgram->attributeLocation("pos");
-            // lineShaderProgram->enableAttributeArray(posLoc);
-
-            // // 准备顶点数据数组
-            // QVector<GLfloat> vertexData;
-            // for (const QVector3D& vertex : vertices) {
-            //     vertexData << vertex.x() << vertex.y() << vertex.z();
-            // }
-
-            // // 设置顶点数据
-            // lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
-
-            // // 绘制线段
-            // glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
-
-            // // 禁用顶点属性
-            // lineShaderProgram->disableAttributeArray(posLoc);
-
-            // // 释放着色器程序
-            // lineShaderProgram->release();
-
+            addCustomTrackPoints(polygonVec);
 
         }
 
@@ -1598,44 +1548,44 @@ void GraphicsScene3dView::InFboRenderer::render()
 
 
 
-    // 获取着色器程序
-    QOpenGLShaderProgram* lineShaderProgram = m_renderer->getShaderProgram("line");
-    if (!lineShaderProgram) {
-        qDebug() << "Line shader program not available";
-        return;
-    }
+    // // 获取着色器程序
+    // QOpenGLShaderProgram* lineShaderProgram = m_renderer->getShaderProgram("line");
+    // if (!lineShaderProgram) {
+    //     qDebug() << "Line shader program not available";
+    //     return;
+    // }
 
-    // 开始渲染
-    lineShaderProgram->bind();
+    // // 开始渲染
+    // lineShaderProgram->bind();
 
-    // 设置 uniform 变量
-    QMatrix4x4 modelViewProjection = m_renderer->getModelViewProjectionMatrix();
-    lineShaderProgram->setUniformValue("mvp", modelViewProjection);
+    // // 设置 uniform 变量
+    // QMatrix4x4 modelViewProjection = m_renderer->getModelViewProjectionMatrix();
+    // lineShaderProgram->setUniformValue("mvp", modelViewProjection);
 
-    // 设置颜色（蓝色轮廓）
-    lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
+    // // 设置颜色（蓝色轮廓）
+    // lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
 
-    // 启用顶点属性
-    int posLoc = lineShaderProgram->attributeLocation("pos");
-    lineShaderProgram->enableAttributeArray(posLoc);
+    // // 启用顶点属性
+    // int posLoc = lineShaderProgram->attributeLocation("pos");
+    // lineShaderProgram->enableAttributeArray(posLoc);
 
-    // 准备顶点数据数组
-    QVector<GLfloat> vertexData;
-    for (const QVector3D& vertex : vertices) {
-        vertexData << vertex.x() << vertex.y() << vertex.z();
-    }
+    // // 准备顶点数据数组
+    // QVector<GLfloat> vertexData;
+    // for (const QVector3D& vertex : vertices) {
+    //     vertexData << vertex.x() << vertex.y() << vertex.z();
+    // }
 
-    // 设置顶点数据
-    lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
+    // // 设置顶点数据
+    // lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
 
-    // 绘制线段
-    glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
+    // // 绘制线段
+    // glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
 
-    // 禁用顶点属性
-    lineShaderProgram->disableAttributeArray(posLoc);
+    // // 禁用顶点属性
+    // lineShaderProgram->disableAttributeArray(posLoc);
 
-    // 释放着色器程序
-    lineShaderProgram->release();
+    // // 释放着色器程序
+    // lineShaderProgram->release();
 
 
 }
@@ -2422,4 +2372,24 @@ QVariantList GraphicsScene3dView::getPolygonPoints() const
         list.append(QVariant::fromValue(QVector3D(point.longitude, point.latitude, 0)));
     }
     return list;
+}
+
+void GraphicsScene3dView::addCustomTrackPoints(const QVector<LLA>& llaPoints)
+{
+    customTrack_->addLLAPoints(llaPoints);
+}
+
+void GraphicsScene3dView::clearCustomTrack()
+{
+    customTrack_->clearCustomTrack();
+}
+
+void GraphicsScene3dView::setCustomTrackColor(const QColor& color)
+{
+    customTrack_->setTrackColor(color);
+}
+
+void GraphicsScene3dView::setCustomTrackWidth(float width)
+{
+    customTrack_->setTrackWidth(width);
 }

@@ -90,7 +90,8 @@ public:
         ImageView    = 9,
         MapView      = 10,
         Contacts     = 11,
-        IsobathsView = 12
+        IsobathsView = 12,
+        CustomTrack
     };
     Q_ENUM(SceneObjectType)
 
