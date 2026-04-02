@@ -716,7 +716,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
         boatLongitude_ = pos.lla.longitude;
 
         if(enableRender) {
-            emit positionAdded(lastIndx); //nie:test
+            emit positionAdded(lastIndx);
         }
     }
 
@@ -1250,6 +1250,29 @@ Epoch *Dataset::addNewEpoch()
 
     if (beenAdded) {
         emit epochAdded(indxAdded);
+    }
+
+    return ptrAdded;
+}
+Epoch* Dataset::addNewEpochPolygonOutline()
+{
+    bool beenAdded = false;
+    int indxAdded = -1;
+    Epoch* ptrAdded = nullptr;
+
+    {
+        QWriteLocker wl(&polygonOutlineMtx_);
+
+        uint64_t newSize = polygonOutline_.size() + 1;
+        polygonOutline_.resize(newSize);
+        ptrAdded = lastPolygonOutline();
+
+        beenAdded = true;
+        indxAdded = newSize;
+    }
+
+    if (beenAdded) {
+        emit epochAdded(indxAdded);//nie:test
     }
 
     return ptrAdded;

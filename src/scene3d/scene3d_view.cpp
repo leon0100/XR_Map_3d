@@ -296,7 +296,7 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         if(polygonOutline_->getOutlineMode()) {
             // datasetPtr_->addPosition_track(currentLat_, currentLon_);
 
-            Epoch* lastEp = datasetPtr_->last();
+            Epoch* lastEp = datasetPtr_->lastPolygonOutline();
             if (!lastEp) {
                 return;
             }
@@ -305,39 +305,22 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
             pos.lla = LLA(currentLat_, currentLon_);
             if (pos.lla.isCoordinatesValid()) {
                 if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-                    lastEp = datasetPtr_->addNewEpoch();  //不断累加帧数的下标index
+                    lastEp = datasetPtr_->addNewEpochPolygonOutline();  //不断累加帧数的下标index
                     // lastEp->setDistProcesing_CSV(depth);
                 }
 
-                if (!polygonOutline_->_llaRef.isInit) {
-                    polygonOutline_->_llaRef = LLARef(pos.lla);
+                if (!polygonOutline_->getLlaRef().isInit) {
+                    polygonOutline_->setLlaRef(LLARef(pos.lla));
 
-                    surfaceView_->setLlaRef(polygonOutline_->_llaRef);
-                    m_camera->datasetLlaRef_ = polygonOutline_->_llaRef.isInit
-                                                ? polygonOutline_->_llaRef : LLARef(m_camera->yerevanLla);
-                    m_camera->viewLlaRef_ = m_camera->datasetLlaRef_;
-
-                    // QQuickFramebufferObject::update();
-                    // fitAllInView();
+                    surfaceView_->setLlaRef(polygonOutline_->getLlaRef());
+                    m_camera->datasetLlaRef_ = polygonOutline_->getLlaRef().isInit
+                                                ? polygonOutline_->getLlaRef() : LLARef(m_camera->yerevanLla);
+                    m_camera->viewLlaRef_    = m_camera->datasetLlaRef_;
                 }
+                LLARef llaRef = polygonOutline_->getLlaRef();
                 lastEp->setPositionLLA(pos);
-                lastEp->setPositionRef(&polygonOutline_->_llaRef); //在这里将LLA坐标转化成本地NED坐标
-
-                QVector<Epoch> pool = datasetPtr_->getPool();
-                qDebug() << "pool_size().............................. " << pool.size();
-                uint64_t lastIndx = pool.size() - 1;
-                auto* epPtr = datasetPtr_->fromIndex(lastIndx);
-                if (!epPtr) {
-                    qDebug() << "to* epPtr.................";
-                    return;
-                }
-
-                const Position boatPos = epPtr->getPositionGNSS();
-                if (!boatPos.ned.isCoordinatesValid()) {
-                    qDebug() << "!boatPos...............";
-                    return;
-                }
-                polygonOutline_->polygonAddPoint(lastIndx);
+                lastEp->setPositionRef(&llaRef); //在这里将LLA坐标转化成本地NED坐标
+                polygonOutline_->polygonAddPoint();
             }
 
         }

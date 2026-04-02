@@ -63,14 +63,31 @@ public:
         return pool_;
     }
 
+    QVector<Epoch>& getPolygonOutline(){
+        return polygonOutline_;
+    }
+
     inline int size() const {
         return pool_.size();
+    }
+
+    inline int polygonOutlineSize() const {
+        return polygonOutline_.size();
     }
 
     Epoch* fromIndex(int index_offset = 0) {
         int index = validIndex(index_offset);
         if(index >= 0) {
             return &pool_[index];
+        }
+
+        return NULL;
+    }
+
+    Epoch* fromPolygonOutlineIndex(int index_offset = 0) {
+        int index = validPolygonOutlineIndex(index_offset);
+        if(index >= 0) {
+            return &polygonOutline_[index];
         }
 
         return NULL;
@@ -117,6 +134,13 @@ public:
         return addNewEpoch();
     }
 
+    Epoch* lastPolygonOutline() {
+        if(polygonOutlineSize() > 0) {
+            return fromPolygonOutlineIndex(endPolygonOutlineindex());
+        }
+        return addNewEpochPolygonOutline();
+    }
+
     Epoch* lastlast() {
         if(size() > 1) {
             return fromIndex(endIndex()-1);
@@ -127,10 +151,20 @@ public:
     int endIndex() const {
         return size() - 1;
     }
+    int endPolygonOutlineindex() const {
+        return polygonOutlineSize() - 1;
+    }
 
     int validIndex(int index_offset = 0) {
         int index = index_offset;
         if(index >= size()) { index = endIndex(); }
+        else if(index < 0) { index = -1; }
+        return index;
+    }
+
+    int validPolygonOutlineIndex(int index_offset = 0) {
+        int index = index_offset;
+        if(index >= polygonOutlineSize()) { index = endPolygonOutlineindex(); }
         else if(index < 0) { index = -1; }
         return index;
     }
@@ -312,12 +346,14 @@ protected:
     QMap<int, UsblView::UsblObjectParams> tracks;
 
     QVector<Epoch> pool_;
+    QVector<Epoch> polygonOutline_;
 
     float _lastYaw = 0, _lastPitch = 0, _lastRoll = 0;
     float lastTemp_ = NAN;
 
 public:
     Epoch* addNewEpoch();
+    Epoch* addNewEpochPolygonOutline();
 
     GraphicsScene3dView* scene3dViewPtr_ = nullptr;
 
@@ -335,6 +371,7 @@ private:
     /*data*/
     mutable QReadWriteLock lock_;
     mutable QReadWriteLock poolMtx_;
+    mutable QReadWriteLock polygonOutlineMtx_;
 
     LLARef _llaRef;
     LlaRefState llaRefState_ = LlaRefState::kUndefined;

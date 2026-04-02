@@ -14,10 +14,12 @@ public:
     NED llaToNed(const LLA& lla, LLARef* ref);
     QVector3D llaToVector3D(const LLA& lla, LLARef* ref);
 
-    LLARef _llaRef;
 
     void drawPolygonOutline(double latitide, double longitude);
     bool getOutlineMode() const;
+
+    LLARef getLlaRef();
+    void setLlaRef(const LLARef &val);
 
 public:
     class PolygonOutlineRenderImplementation : public SceneObject::RenderImplementation
@@ -47,7 +49,7 @@ public:
     virtual SceneObjectType type() const override final;
 
     void setDatasetPtr(Dataset* datasetPtr);
-    void polygonAddPoint(uint64_t indx);
+    void polygonAddPoint();
 
     void addLLAPoints(const QVector<LLA>& llaPoints);
     void clearPolygonOutline();
@@ -64,6 +66,7 @@ protected:
 private:
     Dataset* datasetPtr_;
     int lastIndx_;
+    LLARef llaRef_;
 
     QColor trackColor_;
     float trackWidth_;

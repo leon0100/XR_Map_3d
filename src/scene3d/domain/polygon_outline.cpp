@@ -100,6 +100,16 @@ bool PolygonOutline::getOutlineMode() const
     return isDrawOutlineMode_;
 }
 
+LLARef PolygonOutline::getLlaRef()
+{
+    return llaRef_;
+}
+
+void PolygonOutline::setLlaRef(const LLARef &val)
+{
+    llaRef_ = val;
+}
+
 SceneObject::SceneObjectType PolygonOutline::type() const
 {
     return SceneObject::SceneObjectType::PolygonOutline;
@@ -110,14 +120,28 @@ void PolygonOutline::setDatasetPtr(Dataset* datasetPtr)
     datasetPtr_ = datasetPtr;
 }
 
-void PolygonOutline::polygonAddPoint(uint64_t indx)
+void PolygonOutline::polygonAddPoint()
 {
     qDebug() << "PolygonOutline::polygonAddPoint...............";
     if (!datasetPtr_) {
         return;
     }
 
-    const int toIndx   = indx;
+    QVector<Epoch> polygonOutline = datasetPtr_->getPolygonOutline();
+    qDebug() << "polygonOutline.size().............................. " << polygonOutline.size();
+    const int toIndx = polygonOutline.size() - 1;
+    Epoch* epochPtr = datasetPtr_->fromPolygonOutlineIndex(toIndx);
+    if (!epochPtr) {
+        qDebug() << "to* epochPtr.................";
+        return;
+    }
+
+    const Position boatPos = epochPtr->getPositionGNSS();
+    if (!boatPos.ned.isCoordinatesValid()) {
+        qDebug() << "!boatPos...............";
+        return;
+    }
+
     const int fromIndx = lastIndx_;
     if (fromIndx >= toIndx) {
         qDebug() << "fromIndx >= toIndx..............";
@@ -129,7 +153,7 @@ void PolygonOutline::polygonAddPoint(uint64_t indx)
     prepData.reserve(need);
 
     for (int i = fromIndx + 1; i <= toIndx; ++i) {
-        if (auto* ep = datasetPtr_->fromIndex(i); ep) {
+        if (auto* ep = datasetPtr_->fromPolygonOutlineIndex(i); ep) {
             if (auto posNed = ep->getPositionGNSS().ned; posNed.isCoordinatesValid()) {
                 prepData.push_back(QVector3D(posNed.n, posNed.e, 0));
             }
@@ -204,7 +228,7 @@ PolygonOutline::PolygonOutlineRenderImplementation::~PolygonOutlineRenderImpleme
 void PolygonOutline::PolygonOutlineRenderImplementation::render(QOpenGLFunctions* ctx,  const QMatrix4x4& mvp,
                       const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const
 {
-    qDebug() << "PolygonOutline::PolygonOutlineRenderImplementa...........";
+    // qDebug() << "PolygonOutline::PolygonOutlineRenderImplementa...........";
     if (!m_isVisible)
         return;
 
