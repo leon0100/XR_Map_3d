@@ -210,6 +210,8 @@ void SceneObject::qmlDeclare()
     qRegisterMetaType<AbstractEntityDataFilter::FilterType>("FilterType");
 }
 
+
+
 //-----------------------RenderImplementation-----------------------------//
 SceneObject::RenderImplementation::RenderImplementation()
 {}

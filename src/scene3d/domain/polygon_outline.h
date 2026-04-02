@@ -2,23 +2,29 @@
 
 #include "scene_object.h"
 #include "dataset_defs.h"
+#include "dataset.h"
+
 
 class GraphicsScene3dView;
-
-class CustomTrack : public SceneObject
+class PolygonOutline : public SceneObject
 {
     Q_OBJECT
-    QML_NAMED_ELEMENT(CustomTrack)
-
+    QML_NAMED_ELEMENT(PolygonOutline)
+public:
     NED llaToNed(const LLA& lla, LLARef* ref);
     QVector3D llaToVector3D(const LLA& lla, LLARef* ref);
 
+    LLARef _llaRef;
+
+    void drawPolygonOutline(double latitide, double longitude);
+    bool getOutlineMode() const;
+
 public:
-    class CustomTrackRenderImplementation : public SceneObject::RenderImplementation
+    class PolygonOutlineRenderImplementation : public SceneObject::RenderImplementation
     {
     public:
-        CustomTrackRenderImplementation();
-        virtual ~CustomTrackRenderImplementation();
+        PolygonOutlineRenderImplementation();
+        virtual ~PolygonOutlineRenderImplementation();
 
         virtual void render(QOpenGLFunctions* ctx,
                             const QMatrix4x4& mvp,
@@ -31,22 +37,36 @@ public:
                             const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const override final;
 
     private:
-        friend class CustomTrack;
+        friend class PolygonOutline;
+        QVector<int> selectedVertexIndices_;
+
     };
 
-    explicit CustomTrack(GraphicsScene3dView* view = nullptr, QObject* parent = nullptr);
-    virtual ~CustomTrack();
+    explicit PolygonOutline(GraphicsScene3dView* view = nullptr, QObject* parent = nullptr);
+    virtual ~PolygonOutline();
     virtual SceneObjectType type() const override final;
 
+    void setDatasetPtr(Dataset* datasetPtr);
+    void polygonAddPoint(uint64_t indx);
+
     void addLLAPoints(const QVector<LLA>& llaPoints);
-    void clearCustomTrack();
+    void clearPolygonOutline();
     void setTrackColor(const QColor& color);
     void setTrackWidth(float width);
 
 public Q_SLOTS:
     virtual void clearData() override final;
 
+
+protected:
+    friend class GraphicsScene3dView;
+
 private:
+    Dataset* datasetPtr_;
+    int lastIndx_;
+
     QColor trackColor_;
     float trackWidth_;
+
+    bool isDrawOutlineMode_ = true;
 };

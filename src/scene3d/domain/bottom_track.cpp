@@ -699,10 +699,8 @@ void BottomTrack::BottomTrackRenderImplementation::render(QOpenGLFunctions *ctx,
 
         if (selectedVertices.isEmpty()) {
             shaderProgram->disableAttributeArray(posLoc);
-
             shaderProgram->setUniformValue(isPointLoc,    false);
             shaderProgram->setUniformValue(isTriangleLoc, false);
-
             shaderProgram->release();
             return;
         }

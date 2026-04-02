@@ -718,7 +718,35 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
         if(enableRender) {
             emit positionAdded(lastIndx); //nie:test
         }
+    }
 
+}
+
+void Dataset::addPosition_track(double lat, double lon)
+{
+    Epoch* lastEp = last();
+    if (!lastEp) {
+        return;
+    }
+
+    Position pos;
+    pos.lla = LLA(lat, lon);
+    if (pos.lla.isCoordinatesValid()) {
+        if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
+            lastEp = addNewEpoch();  //不断累加帧数的下标index
+            // lastEp->setDistProcesing_CSV(depth);
+        }
+
+        qDebug() << "pool_size().............................. " << pool_.size();
+        uint64_t lastIndx = pool_.size() - 1;
+        if (!getLlaRef().isInit) {
+            _llaRef = LLARef(pos.lla);
+            emit updatedLlaRef();
+        }
+        lastEp->setPositionLLA(pos);
+        lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
+
+        emit positionAdded(lastIndx);
     }
 }
 

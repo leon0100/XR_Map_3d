@@ -228,7 +228,6 @@ typedef struct NED {
     NED() {}
     NED(double _n, double _e, double _d) : n(_n), e(_e), d(_d) { };
     NED(LLA* lla, LLARef* ref, bool spherical = true) {
-        // qDebug() << "NED: llallallala.................";
         if (spherical) {
             double lat_rad = lla->latitude * M_DEG_TO_RAD;
             double lon_rad = lla->longitude * M_DEG_TO_RAD;
@@ -238,7 +237,6 @@ typedef struct NED {
             double cos_d_lon = cos(lon_rad - ref->refLonRad);
 
             double arg = ref->refLatSin * sin_lat + ref->refLatCos * cos_lat * cos_d_lon;
-
             if (arg > 1.0) {
                 arg = 1.0;
             }
@@ -250,7 +248,7 @@ typedef struct NED {
             double k = (fabs(c) < kmath::dblEps) ? 1.0 : (c / sin(c));
 
             n = k * (ref->refLatCos * sin_lat - ref->refLatSin * cos_lat * cos_d_lon) * CONSTANTS_RADIUS_OF_EARTH;
-            e = k * cos_lat * sin(lon_rad - ref->refLonRad) * CONSTANTS_RADIUS_OF_EARTH;
+            e = k * cos_lat * sin(lon_rad - ref->refLonRad) * CONSTANTS_RADIUS_OF_EARTH;   
         }
         else { // merсator
             double R = CONSTANTS_RADIUS_OF_EARTH;

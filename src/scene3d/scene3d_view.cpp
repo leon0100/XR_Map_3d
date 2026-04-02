@@ -21,14 +21,15 @@ GraphicsScene3dView::GraphicsScene3dView() :
     mapView_(std::make_shared<MapView>(this)),
     contacts_(std::make_shared<Contacts>(this)),
     boatTrack_(std::make_shared<BoatTrack>(this, this)),
+    polygonOutline_(std::make_shared<PolygonOutline>(this, this)),
     m_bottomTrack(std::make_shared<BottomTrack>(this, this)),
     m_polygonGroup(std::make_shared<PolygonGroup>()),
     m_pointGroup(std::make_shared<PointGroup>()),
     m_coordAxes(std::make_shared<CoordinateAxes>()),
     m_planeGrid(std::make_shared<PlaneGrid>()),
     navigationArrow_(std::make_shared<NavigationArrow>()),
+
     usblView_(std::make_shared<UsblView>()),
-    customTrack_(std::make_shared<CustomTrack>()),
     wasMoved_(false),
     wasMovedMouseButton_(Qt::MouseButton::NoButton),
     qmlRootObject_(nullptr),
@@ -48,13 +49,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
 
     m_camera->setCameraListener(m_axesThumbnailCamera.get());
 
-    // boatTrack_->setColor({80,0,180});
-    boatTrack_->setColor({0, 0, 205});
-    boatTrack_->setWidth(4.0f);
-
-    customTrack_->setColor({255, 64, 64});
-    customTrack_->setWidth(4.0f);
-
     imageView_->setView(this);
 
     screetShot_.setMapView(mapView_);
@@ -65,6 +59,7 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(mapView_.get(),      &MapView::changed,      this, &QQuickFramebufferObject::update);
     QObject::connect(contacts_.get(),     &Contacts::changed,     this, &QQuickFramebufferObject::update);
     QObject::connect(boatTrack_.get(),    &BoatTrack::changed,    this, &QQuickFramebufferObject::update);
+    QObject::connect(polygonOutline_.get(), &PolygonOutline::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(m_bottomTrack.get(), &BottomTrack::changed,  this, &QQuickFramebufferObject::update);
     QObject::connect(m_polygonGroup.get(), &PolygonGroup::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(m_pointGroup.get(),  &PointGroup::changed,   this, &QQuickFramebufferObject::update);
@@ -73,7 +68,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(navigationArrow_.get(), &NavigationArrow::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(usblView_.get(),     &UsblView::changed,     this, &QQuickFramebufferObject::update);
 
-    QObject::connect(customTrack_.get(), &CustomTrack::changed, this, &QQuickFramebufferObject::update);
 
     QObject::connect(isobathsView_.get(), &IsobathsView::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(surfaceView_.get(),  &SurfaceView::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
@@ -81,6 +75,7 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(mapView_.get(),      &MapView::boundsChanged,      this, &GraphicsScene3dView::updateBounds);
     QObject::connect(contacts_.get(),     &Contacts::boundsChanged,     this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_bottomTrack.get(), &BottomTrack::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
+    QObject::connect(polygonOutline_.get(), &PolygonOutline::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_polygonGroup.get(), &PolygonGroup::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_pointGroup.get(),  &PointGroup::boundsChanged,   this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_coordAxes.get(),   &CoordinateAxes::boundsChanged, this, &GraphicsScene3dView::updateBounds);
@@ -89,15 +84,13 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(usblView_.get(),     &UsblView::boundsChanged,     this, &GraphicsScene3dView::updateBounds);
 
 
-
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateMapView, Qt::DirectConnection);
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateViews, Qt::DirectConnection);
 
     connect(&screetShot_, &ScreetShot::signalScreetGraphics, this, &GraphicsScene3dView::slotScreetGraphics, Qt::DirectConnection);
     // 连接信号，在GUI线程触发更新
     connect(this, &GraphicsScene3dView::requestRenderUpdate, this, [this]() {
-        QQuickFramebufferObject::update();
-    }, Qt::QueuedConnection);
+        QQuickFramebufferObject::update();          }, Qt::QueuedConnection);
     updatePlaneGrid();
 
 #ifdef SCENE_TESTING
@@ -129,6 +122,11 @@ std::shared_ptr<BoatTrack> GraphicsScene3dView::getBoatTrackPtr() const
 std::shared_ptr<BottomTrack> GraphicsScene3dView::bottomTrack() const
 {
     return m_bottomTrack;
+}
+
+std::shared_ptr<PolygonOutline> GraphicsScene3dView::polygonOutline() const
+{
+    return polygonOutline_;
 }
 
 std::shared_ptr<IsobathsView> GraphicsScene3dView::getIsobathsViewPtr() const
@@ -216,12 +214,12 @@ void GraphicsScene3dView::clear(bool cleanMap)
     }
     boatTrack_->clearData();
     m_bottomTrack->clearData();
+    polygonOutline_->clearData();
     m_polygonGroup->clearData();
     m_pointGroup->clearData();
     navigationArrow_->clearData();
     usblView_->clearTracks();
     m_bounds = Cube();
-    customTrack_->clearData();
 
     //setMapView();
     updateBounds();
@@ -295,24 +293,53 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         }
 
         /*- 绘制多边形轮廓模式 -*/
-        if(polygonManager_.getOutlineMode()) {
-            qDebug() << "3333333333333333333";
-            LLA lla;
-            lla.latitude  = currentLat_;
-            lla.longitude = currentLon_;
-            polygonManager_.addPoint(lla);
-            m_bottomTrack->drawPolygonOutline(polygonManager_.getPolygonOutlinePts());
+        if(polygonOutline_->getOutlineMode()) {
+            // datasetPtr_->addPosition_track(currentLat_, currentLon_);
 
-            QVector<LLA> polygonVec = polygonManager_.getPolygonOutlinePts();
-
-
-
-            if (polygonVec.size() < 3) {
-                qDebug() << "Polygon requires at least 3 points";
+            Epoch* lastEp = datasetPtr_->last();
+            if (!lastEp) {
                 return;
             }
 
-            addCustomTrackPoints(polygonVec);
+            Position pos;
+            pos.lla = LLA(currentLat_, currentLon_);
+            if (pos.lla.isCoordinatesValid()) {
+                if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
+                    lastEp = datasetPtr_->addNewEpoch();  //不断累加帧数的下标index
+                    // lastEp->setDistProcesing_CSV(depth);
+                }
+
+                if (!polygonOutline_->_llaRef.isInit) {
+                    polygonOutline_->_llaRef = LLARef(pos.lla);
+
+                    surfaceView_->setLlaRef(polygonOutline_->_llaRef);
+                    m_camera->datasetLlaRef_ = polygonOutline_->_llaRef.isInit
+                                                ? polygonOutline_->_llaRef : LLARef(m_camera->yerevanLla);
+                    m_camera->viewLlaRef_ = m_camera->datasetLlaRef_;
+
+                    // QQuickFramebufferObject::update();
+                    // fitAllInView();
+                }
+                lastEp->setPositionLLA(pos);
+                lastEp->setPositionRef(&polygonOutline_->_llaRef); //在这里将LLA坐标转化成本地NED坐标
+
+                QVector<Epoch> pool = datasetPtr_->getPool();
+                qDebug() << "pool_size().............................. " << pool.size();
+                uint64_t lastIndx = pool.size() - 1;
+                auto* epPtr = datasetPtr_->fromIndex(lastIndx);
+                if (!epPtr) {
+                    qDebug() << "to* epPtr.................";
+                    return;
+                }
+
+                const Position boatPos = epPtr->getPositionGNSS();
+                if (!boatPos.ned.isCoordinatesValid()) {
+                    qDebug() << "!boatPos...............";
+                    return;
+                }
+                polygonOutline_->polygonAddPoint(lastIndx);
+            }
+
         }
 
 
@@ -477,7 +504,7 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
     /*- 绘制多边形轮廓模式 -*/
     if(polygonManager_.getOutlineMode()) {
 
-        polygonManager_;
+        // polygonManager_;
     }
 
     if (switchedToBottomTrackVertexComboSelectionMode_) {
@@ -947,6 +974,7 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
 
     boatTrack_->setDatasetPtr(datasetPtr_);
     m_bottomTrack->setDatasetPtr(datasetPtr_);
+    polygonOutline_->setDatasetPtr(datasetPtr_);
     contacts_->setDatasetPtr(datasetPtr_);
 
     forceUpdateDatasetLlaRef();
@@ -1002,6 +1030,7 @@ void GraphicsScene3dView::updateBounds()
     m_bounds = boatTrack_->bounds()
                    .merge(isobathsView_->bounds())
                    .merge(m_bottomTrack->bounds())
+                   .merge(polygonOutline_->bounds())
                    .merge(boatTrack_->bounds())
                    .merge(m_polygonGroup->bounds())
                    .merge(m_pointGroup->bounds())
@@ -1617,6 +1646,8 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject * f
     m_renderer->m_planeGridRenderImpl       = *(dynamic_cast<PlaneGrid::PlaneGridRenderImplementation*>(view->m_planeGrid->m_renderImpl));
     m_renderer->m_boatTrackRenderImpl       = *(dynamic_cast<BoatTrack::BoatTrackRenderImplementation*>(view->boatTrack_->m_renderImpl));
     m_renderer->m_bottomTrackRenderImpl     = *(dynamic_cast<BottomTrack::BottomTrackRenderImplementation*>(view->m_bottomTrack->m_renderImpl));
+    m_renderer->m_polygonOutlineRenderImpl    = *(dynamic_cast<PolygonOutline::PolygonOutlineRenderImplementation*>(view->polygonOutline_->m_renderImpl));
+
     m_renderer->isobathsViewRenderImpl_     = *(dynamic_cast<IsobathsView::IsobathsViewRenderImplementation*>(view->isobathsView_->m_renderImpl));
     m_renderer->surfaceViewRenderImpl_      = *(dynamic_cast<SurfaceView::SurfaceViewRenderImplementation*>(view->surfaceView_->m_renderImpl));
     m_renderer->imageViewRenderImpl_        = *(dynamic_cast<ImageView::ImageViewRenderImplementation*>(view->imageView_->m_renderImpl));
@@ -1836,7 +1867,6 @@ void GraphicsScene3dView::InFboRenderer::processSurfaceTexture(GraphicsScene3dVi
     }
 
     GLuint textureId = surfacePtr->getSurfaceColorTableTextureId();
-
     if (textureId) {
         glDeleteTextures(1, &textureId);
     }
@@ -2376,20 +2406,20 @@ QVariantList GraphicsScene3dView::getPolygonPoints() const
 
 void GraphicsScene3dView::addCustomTrackPoints(const QVector<LLA>& llaPoints)
 {
-    customTrack_->addLLAPoints(llaPoints);
+    polygonOutline_->addLLAPoints(llaPoints);
 }
 
 void GraphicsScene3dView::clearCustomTrack()
 {
-    customTrack_->clearCustomTrack();
+    polygonOutline_->clearPolygonOutline();
 }
 
 void GraphicsScene3dView::setCustomTrackColor(const QColor& color)
 {
-    customTrack_->setTrackColor(color);
+    polygonOutline_->setTrackColor(color);
 }
 
 void GraphicsScene3dView::setCustomTrackWidth(float width)
 {
-    customTrack_->setTrackWidth(width);
+    polygonOutline_->setTrackWidth(width);
 }

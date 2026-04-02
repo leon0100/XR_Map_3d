@@ -20,7 +20,7 @@
 #include "isobaths_view.h"
 #include "data_processor.h"
 #include "screetShot.h"
-#include "custom_track.h"
+#include "polygon_outline.h"
 
 
 
@@ -189,6 +189,7 @@ public:
     Renderer *createRenderer() const override;
     std::shared_ptr<BoatTrack>       getBoatTrackPtr() const;
     std::shared_ptr<BottomTrack>     bottomTrack() const;
+    std::shared_ptr<PolygonOutline>  polygonOutline() const;
     std::shared_ptr<IsobathsView>    getIsobathsViewPtr() const;
     std::shared_ptr<SurfaceView>     getSurfaceViewPtr() const;
     std::shared_ptr<ImageView>       getImageViewPtr() const;
@@ -198,7 +199,6 @@ public:
     std::shared_ptr<PolygonGroup>    polygonGroup() const;
     std::shared_ptr<UsblView>        getUsblViewPtr() const;
     std::shared_ptr<NavigationArrow> getNavigationArrowPtr() const;
-    std::shared_ptr<CustomTrack>     customTrack_; //新增自定义轨迹
     std::weak_ptr<Camera>            camera() const;
     float verticalScale() const;
     bool sceneBoundingBoxVisible() const;
@@ -291,6 +291,7 @@ private:
     std::shared_ptr<MapView>      mapView_;  //渲染单个图片/纹理
     std::shared_ptr<Contacts>     contacts_;
     std::shared_ptr<BoatTrack>    boatTrack_;
+    std::shared_ptr<PolygonOutline>  polygonOutline_;
     std::shared_ptr<BottomTrack>  m_bottomTrack;
     std::shared_ptr<PolygonGroup> m_polygonGroup;
     std::shared_ptr<PointGroup>   m_pointGroup;

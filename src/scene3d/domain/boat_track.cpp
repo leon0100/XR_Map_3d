@@ -13,6 +13,10 @@ BoatTrack::BoatTrack(GraphicsScene3dView* view, QObject* parent) :
     lastIndx_(0)
 {
     setPrimitiveType(GL_LINE_STRIP);
+
+    // setColor({80,0,180});
+    setColor({0, 0, 205});
+    setWidth(4.0f);
 }
 
 BoatTrack::~BoatTrack()

@@ -172,7 +172,7 @@ void GraphicsScene3dRenderer::drawObjects()
 
     glDisable(GL_DEPTH_TEST);
     m_boatTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap); //船轨迹
-    customTrackRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);
+    m_polygonOutlineRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);
 
     glEnable(GL_DEPTH_TEST);
     float zOffset = surfaceViewRenderImpl_.getMaxZ() + 0.01f;

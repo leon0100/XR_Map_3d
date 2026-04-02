@@ -91,7 +91,7 @@ public:
         MapView      = 10,
         Contacts     = 11,
         IsobathsView = 12,
-        CustomTrack
+        PolygonOutline = 13,
     };
     Q_ENUM(SceneObjectType)
 

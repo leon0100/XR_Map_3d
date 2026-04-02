@@ -59,6 +59,10 @@ public:
     LLARef getLlaRef() const;
     void setLlaRef(const LLARef& val, LlaRefState state);
 
+    QVector<Epoch>& getPool(){
+        return pool_;
+    }
+
     inline int size() const {
         return pool_.size();
     }
@@ -222,6 +226,7 @@ public slots:
     void addPosition_realTime(double lat, double lon, double depth, bool isRead);
     void addPosition_file(double lat, double lon, int depth, bool enableRender);
     void addPositionRTK(Position position);
+    void addPosition_track(double lat, double lon);
 
     void addDepth(float depth);
     // void addDepth_realTime(float depth);
@@ -310,6 +315,7 @@ protected:
 
     float _lastYaw = 0, _lastPitch = 0, _lastRoll = 0;
     float lastTemp_ = NAN;
+
 public:
     Epoch* addNewEpoch();
 
