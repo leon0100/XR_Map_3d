@@ -499,7 +499,7 @@ void Dataset::addUsblSolution(IDBinUsblSolution::UsblSolution data) {
 void Dataset::addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt) {
     int pool_index = endIndex();
 
-    if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == true)) { //
+    if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == true)) {
         // addNewEpoch();
     }
 
@@ -512,7 +512,7 @@ void Dataset::addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt) {
 void Dataset::addDVLSolution(IDBinDVL::DVLSolution dvlSolution) {
     int pool_index = endIndex();
 
-    if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == false)) { //
+    if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == false)) {
         // addNewEpoch();
         pool_index = endIndex();
     }
@@ -685,7 +685,6 @@ void Dataset::addPosition_realTime(double lat, double lon, double depth, bool is
 
 
 
-
 void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRender)
 {
     Epoch* lastEp = last();
@@ -722,33 +721,6 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
 
 }
 
-void Dataset::addPosition_track(double lat, double lon)
-{
-    Epoch* lastEp = last();
-    if (!lastEp) {
-        return;
-    }
-
-    Position pos;
-    pos.lla = LLA(lat, lon);
-    if (pos.lla.isCoordinatesValid()) {
-        if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-            lastEp = addNewEpoch();  //不断累加帧数的下标index
-            // lastEp->setDistProcesing_CSV(depth);
-        }
-
-        qDebug() << "pool_size().............................. " << pool_.size();
-        uint64_t lastIndx = pool_.size() - 1;
-        if (!getLlaRef().isInit) {
-            _llaRef = LLARef(pos.lla);
-            emit updatedLlaRef();
-        }
-        lastEp->setPositionLLA(pos);
-        lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
-
-        emit positionAdded(lastIndx);
-    }
-}
 
 void Dataset::location(double lat, double lon)
 {
@@ -1360,8 +1332,8 @@ void Dataset::onSonarPosCanCalc(uint64_t indx)
             }
             else {
                 Position boatPos = ep->getPositionGNSS();
-                const NED d = fruOffsetToNed(sonarOffset_, ep->yaw());
-                NED sonarNed(boatPos.ned.n + d.n, boatPos.ned.e + d.e, /*always zero*/0.0);
+                const North_East_Down d = fruOffsetToNed(sonarOffset_, ep->yaw());
+                North_East_Down sonarNed(boatPos.ned.n + d.n, boatPos.ned.e + d.e, /*always zero*/0.0);
                 LLA sonarLla(&sonarNed, &_llaRef, /*spherical=*/true);
                 boatPos.lla      = sonarLla;
                 boatPos.LLA2NED(&_llaRef); // ned

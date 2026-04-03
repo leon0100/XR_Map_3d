@@ -27,13 +27,11 @@ Rectangle {
         polygonPoints = [];
         screenPoints = [];
         isDrawing = true;
-        renderer.setPolygonOutlineMode(true);
         polygonCanvas.requestPaint();
     }
 
     // 完成绘制
     function finishDrawing() {
-        renderer.setPolygonOutlineMode(false);
         var points = renderer.getPolygonPoints();
         polygonCompleted(points);
         polygonPoints = [];
@@ -44,46 +42,12 @@ Rectangle {
 
     // 清除多边形
     function clearPolygon() {
-        renderer.clearPolygonPoints();
         polygonPoints = [];
         screenPoints = [];
         polygonCleared();
         polygonCanvas.requestPaint();
     }
 
-    // 从 C++ 获取最新点并更新 Canvas
-    // function updatePolygonDisplay() {
-        // if (!isDrawing) return;
-
-        // polygonPoints = renderer.getPolygonPoints();
-        // 将地理坐标转换为屏幕坐标
-        // screenPoints = [];
-        // for (var i = 0; i < polygonPoints.length; i++) {
-            // var geo = polygonPoints[i];
-            // var coord = QtPositioning.coordinate(geo.y, geo.x);
-            // var screen = map.fromCoordinate(coord);
-            // screenPoints.push(screen);
-
-            // targetPlot.drawPolygonOutline()
-        // }
-
-        // polygonCanvas.requestPaint();
-    // }
-
-    // 定时器：定期检查并更新显示
-    // Timer {
-    //     id: updateTimer
-    //     interval: 100
-    //     repeat: true
-    //     running: isDrawing
-    //     onTriggered: {
-    //         var prevCount = screenPoints.length;
-    //         var newPoints = renderer.getPolygonPoints();
-    //         if (newPoints.length !== prevCount) {
-    //             // updatePolygonDisplay();
-    //         }
-    //     }
-    // }
 
     // Canvas 覆盖层：绘制多边形
     Canvas {

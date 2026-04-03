@@ -260,7 +260,6 @@ public slots:
     void addPosition_realTime(double lat, double lon, double depth, bool isRead);
     void addPosition_file(double lat, double lon, int depth, bool enableRender);
     void addPositionRTK(Position position);
-    void addPosition_track(double lat, double lon);
 
     void addDepth(float depth);
     // void addDepth_realTime(float depth);
@@ -323,6 +322,8 @@ signals:
     void speedChanged();
 
     void channelListUpdated();
+
+    void signalDrawOutline(bool drawOutlineMode);
 
 
 protected:

@@ -124,7 +124,7 @@ inline uint qHash(const ChannelId& key, uint seed = 0)
 
 static const ChannelId CHANNEL_NONE  = ChannelId();
 
-typedef struct NED NED;
+typedef struct North_East_Down North_East_Down;
 typedef struct LLARef LLARef;
 
 typedef struct LLA {
@@ -157,7 +157,7 @@ typedef struct LLA {
         return *this;
     }
 
-    inline LLA(const NED* ned, const LLARef* ref, bool spherical = true);
+    inline LLA(const North_East_Down* ned, const LLARef* ref, bool spherical = true);
 
     bool isValid() const {
         return qIsFinite(latitude) && qIsFinite(longitude) && qIsFinite(altitude);
@@ -221,13 +221,13 @@ typedef struct  LLARef {
     }
 } LLARef;
 
-typedef struct NED {
+typedef struct North_East_Down {
     double n = NAN, e = NAN, d = NAN;
     PositionSource source = PositionSourceNone;
 
-    NED() {}
-    NED(double _n, double _e, double _d) : n(_n), e(_e), d(_d) { };
-    NED(LLA* lla, LLARef* ref, bool spherical = true) {
+    North_East_Down() {}
+    North_East_Down(double _n, double _e, double _d) : n(_n), e(_e), d(_d) { };
+    North_East_Down(LLA* lla, LLARef* ref, bool spherical = true) {
         if (spherical) {
             double lat_rad = lla->latitude * M_DEG_TO_RAD;
             double lon_rad = lla->longitude * M_DEG_TO_RAD;
@@ -277,9 +277,9 @@ typedef struct NED {
     bool isCoordinatesValid() const {
         return qIsFinite(n) && qIsFinite(e);
     }
-} NED;
+} North_East_Down;
 
-LLA::LLA(const NED* ned, const LLARef* ref, bool spherical)
+LLA::LLA(const North_East_Down* ned, const LLARef* ref, bool spherical)
 {
     if (spherical) {
         if (!ned || !ref || !qIsFinite(ned->n) || !qIsFinite(ned->e) || !qIsFinite(ned->d)) {
@@ -287,10 +287,10 @@ LLA::LLA(const NED* ned, const LLARef* ref, bool spherical)
         }
 
         double R = CONSTANTS_RADIUS_OF_EARTH;
-        double n = ned->n;
+        double north = ned->n;
         double e = ned->e;
 
-        double c = sqrt(n * n + e * e) / R;
+        double c = sqrt(north * north + e * e) / R;
 
         if (qFuzzyIsNull(c)) {
             latitude = ref->refLla.latitude;
@@ -305,7 +305,7 @@ LLA::LLA(const NED* ned, const LLARef* ref, bool spherical)
         double sin_c = sin(c);
         double cos_c = cos(c);
 
-        double alpha = atan2(e, n);
+        double alpha = atan2(e, north);
 
         double sin_lat = sin(lat0) * cos_c + cos(lat0) * sin_c * cos(alpha);
         double lat_rad = asin(sin_lat);
@@ -411,12 +411,12 @@ typedef struct DateTime {
 struct Position { // TODO: refactor all these structs
     DateTime time;
     LLA lla;
-    NED ned;
+    North_East_Down ned;
 
     DataType dataType = DataType::kUndefined;
 
     void LLA2NED(LLARef* ref) {
-        ned = NED(&lla, ref);
+        ned = North_East_Down(&lla, ref);
     }
 };
 
@@ -531,7 +531,7 @@ static inline double distanceMetersLLA(double latBoat, double lonBoat, double la
 {
     LLARef boatRef(LLA(latBoat, lonBoat, 0.0));
     LLA    tgt(latTarget, lonTarget, 0.0);
-    NED    bt(&tgt, &boatRef, /*spherical=*/true);
+    North_East_Down    bt(&tgt, &boatRef, /*spherical=*/true);
 
     return std::hypot(bt.n, bt.e);
 }
@@ -540,7 +540,7 @@ static inline double angleToTargetDeg(double latBoat, double lonBoat, double lat
 {
     LLARef boatRef(LLA(latBoat, lonBoat, 0.0));
     LLA    tgt(latTarget, lonTarget, 0.0);
-    NED    bt(&tgt, &boatRef, /*spherical=*/true);
+    North_East_Down    bt(&tgt, &boatRef, /*spherical=*/true);
 
     const double dist = std::hypot(bt.n, bt.e);
     if (dist < 1e-6) {
@@ -552,7 +552,7 @@ static inline double angleToTargetDeg(double latBoat, double lonBoat, double lat
     return std::abs(norm180(bearingTrue - headTrue));
 }
 
-static inline NED fruOffsetToNed(const QVector3D& offFru, double yawDeg)
+static inline North_East_Down fruOffsetToNed(const QVector3D& offFru, double yawDeg)
 {
     const double psi = yawDeg * M_DEG_TO_RAD;
     const double c = std::cos(psi);
@@ -566,5 +566,5 @@ static inline NED fruOffsetToNed(const QVector3D& offFru, double yawDeg)
     const double dE =  x * s + y * c;
     const double dD = -z;
 
-    return NED(dN, dE, dD);
+    return North_East_Down(dN, dE, dD);
 }

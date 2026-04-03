@@ -196,7 +196,7 @@ void Logger::loggingCsvStream()
         double prevLat = 0, prevLon = 0;
 
         LLARef llaRef;
-        NED lastPosNed;
+        North_East_Down lastPosNed;
         QString rowData;
 
         if (csvData_.measNbr)

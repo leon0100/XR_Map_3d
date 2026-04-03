@@ -11,11 +11,12 @@ class PolygonOutline : public SceneObject
     Q_OBJECT
     QML_NAMED_ELEMENT(PolygonOutline)
 public:
-    NED llaToNed(const LLA& lla, LLARef* ref);
+    North_East_Down llaToNed(const LLA& lla, LLARef* ref);
     QVector3D llaToVector3D(const LLA& lla, LLARef* ref);
 
-
     void drawPolygonOutline(double latitide, double longitude);
+
+    void setOutlineMode(bool outline);
     bool getOutlineMode() const;
 
     LLARef getLlaRef();
@@ -60,16 +61,23 @@ public Q_SLOTS:
     virtual void clearData() override final;
 
 
+public slots:
+    void slot_setDrawOutlineMode(bool outlineMode);
+
+
 protected:
     friend class GraphicsScene3dView;
 
 private:
     Dataset* datasetPtr_;
+
+
+    QVector<LLA> polygonOutlineVec_;
     int lastIndx_;
     LLARef llaRef_;
 
     QColor trackColor_;
     float trackWidth_;
 
-    bool isDrawOutlineMode_ = true;
+    bool isDrawOutlineMode_ = false;
 };

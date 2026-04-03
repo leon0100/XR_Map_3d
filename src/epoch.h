@@ -169,7 +169,7 @@ public:
     void setPositionLLA(Position position);
     void setSonarPosition(Position val);
     void setPositionLLA(const LLA& lla);
-    void setPositionNED(const NED& ned);
+    void setPositionNED(const North_East_Down& ned);
     void setExternalPosition(Position position);
     void setPositionRef(LLARef* ref);
 

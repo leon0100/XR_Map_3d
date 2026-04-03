@@ -20,22 +20,22 @@ PolygonOutline::~PolygonOutline()
 {
 }
 
-// 坐标转换：LLA 到 NED
-NED PolygonOutline::llaToNed(const LLA& lla, LLARef* ref)
+// 坐标转换：LLA 到 North_East_Down
+North_East_Down PolygonOutline::llaToNed(const LLA& lla, LLARef* ref)
 {
     if (!ref || !ref->isInit) {
         qDebug() << "lla:" << lla.latitude << "  " << lla.longitude << " " << ref->refLla.latitude;
-        return NED();
+        return North_East_Down();
     }
 
-    // 使用 NED 构造函数进行转换
-    return NED(const_cast<LLA*>(&lla), ref);
+    // 使用 North_East_Down 构造函数进行转换
+    return North_East_Down(const_cast<LLA*>(&lla), ref);
 }
 
 // 坐标转换：LLA 到 QVector3D
 QVector3D PolygonOutline::llaToVector3D(const LLA& lla, LLARef* ref)
 {
-    NED ned = llaToNed(lla, ref);
+    North_East_Down ned = llaToNed(lla, ref);
     if (!ned.isCoordinatesValid()) {
         return QVector3D();
     }
@@ -46,53 +46,13 @@ QVector3D PolygonOutline::llaToVector3D(const LLA& lla, LLARef* ref)
 
 void PolygonOutline::drawPolygonOutline(double latitide, double longitude)
 {
-    // datasetPtr_->addPosition_track(currentLat_, currentLon_);
 
 
+}
 
-    // Epoch* lastEp = datasetPtr_->last();
-    // if (!lastEp) {
-    //     return;
-    // }
-
-    // Position pos;
-    // pos.lla = LLA(latitide, longitude);
-    // if (pos.lla.isCoordinatesValid()) {
-    //     if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-    //         lastEp = datasetPtr_->addNewEpoch();  //不断累加帧数的下标index
-    //         // lastEp->setDistProcesing_CSV(depth);
-    //     }
-
-
-
-    //     if (!_llaRef.isInit) {
-    //         _llaRef = LLARef(pos.lla);
-
-    //         surfaceView_->setLlaRef(_llaRef);
-    //         m_camera->datasetLlaRef_ = _llaRef.isInit ? _llaRef : LLARef(m_camera->yerevanLla);
-    //         m_camera->viewLlaRef_ = m_camera->datasetLlaRef_;
-
-    //         QQuickFramebufferObject::update();
-    //         fitAllInView();
-    //     }
-    //     lastEp->setPositionLLA(pos);
-    //     lastEp->setPositionRef(&llaRef); //在这里将LLA坐标转化成本地NED坐标
-
-    //     QVector<Epoch> pool = datasetPtr_->getPool();
-    //     qDebug() << "pool_size().............................. " << pool.size();
-    //     uint64_t lastIndx = pool.size() - 1;
-    //     auto* epPtr = datasetPtr_->fromIndex(lastIndx);
-    //     if (!epPtr) {
-    //         return;
-    //     }
-
-    //     const Position boatPos = epPtr->getPositionGNSS();
-    //     if (!boatPos.ned.isCoordinatesValid()) {
-    //         return;
-    //     }
-    //     boatTrack_->onPositionAdded(lastIndx);
-    // }
-
+void PolygonOutline::setOutlineMode(bool outline)
+{
+    isDrawOutlineMode_ = outline;
 }
 
 bool PolygonOutline::getOutlineMode() const
@@ -118,6 +78,10 @@ SceneObject::SceneObjectType PolygonOutline::type() const
 void PolygonOutline::setDatasetPtr(Dataset* datasetPtr)
 {
     datasetPtr_ = datasetPtr;
+    if(datasetPtr_ == nullptr) {
+        return;
+    }
+    connect(datasetPtr_, &Dataset::signalDrawOutline, this, &PolygonOutline::slot_setDrawOutlineMode);
 }
 
 void PolygonOutline::polygonAddPoint()
@@ -214,6 +178,11 @@ void PolygonOutline::setTrackWidth(float width)
 void PolygonOutline::clearData()
 {
     SceneObject::clearData();
+}
+
+void PolygonOutline::slot_setDrawOutlineMode(bool outlineMode)
+{
+    isDrawOutlineMode_ = outlineMode;
 }
 
 // RenderImplementation 实现

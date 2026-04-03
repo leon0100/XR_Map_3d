@@ -90,6 +90,7 @@ GraphicsScene3dView::GraphicsScene3dView() :
     connect(&screetShot_, &ScreetShot::signalScreetGraphics, this, &GraphicsScene3dView::slotScreetGraphics, Qt::DirectConnection);
     // 连接信号，在GUI线程触发更新
     connect(this, &GraphicsScene3dView::requestRenderUpdate, this, [this]() {
+        qDebug() << "GraphicsScene3dView::requestRenderUpdate...........";
         QQuickFramebufferObject::update();          }, Qt::QueuedConnection);
     updatePlaneGrid();
 
@@ -260,7 +261,11 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 {
     Q_UNUSED(keyboardKey)
 
-    qDebug() << "mousePressTrigger x: " <<x << "  " << y;
+    LLARef llaRef = polygonOutline_->getLlaRef();
+    qDebug() << "3dView::mousePressllaRef: " << llaRef.refLla.latitude << "  " << llaRef.refLla.longitude;
+    North_East_Down ned = datasetPtr_->lastPolygonOutline()->getPositionGNSS().ned;
+    qDebug() << "3dView::mousePressllaRef: ned: " << ned.d << "  " << ned.e << "  " << ned.n;
+
 
     //当前点x,y的经纬度坐标
     calculateLatLong(x, y, currentLat_, currentLon_);
@@ -294,7 +299,8 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 
         /*- 绘制多边形轮廓模式 -*/
         if(polygonOutline_->getOutlineMode()) {
-            // datasetPtr_->addPosition_track(currentLat_, currentLon_);
+            // datasetPtr_->addPosition_file(currentLat_, currentLon_, 0, true);
+
 
             Epoch* lastEp = datasetPtr_->lastPolygonOutline();
             if (!lastEp) {
@@ -314,12 +320,12 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 
                     surfaceView_->setLlaRef(polygonOutline_->getLlaRef());
                     m_camera->datasetLlaRef_ = polygonOutline_->getLlaRef().isInit
-                                                ? polygonOutline_->getLlaRef() : LLARef(m_camera->yerevanLla);
+                                            ? polygonOutline_->getLlaRef() : LLARef(m_camera->yerevanLla);
                     m_camera->viewLlaRef_    = m_camera->datasetLlaRef_;
                 }
                 LLARef llaRef = polygonOutline_->getLlaRef();
                 lastEp->setPositionLLA(pos);
-                lastEp->setPositionRef(&llaRef); //在这里将LLA坐标转化成本地NED坐标
+                lastEp->setPositionRef(&llaRef); //在这里将LLA坐标转化成本地North_East_Down坐标
                 polygonOutline_->polygonAddPoint();
             }
 
@@ -329,7 +335,7 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
     }
 
     wasMoved_ = false;
-    clearComboSelectionRect();
+    // clearComboSelectionRect();
 
     if (qmlRootObject_) { // maybe this will be removed
         if (auto selectionToolButton = qmlRootObject_->findChild<QObject*>("selectionToolButton"); selectionToolButton) {
@@ -338,9 +344,9 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         }
     }
 
-    if (mouseButton == Qt::MouseButton::RightButton) {
-        switchToBottomTrackVertexComboSelectionMode(x, y);
-    }
+    // if (mouseButton == Qt::MouseButton::RightButton) {
+    //     switchToBottomTrackVertexComboSelectionMode(x, y);
+    // }
 
     m_camera->m_lookAtSave = m_camera->m_lookAt;
 
@@ -485,9 +491,9 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
     }
 
     /*- 绘制多边形轮廓模式 -*/
-    if(polygonManager_.getOutlineMode()) {
+    if(polygonOutline_->getOutlineMode()) {
 
-        // polygonManager_;
+        // polygonOutline_;
     }
 
     if (switchedToBottomTrackVertexComboSelectionMode_) {
@@ -539,6 +545,7 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
     }
 
     updatePlaneGrid();
+    qDebug() << "mouseWheelTrigger444444444444444";
     QQuickFramebufferObject::update();
 
     if (cameraWasMoved) {
@@ -581,25 +588,6 @@ void GraphicsScene3dView::setCurrentMapLevel(int mapLevel)
     screetShot_.currMapLevel_ = mapLevel;
 }
 
-// scene3d_view.cpp
-QVariantMap GraphicsScene3dView::toCoordinate(int screenX, int screenY)
-{
-    qDebug() << "screenX: " << screenX << "  " << screenY;
-    calculateLatLong(screenX, screenY, currentLat_, currentLon_);
-    QVariantMap result;
-    // 这里的逻辑取决于你的 3D 场景如何做地理坐标转换
-    // 常见做法：让 scene3d 渲染器返回射线与地形的交点坐标
-    // 简单占位（你需要替换为真实实现）：
-    QVector3D rayOrigin, rayDir;
-    // getRayFromScreen(screenX, screenY, rayOrigin, rayDir);
-    float t = rayOrigin.z() / (-rayDir.z() + 1e-6f);
-    QVector3D worldHit = rayOrigin + rayDir * t;
-    // 假设 worldHit 已经是 (lon, lat, depth) 格式
-    result["longitude"] = worldHit.x();
-    result["latitude"]  = worldHit.y();
-    return result;
-}
-
 void GraphicsScene3dView::setScreenMode(bool isScreen)
 {
     qDebug() << "isScreen:  "<< isScreen;
@@ -633,7 +621,6 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
     }
 
 }
-
 
 
 void GraphicsScene3dView::setTrackLastData(bool state)
@@ -672,9 +659,9 @@ void GraphicsScene3dView::setNavigatorViewLocation(bool state)
 
 void GraphicsScene3dView::updateProjection()
 {
+    QMatrix4x4 currProj;
     if (m_camera) {
         //这里有个bug，14等级时，地图等级切换会出现抖动现象！！！
-        QMatrix4x4 currProj;
         float aspectRatio = width()/height();
         if (m_camera->getIsPerspective()) { //当地图等级大于14的某个值时为perspective透视投影
             float coeff = m_camera->getHeightAboveGround()/perspectiveEdge_;
@@ -839,7 +826,7 @@ void GraphicsScene3dView::setLastEpochFocusView(bool useAngle, bool useNavigator
     }
 
     // pos
-    NED boatPosNed = epoch->getPositionGNSS().ned;
+    North_East_Down boatPosNed = epoch->getPositionGNSS().ned;
     QVector3D currPos(boatPosNed.n, boatPosNed.e, 1);
     if (currPos == QVector3D()) {
         return;
@@ -1103,8 +1090,8 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
 
     if (hitPoint == QVector3D())  return;
 
-    // 3. hitPoint 本身就是 NED 坐标（不要减相机）
-    NED ned;
+    // 3. hitPoint 本身就是 North_East_Down 坐标（不要减相机）
+    North_East_Down ned;
     ned.n = hitPoint.x();
     ned.e = hitPoint.y();
     ned.d = 0;
@@ -1187,10 +1174,10 @@ void GraphicsScene3dView::updateMapView()
         bool moveUp = dist > lastCameraDist_;
         lastCameraDist_ = dist;
 
-        NED ltNed(minX, minY, 0.0);
-        NED lbNed(minX, maxY, 0.0);
-        NED rbNed(maxX, maxY, 0.0);
-        NED rtNed(maxX, minY, 0.0);
+        North_East_Down ltNed(minX, minY, 0.0);
+        North_East_Down lbNed(minX, maxY, 0.0);
+        North_East_Down rbNed(maxX, maxY, 0.0);
+        North_East_Down rtNed(maxX, minY, 0.0);
         LLA ltLla(&ltNed, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
         LLA lbLla(&lbNed, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
         LLA rbLla(&rbNed, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
@@ -1410,7 +1397,7 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
 
     // 2、不修改 viewLlaRef_，只移动 lookAt
     LLA targetCenterLla(centerLat, centerLon, 0.0);
-    NED targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, false);
+    North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, false);
     m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
 
     // 3. 根据目标地图等级设置相机高度
@@ -1478,136 +1465,84 @@ void GraphicsScene3dView::InFboRenderer::render()
 {
     m_renderer->render();
 
-    if (view_->screenshotPending_)
-    {
-        auto& r = m_renderer->mapViewRenderImpl_;
+    // if (view_->screenshotPending_)
+    // {
+    //     auto& r = m_renderer->mapViewRenderImpl_;
 
-        bool initEmpty = r.pendingInit_.isEmpty();
-        bool updateEmpty = r.pendingUpdate_.isEmpty();
-        bool allTexturesValid = true;
-        int  validCount = 0;
-        int  totalCount = r.tilesHash_.size();
-\
-        for (const auto& [tileIndx, tile] : r.tilesHash_) {
-            if (tile.getTextureId() != 0) {
-                qDebug() <<"tile ..............." << tile.getIndex().z_;
-                validCount++;
-            } else {
-                allTexturesValid = false;
-            }
-        }
+    //     bool initEmpty = r.pendingInit_.isEmpty();
+    //     bool updateEmpty = r.pendingUpdate_.isEmpty();
+    //     bool allTexturesValid = true;
+    //     int  validCount = 0;
+    //     int  totalCount = r.tilesHash_.size();
 
-        bool isComplete = initEmpty && updateEmpty && allTexturesValid && (totalCount > 0);
-        qDebug() << "Tile status: pendingInit=" << r.pendingInit_.size() << "pendingUpdate=" << r.pendingUpdate_.size()
-                 << "validTiles=" << validCount << "totalTiles=" << totalCount << "isComplete=" << isComplete;
+    //     for (const auto& [tileIndx, tile] : r.tilesHash_) {
+    //         if (tile.getTextureId() != 0) {
+    //             qDebug() <<"tile ..............." << tile.getIndex().z_;
+    //             validCount++;
+    //         } else {
+    //             allTexturesValid = false;
+    //         }
+    //     }
 
-        if (isComplete)
-        {
+    //     bool isComplete = initEmpty && updateEmpty && allTexturesValid && (totalCount > 0);
+    //     qDebug() << "Tile status: pendingInit=" << r.pendingInit_.size() << "pendingUpdate=" << r.pendingUpdate_.size()
+    //              << "validTiles=" << validCount << "totalTiles=" << totalCount << "isComplete=" << isComplete;
 
-            qDebug() << "Tiles render complete, saving screenshot for row=" << view_->currentScreenshotTask_.row
-                     << "col=" << view_->currentScreenshotTask_.col;
+    //     if (isComplete)
+    //     {
 
-            QImage img = framebufferObject()->toImage();
+    //         qDebug() << "Tiles render complete, saving screenshot for row=" << view_->currentScreenshotTask_.row
+    //                  << "col=" << view_->currentScreenshotTask_.col;
 
-            QString baseDir = QCoreApplication::applicationDirPath();
-            QString kmzDir = baseDir + "/screetTest/";
-            QString imagPathName = kmzDir + view_->rowStr_ + "_" + view_->colStr_ + ".png";
-            QString fileName = kmzDir + view_->rowStr_ + "_" + view_->colStr_ + ".kml";
+    //         QImage img = framebufferObject()->toImage();
 
-            if (img.save(imagPathName, "PNG")) {
-                qDebug() << "Screenshot saved successfully:" << imagPathName;
-                QString tmpFileName = fileName;
-                QString fileNameXmap = tmpFileName.replace("kml", "xmap");
-                view_->screetShot_.createXMAPFile(fileName, imagPathName, fileNameXmap);
-            } else {
-                qDebug() << "Failed to save screenshot:" << imagPathName;
-            }
+    //         QString baseDir = QCoreApplication::applicationDirPath();
+    //         QString kmzDir = baseDir + "/screetTest/";
+    //         QString imagPathName = kmzDir + view_->rowStr_ + "_" + view_->colStr_ + ".png";
+    //         QString fileName = kmzDir + view_->rowStr_ + "_" + view_->colStr_ + ".kml";
 
-            view_->screenshotPending_ = false;
-            view_->screenshotRetryCount_ = 0;
+    //         if (img.save(imagPathName, "PNG")) {
+    //             qDebug() << "Screenshot saved successfully:" << imagPathName;
+    //             QString tmpFileName = fileName;
+    //             QString fileNameXmap = tmpFileName.replace("kml", "xmap");
+    //             view_->screetShot_.createXMAPFile(fileName, imagPathName, fileNameXmap);
+    //         } else {
+    //             qDebug() << "Failed to save screenshot:" << imagPathName;
+    //         }
 
-            QMetaObject::invokeMethod(view_, "processNextScreenshotTask", Qt::QueuedConnection);
-        }
-        else
-        {
-            view_->screenshotRetryCount_++;
+    //         view_->screenshotPending_ = false;
+    //         view_->screenshotRetryCount_ = 0;
 
-            if (view_->screenshotRetryCount_ <= view_->MAX_RETRY_COUNT)
-            {
-                qDebug() << "Tiles not ready, retry count:" << view_->screenshotRetryCount_;
-                QMetaObject::invokeMethod(view_, "update", Qt::QueuedConnection);
-            }
-            else
-            {
-                qWarning() << "Max retry count reached, skipping screenshot for row="
-                           << view_->currentScreenshotTask_.row << "col=" << view_->currentScreenshotTask_.col;
+    //         QMetaObject::invokeMethod(view_, "processNextScreenshotTask", Qt::QueuedConnection);
+    //     }
+    //     else
+    //     {
+    //         view_->screenshotRetryCount_++;
 
-                view_->screenshotPending_ = false;
-                view_->screenshotRetryCount_ = 0;
+    //         if (view_->screenshotRetryCount_ <= view_->MAX_RETRY_COUNT)
+    //         {
+    //             qDebug() << "Tiles not ready, retry count:" << view_->screenshotRetryCount_;
+    //             QMetaObject::invokeMethod(view_, "update", Qt::QueuedConnection);
+    //         }
+    //         else
+    //         {
+    //             qWarning() << "Max retry count reached, skipping screenshot for row="
+    //                        << view_->currentScreenshotTask_.row << "col=" << view_->currentScreenshotTask_.col;
 
-                QMetaObject::invokeMethod(view_, "processNextScreenshotTask", Qt::QueuedConnection);
-            }
-        }
-    }
+    //             view_->screenshotPending_ = false;
+    //             view_->screenshotRetryCount_ = 0;
 
-
-
-
-
-
-
-
-
-
-
-    // // 获取着色器程序
-    // QOpenGLShaderProgram* lineShaderProgram = m_renderer->getShaderProgram("line");
-    // if (!lineShaderProgram) {
-    //     qDebug() << "Line shader program not available";
-    //     return;
+    //             QMetaObject::invokeMethod(view_, "processNextScreenshotTask", Qt::QueuedConnection);
+    //         }
+    //     }
     // }
-
-    // // 开始渲染
-    // lineShaderProgram->bind();
-
-    // // 设置 uniform 变量
-    // QMatrix4x4 modelViewProjection = m_renderer->getModelViewProjectionMatrix();
-    // lineShaderProgram->setUniformValue("mvp", modelViewProjection);
-
-    // // 设置颜色（蓝色轮廓）
-    // lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
-
-    // // 启用顶点属性
-    // int posLoc = lineShaderProgram->attributeLocation("pos");
-    // lineShaderProgram->enableAttributeArray(posLoc);
-
-    // // 准备顶点数据数组
-    // QVector<GLfloat> vertexData;
-    // for (const QVector3D& vertex : vertices) {
-    //     vertexData << vertex.x() << vertex.y() << vertex.z();
-    // }
-
-    // // 设置顶点数据
-    // lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
-
-    // // 绘制线段
-    // glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
-
-    // // 禁用顶点属性
-    // lineShaderProgram->disableAttributeArray(posLoc);
-
-    // // 释放着色器程序
-    // lineShaderProgram->release();
-
 
 }
 
 void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject * fbo)
 {
-    auto view = qobject_cast<GraphicsScene3dView*>(fbo);
-
-    view_ = static_cast<GraphicsScene3dView*>(fbo);
-
+    //仅在 synchronize()中，将 Item 的属性 复制 到 Renderer 的成员变量中。
+    auto view = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
     if (!view) {
         return;
     }
@@ -1647,6 +1582,8 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject * f
     m_renderer->m_boundingBox               = view->m_bounds;
     m_renderer->m_isSceneBoundingBoxVisible = view->m_isSceneBoundingBoxVisible;
     m_renderer->gridVisibility_             = view->gridVisibility_;
+
+    //随后触发void GraphicsScene3dView::InFboRenderer::render()
 }
 
 QOpenGLFramebufferObject *GraphicsScene3dView::InFboRenderer::createFramebufferObject(const QSize &size)
@@ -2055,7 +1992,7 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
     preIsPersp = distToGround_ < perspEdge;
     bool projectionChanged    =  isPerspective_ !=  preIsPersp;
 
-    NED lookAtNed(m_lookAt.x(), m_lookAt.y(), 0.0f);
+    North_East_Down lookAtNed(m_lookAt.x(), m_lookAt.y(), 0.0f);
     LLA lookAtLla(&lookAtNed, &viewLlaRef_, isPerspective_);
     LLARef lookAtLlaRef(lookAtLla);
 
@@ -2066,7 +2003,7 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
     //else if (isPerspective_ && !projectionChanged && datasetDist < lowDistThreshold_ && getIsFarAwayFromOriginLla()) {
     //    viewPtr_->setNeedToResetStartPos(true);
     //    LLA datasetLla(datasetLlaRef_.refLla.latitude, datasetLlaRef_.refLla.longitude, 0.0);
-    //    NED datasetNed(&datasetLla, &viewLlaRef_, isPerspective_);
+    //    North_East_Down datasetNed(&datasetLla, &viewLlaRef_, isPerspective_);
     //    m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
     //    viewLlaRef_ = datasetLlaRef_;
     //}
@@ -2077,7 +2014,7 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
 
         viewPtr_->setNeedToResetStartPos(true);
         LLA datasetLla(datasetLlaRef_.refLla.latitude, datasetLlaRef_.refLla.longitude, 0.0);
-        NED datasetNed(&datasetLla, &viewLlaRef_, !isPerspective_);
+        North_East_Down datasetNed(&datasetLla, &viewLlaRef_, !isPerspective_);
         m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
         viewLlaRef_ = datasetLlaRef_;
         m_rotAngle = { 0.0f, 0.0f };
@@ -2192,7 +2129,7 @@ void GraphicsScene3dView::Camera::updateCameraParams()
 void GraphicsScene3dView::Camera::tryToChangeViewLlaRef()
 {
     if (isPerspective_ && viewPtr_) {
-        NED lookAtNed(m_lookAt.x(), m_lookAt.y(), 0.0f);
+        North_East_Down lookAtNed(m_lookAt.x(), m_lookAt.y(), 0.0f);
         LLA lookAtLla(&lookAtNed, &viewLlaRef_, isPerspective_);
         LLARef lookAtLlaRef(lookAtLla);
 
@@ -2202,7 +2139,7 @@ void GraphicsScene3dView::Camera::tryToChangeViewLlaRef()
         if (datasetDist < lowDistThreshold_ && getIsFarAwayFromOriginLla()) {
             viewPtr_->setNeedToResetStartPos(true);
             LLA datasetLla(datasetLlaRef_.refLla.latitude, datasetLlaRef_.refLla.longitude, 0.0);
-            NED datasetNed(&datasetLla, &viewLlaRef_, isPerspective_);
+            North_East_Down datasetNed(&datasetLla, &viewLlaRef_, isPerspective_);
             m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
             viewLlaRef_ = datasetLlaRef_;
         }
@@ -2278,6 +2215,9 @@ bool GraphicsScene3dView::Camera::getIsPerspective() const
 
 bool GraphicsScene3dView::Camera::getIsFarAwayFromOriginLla() const
 {
+    qDebug() << "Camera:: isPerspective_:" << isPerspective_ << "   viewLlaRef_:" << viewLlaRef_.refLla.latitude << "  "
+             << viewLlaRef_.refLla.longitude << "    datasetLlaRef_:" << datasetLlaRef_.refLla.latitude << "  "
+             << datasetLlaRef_.refLla.longitude;
     return !isPerspective_ || (viewLlaRef_ != datasetLlaRef_);
 }
 
@@ -2354,39 +2294,6 @@ QString GraphicsScene3dView::InFboRenderer::checkOpenGLError() const {
     return retVal;
 }
 
-
-
-void GraphicsScene3dView::setPolygonOutlineMode(bool enabled)
-{
-    polygonManager_.setOutlineMode(enabled);
-    update();
-}
-
-bool GraphicsScene3dView::getPolygonOutlineMode() const
-{
-    return polygonManager_.getOutlineMode();
-}
-
-void GraphicsScene3dView::clearPolygonPoints()
-{
-    polygonManager_.clear();
-    update();
-}
-
-int GraphicsScene3dView::getPolygonPointCount() const
-{
-    return polygonManager_.getPoints().size();
-}
-
-QVariantList GraphicsScene3dView::getPolygonPoints() const
-{
-    QVariantList list;
-    for (const LLA& point : polygonManager_.getPoints()) {
-        list.append(QVariant::fromValue(QVector3D(point.longitude, point.latitude, 0)));
-    }
-    return list;
-}
-
 void GraphicsScene3dView::addCustomTrackPoints(const QVector<LLA>& llaPoints)
 {
     polygonOutline_->addLLAPoints(llaPoints);
@@ -2406,3 +2313,4 @@ void GraphicsScene3dView::setCustomTrackWidth(float width)
 {
     polygonOutline_->setTrackWidth(width);
 }
+

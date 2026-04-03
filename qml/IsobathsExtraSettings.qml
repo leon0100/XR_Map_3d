@@ -19,6 +19,8 @@ MenuFrame {
     property var targetPlot: null
     property int iconSize: isobathSize * 0.06
 
+    property bool outlineMode: false
+
     onIsHoveredChanged: {
         if (Qt.platform.os === "android") {
             if (isHovered) {
@@ -66,32 +68,54 @@ MenuFrame {
         }
 
 
-        Button {
-            id: updateBottomTrackButton
-            text: qsTr("Draw Isobaths")
-            font.pixelSize: iconSize * 1.1
-            implicitWidth:  isobathSize
-            Layout.alignment: Qt.AlignCenter
-            Layout.preferredHeight: iconSize * 1.1
-            palette.button: "#b9c6db"
+        RowLayout {
+            spacing: 32
 
-            onClicked: {
-                if (targetPlot) {
-                        targetPlot.doDistProcessing(
-                            0,     // preset
-                            1,     // window_size
-                            0,     // vertical_gap
-                            0,     // range_min
-                            1000,  // range_max
-                            1,     // gain_slope
-                            0,     // threshold
-                            0,     // offsetx
-                            0,     // offsety
-                            0,     // offsetz
-                            false  // manual
-                        )
+            Button {
+                id: outlineButton
+                text: qsTr("Draw Outline")
+                font.pixelSize: iconSize * 1.1
+                implicitWidth:  isobathSize * 0.5
+                // Layout.alignment: Qt.AlignCenter
+                Layout.preferredHeight: iconSize * 1.1
+                palette.button: outlineMode ? "#66E07A" : "#b9c6db"
+
+                onClicked: {
+                    outlineMode = !outlineMode
+                    if(targetPlot) {
+                        targetPlot.drawPolygonOutline(outlineMode)
+                    }
                 }
             }
+
+            Button {
+                id: updateBottomTrackButton
+                text: qsTr("Draw Isobaths")
+                font.pixelSize: iconSize * 1.1
+                implicitWidth:  isobathSize * 0.5
+                // Layout.alignment: Qt.AlignCenter
+                Layout.preferredHeight: iconSize * 1.1
+                palette.button: "#b9c6db"
+
+                onClicked: {
+                    if (targetPlot) {
+                            targetPlot.doDistProcessing(
+                                0,     // preset
+                                1,     // window_size
+                                0,     // vertical_gap
+                                0,     // range_min
+                                1000,  // range_max
+                                1,     // gain_slope
+                                0,     // threshold
+                                0,     // offsetx
+                                0,     // offsety
+                                0,     // offsetz
+                                false  // manual
+                            )
+                    }
+                }
+            }
+
         }
 
         // RowLayout {
@@ -286,42 +310,42 @@ MenuFrame {
         }
 
 
-        RowLayout {
-            Text {
-                text: qsTr("Extra Width:")
-                font.pixelSize: iconSize
-                Layout.fillWidth: true
-                color: "black"
-            }
-            Item {
-                Layout.fillWidth: true
-            }
-            SpinBoxCustom {
-                id: extraWidthSpinBox
-                implicitWidth: isobathSize * 0.5
-                from: 5
-                to: 100
-                stepSize: 5
-                value: 5
-                editable: false
+        // RowLayout {
+        //     Text {
+        //         text: qsTr("Extra Width:")
+        //         font.pixelSize: iconSize
+        //         Layout.fillWidth: true
+        //         color: "black"
+        //     }
+        //     Item {
+        //         Layout.fillWidth: true
+        //     }
+        //     SpinBoxCustom {
+        //         id: extraWidthSpinBox
+        //         implicitWidth: isobathSize * 0.5
+        //         from: 5
+        //         to: 100
+        //         stepSize: 5
+        //         value: 5
+        //         editable: false
 
-                onFocusChanged: {
-                    isobathsSettings.focus = true
-                }
+        //         onFocusChanged: {
+        //             isobathsSettings.focus = true
+        //         }
 
-                onValueChanged: {
-                    IsobathsViewControlMenuController.onSetExtraWidth(value)
-                }
+        //         onValueChanged: {
+        //             IsobathsViewControlMenuController.onSetExtraWidth(value)
+        //         }
 
-                Component.onCompleted: {
-                    IsobathsViewControlMenuController.onSetExtraWidth(value)
-                }
+        //         Component.onCompleted: {
+        //             IsobathsViewControlMenuController.onSetExtraWidth(value)
+        //         }
 
-                Settings {
-                    property alias extraWidthSpinBox: extraWidthSpinBox.value
-                }
-            }
-        }
+        //         Settings {
+        //             property alias extraWidthSpinBox: extraWidthSpinBox.value
+        //         }
+        //     }
+        // }
 
         Rectangle {
             width: parent.width

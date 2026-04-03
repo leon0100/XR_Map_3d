@@ -158,6 +158,14 @@ int qPlot2D::getThemeId() const
     return Plot2D::getThemeId();
 }
 
+void qPlot2D::drawPolygonOutline(bool outlineMode)
+{
+    if(datasetPtr_ != nullptr) {
+        qDebug() << "outlineMode is........." << outlineMode;
+        emit datasetPtr_->signalDrawOutline(outlineMode);
+    }
+}
+
 
 void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max, float gain_slope,
                             float threshold, float offsetx, float offsety, float offsetz, bool manual) {

@@ -255,9 +255,9 @@ float DataInterpolator::interpAttParam(float start, float end, float progress) c
     return interpolated;
 }
 
-NED DataInterpolator::interpNED(const NED &start, const NED &end, float progress) const
+North_East_Down DataInterpolator::interpNED(const North_East_Down &start, const North_East_Down &end, float progress) const
 {
-    NED result;
+    North_East_Down result;
     result.n = (1.0 - progress) * start.n + progress * end.n;
     result.e = (1.0 - progress) * start.e + progress * end.e;
     result.d = (1.0 - progress) * start.d + progress * end.d;

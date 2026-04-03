@@ -174,7 +174,7 @@ void SurfaceView::saveVerticesToFile(const QString &path)
         double lon = std::numeric_limits<double>::quiet_NaN();
 
         if (llaRef_.isInit) {
-            NED ned(v.x(), v.y(), v.z());
+            North_East_Down ned(v.x(), v.y(), v.z());
             LLA lla(&ned, &llaRef_);
             if (qIsFinite(lla.latitude) && qIsFinite(lla.longitude)) {
                 lat = lla.latitude;

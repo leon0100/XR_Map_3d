@@ -728,7 +728,7 @@ bool Core::exportUSBLToCSV(QString filePath)
         if (epoch == NULL)
             continue;
 
-        NED boatPosNed = epoch->getPositionGNSS().ned;
+        North_East_Down boatPosNed = epoch->getPositionGNSS().ned;
 
         // pos.ned.isCoordinatesValid() && epoch->isAttAvail() &&
         if( epoch->isUsblSolutionAvailable()) {
@@ -851,7 +851,7 @@ bool Core::exportPlotAsCVS(QString filePath, const ChannelId& channelId, float d
     float decimation_m = decimation;
     float decimation_path = 0;
     LLARef lla_ref;
-    NED last_pos_ned;
+    North_East_Down last_pos_ned;
 
     for (int i = 0; i < row_cnt; i++) {
         Epoch* epoch = datasetPtr_->fromIndex(i);
@@ -1427,15 +1427,23 @@ void Core::openFileFromMenu()
                 emit deviceManagerWrapperPtr_->sendOpenFile_CSV(nowFileName);
             }
 
-
             openedfilePath_ = nowFileName;
         }
 
+        // if (scene3dViewPtr_) {
+        //     scene3dViewPtr_->fitAllInView();
+        // }
+        // datasetPtr_->setRefPositionByFirstValid();
+        // datasetPtr_->usblProcessing();
 
-        QTimer::singleShot(5000, []() {
-            qDebug() << "After 5s: " << QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
-        });
+        // onChannelsUpdated();
 
+
+
+
+        // QTimer::singleShot(5000, []() {
+        //     qDebug() << "After 5s: " << QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+        // });
         // if (progress_) {
         //     QMetaObject::invokeMethod(progress_, "close");
         // }

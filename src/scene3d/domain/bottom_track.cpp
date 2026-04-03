@@ -180,7 +180,7 @@ void BottomTrack::drawPolygonOutline(QVector<LLA> polygonVec)
     // // 准备顶点数据
     // QVector<QVector3D> vertices;
     // for (const LLA& lla : polygonVec) {
-    //     // 转换 LLA 坐标到 NED 坐标系（或项目使用的其他坐标系）
+    //     // 转换 LLA 坐标到 NENorth_East_Down 坐标系（或项目使用的其他坐标系）
     //     QVector3D nedPos = convertLLAToNED(lla);
     //     vertices.append(nedPos);
     // }
@@ -335,7 +335,7 @@ void BottomTrack::selectEpoch(int epochIndex, const ChannelId& channelId)
         return;
 
     auto* epoch = datasetPtr_->fromIndex(epochIndex);
-    NED nedPos = epoch->getSonarPosition().ned;
+    North_East_Down nedPos = epoch->getSonarPosition().ned;
 
     auto indxFromMap = vertex2Epoch_.key(epochIndex);
 
@@ -725,3 +725,4 @@ void BottomTrack::BottomTrackRenderImplementation::render(QOpenGLFunctions *ctx,
         shaderProgram->release();
     }
 }
+

@@ -66,7 +66,7 @@ bool PolygonManager::pointInPolygon(const QVector3D& point) const
 
 
 QVector3D PolygonManager::convertLLAToNED(const LLA& lla) {
-    // 这里需要实现 LLA（经纬度高度）到 NED（北东地）坐标系的转换
+    // 这里需要实现 LLA（经纬度高度）到 North_East_Down（北东地）坐标系的转换
     // 具体实现取决于项目的坐标系统设置
     // 以下是一个简化的示例实现：
 
@@ -77,7 +77,7 @@ QVector3D PolygonManager::convertLLAToNED(const LLA& lla) {
     double distance = calculateDistance(originLLA, lla);
     double azimuth = calculateAzimuth(originLLA, lla);
 
-    // 转换为 NED 坐标
+    // 转换为 North_East_Down 坐标
     double north = distance * cos(azimuth);
     double east = distance * sin(azimuth);
     double down = -lla.altitude; // 高度取负值作为深度

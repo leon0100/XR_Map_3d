@@ -22,6 +22,7 @@ QString getShaderPath(const QString& name)
     return QString(":/shaders/%1").arg(name);
 #endif
 }
+
 GraphicsScene3dRenderer::GraphicsScene3dRenderer() : scaleFactor_(1.0f)
 {
 #if defined(Q_OS_ANDROID) || defined(LINUX_ES)
@@ -44,7 +45,7 @@ GraphicsScene3dRenderer::~GraphicsScene3dRenderer()
 
 void GraphicsScene3dRenderer::initialize()
 {
-    initializeOpenGLFunctions();
+    initializeOpenGLFunctions(); //加载所有OpenGL函数指针
 
     m_isInitialized = true;
 
@@ -146,8 +147,9 @@ void GraphicsScene3dRenderer::drawObjects()
     }
     else {
         float orth_v = m_camera.getHeightAboveGround();
-        float aspect_ratio = m_viewSize.width() / m_viewSize.height();
-        projection.ortho(-orth_v*aspect_ratio, orth_v*aspect_ratio, -orth_v, orth_v, orth_v * nearPlaneOrthoCoeff, orth_v * farPlaneOrthoCoeff);
+        float aspectRatio = m_viewSize.width() / m_viewSize.height();
+        projection.ortho(-orth_v*aspectRatio, orth_v*aspectRatio, -orth_v, orth_v, orth_v * nearPlaneOrthoCoeff,
+                        orth_v * farPlaneOrthoCoeff);
     }
 
     view = m_camera.m_view;
@@ -157,6 +159,7 @@ void GraphicsScene3dRenderer::drawObjects()
     m_projection = std::move(projection);
 
     bool isOut = m_camera.getIsFarAwayFromOriginLla();
+    qDebug() << "........isOut...................." << isOut;
 
     // 先渲染瓦片地图作为背景层
     mapViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);
@@ -168,6 +171,10 @@ void GraphicsScene3dRenderer::drawObjects()
         m_pointGroupRenderImpl.render(this, m_projection * view * m_model, m_shaderProgramMap);
         m_polygonGroupRenderImpl.render(this, m_projection * view * m_model, m_shaderProgramMap);
         usblViewRenderImpl_.render(this, m_projection * view * m_model, m_shaderProgramMap);
+    }
+
+    if(isOut) {
+        return;
     }
 
     glDisable(GL_DEPTH_TEST);
@@ -214,14 +221,6 @@ void GraphicsScene3dRenderer::drawObjects()
         float factor = 2.0f * distance * std::tan(perspFixFovRad * 0.5f) / m_viewSize.height();
         float worldScale = factor * 7.f * scaleFactor_;
         float navigationArrowSizeFactor = 1.0f;
-        // switch (qBound(1, navigationArrowRenderImpl_.getSize(), 5)) {
-        // case 1: navigationArrowSizeFactor = 1.0f; break;
-        // case 2: navigationArrowSizeFactor = 2.0f; break;
-        // case 3: navigationArrowSizeFactor = 3.0f; break;
-        // case 4: navigationArrowSizeFactor = 4.0f; break;
-        // case 5: navigationArrowSizeFactor = 5.0f; break;
-        // default: break;
-        // }
         nModel.scale(worldScale * navigationArrowSizeFactor);
         navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
 
@@ -380,3 +379,5 @@ void GraphicsScene3dRenderer::drawObjects()
 */
 
 }
+
+

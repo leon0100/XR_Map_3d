@@ -25,8 +25,15 @@
 
 
 
+/*
+ * 在大多数平台上，渲染将在专用线程上进行。因此，QQuickFramebufferObject 类在 QML Item实现和FBO呈现之间强制执行严格的分离。
+ * QML所需的所有Item逻辑，例如属性和与 UI相关的辅助函数，都应该位于QQuickFramebufferObject 类的子类中。
+ * 与渲染相关的所有内容都必须位于QQuickFramebufferObject::Renderer类中。
+ */
+
 class Dataset;
 class GraphicsScene3dRenderer;
+//与UI相关的逻辑放在QQuickFramebufferObject的子类GraphicsScene3dView中
 class GraphicsScene3dView : public QQuickFramebufferObject
 {
     Q_OBJECT
@@ -138,7 +145,14 @@ public:
 
     protected:
         virtual void render() override;
+
+        /*
+         * 渲染将在专用线程上进行，因此需要避免在渲染线程和GUI线程之间共享变量，使用synchronize()进行通信。
+         *它是 QQuickFramebufferObject(在GUI线程)向 QQuickFramebufferObject::Renderer(在渲染线程)传递状态和数据的唯一安全场所
+         *QQuickFramebufferObject::update() -----> 触发synchronize（） ------> 然后触发render()
+        */
         virtual void synchronize(QQuickFramebufferObject * fbo) override;
+
         virtual QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
 
     private:
@@ -155,9 +169,7 @@ public:
 
         QString checkOpenGLError() const;
 
-        std::unique_ptr <GraphicsScene3dRenderer> m_renderer;
-
-        GraphicsScene3dView* view_ = nullptr;
+        std::unique_ptr<GraphicsScene3dRenderer> m_renderer;
     };
 
     enum ActiveMode{
@@ -219,7 +231,6 @@ public:
     Q_INVOKABLE void pinchTrigger(const QPointF& prevCenter, const QPointF& currCenter, qreal scaleDelta, qreal angleDelta);
     Q_INVOKABLE void keyPressTrigger(Qt::Key key);
     Q_INVOKABLE void bottomTrackActionEvent(BottomTrack::ActionEvent actionEvent);
-    Q_INVOKABLE QVariantMap toCoordinate(int screenX, int screenY);
 
     void setTrackLastData(bool state);
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
@@ -387,16 +398,7 @@ private:
     static const int MAX_RETRY_COUNT = 100;  // 最大重试次数
 
 
-    PolygonManager polygonManager_;
-
-
 public:
-    // PolygonManager 多边形绘制控制
-    Q_INVOKABLE void setPolygonOutlineMode(bool enabled);
-    Q_INVOKABLE bool getPolygonOutlineMode() const;
-    Q_INVOKABLE void clearPolygonPoints();
-    Q_INVOKABLE int getPolygonPointCount() const;
-    Q_INVOKABLE QVariantList getPolygonPoints() const;
     Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
 
     void addCustomTrackPoints(const QVector<LLA>& llaPoints);
@@ -417,14 +419,9 @@ private:
         const std::unordered_map<map::TileIndex, QImage>& tileImages,
         float pixelMinX, float pixelMinY,float pixelMaxX, float pixelMaxY);
 
-    // 定时器用于定期触发updateMapView
-    QTimer* updateTimer_ = nullptr;
-
+    QTimer* updateTimer_ = nullptr;   // 定时器用于定期触发updateMapView
 
 public:
-    void saveTilesToOffscreenPng(const QString& filePath,
-    double minLat, double maxLat, double minLon, double maxLon,
-    int mapLevel, int outputWidth = 2048, int outputHeight = 2048);
     float minZ_, maxZ_;
 
 };

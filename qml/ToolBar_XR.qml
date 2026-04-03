@@ -83,8 +83,6 @@ Rectangle {
 
 
 
-
-
     Row {
         anchors.fill: parent
         anchors.margins: 2
@@ -245,7 +243,6 @@ Rectangle {
 
             onPressed: {
                 landMarkMode = !landMarkMode
-                polygonMode  = !polygonMode
             }
         }
 
@@ -334,7 +331,6 @@ Rectangle {
             onPressed: {
                 serialPortMode = !serialPortMode
             }
-
         }
 
         MenuButton {

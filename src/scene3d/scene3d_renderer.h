@@ -35,7 +35,18 @@
 
 #include <memory>
 
-class QOpenGLShaderProgram;
+
+
+/*-QOpenGLExtraFunctions到底做了什么
+ * 1、封装OpenGL API,提供类型安全的C++成员函数
+ * 2、自动加载函数指针，代替GLAD/Glew
+ * 3、跨平台抽象，屏蔽 WGL/GLX/CGL 差异
+ * 4、集成Qt上下文，与 QOpenGLContext 自动绑定
+ * 提供现代OpenGL支持，包含 VAO、UBO、Instancing、纹理等关键特性
+一句话：QOpenGLExtraFunctions = Qt 版的 GLAD + 跨平台抽象 + 与 Qt GUI 无缝集成
+*/
+
+class QOpenGLShaderProgram;//用于处理OpenGL着色器程序的类
 class GraphicsScene3dRenderer : protected QOpenGLExtraFunctions
 {
 public:

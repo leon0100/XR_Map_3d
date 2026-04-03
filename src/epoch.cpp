@@ -135,7 +135,7 @@ void Epoch::setPositionLLA(const LLA &lla)
     _positionGNSS.lla = lla;
 }
 
-void Epoch::setPositionNED(const NED &ned)
+void Epoch::setPositionNED(const North_East_Down &ned)
 {
     _positionGNSS.ned = ned;
 }

@@ -17,7 +17,7 @@ public:
 
 private:
     float interpAttParam(float start, float end, float progress) const;
-    NED interpNED(const NED& start, const NED& end, float progress) const;
+    North_East_Down interpNED(const North_East_Down& start, const North_East_Down& end, float progress) const;
     LLA interpLLA(const LLA& start, const LLA& end, float progress) const;
     float interpDist(float start, float end, float progress) const;
     qint64 calcTimeDiffInNanoSecs(time_t startSecs, int startNanoSecs, time_t endSecs, int endNanoSecs) const;

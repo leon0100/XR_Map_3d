@@ -132,13 +132,13 @@ void Tile::updateVertices(const LLARef& llaRef,  bool isPerspective)
 
     if (llaRef.isInit) {
         LLA lla1(modifiedInfo_.bounds.south, modifiedInfo_.bounds.west, 0.0f); //   4 <--- 3
-        NED ned1(&lla1, &ref, isPerspective);                                  //          |
+        North_East_Down ned1(&lla1, &ref, isPerspective);                                  //          |
         LLA lla2(modifiedInfo_.bounds.north, modifiedInfo_.bounds.west, 0.0f); //          |
-        NED ned2(&lla2, &ref, isPerspective);                                  //   1 ---> 2
+        North_East_Down ned2(&lla2, &ref, isPerspective);                                  //   1 ---> 2
         LLA lla3(modifiedInfo_.bounds.north, modifiedInfo_.bounds.east, 0.0f);
-        NED ned3(&lla3, &ref, isPerspective);
+        North_East_Down ned3(&lla3, &ref, isPerspective);
         LLA lla4(modifiedInfo_.bounds.south, modifiedInfo_.bounds.east, 0.0f);
-        NED ned4(&lla4, &ref, isPerspective);
+        North_East_Down ned4(&lla4, &ref, isPerspective);
 
         float zShift = 0.0f;
 #if defined(Q_OS_ANDROID) || defined(LINUX_ES)
