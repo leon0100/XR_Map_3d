@@ -52,10 +52,10 @@ public:
         QVector<QVector3D> data() const;
         const QVector<QVector3D>& cdata() const;
         QColor color() const;
-        qreal width() const;
+        qreal  width() const;
         bool isVisible() const;
         Cube bounds() const;
-        int primitiveType() const;
+        int  primitiveType() const;
         void removeVertex(int index);
 
     protected:

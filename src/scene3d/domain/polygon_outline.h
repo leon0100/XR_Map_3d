@@ -50,7 +50,7 @@ public:
     virtual SceneObjectType type() const override final;
 
     void setDatasetPtr(Dataset* datasetPtr);
-    void polygonAddPoint();
+    void polygonAddPoint(double latitude, double longitude);
 
     void addLLAPoints(const QVector<LLA>& llaPoints);
     void clearPolygonOutline();
@@ -74,7 +74,6 @@ private:
 
     QVector<LLA> polygonOutlineVec_;
     int lastIndx_;
-    LLARef llaRef_;
 
     QColor trackColor_;
     float trackWidth_;

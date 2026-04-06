@@ -24,10 +24,9 @@
 
 
 
-
 /*
  * 在大多数平台上，渲染将在专用线程上进行。因此，QQuickFramebufferObject 类在 QML Item实现和FBO呈现之间强制执行严格的分离。
- * QML所需的所有Item逻辑，例如属性和与 UI相关的辅助函数，都应该位于QQuickFramebufferObject 类的子类中。
+ * QML所需的所有Item逻辑，例如属性和与 UI相关的辅助函数，都应该位于QQuickFramebufferObject 类的子类中;
  * 与渲染相关的所有内容都必须位于QQuickFramebufferObject::Renderer类中。
  */
 
@@ -38,10 +37,12 @@ class GraphicsScene3dView : public QQuickFramebufferObject
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(GraphicsScene3dView)
+
+public:
     Q_PROPERTY(double currLat READ getCurrLat NOTIFY currentLatChanged)
     Q_PROPERTY(double currLon READ getCurrLon NOTIFY currentLonChanged)
 
-public:
+
     //Camera
     class Camera
     {

@@ -299,38 +299,8 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 
         /*- 绘制多边形轮廓模式 -*/
         if(polygonOutline_->getOutlineMode()) {
-            // datasetPtr_->addPosition_file(currentLat_, currentLon_, 0, true);
-
-
-            Epoch* lastEp = datasetPtr_->lastPolygonOutline();
-            if (!lastEp) {
-                return;
-            }
-
-            Position pos;
-            pos.lla = LLA(currentLat_, currentLon_);
-            if (pos.lla.isCoordinatesValid()) {
-                if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-                    lastEp = datasetPtr_->addNewEpochPolygonOutline();  //不断累加帧数的下标index
-                    // lastEp->setDistProcesing_CSV(depth);
-                }
-
-                if (!polygonOutline_->getLlaRef().isInit) {
-                    polygonOutline_->setLlaRef(LLARef(pos.lla));
-
-                    surfaceView_->setLlaRef(polygonOutline_->getLlaRef());
-                    m_camera->datasetLlaRef_ = polygonOutline_->getLlaRef().isInit
-                                            ? polygonOutline_->getLlaRef() : LLARef(m_camera->yerevanLla);
-                    m_camera->viewLlaRef_    = m_camera->datasetLlaRef_;
-                }
-                LLARef llaRef = polygonOutline_->getLlaRef();
-                lastEp->setPositionLLA(pos);
-                lastEp->setPositionRef(&llaRef); //在这里将LLA坐标转化成本地North_East_Down坐标
-                polygonOutline_->polygonAddPoint();
-            }
-
+            polygonOutline_->polygonAddPoint(currentLat_, currentLon_);
         }
-
 
     }
 
@@ -356,6 +326,9 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 
 void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
+    if(polygonOutline_->getOutlineMode()) {
+        return;
+    }
     bool cameraWasMoved{ false };
     if (needToResetStartPos_) {
         m_camera->m_lookAtSave = m_camera->m_lookAt;
@@ -467,6 +440,10 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 
 void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
+    if(polygonOutline_->getOutlineMode()) {
+        return;
+    }
+
     Q_UNUSED(keyboardKey);
 
     clearComboSelectionRect();
@@ -545,7 +522,6 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
     }
 
     updatePlaneGrid();
-    qDebug() << "mouseWheelTrigger444444444444444";
     QQuickFramebufferObject::update();
 
     if (cameraWasMoved) {
@@ -555,6 +531,9 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
 
 void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF& currCenter, qreal scaleDelta, qreal angleDelta)
 {
+    if(polygonOutline_->getOutlineMode()) {
+        return;
+    }
     m_camera->zoom(scaleDelta);
 
     if (!isNorth_) {
@@ -751,14 +730,10 @@ void GraphicsScene3dView::setCancelZoomView()
     QQuickFramebufferObject::update();
 }
 
-void GraphicsScene3dView::setMapView() {
-    auto datasetLlaRef = datasetPtr_->getLlaRef();
-    if (datasetLlaRef.isInit) {
-        m_camera->viewLlaRef_ = datasetPtr_->getLlaRef();
-    }
-    else {
-        m_camera->viewLlaRef_ = m_camera->yerevanLla;
-    }
+void GraphicsScene3dView::setMapView()
+{
+    LLARef llaRef = datasetPtr_->getLlaRef();
+    m_camera->viewLlaRef_ = llaRef.isInit ? llaRef : LLARef(m_camera->yerevanLla);
 
     m_camera->setMapView();
     m_axesThumbnailCamera->setMapView();
@@ -960,7 +935,7 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
                 m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
         }, Qt::DirectConnection);
 
-    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef,this,      [this]() -> void {
+    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef, this,      [this]() -> void {
             surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
             forceUpdateDatasetLlaRef();
             fitAllInView();
@@ -1815,9 +1790,9 @@ GraphicsScene3dView::Camera::Camera(GraphicsScene3dView* viewPtr) :
 {
     setMapView();
 
-    if (viewPtr) { // for main cam
-        navYawTmr_.start();
-    }
+    // if (viewPtr) { // for main cam
+    //     navYawTmr_.start();
+    // }
 }
 
 GraphicsScene3dView::Camera::Camera(qreal pitch,
@@ -2073,7 +2048,8 @@ void GraphicsScene3dView::Camera::setIsometricView()
     updateViewMatrix();
 }
 
-void GraphicsScene3dView::Camera::setMapView() {
+void GraphicsScene3dView::Camera::setMapView()
+{
     reset();
 
     m_rotAngle.setX(qDegreesToRadians(0.0f));
@@ -2215,9 +2191,9 @@ bool GraphicsScene3dView::Camera::getIsPerspective() const
 
 bool GraphicsScene3dView::Camera::getIsFarAwayFromOriginLla() const
 {
-    qDebug() << "Camera:: isPerspective_:" << isPerspective_ << "   viewLlaRef_:" << viewLlaRef_.refLla.latitude << "  "
-             << viewLlaRef_.refLla.longitude << "    datasetLlaRef_:" << datasetLlaRef_.refLla.latitude << "  "
-             << datasetLlaRef_.refLla.longitude;
+    // qDebug() << "Camera:: isPerspective_:" << isPerspective_ << "   viewLlaRef_:" << viewLlaRef_.refLla.latitude << "  "
+    //          << viewLlaRef_.refLla.longitude << "    datasetLlaRef_:" << datasetLlaRef_.refLla.latitude << "  "
+    //          << datasetLlaRef_.refLla.longitude;
     return !isPerspective_ || (viewLlaRef_ != datasetLlaRef_);
 }
 

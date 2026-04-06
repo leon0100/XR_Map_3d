@@ -14,7 +14,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QGraphicsScene>
-
+#include "console.h"
 
 // #include <QtGui/private/qzipreader_p.h>
 // #include <QtGui/private/qzipwriter_p.h>

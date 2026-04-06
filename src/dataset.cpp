@@ -724,12 +724,6 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
 
 void Dataset::location(double lat, double lon)
 {
-    const double eps = 1e-6;
-    if(std::abs(lat) < eps || std::abs(lon) < eps){
-        GIF->dialogInfo(Dialog_OK, tr("Invalid Coordinates!"));
-        return;
-    }
-
     LLA lla = LLA(lat, lon);
     if (lla.isCoordinatesValid()) {
         _llaRef = LLARef(lla);
@@ -883,6 +877,7 @@ void Dataset::resetDataset()
     lastDepth_            = 0.0f;
 
     sonarPosIndx_ = 0;
+    // _llaRef.isInit = false;
 
     emit lastDepthChanged();
     emit channelsUpdated();
@@ -1244,7 +1239,7 @@ Epoch* Dataset::addNewEpochPolygonOutline()
     }
 
     if (beenAdded) {
-        emit epochAdded(indxAdded);//nie:test
+        emit epochAdded(indxAdded);
     }
 
     return ptrAdded;

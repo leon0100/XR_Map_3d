@@ -159,7 +159,7 @@ void GraphicsScene3dRenderer::drawObjects()
     m_projection = std::move(projection);
 
     bool isOut = m_camera.getIsFarAwayFromOriginLla();
-    qDebug() << "........isOut...................." << isOut;
+    // qDebug() << "........isOut...................." << isOut;
 
     // 先渲染瓦片地图作为背景层
     mapViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);

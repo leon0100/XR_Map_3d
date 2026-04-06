@@ -367,13 +367,11 @@ void BottomTrack::mouseMoveEvent(Qt::MouseButtons buttons, qreal x, qreal y)
     Q_UNUSED(x)
     Q_UNUSED(y)
 
-    if (!m_view)
-        return;
+    if (!m_view)  return;
 
     if (m_view->m_mode == GraphicsScene3dView::BottomTrackVertexSelectionMode) {
         if (buttons.testFlag(Qt::LeftButton)) {
             auto hits = m_view->m_ray.hitObject(shared_from_this(), Ray::HittingMode::Vertex);
-
             if (!hits.isEmpty()) {
                 RENDER_IMPL(BottomTrack)->selectedVertexIndices_ = {hits.first().indices().first};
                 auto epochIndex = vertex2Epoch_.value({hits.first().indices().first});
@@ -390,8 +388,7 @@ void BottomTrack::mouseMoveEvent(Qt::MouseButtons buttons, qreal x, qreal y)
         for (int i = 0; i < RENDER_IMPL(BottomTrack)->m_data.size(); i++) {
             auto p = RENDER_IMPL(BottomTrack)->m_data.at(i);
             auto p_screen = p.project(m_view->camera().lock()->viewMatrix()*m_view->m_model,
-                            m_view->m_projection,
-                            m_view->boundingRect().toRect());
+                            m_view->m_projection, m_view->boundingRect().toRect());
 
             if (m_view->m_comboSelectionRect.contains(p_screen.x(), p_screen.y()))
                 RENDER_IMPL(BottomTrack)->selectedVertexIndices_.append(i);

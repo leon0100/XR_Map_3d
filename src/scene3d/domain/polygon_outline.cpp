@@ -9,7 +9,7 @@ PolygonOutline::PolygonOutline(GraphicsScene3dView* view, QObject* parent) :
     trackColor_(QColor(255, 0, 0)), // 默认红色
     trackWidth_(2.0f)
 {
-    setPrimitiveType(GL_POLYGON);
+    setPrimitiveType(GL_LINE_LOOP);
 
     // setColor({0, 0, 205});
     setColor({255, 64, 64});
@@ -60,16 +60,6 @@ bool PolygonOutline::getOutlineMode() const
     return isDrawOutlineMode_;
 }
 
-LLARef PolygonOutline::getLlaRef()
-{
-    return llaRef_;
-}
-
-void PolygonOutline::setLlaRef(const LLARef &val)
-{
-    llaRef_ = val;
-}
-
 SceneObject::SceneObjectType PolygonOutline::type() const
 {
     return SceneObject::SceneObjectType::PolygonOutline;
@@ -84,31 +74,45 @@ void PolygonOutline::setDatasetPtr(Dataset* datasetPtr)
     connect(datasetPtr_, &Dataset::signalDrawOutline, this, &PolygonOutline::slot_setDrawOutlineMode);
 }
 
-void PolygonOutline::polygonAddPoint()
+void PolygonOutline::polygonAddPoint(double latitude, double longitude)
 {
     qDebug() << "PolygonOutline::polygonAddPoint...............";
-    if (!datasetPtr_) {
+    if (!datasetPtr_->getLlaRef().isInit) {
+        GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
+        return;
+    }
+    Epoch* lastEp = datasetPtr_->lastPolygonOutline();
+    if (!lastEp) {
         return;
     }
 
+    Position pos;
+    pos.lla = LLA(latitude, longitude);
+    if (pos.lla.isCoordinatesValid()) {
+        if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
+            lastEp = datasetPtr_->addNewEpochPolygonOutline();  //不断累加帧数的下标index
+            // lastEp->setDistProcesing_CSV(depth);
+        }
+        LLARef llaRef = datasetPtr_->getLlaRef();
+        lastEp->setPositionLLA(pos);
+        lastEp->setPositionRef(&llaRef); //在这里将LLA坐标转化成本地North_East_Down坐标
+    }
     QVector<Epoch> polygonOutline = datasetPtr_->getPolygonOutline();
     qDebug() << "polygonOutline.size().............................. " << polygonOutline.size();
     const int toIndx = polygonOutline.size() - 1;
     Epoch* epochPtr = datasetPtr_->fromPolygonOutlineIndex(toIndx);
     if (!epochPtr) {
-        qDebug() << "to* epochPtr.................";
         return;
     }
 
     const Position boatPos = epochPtr->getPositionGNSS();
     if (!boatPos.ned.isCoordinatesValid()) {
-        qDebug() << "!boatPos...............";
         return;
     }
 
     const int fromIndx = lastIndx_;
     if (fromIndx >= toIndx) {
-        qDebug() << "fromIndx >= toIndx..............";
+        qDebug() << "fromIndx >= toIndx......fromIndx:" << fromIndx << "  lastIndex_:" << lastIndx_;
         return;
     }
 
@@ -178,6 +182,8 @@ void PolygonOutline::setTrackWidth(float width)
 void PolygonOutline::clearData()
 {
     SceneObject::clearData();
+
+    // llaRef_.isInit = false;
 }
 
 void PolygonOutline::slot_setDrawOutlineMode(bool outlineMode)
@@ -224,7 +230,7 @@ void PolygonOutline::PolygonOutlineRenderImplementation::render(QOpenGLFunctions
     shaderProgram->setAttributeArray(posLoc, data().constData());
 
     ctx->glLineWidth(width());
-    ctx->glDrawArrays(GL_POLYGON, 0, data().size());
+    ctx->glDrawArrays(GL_LINE_LOOP, 0, data().size());
     ctx->glLineWidth(1.0f);
 
     shaderProgram->disableAttributeArray(posLoc);
