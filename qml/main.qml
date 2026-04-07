@@ -740,6 +740,13 @@ ApplicationWindow  {
                             renderer.mousePressTrigger(mouse.buttons, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
                         }
 
+                        onDoubleClicked: function(mouse) {
+                            if(mouse.button === Qt.LeftButton) {
+                                renderer.mouseDoubleClickTrigger(mouse.buttons, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
+                            }
+                        }
+
+
                         onReleased: function(mouse) {
                             startMousePos = Qt.point(-1, -1)
                             wasMoved = false

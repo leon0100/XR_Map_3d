@@ -224,6 +224,13 @@ public:
     void setActiveContactIndx(int64_t indx);
     int64_t getActiveContactIndx() const;
 
+    void addPolygonOutlineNED(const North_East_Down& ned) {
+        polygonOutlineNED_.append(ned);
+    }
+    QVector<North_East_Down>& getPolygonOutlineNED() {
+        return polygonOutlineNED_;
+    }
+
 public slots:
     friend class DataProcessor;
     void  onSonarPosCanCalc(uint64_t indx);
@@ -348,6 +355,7 @@ protected:
 
     QVector<Epoch> pool_;
     QVector<Epoch> polygonOutline_;
+    QVector<North_East_Down> polygonOutlineNED_;
 
     float _lastYaw = 0, _lastPitch = 0, _lastRoll = 0;
     float lastTemp_ = NAN;

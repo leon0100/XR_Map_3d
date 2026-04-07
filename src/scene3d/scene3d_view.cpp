@@ -9,7 +9,7 @@
 #include "map_defs.h"
 
 
-/*------------------------------------------GraphicsScene3dView------------------------------------------*/
+/*--------------------------------------GraphicsScene3dView---------------------------------------*/
 GraphicsScene3dView::GraphicsScene3dView() :
     QQuickFramebufferObject(),
     m_camera(std::make_shared<Camera>(this)),
@@ -261,11 +261,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 {
     Q_UNUSED(keyboardKey)
 
-    LLARef llaRef = polygonOutline_->getLlaRef();
-    qDebug() << "3dView::mousePressllaRef: " << llaRef.refLla.latitude << "  " << llaRef.refLla.longitude;
-    North_East_Down ned = datasetPtr_->lastPolygonOutline()->getPositionGNSS().ned;
-    qDebug() << "3dView::mousePressllaRef: ned: " << ned.d << "  " << ned.e << "  " << ned.n;
-
 
     //当前点x,y的经纬度坐标
     calculateLatLong(x, y, currentLat_, currentLon_);
@@ -301,6 +296,19 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         if(polygonOutline_->getOutlineMode()) {
             polygonOutline_->polygonAddPoint(currentLat_, currentLon_);
         }
+        else {
+            if(!polygonOutline_->getDraggingPoint() && polygonOutline_->hoverPointIndex_ >= 0) {
+                polygonOutline_->setDraggingPoint(true);
+                polygonOutline_->draggingPointIndex_ = polygonOutline_->hoverPointIndex_;
+                setCursor(Qt::CrossCursor);
+            }
+            else if(polygonOutline_->getDraggingPoint()) {
+                polygonOutline_->setDraggingPoint(false);
+                polygonOutline_->draggingPointIndex_ = -1;
+                setCursor(Qt::ArrowCursor);
+
+            }
+        }
 
     }
 
@@ -324,11 +332,23 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
     QQuickFramebufferObject::update();
 }
 
+void GraphicsScene3dView::mouseDoubleClickTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
+{
+    Q_UNUSED(keyboardKey)
+
+    // calculateLatLong(x, y, currentLat_, currentLon_);
+
+    if(polygonOutline_->getOutlineMode()) {
+        polygonOutline_->setOutlineMode(false);
+        setCursor(Qt::OpenHandCursor);
+        GIF->dialogInfo(Dialog_OK, tr("Map Outline Create Successful!"));
+    }
+
+}
+
+
 void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
-    if(polygonOutline_->getOutlineMode()) {
-        return;
-    }
     bool cameraWasMoved{ false };
     if (needToResetStartPos_) {
         m_camera->m_lookAtSave = m_camera->m_lookAt;
@@ -371,10 +391,44 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 
                 screetShot_.setSelectionRect(screetShot_.shotRect_);
             }
-
         }
 
         return;
+    }
+
+    if(polygonOutline_->getOutlineMode()) {
+        return;
+    }
+    else if (polygonOutline_->isDraggingPoint_ && (polygonOutline_->draggingPointIndex_ >= 0)
+               )
+    {
+        // polygonPoints_[draggingPointIndex_] = scenePos;
+        // polygonItem_->setPolygon(QPolygonF(polygonPoints_));
+
+
+
+
+    }
+    else if (!polygonOutline_->getOutlineMode())
+    {
+        calculateLatLong(x, y, currentLat_, currentLat_);
+        Position pos;
+        LLA lla = LLA(currentLat_, currentLat_);
+        LLARef llaRef = datasetPtr_->getLlaRef();
+        North_East_Down ned = North_East_Down(&lla, &llaRef);
+
+        polygonOutline_->hoverPointIndex_ = polygonOutline_->getNearestVertexIndex(QVector3D(ned.d,ned.e,0),10);
+        qDebug() << "polygonOutline_->hoverPointIndex_...." << polygonOutline_->hoverPointIndex_;
+        // for (int i = 0; i < polygonPoints_.size(); ++i) {
+        //     QPointF ptScene = mapFromScene(polygonPoints_[i]);
+        //     if ((pt - ptScene.toPoint()).manhattanLength() < DRAG_RADIUS) {
+        //         polygonOutline_->hoverPointIndex_ = i;
+        //         break;
+        //     }
+        // }
+
+
+
     }
 
     contacts_->mouseMoveEvent(mouseButton, x, y);
@@ -398,7 +452,7 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
     m_ray.setDirection(toDir);
 
     if (switchedToBottomTrackVertexComboSelectionMode_) {
-        m_comboSelectionRect.setBottomRight({ static_cast<int>(x), static_cast<int>(height() - y) });
+        m_comboSelectionRect.setBottomRight({static_cast<int>(x), static_cast<int>(height() - y)});
         m_bottomTrack->mouseMoveEvent(mouseButton, x, y);
     }
     else {
@@ -440,10 +494,6 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 
 void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
-    if(polygonOutline_->getOutlineMode()) {
-        return;
-    }
-
     Q_UNUSED(keyboardKey);
 
     clearComboSelectionRect();
@@ -469,9 +519,9 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
 
     /*- 绘制多边形轮廓模式 -*/
     if(polygonOutline_->getOutlineMode()) {
-
-        // polygonOutline_;
+        return;
     }
+
 
     if (switchedToBottomTrackVertexComboSelectionMode_) {
         m_mode = lastMode_;
@@ -1362,9 +1412,8 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     rowStr_ = QString::number(task.row + 1);
     colStr_ = QString::number(task.col + 1);
 
-    double widthLen  = screetShot_.getDistance_Haversine(task.minLon,task.maxLat,task.maxLon,task.minLat);
-    double heightLen = screetShot_.getDistance_Haversine(task.maxLon,task.maxLat,task.maxLon,task.minLat);
-
+    double widthLen  = GIF->getDistance_Haversine(task.minLon,task.maxLat,task.maxLon,task.minLat);
+    double heightLen = GIF->getDistance_Haversine(task.maxLon,task.maxLat,task.maxLon,task.minLat);
 
     // 1. 计算目标区域中心
     double centerLat = (task.minLat + task.maxLat) / 2.0;
@@ -1399,7 +1448,7 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     // }
 
 
-    // ===== 然后发送瓦片请求 =====
+    // ========= 然后发送瓦片请求 ========
     QVector<LLA> request;
     request.append(LLA(task.maxLat, task.minLon, targetHeight));
     request.append(LLA(task.maxLat, task.maxLon, targetHeight));
@@ -1408,11 +1457,9 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
 
     LLARef viewLlaRef = m_camera->viewLlaRef_;
 
-    // 强制刷新所有渲染组件
-    mapView_->update();
+    mapView_->update();   // 强制刷新所有渲染组件
 
-    // 等待一帧确保状态同步
-    QQuickFramebufferObject::update();
+    QQuickFramebufferObject::update();  // 等待一帧确保状态同步
 
     screenshotRetryCount_ = 0;
     emit sendRectRequest(request, false, viewLlaRef, false, map::CameraTilt::Up);

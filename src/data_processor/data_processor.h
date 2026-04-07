@@ -163,6 +163,8 @@ private:
     void scheduleLatest(WorkSet mask = WorkSet(WF_All), bool replace = false, bool clearUnrequestedPending = false) noexcept;
     bool isCanStartCalculations() const;
 
+
+
 private:
     friend class SurfaceProcessor;
     friend class BottomTrackProcessor;

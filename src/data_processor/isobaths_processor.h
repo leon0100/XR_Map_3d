@@ -5,7 +5,6 @@
 #include "isobaths_defs.h"
 #include "surface_mesh.h"
 
-#include "outlinemanager.h"
 
 using namespace IsobathUtils;
 
@@ -53,5 +52,4 @@ private:
     float lineStepSize_; //相邻两条等高线之间的高度差
     float labelStepSize_;
 
-    PolygonManager polygonManager_;
 };

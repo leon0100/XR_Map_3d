@@ -26,6 +26,21 @@ struct ImageInfo
 
 
 
+#define _180_PI (57.2957795131f)
+#define _PI_180 (0.01745329252f)
+#define EARTH_RADIUS 6378137   // 赤道半径
+#define POINT_REPEATITIVE 361.0f
+
+
+#ifndef PI
+#define PI (3.1415926535898)
+#endif
+
+
+#define  MAP_TIlE_SIZE   (256)
+
+
+
 /*---------------------------------------GetInterface单例------------------------------------------------*/
 #define GIF  GetInterface::getInterface()
 class GetInterface : public QObject
@@ -45,6 +60,8 @@ public:
     QString getCurrentMap() {
         return currTileUrl_;
     }
+
+    double getDistance_Haversine(double currLon, double currLati, double goalLon, double goalLati);
 
 
 private:

@@ -19,8 +19,8 @@ public:
     void setOutlineMode(bool outline);
     bool getOutlineMode() const;
 
-    LLARef getLlaRef();
-    void setLlaRef(const LLARef &val);
+    void setDraggingPoint(bool dragging);
+    bool getDraggingPoint();
 
 public:
     class PolygonOutlineRenderImplementation : public SceneObject::RenderImplementation
@@ -34,9 +34,7 @@ public:
                             const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const override final;
 
         virtual void render(QOpenGLFunctions* ctx,
-                            const QMatrix4x4& model,
-                            const QMatrix4x4& view,
-                            const QMatrix4x4& projection,
+                            const QMatrix4x4& model, const QMatrix4x4& view, const QMatrix4x4& projection,
                             const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const override final;
 
     private:
@@ -56,6 +54,15 @@ public:
     void clearPolygonOutline();
     void setTrackColor(const QColor& color);
     void setTrackWidth(float width);
+
+
+    void setVertexEditable(bool editable);
+    bool isVertexEditable() const;
+    int getNearestVertexIndex(const QVector3D& point, float threshold) const;
+    void moveVertex(int index, const QVector3D& newPosition);
+    QVector<LLA> getVertices() const;
+    QVector3D getVertexLocal(int index) const;
+
 
 public Q_SLOTS:
     virtual void clearData() override final;
@@ -79,4 +86,14 @@ private:
     float trackWidth_;
 
     bool isDrawOutlineMode_ = false;
+    bool isDraggingPoint_ = false;
+
+
+    bool m_vertexEditable = false;
+    int m_selectedVertexIndex = -1;
+
+
+public:
+    int draggingPointIndex_ = -1;        //当前拖动的点索引，-1表示无
+    int hoverPointIndex_ = -1;           //当前悬停的点索引
 };

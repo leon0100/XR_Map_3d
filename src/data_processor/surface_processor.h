@@ -5,13 +5,10 @@
 #include <QPair>
 #include <QPointF>
 #include <QReadWriteLock>
-#include <QVector>
-#include <QVector3D>
 #include "delaunay.h"
-#include "math_defs.h"
 #include "isobaths_defs.h"
 #include "surface_tile.h"
-#include "outlinemanager.h"
+#include "bottom_track.h"
 
 
 class BottomTrack;
@@ -49,9 +46,7 @@ private:
     void smoothTileHeights(SurfaceTile* tile, int hvSide);
     void refreshAfterEdgeLimitChange();
     bool canceled() const noexcept;
-
-    void setPolygonManager(const PolygonManager& polygonManager);
-    PolygonManager& getPolygonManager();
+    bool isPointInPolygon(const QVector3D& point) const;
 
 
 private:
@@ -80,6 +75,5 @@ private:
     QSet<TileKey> visibleTileKeys_;
 
 
-    PolygonManager polygonManager_;
 
 };

@@ -23,18 +23,18 @@
 
 enum class ResizeMode { None, Move, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight };
 
-#define _180_PI (57.2957795131f)
-#define _PI_180 (0.01745329252f)
-#define EARTH_RADIUS 6378137   // 赤道半径
-#define POINT_REPEATITIVE 361.0f
+// #define _180_PI (57.2957795131f)
+// #define _PI_180 (0.01745329252f)
+// #define EARTH_RADIUS 6378137   // 赤道半径
+// #define POINT_REPEATITIVE 361.0f
 
 
-#ifndef PI
-#define PI (3.1415926535898)
-#endif
+// #ifndef PI
+// #define PI (3.1415926535898)
+// #endif
 
 
-#define  MAP_TIlE_SIZE   (256)
+// #define  MAP_TIlE_SIZE   (256)
 
 
 
@@ -123,16 +123,15 @@ public:
     void resizeMode(QRectF& rect,const QPoint pos);
 
 
-
     qreal clip(qreal n, qreal min, qreal max);
     qreal clipLon(qreal lon);   // 裁剪经度范围
     qreal clipLat(qreal lat);   // 裁剪纬度范围
     uint  mapSize(int level);   // 根据地图级别计算世界地图总宽高(以像素为单位)
-    QPoint latLongToPixelXY(qreal lon, qreal lat, int level);               // 经纬度转像素 XY坐标
+    QPoint latLongToPixelXY(qreal lon, qreal lat, int level);               // 经纬度转像素XY坐标
     void pixelXYToLatLong(QPoint pos, int level, qreal& lon, qreal& lat);   // 像素坐标转WGS-84墨卡托坐标
     void pixelXYToLatLong(QPointF pos, int level, qreal& lon, qreal& lat);
     double getDistance_Haversine(double current_longi, double current_lati, double goal_longi, double goal_lati);
-    bool createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west);
+    bool createKmlFile(QString kmlPath, QString imageName, double north, double south, double east, double west);
     bool createXMAPFile(const QString kmlFilePath, const QString imageFilePath, QString &outputXMAPPath);
 
 

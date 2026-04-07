@@ -60,6 +60,15 @@ bool PolygonOutline::getOutlineMode() const
     return isDrawOutlineMode_;
 }
 
+void PolygonOutline::setDraggingPoint(bool dragging)
+{
+    isDraggingPoint_ = dragging;
+}
+bool PolygonOutline::getDraggingPoint()
+{
+    return isDraggingPoint_;
+}
+
 SceneObject::SceneObjectType PolygonOutline::type() const
 {
     return SceneObject::SceneObjectType::PolygonOutline;
@@ -98,7 +107,7 @@ void PolygonOutline::polygonAddPoint(double latitude, double longitude)
         lastEp->setPositionRef(&llaRef); //在这里将LLA坐标转化成本地North_East_Down坐标
     }
     QVector<Epoch> polygonOutline = datasetPtr_->getPolygonOutline();
-    qDebug() << "polygonOutline.size().............................. " << polygonOutline.size();
+    qDebug() << "polygonOutline.size()............... " << polygonOutline.size();
     const int toIndx = polygonOutline.size() - 1;
     Epoch* epochPtr = datasetPtr_->fromPolygonOutlineIndex(toIndx);
     if (!epochPtr) {
@@ -121,9 +130,10 @@ void PolygonOutline::polygonAddPoint(double latitude, double longitude)
     prepData.reserve(need);
 
     for (int i = fromIndx + 1; i <= toIndx; ++i) {
-        if (auto* ep = datasetPtr_->fromPolygonOutlineIndex(i); ep) {
-            if (auto posNed = ep->getPositionGNSS().ned; posNed.isCoordinatesValid()) {
+        if (Epoch* ep = datasetPtr_->fromPolygonOutlineIndex(i); ep) {
+            if (North_East_Down posNed = ep->getPositionGNSS().ned; posNed.isCoordinatesValid()) {
                 prepData.push_back(QVector3D(posNed.n, posNed.e, 0));
+                datasetPtr_->addPolygonOutlineNED(posNed);
             }
         }
     }
@@ -177,6 +187,59 @@ void PolygonOutline::setTrackColor(const QColor& color)
 void PolygonOutline::setTrackWidth(float width)
 {
     trackWidth_ = width;
+}
+
+
+// polygon_outline.cpp
+void PolygonOutline::setVertexEditable(bool editable) {
+    m_vertexEditable = editable;
+    emit changed();
+}
+
+bool PolygonOutline::isVertexEditable() const {
+    return m_vertexEditable;
+}
+
+int PolygonOutline::getNearestVertexIndex(const QVector3D& point, float threshold) const {
+
+    QVector<North_East_Down> nedVec = datasetPtr_->getPolygonOutlineNED();
+    if (nedVec.isEmpty()) return -1;
+
+    int nearestIndex = -1;
+    float minDistance = threshold;
+
+    for (int i = 0; i < polygonOutlineVec_.size(); i++) {
+        QVector3D vertexLocal = QVector3D(nedVec.at(i).n, nedVec.at(i).e, 0.0f);
+        float distance = (vertexLocal - point).length();
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestIndex = i;
+        }
+    }
+
+    return nearestIndex;
+}
+
+void PolygonOutline::moveVertex(int index, const QVector3D& newPosition) {
+    QVector<North_East_Down> nedVec = datasetPtr_->getPolygonOutlineNED();
+    // if (index >= 0 && index < vertices.size()) {
+    //     // 转换本地坐标回 LLA
+    //     LLA newLla = convertLocalToLLA(newPosition, getLlaRef());
+    //     vertices[index] = newLla;
+    //     emit changed();
+    // }
+}
+
+QVector<LLA> PolygonOutline::getVertices() const {
+    return polygonOutlineVec_;
+}
+
+QVector3D PolygonOutline::getVertexLocal(int index) const {
+    // const QVector<LLA>& vertices = polygonOutlineVec_;
+    // if (index >= 0 && index < vertices.size()) {
+    //     return convertLLAToLocal(vertices[index], getLlaRef());
+    // }
+    return QVector3D();
 }
 
 void PolygonOutline::clearData()

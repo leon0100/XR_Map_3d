@@ -1,13 +1,8 @@
-#include "isobaths_processor.h"
+#include "surface_processor.h"
 
 #include <cmath>
 #include <QDebug>
-#include "data_processor.h"
-#include "bottom_track.h"
-#include "surface_mesh.h"
-#include "surface_tile.h"
-#include "math_defs.h"
-
+#include "isobaths_processor.h"
 
 SurfaceProcessor::SurfaceProcessor(DataProcessor* parent) :
     dataProcessor_(parent),
@@ -139,6 +134,10 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
         const QVector3D& point = bTrData[itm.second];
         if (!qIsFinite(point.z())) continue;
+        if(!isPointInPolygon(point)) {
+            qDebug() << "A is not in Polygon.....";
+            continue;
+        }
         processOneCenter(point);
     }
 
@@ -302,11 +301,6 @@ int SurfaceProcessor::getExtraWidth() const
 void SurfaceProcessor::writeTriangleToMesh(const QVector3D &A, const QVector3D &B, const QVector3D &C, QSet<SurfaceTile*> &updatedTiles)
 {
     if (!surfaceMeshPtr_ || !surfaceMeshPtr_->getIsInited()) {
-        return;
-    }
-
-    if(!polygonManager_.isEmpty() && !polygonManager_.isTriangleInPolygon(A, B, C)) {
-        qDebug() << "polygonManager ............ is empty()";
         return;
     }
 
@@ -593,12 +587,24 @@ bool SurfaceProcessor::canceled() const noexcept
     return dataProcessor_ && dataProcessor_->isCancelRequested();
 }
 
-void SurfaceProcessor::setPolygonManager(const PolygonManager& polygonManager) {
-    polygonManager_ = polygonManager;
-}
-
-PolygonManager& SurfaceProcessor::getPolygonManager() {
-    return polygonManager_;
+bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
+{
+    // 使用射线法判断点是否在多边形内
+    const QVector<North_East_Down>& polygonOutlineNed = dataProcessor_->datasetPtr_->getPolygonOutlineNED();
+    if(polygonOutlineNed.isEmpty()) {
+        return true;
+    }
+    bool inside = false;
+    int n = polygonOutlineNed.size();
+    for(int i = 0, j = (n-1); i < n; j = i++) {
+        QVector3D vi = QVector3D(polygonOutlineNed.at(i).n, polygonOutlineNed.at(i).e, 0.0f);
+        QVector3D vj = QVector3D(polygonOutlineNed.at(j).n, polygonOutlineNed.at(j).e, 0.0f);
+        if (  ( (vi.y() > point.y()) != (vj.y() > point.y()) ) &&
+            (point.x() < (vj.x()-vi.x()) * (point.y()-vi.y()) / (vj.y()-vi.y())+vi.x()) ) {
+            inside = !inside;
+        }
+    }
+    return inside;
 }
 
 

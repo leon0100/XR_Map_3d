@@ -161,7 +161,6 @@ int qPlot2D::getThemeId() const
 void qPlot2D::drawPolygonOutline(bool outlineMode)
 {
     if(datasetPtr_ != nullptr) {
-        qDebug() << "outlineMode is........." << outlineMode;
         emit datasetPtr_->signalDrawOutline(outlineMode);
     }
 }
