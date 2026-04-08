@@ -756,20 +756,6 @@ void Dataset::addDepth(float depth) {
     last_epoch->setDepth(depth);
 }
 
-// void Dataset::addDepth_realTime(float depth)
-// {
-//     Epoch* last_epoch = last();
-//     if(!last_epoch) {
-//         return;
-//     }
-
-//     last_epoch->setDepth(depth);
-
-//     // 触发等高线处理
-//     uint64_t lastIndx = pool_.size() - 1;
-//     emit depthAddedForIsobaths(lastIndx);
-// }
-
 void Dataset::addGnssVelocity(double h_speed, double course) {
     // qDebug() << "Dataset::addGnssVelocity............";
     int pool_index = endIndex();
@@ -777,12 +763,6 @@ void Dataset::addGnssVelocity(double h_speed, double course) {
         // addNewEpoch();
         pool_index = endIndex();
     }
-
-//    if(qIsFinite(_pool[pool_index].gnssHSpeed())) {
-//        makeNewEpoch();
-//        pool_index = endIndex();
-//    }
-
 
     pool_[pool_index].setGnssVelocity(h_speed, course);
     emit dataUpdate();
@@ -889,8 +869,11 @@ void Dataset::resetDataset()
 void Dataset::resetRenderBuffers()
 {
     tracks.clear();
+    vec_CSV_.clear();
     pool_.clear();
-    pool_.shrink_to_fit();//
+    pool_.shrink_to_fit();
+    polygonOutline_.clear();
+    polygonOutlineNED_.clear();
     _lastYaw = 0;
     _lastPitch = 0;
     _lastRoll = 0;
@@ -1245,6 +1228,12 @@ Epoch* Dataset::addNewEpochPolygonOutline()
     return ptrAdded;
 }
 
+void Dataset::modifyPolygonOutlineEpoch(int index, const Epoch& epoch)
+{
+    QWriteLocker wl(&polygonOutlineMtx_);
+    polygonOutline_[index] = epoch;
+}
+
 bool Dataset::shouldAddNewEpoch(const ChannelId &channelId, uint8_t numSubChannels) const
 {
     const int lastIndx = endIndex();
@@ -1290,8 +1279,7 @@ std::tuple<ChannelId, uint8_t, QString>  Dataset::channelIdFromName(const QStrin
 {
     auto retVal = std::make_tuple(ChannelId(), 0x00, QString());
 
-    if (name.isEmpty() || channelsNames_.isEmpty() ||
-        channelsIds_.size() != channelsNames_.size() ||
+    if (name.isEmpty() || channelsNames_.isEmpty() || channelsIds_.size() != channelsNames_.size() ||
         subChannelIds_.size() != channelsNames_.size()) {
 
         return retVal;

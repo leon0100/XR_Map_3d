@@ -71,7 +71,7 @@ void DataHorizon::onAddedEpoch(uint64_t indx)
     epochIndx_ = indx;
 
     if (canEmitHorizon(beenChanged)) {
-        emit epochAdded(epochIndx_);
+        emit epochAdded(indx);
     }
 }
 

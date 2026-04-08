@@ -93,6 +93,12 @@ public:
         return NULL;
     }
 
+    void modifyPolygonOutline(int index,const North_East_Down& ned) {
+        if(index >= 0 && index < polygonOutlineNED_.size()) {
+            polygonOutlineNED_[index] = ned;
+        }
+    }
+
     Epoch fromIndexCopy(int index_offset = 0) {
         QReadLocker rl(&poolMtx_);
 
@@ -363,6 +369,10 @@ protected:
 public:
     Epoch* addNewEpoch();
     Epoch* addNewEpochPolygonOutline();
+    void modifyPolygonOutlineEpoch(int index, const Epoch& epoch);
+    bool isEmptyPolygon() {
+        return polygonOutline_.isEmpty();
+    }
 
     GraphicsScene3dView* scene3dViewPtr_ = nullptr;
 

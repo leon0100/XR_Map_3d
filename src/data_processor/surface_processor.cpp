@@ -135,7 +135,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         const QVector3D& point = bTrData[itm.second];
         if (!qIsFinite(point.z())) continue;
         if(!isPointInPolygon(point)) {
-            qDebug() << "A is not in Polygon.....";
             continue;
         }
         processOneCenter(point);
@@ -143,7 +142,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {
-        // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
         return;
     }
 
@@ -151,7 +149,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     float lastMaxZ = maxZ_;
     for (int triIdx : std::as_const(updsTrIndx)) { // 网格内三角形的追踪
         if (canceled()) {
-            // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
             return;
         }
 

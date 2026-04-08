@@ -297,16 +297,14 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
             polygonOutline_->polygonAddPoint(currentLat_, currentLon_);
         }
         else {
-            if(!polygonOutline_->getDraggingPoint() && polygonOutline_->hoverPointIndex_ >= 0) {
+            if(!polygonOutline_->getDraggingPoint() && polygonOutline_->draggingPtIndex_ >= 0) {
                 polygonOutline_->setDraggingPoint(true);
-                polygonOutline_->draggingPointIndex_ = polygonOutline_->hoverPointIndex_;
                 setCursor(Qt::CrossCursor);
             }
             else if(polygonOutline_->getDraggingPoint()) {
                 polygonOutline_->setDraggingPoint(false);
-                polygonOutline_->draggingPointIndex_ = -1;
+                polygonOutline_->draggingPtIndex_ = -1;
                 setCursor(Qt::ArrowCursor);
-
             }
         }
 
@@ -335,8 +333,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 void GraphicsScene3dView::mouseDoubleClickTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
     Q_UNUSED(keyboardKey)
-
-    // calculateLatLong(x, y, currentLat_, currentLon_);
 
     if(polygonOutline_->getOutlineMode()) {
         polygonOutline_->setOutlineMode(false);
@@ -396,40 +392,20 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
         return;
     }
 
-    if(polygonOutline_->getOutlineMode()) {
-        return;
-    }
-    else if (polygonOutline_->isDraggingPoint_ && (polygonOutline_->draggingPointIndex_ >= 0)
-               )
+    /*- 绘制多边形轮廓模式 -*/
+    if (polygonOutline_->getDraggingPoint() && (polygonOutline_->draggingPtIndex_ >= 0))
     {
-        // polygonPoints_[draggingPointIndex_] = scenePos;
-        // polygonItem_->setPolygon(QPolygonF(polygonPoints_));
-
-
-
-
+        calculateLatLong(x, y, currentLat_, currentLon_);
+        LLA lla = LLA(currentLat_, currentLon_);
+        polygonOutline_->modifyPolygonVertex(polygonOutline_->draggingPtIndex_, lla);
     }
-    else if (!polygonOutline_->getOutlineMode())
+    else if (!polygonOutline_->getOutlineMode() && !datasetPtr_->isEmptyPolygon())
     {
-        calculateLatLong(x, y, currentLat_, currentLat_);
-        Position pos;
-        LLA lla = LLA(currentLat_, currentLat_);
-        LLARef llaRef = datasetPtr_->getLlaRef();
-        North_East_Down ned = North_East_Down(&lla, &llaRef);
-
-        polygonOutline_->hoverPointIndex_ = polygonOutline_->getNearestVertexIndex(QVector3D(ned.d,ned.e,0),10);
-        qDebug() << "polygonOutline_->hoverPointIndex_...." << polygonOutline_->hoverPointIndex_;
-        // for (int i = 0; i < polygonPoints_.size(); ++i) {
-        //     QPointF ptScene = mapFromScene(polygonPoints_[i]);
-        //     if ((pt - ptScene.toPoint()).manhattanLength() < DRAG_RADIUS) {
-        //         polygonOutline_->hoverPointIndex_ = i;
-        //         break;
-        //     }
-        // }
-
-
-
+        calculateLatLong(x, y, currentLat_, currentLon_);
+        LLA lla = LLA(currentLat_, currentLon_);
+        polygonOutline_->draggingPtIndex_ = polygonOutline_->getNearestVertexIndex(lla);
     }
+
 
     contacts_->mouseMoveEvent(mouseButton, x, y);
 
@@ -514,11 +490,6 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
 
         // showShotOptionBox();
         qDebug() << "Screen capture completed";
-        return;
-    }
-
-    /*- 绘制多边形轮廓模式 -*/
-    if(polygonOutline_->getOutlineMode()) {
         return;
     }
 
@@ -1110,16 +1081,14 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
 
     // 2. 地面高度必须正确
     float groundZ = 0.0f;
-
     QVector3D hitPoint = calculateIntersectionPoint(rayOrigin, rayDir, groundZ);
-
     if (hitPoint == QVector3D())  return;
 
     // 3. hitPoint 本身就是 North_East_Down 坐标（不要减相机）
     North_East_Down ned;
     ned.n = hitPoint.x();
     ned.e = hitPoint.y();
-    ned.d = 0;
+    ned.d = 0.0;
 
     // 4. 转换成经纬度
     LLA lla(&ned, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
@@ -1127,7 +1096,7 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
     latitude  = lla.latitude;
     longitude = lla.longitude;
 
-    qDebug() << "mousePressTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
+    // qDebug() << "mousePressTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
 }
 
 void GraphicsScene3dView::updateMapView()
@@ -2315,25 +2284,5 @@ QString GraphicsScene3dView::InFboRenderer::checkOpenGLError() const {
     }
 
     return retVal;
-}
-
-void GraphicsScene3dView::addCustomTrackPoints(const QVector<LLA>& llaPoints)
-{
-    polygonOutline_->addLLAPoints(llaPoints);
-}
-
-void GraphicsScene3dView::clearCustomTrack()
-{
-    polygonOutline_->clearPolygonOutline();
-}
-
-void GraphicsScene3dView::setCustomTrackColor(const QColor& color)
-{
-    polygonOutline_->setTrackColor(color);
-}
-
-void GraphicsScene3dView::setCustomTrackWidth(float width)
-{
-    polygonOutline_->setTrackWidth(width);
 }
 

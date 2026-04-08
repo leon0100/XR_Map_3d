@@ -83,20 +83,24 @@ void Epoch::setChartParameters(const ChannelId& channelId, const ChartParameters
 //     // _complex[channel].type = 2;
 // }
 
-void Epoch::setComplexF(const ChannelId& channelId, int group, QVector<ComplexSignal> signal) {
+void Epoch::setComplexF(const ChannelId& channelId, int group, QVector<ComplexSignal> signal)
+{
     _complex[channelId][group] = signal;
 }
 
-void Epoch::setDist(const ChannelId& channelId, int dist) {
+void Epoch::setDist(const ChannelId& channelId, int dist)
+{
     rangefinders_[channelId] = dist * 0.001;
     flags.distAvail = true;
 }
 
-void Epoch::setRangefinder(const ChannelId& channelId, float distance) {
+void Epoch::setRangefinder(const ChannelId& channelId, float distance)
+{
     rangefinders_[channelId] = distance;
 }
 
-void Epoch::setDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt) {
+void Epoch::setDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt)
+{
     for(uint16_t i = 0; i < cnt; i++) {
         _dopplerBeams[i] = beams[i];
     }
@@ -104,12 +108,14 @@ void Epoch::setDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt) {
     _dopplerBeamCount = cnt;
 }
 
-void Epoch::setDVLSolution(IDBinDVL::DVLSolution dvlSolution) {
+void Epoch::setDVLSolution(IDBinDVL::DVLSolution dvlSolution)
+{
     _dvlSolution = dvlSolution;
     flags.isDVLSolutionAvail = true;
 }
 
-void Epoch::setPositionLLA(double lat, double lon, LLARef* ref, uint32_t unix_time, int32_t nanosec) {
+void Epoch::setPositionLLA(double lat, double lon, LLARef* ref, uint32_t unix_time, int32_t nanosec)
+{
     Q_UNUSED(ref);
 
     _positionGNSS.time = DateTime(unix_time, nanosec);
@@ -119,20 +125,21 @@ void Epoch::setPositionLLA(double lat, double lon, LLARef* ref, uint32_t unix_ti
     flags.posAvail = true;
 }
 
-void Epoch::setPositionLLA(Position position) {
+void Epoch::setPositionLLA(Position position)
+{
     _positionGNSS = position;
     flags.posAvail = true;
+}
+
+void Epoch::setPositionLLA(const LLA &lla)
+{
+    _positionGNSS.lla = lla;
 }
 
 void Epoch::setSonarPosition(Position val)
 {
     sonarPosition_ = val;
     flags.sonarPosAvail = true;
-}
-
-void Epoch::setPositionLLA(const LLA &lla)
-{
-    _positionGNSS.lla = lla;
 }
 
 void Epoch::setPositionNED(const North_East_Down &ned)

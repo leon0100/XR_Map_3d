@@ -402,11 +402,6 @@ private:
 public:
     Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
 
-    void addCustomTrackPoints(const QVector<LLA>& llaPoints);
-    void clearCustomTrack();
-    void setCustomTrackColor(const QColor& color);
-    void setCustomTrackWidth(float width);
-
 private:
     QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
     GLuint offscreenVboPos_ = 0;

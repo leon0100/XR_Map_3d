@@ -331,6 +331,7 @@ void Core::onFileOpenBreaked(bool onOpen)
     }
 }
 #else
+
 void Core::openLogFile(const QString& filePath, bool isAppend, bool onCustomEvent)
 {
     isFileOpening_ = true;
