@@ -41,6 +41,7 @@ class GraphicsScene3dView : public QQuickFramebufferObject
 public:
     Q_PROPERTY(double currLat READ getCurrLat NOTIFY currentLatChanged)
     Q_PROPERTY(double currLon READ getCurrLon NOTIFY currentLonChanged)
+    Q_PROPERTY(Qt::CursorShape cursorShape READ cursorShape WRITE setCursorShape NOTIFY cursorShapeChanged)
 
 
     //Camera
@@ -218,6 +219,8 @@ public:
     Dataset* dataset() const;
     double getCurrLat() const;
     double getCurrLon() const;
+    void setCursorShape(Qt::CursorShape shape);
+    Qt::CursorShape cursorShape() const { return cursorShape_; }
     void clear(bool cleanMap = false);
     QVector3D calculateIntersectionPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float planeZ);
     void updateProjection();
@@ -259,6 +262,7 @@ public Q_SLOTS:
     void setBottomTrackVertexSelectionMode();
     void setPolygonCreationMode();
     void setPolygonEditingMode();
+    void setPolygonOutlineMode(bool isOutlineMode);
     void onCursorChanged(Qt::CursorShape cursorShape);
     void setDataset(Dataset* dataset);
     void setDataProcessorPtr(DataProcessor* dataProcessorPtr);
@@ -282,6 +286,7 @@ signals:
 
     void currentLatChanged();
     void currentLonChanged();
+    void cursorShapeChanged();
 
 private:
     void updateBounds();
@@ -353,6 +358,7 @@ private:
 
     double currentLat_ = 0.0;
     double currentLon_ = 0.0;
+    Qt::CursorShape cursorShape_;
 
     int currentMapLevel_,screetCurrentMapLevel_;
 

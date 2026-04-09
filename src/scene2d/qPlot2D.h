@@ -6,7 +6,7 @@
 #include <dataset.h>
 #include <QTimer>
 #include "plot2D.h"
-
+#include "console.h"
 
 
 class qPlot2D : public QQuickPaintedItem, public Plot2D
@@ -55,6 +55,7 @@ protected:
 signals:
     void timelinePositionChanged();
     void contactChanged();
+    void outlineModeChanged();
 
 protected slots:
     void timerUpdater();
@@ -150,4 +151,5 @@ public slots:
 
 private:
     int indx_ = -1;
+
 };

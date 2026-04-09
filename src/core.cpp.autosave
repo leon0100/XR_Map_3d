@@ -1462,25 +1462,6 @@ void Core::clearRouteData()
         return;
     }
 
-    // GIF->dialogYesNo(tr("Confirm Clear Historical Trajectories?"),[this](bool confirmed) {
-    //     if(confirmed) {
-    //         bleManager_->clearRealData();
-    //         datasetPtr_->resetDataset();
-    //         dataHorizon_->clear();
-
-    //         QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
-
-    //         if (scene3dViewPtr_) {
-    //             scene3dViewPtr_->clear();
-    //             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
-    //         }
-
-    //         emit isobathsViewControlMenuController_->edgeLimitChanged(100);
-    //         // GIF->dialogInfo(Dialog_OK, "Cleared successfully!");
-    //     }
-    // });
-
-
     GIF->dialogCheck(tr("Confirm Clear Historical Trajectories?"),[this](bool confirmed) {
         if(confirmed) {
             bleManager_->clearRealData();

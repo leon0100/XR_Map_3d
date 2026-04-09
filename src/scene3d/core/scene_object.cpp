@@ -123,7 +123,6 @@ QVector3D SceneObject::position() const
 
 void SceneObject::setData(const QVector<QVector3D> &data, int primitiveType)
 {
-    qDebug() << "SceneObject::setData...................";
     m_renderImpl->setData(data, primitiveType);
 
     Q_EMIT changed();
@@ -260,7 +259,7 @@ void SceneObject::RenderImplementation::render(QOpenGLFunctions *ctx,
 
 void SceneObject::RenderImplementation::setData(const QVector<QVector3D> &data, int primitiveType)
 {
-    qDebug() << "SceneObject::RenderImplementation::setData.................";
+    // qDebug() << "SceneObject::RenderImplementation::setData.................";
     if(m_primitiveType != primitiveType)  m_primitiveType = primitiveType;
 
     m_data = data;
@@ -280,7 +279,7 @@ void SceneObject::RenderImplementation::appendData(const QVector<QVector3D>& dat
 
 void SceneObject::RenderImplementation::appendData(const QVector3D& data)
 {
-    qDebug() << "RenderImplementation::appendData222222...................";
+    // qDebug() << "RenderImplementation::appendData222222...................";
     m_data.append(data);
 
     updateBounds();

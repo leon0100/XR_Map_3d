@@ -700,6 +700,7 @@ ApplicationWindow  {
                         property bool wasMoved: false
                         property real mouseThreshold: 15
                         property bool vertexMode: false
+                        cursorShape: renderer.cursorShape
 
                         onEntered: {
                             mousearea3D.forceActiveFocus();
@@ -733,8 +734,6 @@ ApplicationWindow  {
                             startMousePos = Qt.point(mouse.x, mouse.y)
                             wasMoved = false
                             vertexMode = false
-                            // longPressTimer.start()
-                            // renderer.longPressTriggered = false
 
                             lastMouseKeyPressed = mouse.buttons
                             renderer.mousePressTrigger(mouse.buttons, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)

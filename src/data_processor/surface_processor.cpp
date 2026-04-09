@@ -122,18 +122,17 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     for (const auto& itm : indxs) { // 添加至三角剖分
         if (canceled()) {
-            // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
             return;
         }
 
-        //边界检查，防止崩溃
         if (itm.second < 0 || itm.second >= bTrData.size()) {
-            qDebug() << "SurfaceProcessor Index out of range:" << itm.second << ">= " << bTrData.size();
             continue;
         }
 
         const QVector3D& point = bTrData[itm.second];
-        if (!qIsFinite(point.z())) continue;
+        if (!qIsFinite(point.z())) {
+            continue;
+        }
         if(!isPointInPolygon(point)) {
             continue;
         }

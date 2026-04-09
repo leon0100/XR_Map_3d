@@ -85,47 +85,30 @@ public:
         emit showDialogInfo(type, msg);
     }
 
-    // Q_INVOKABLE void finish() {
-        // if(checkDialogCallback_) {
-        //     checkDialogCallback_(dialogCheck_);//这里调用回调
-        //     checkDialogCallback_ = nullptr;
-        // }
-
-    // }
-
     Q_INVOKABLE void dialogYesNoBtn(bool flag) {
+        if(checkDialogCallback_) {
+            checkDialogCallback_(flag);
+            checkDialogCallback_ = nullptr;
+        }
+    }
+
+    Q_INVOKABLE void checkDialogBtn(bool flag) {
         if(yesNoCallback_) {
             yesNoCallback_(flag);
             yesNoCallback_ = nullptr;
         }
     }
 
-    // bool checkDialogShow() {
-    //     if(dialogOkShow_ ) {
-    //         emit flashDialog(0);
-    //         return true;
-    //     } else if(dialogYesNoShow_) {
-    //         emit flashDialog(1);
-    //         return true;
-    //     } else if(dialogCheckShow_) {
-    //         emit flashDialog(2);
-    //         return true;
-    //     }
-    //     return false;
-    // }
-
-    // std::function<void(bool)> checkDialogCallback_;
-    // Q_INVOKABLE void dialogCheck(const QString &msg, std::function<void(bool)> cb) {
-        // checkDialogCallback_ = cb;
-        // dialogCheckShow_ = true;
-        // dialogCheck_ = false;
-        // emit showDialogInfo(Dialog_Check, msg);
-    // }
-
     std::function<void(bool)> yesNoCallback_;
     void dialogYesNo(const QString &msg, std::function<void(bool)> cb) {
         yesNoCallback_ = cb;
         emit showDialogInfo(Dialog_YesNo, msg);
+    }
+
+    std::function<void(bool)> checkDialogCallback_;
+    void dialogCheck(const QString &msg, std::function<void(bool)> cb) {
+        checkDialogCallback_ = cb;
+        emit showDialogInfo(Dialog_Check, msg);
     }
 
 

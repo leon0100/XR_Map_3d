@@ -9,6 +9,7 @@ import Qt.labs.settings 1.1
 // isobaths extra settings
 MenuFrame {
     id: isobathsSettings
+    objectName: "isobathsSettings"
     width:  isobathSize * 1.28
     height: isobathSize * 0.6
     z: 9999
@@ -73,12 +74,12 @@ MenuFrame {
 
             Button {
                 id: outlineButton
-                text: qsTr("Draw Outline")
+                text: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
                 font.pixelSize: iconSize * 1.1
                 implicitWidth:  isobathSize * 0.5
                 // Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: iconSize * 1.1
-                palette.button: outlineMode ? "#66E07A" : "#b9c6db"
+                palette.button: "#b9c6db"
 
                 onClicked: {
                     outlineMode = !outlineMode
@@ -86,6 +87,7 @@ MenuFrame {
                         targetPlot.drawPolygonOutline(outlineMode)
                     }
                 }
+
             }
 
             Button {

@@ -18,6 +18,11 @@ PolygonOutline::~PolygonOutline()
 
 }
 
+void PolygonOutline::setQmlRootObject(QObject* object)
+{
+    qmlRootObject_ = object;
+}
+
 void PolygonOutline::setOutlineMode(bool outline)
 {
     isDrawOutlineMode_ = outline;
@@ -31,7 +36,9 @@ bool PolygonOutline::getOutlineMode() const
 void PolygonOutline::setDraggingPoint(bool dragging)
 {
     isDraggingPoint_ = dragging;
+    selectVertex(draggingPtIndex_, dragging);
 }
+
 bool PolygonOutline::getDraggingPoint()
 {
     return isDraggingPoint_;
@@ -48,15 +55,10 @@ void PolygonOutline::setDatasetPtr(Dataset* datasetPtr)
     if(datasetPtr_ == nullptr) {
         return;
     }
-    connect(datasetPtr_, &Dataset::signalDrawOutline, this, &PolygonOutline::slot_setDrawOutlineMode);
 }
 
 void PolygonOutline::polygonAddPoint(double latitude, double longitude)
 {
-    if (!datasetPtr_->getLlaRef().isInit) {
-        GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
-        return;
-    }
     Epoch* lastEp = datasetPtr_->lastPolygonOutline();
     if (!lastEp) {
         return;
@@ -167,13 +169,22 @@ void PolygonOutline::clearData()
     isDraggingPoint_ = false;
 
     draggingPtIndex_ = -1;
-    lastIndx_ = 0;
+    lastIndx_ = -1;
 }
 
-void PolygonOutline::slot_setDrawOutlineMode(bool outlineMode)
+void PolygonOutline::selectVertex(int index, bool isDraggingPt)
 {
-    isDrawOutlineMode_ = outlineMode;
+    draggingPtIndex_ = index;
+    // 同步到渲染实现
+    auto renderImpl = dynamic_cast<PolygonOutlineRenderImplementation*>(m_renderImpl);
+    if (renderImpl) {
+        renderImpl->draggingPtIndex_ = index;
+        renderImpl->isDraggingPoint_ = isDraggingPoint_;
+    }
+    emit changed();
 }
+
+
 
 // RenderImplementation 实现
 PolygonOutline::PolygonOutlineRenderImplementation::PolygonOutlineRenderImplementation()
@@ -188,7 +199,6 @@ void PolygonOutline::PolygonOutlineRenderImplementation::render(QOpenGLFunctions
                       const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const
 {
     // qDebug() << "PolygonOutline::PolygonOutlineRenderImplementa...........";
-
     if (!m_isVisible || data().empty()) {
         return;
     }
@@ -214,41 +224,44 @@ void PolygonOutline::PolygonOutlineRenderImplementation::render(QOpenGLFunctions
     ctx->glDrawArrays(GL_LINE_LOOP, 0, data().size());
     ctx->glLineWidth(1.0f);
 
-
-    shaderProgram->setUniformValue(colorLoc, QVector4D(1.0f, 0.0f, 1.0f, 1.0f));
-    shaderProgram->setUniformValue(matrixLoc, mvp);
-
     // 为每个顶点绘制实心圆
     const float radius = 2.8f; // 圆的半径
     const int segments = 16; // 圆的分段数
-
+    // 生成圆的顶点数据
     QVector<QVector3D> circleVertices;
-    circleVertices.reserve(data().size() * (segments + 2)); // 每个顶点需要 segments + 2 个顶点（中心点 + 圆周点 + 重复起点）
+    circleVertices.reserve(segments + 2);
 
-    for (const QVector3D& vertex : data()) {
+    // 绘制每个顶点的圆
+    for (int i = 0; i < data().size(); i++) {
+        const QVector3D& vertex = data().at(i);
+
+        QVector4D vertexColor;
+        if (i == draggingPtIndex_) {
+            vertexColor = isDraggingPoint_ ? QVector4D(0.0f, 1.0f, 0.0f, 1.0f) : QVector4D(1.0f, 0.0f, 1.0f, 1.0f);
+        } else {
+            vertexColor = QVector4D(1.0f, 0.0f, 1.0f, 1.0f);
+        }
+
+        shaderProgram->setUniformValue(colorLoc, vertexColor);
+        shaderProgram->setUniformValue(matrixLoc, mvp);
+
+        circleVertices.clear();
         circleVertices.append(vertex);
 
         // 添加圆周上的点
-        for (int i = 0; i <= segments; i++) {
-            float angle = 2.0f * M_PI * i / segments;
+        for (int j = 0; j <= segments; j++) {
+            float angle = 2.0f * M_PI * j / segments;
             float x = vertex.x() + radius * std::cos(angle);
             float y = vertex.y() + radius * std::sin(angle);
             circleVertices.append(QVector3D(x, y, vertex.z()));
         }
-    }
 
-    shaderProgram->enableAttributeArray(posLoc);
-    shaderProgram->setAttributeArray(posLoc, circleVertices.constData());
-
-    int verticesPerCircle = segments + 2;
-    for (int i = 0; i < data().size(); i++) {
-        int offset = i * verticesPerCircle;
-        ctx->glDrawArrays(GL_TRIANGLE_FAN, offset, verticesPerCircle);
+        shaderProgram->setAttributeArray(posLoc, circleVertices.constData());
+        ctx->glDrawArrays(GL_TRIANGLE_FAN, 0, circleVertices.size());
     }
 
     shaderProgram->disableAttributeArray(posLoc);
     shaderProgram->release();
-
 }
 
 void PolygonOutline::PolygonOutlineRenderImplementation::render(QOpenGLFunctions* ctx,

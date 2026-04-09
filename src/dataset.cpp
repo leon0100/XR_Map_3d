@@ -872,8 +872,6 @@ void Dataset::resetRenderBuffers()
     vec_CSV_.clear();
     pool_.clear();
     pool_.shrink_to_fit();
-    polygonOutline_.clear();
-    polygonOutlineNED_.clear();
     _lastYaw = 0;
     _lastPitch = 0;
     _lastRoll = 0;
@@ -883,6 +881,12 @@ void Dataset::resetRenderBuffers()
     llaRefState_ = LlaRefState::kUndefined;
     bSProc_->clear();
     lastBottomTrackEpoch_ = 0;
+}
+
+void Dataset::resetPolygonOutline()
+{
+    polygonOutline_.clear();
+    polygonOutlineNED_.clear();
 }
 
 void Dataset::resetDistProcessing() {

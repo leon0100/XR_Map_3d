@@ -10,12 +10,17 @@ class PolygonOutline : public SceneObject
 {
     Q_OBJECT
     QML_NAMED_ELEMENT(PolygonOutline)
+
 public:
+    void setQmlRootObject(QObject* object);
+
     void setOutlineMode(bool outline);
     bool getOutlineMode() const;
 
     void setDraggingPoint(bool dragging);
     bool getDraggingPoint();
+
+    void selectVertex(int index, bool isDraggingPt);
 
 public:
     class PolygonOutlineRenderImplementation : public SceneObject::RenderImplementation
@@ -35,7 +40,8 @@ public:
 
     private:
         friend class PolygonOutline;
-        QVector<int> selectedVertexIndices_;
+        int draggingPtIndex_ = -1;
+        bool isDraggingPoint_ = false;
 
     };
 
@@ -53,24 +59,25 @@ public Q_SLOTS:
     virtual void clearData() override final;
 
 
-public slots:
-    void slot_setDrawOutlineMode(bool outlineMode);
-
-
 protected:
     friend class GraphicsScene3dView;
 
 private:
     Dataset* datasetPtr_;
+    QObject* qmlRootObject_;
 
-
-    int lastIndx_ = 0;
+    int lastIndx_ = -1;
 
     bool isDrawOutlineMode_ = false;
     bool isDraggingPoint_ = false;
 
+    bool m_vertexEditable = false;
+    int m_selectedVertexIndex = -1;
+
+
 public:
     int draggingPtIndex_ = -1;        //当前拖动的点索引，-1表示无
+
 
 
 };

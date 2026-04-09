@@ -161,7 +161,7 @@ int qPlot2D::getThemeId() const
 void qPlot2D::drawPolygonOutline(bool outlineMode)
 {
     if(datasetPtr_ != nullptr) {
-        emit datasetPtr_->signalDrawOutline(outlineMode);
+       emit datasetPtr_->signalDrawOutline(outlineMode);
     }
 }
 
@@ -170,6 +170,11 @@ void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, 
                             float threshold, float offsetx, float offsety, float offsetz, bool manual) {
     // qDebug() << "开始绘制等高线 qPlot2D::doDistProcessing.........";
     if (datasetPtr_ != nullptr) {
+        QVector<Epoch> pool = datasetPtr_->getPool();
+        if(pool.isEmpty()) {
+            GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
+            return;
+        }
         if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
             btpPtr->preset      = static_cast<BottomTrackPreset>(preset);
             btpPtr->gainSlope   = gain_slope;

@@ -83,7 +83,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(navigationArrow_.get(), &NavigationArrow::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(usblView_.get(),     &UsblView::boundsChanged,     this, &GraphicsScene3dView::updateBounds);
 
-
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateMapView, Qt::DirectConnection);
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateViews, Qt::DirectConnection);
 
@@ -204,6 +203,14 @@ double GraphicsScene3dView::getCurrLon() const
     return currentLon_;
 }
 
+void GraphicsScene3dView::setCursorShape(Qt::CursorShape shape)
+{
+    if (cursorShape_ != shape) {
+        cursorShape_ = shape;
+    }
+    emit cursorShapeChanged();
+}
+
 void GraphicsScene3dView::clear(bool cleanMap)
 {
     isobathsView_->clear();
@@ -215,7 +222,6 @@ void GraphicsScene3dView::clear(bool cleanMap)
     }
     boatTrack_->clearData();
     m_bottomTrack->clearData();
-    polygonOutline_->clearData();
     m_polygonGroup->clearData();
     m_pointGroup->clearData();
     navigationArrow_->clearData();
@@ -299,12 +305,12 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         else {
             if(!polygonOutline_->getDraggingPoint() && polygonOutline_->draggingPtIndex_ >= 0) {
                 polygonOutline_->setDraggingPoint(true);
-                setCursor(Qt::CrossCursor);
+                setCursorShape(Qt::CrossCursor);
             }
             else if(polygonOutline_->getDraggingPoint()) {
                 polygonOutline_->setDraggingPoint(false);
                 polygonOutline_->draggingPtIndex_ = -1;
-                setCursor(Qt::ArrowCursor);
+                setCursorShape(Qt::ArrowCursor);
             }
         }
 
@@ -336,8 +342,8 @@ void GraphicsScene3dView::mouseDoubleClickTrigger(Qt::MouseButtons mouseButton, 
 
     if(polygonOutline_->getOutlineMode()) {
         polygonOutline_->setOutlineMode(false);
-        setCursor(Qt::OpenHandCursor);
-        GIF->dialogInfo(Dialog_OK, tr("Map Outline Create Successful!"));
+        setCursorShape(Qt::ArrowCursor);
+        GIF->dialogInfo(Dialog_OK, tr("Isobaths Outline Create Successful!"));
     }
 
 }
@@ -393,7 +399,10 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
     }
 
     /*- 绘制多边形轮廓模式 -*/
-    if (polygonOutline_->getDraggingPoint() && (polygonOutline_->draggingPtIndex_ >= 0))
+    if(polygonOutline_->getOutlineMode()) {
+        setCursorShape(Qt::PointingHandCursor);
+    }
+    else if (polygonOutline_->getDraggingPoint() && (polygonOutline_->draggingPtIndex_ >= 0))
     {
         calculateLatLong(x, y, currentLat_, currentLon_);
         LLA lla = LLA(currentLat_, currentLon_);
@@ -926,6 +935,29 @@ void GraphicsScene3dView::setPolygonEditingMode()
     QQuickFramebufferObject::update();
 }
 
+void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
+{
+    if(isOutlineMode) {
+        QVector<Epoch> pool = datasetPtr_->getPool();
+        if(pool.isEmpty()) {
+            GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
+            if(qmlRootObject_) {
+                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSettings")) {
+                    isobathsSet->setProperty("outlineMode", false);
+                }
+            }
+        } else {
+            polygonOutline_->setOutlineMode(true);
+        }
+    } else {
+        polygonOutline_->setOutlineMode(false);
+        datasetPtr_->resetPolygonOutline();
+        polygonOutline_->clearData();
+        setCursorShape(Qt::ArrowCursor);
+    }
+
+}
+
 void GraphicsScene3dView::setDataset(Dataset *dataset)
 {
     if (!dataset) {
@@ -983,6 +1015,7 @@ void GraphicsScene3dView::addPoints(QVector<QVector3D> positions, QColor color, 
 void GraphicsScene3dView::setQmlRootObject(QObject* object)
 {
     qmlRootObject_ = object;
+    polygonOutline_->setQmlRootObject(object);
 }
 
 void GraphicsScene3dView::setQmlAppEngine(QQmlApplicationEngine* engine)
