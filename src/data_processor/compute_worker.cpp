@@ -182,7 +182,7 @@ void ComputeWorker::bottomTrackProcessing(const DatasetChannel& ch1, const Datas
 
 void ComputeWorker::processBundle(const WorkBundle& wb)
 {
-    // qDebug() << "ComputeWorker::processBundle: task" << wb.mosaicVec.size();
+    // qDebug() << "ComputeWorker::processBundle";
     // wb.surfaceVec:在底部轨迹数据数组中的索引
     // 依次地，传感器自行向外发送信号
     if (!wb.surfaceVec.isEmpty() && !isCanceled()) {
@@ -195,7 +195,7 @@ void ComputeWorker::processBundle(const WorkBundle& wb)
     // }
 
     if (wb.doIsobaths && !isCanceled()) {
-        isobaths_.onUpdatedBottomTrackData(); //只计算等值线 线。。，但它完全依赖于SurfaceProcessor生成的高度场网格。
+        isobaths_.onUpdatedBottomTrackData(); //只计算等值线....... 但它完全依赖于SurfaceProcessor生成的高度场网格。
     }
 
     // emit jobFinished();

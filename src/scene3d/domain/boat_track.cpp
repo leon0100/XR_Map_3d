@@ -10,7 +10,7 @@
 BoatTrack::BoatTrack(GraphicsScene3dView* view, QObject* parent) :
     SceneObject(new BoatTrackRenderImplementation, view, parent),
     datasetPtr_(nullptr),
-    lastIndx_(0)
+    lastIndx_(-1)
 {
     setPrimitiveType(GL_LINE_STRIP);
 
@@ -87,7 +87,7 @@ void BoatTrack::clearData()
     auto r = RENDER_IMPL(BoatTrack);
     r->boatTrackVertice_ = QVector3D();
     r->bottomTrackVertice_ = QVector3D();
-    lastIndx_ = 0;
+    lastIndx_ = -1;
 
     SceneObject::clearData();
 }

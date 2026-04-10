@@ -140,8 +140,6 @@ void DataHorizon::onAddedBottomTrack(uint64_t indx)
 
 void DataHorizon::onAddedBottomTrack3D(const QVector<int>& epIndxs, const QVector<int>& vertIndx, bool isManual)
 {
-    // qDebug() << "DataHorizon::onAddedBottomTrack3D" << isManual;
-
     bool beenChanged = true; // NEED COMPARE?
 
     if (canEmitHorizon(beenChanged)) {

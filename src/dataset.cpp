@@ -91,16 +91,10 @@ LLARef Dataset::getLlaRef() const
 
 void Dataset::setLlaRef(const LLARef &val, LlaRefState state)
 {
-    if ((llaRefState_ == LlaRefState::kUndefined) ||
-        (llaRefState_ == LlaRefState::kSettings   && (state == LlaRefState::kConnection  || state == LlaRefState::kFile)) ||
-        (llaRefState_ == LlaRefState::kFile       &&  state == LlaRefState::kConnection) ||
-        (llaRefState_ == LlaRefState::kConnection &&  state == LlaRefState::kFile)) {
+    _llaRef = val;
 
-        _llaRef = val;
-
-        llaRefState_ = state;
-        emit updatedLlaRef();
-    }
+    llaRefState_ = state;
+    emit updatedLlaRef();
 }
 
 
@@ -839,7 +833,7 @@ void Dataset::resetDataset()
     resetRenderBuffers();
 
     resetDistProcessing();
-    state_ = DatasetState::kUndefined;
+    // state_ = DatasetState::kUndefined;
 
 #if defined(FAKE_COORDS)
     testTime_ = 1740466541;
@@ -857,7 +851,7 @@ void Dataset::resetDataset()
     lastDepth_            = 0.0f;
 
     sonarPosIndx_ = 0;
-    // _llaRef.isInit = false;
+    _llaRef.isInit = false;
 
     emit lastDepthChanged();
     emit channelsUpdated();
@@ -878,7 +872,7 @@ void Dataset::resetRenderBuffers()
     lastTemp_ = NAN;
     interpolator_.clear();
     _llaRef = LLARef();
-    llaRefState_ = LlaRefState::kUndefined;
+    // llaRefState_ = LlaRefState::kUndefined;
     bSProc_->clear();
     lastBottomTrackEpoch_ = 0;
 }

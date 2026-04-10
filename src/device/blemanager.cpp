@@ -682,7 +682,7 @@ void BLEManager::onServiceScanDone()
         loadingQuickView_->hide();
         m_connected = true;
         readingDrawTrack_ = true;
-        emit connectedChanged(m_connected);
+        emit connectedChanged(true);
     }, Qt::QueuedConnection);
 
     if(bleServer_) {
@@ -699,8 +699,6 @@ void BLEManager::onServiceScanDone()
         qDebug() << "Service not found";
         return;
     }
-
-    qDebug() << "BLEManager::onServiceScanDone().........";
 
     parserThread_->start();
     QMetaObject::invokeMethod(parser_, "start", Qt::QueuedConnection);

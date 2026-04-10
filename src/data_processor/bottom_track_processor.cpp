@@ -55,7 +55,6 @@ void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1,
     if (epoch_max_index == epoch_min_index) {
         return;
     }
-    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kBottomTrack));
     QVector<int32_t> summ;
     float gain_slope = btP.gainSlope;
     float threshold = btP.threshold;
@@ -330,7 +329,6 @@ void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1,
         }
     }
 
-    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
     QMetaObject::invokeMethod(dataProcessor_, "postLastBottomTrackEpochChanged", Qt::QueuedConnection,
                                 Q_ARG(ChannelId, channel1.channelId_), Q_ARG(int, size),
                                 Q_ARG(BottomTrackParam, btP),Q_ARG(bool, manual), Q_ARG(bool, redrawAll));

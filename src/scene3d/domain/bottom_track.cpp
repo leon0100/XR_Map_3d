@@ -151,7 +151,6 @@ void BottomTrack::actionEvent(ActionEvent actionEvent)
 
 void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redrawAll)
 {
-    // qDebug() << "BottomTrack::isEpochsChanged...............";
     if (datasetPtr_ && datasetPtr_->getLastBottomTrackEpoch() != 0) {
         auto datasetChannels = datasetPtr_->channelsList();
         if (!datasetChannels.isEmpty()) {
@@ -495,7 +494,6 @@ void BottomTrack::keyPressEvent(Qt::Key key)
 
 void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool manually)
 {
-    // qDebug() << "BottomTrack::updateRenderData...................";
     if (!datasetPtr_) {
         return;
     }

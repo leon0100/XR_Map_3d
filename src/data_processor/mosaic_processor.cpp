@@ -103,7 +103,6 @@ void MosaicProcessor::updateDataWrapper(const QVector<int>& indxs)
         return;
     }
 
-    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kMosaic));
 
     QVector<int> vec = indxs;
     const int firstNow = vec.first();
@@ -136,7 +135,6 @@ void MosaicProcessor::updateDataWrapper(const QVector<int>& indxs)
     //}
 
     updateData(vec);
-    QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kUndefined));
 }
 
 void MosaicProcessor::resetTileSettings(int tileSidePixelSize, int tileHeightMatrixRatio, float tileResolution)//

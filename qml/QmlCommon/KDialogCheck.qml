@@ -35,8 +35,18 @@ Rectangle {
 
 
     property int dialogWidth: theme.screenSize * 0.40
-    property int dialogHeight: theme.screenSize * 0.20
+    property int dialogHeight: theme.screenSize * 0.18
     property int iconSize: theme.iconSize
+
+    property bool isDialogCheckBox: false
+    property string checkBoxText: qsTr("Clear Track")
+
+    Connections {
+        target: GetInterface
+        function onSetCheckBoxText(text) {
+            checkBoxText = text
+        }
+    }
 
 
     Rectangle {
@@ -46,7 +56,6 @@ Rectangle {
         height: dialogHeight
         radius: 10
         color: "#d6e6ff"
-
 
 
         ColumnLayout {
@@ -65,7 +74,7 @@ Rectangle {
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     height: parent.radius
-                    color: parent.color
+                    color:  parent.color
                 }
 
                 Row {
@@ -74,7 +83,7 @@ Rectangle {
                     spacing: 2
 
                     Image {
-                        width: iconSize * 1.2
+                        width:  iconSize * 1.2
                         height: iconSize * 1.2
                         source: "qrc:/XR/icon_XR_map.png"
                         fillMode: Image.PreserveAspectFit
@@ -93,7 +102,7 @@ Rectangle {
             Rectangle {
                 Layout.fillWidth: true
                 color: "transparent"
-                implicitHeight: iconSize * 3
+                Layout.preferredHeight: iconSize * 2
 
                 RowLayout {
                     anchors.fill: parent
@@ -120,9 +129,56 @@ Rectangle {
             }
 
 
+            Rectangle {
+                id: dialogCheckBox
+                Layout.fillWidth: true
+                Layout.preferredHeight: iconSize * 2
+                color: "transparent"
+
+                Row {
+                    anchors.fill: parent
+                    anchors.leftMargin: iconSize * 3.5
+                    spacing: iconSize * 0.6
+
+                    Rectangle {
+                        width: iconSize * 1.1
+                        height: iconSize * 1.1
+                        radius: 5
+                        border.color: "#b0b3b8"
+                        border.width: 1
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: parent.width * 0.8
+                            height: parent.height * 0.8
+                            radius: parent.height * 0.4
+                            color: "#66E07A"
+                            visible: isDialogCheckBox
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: isDialogCheckBox = !isDialogCheckBox
+                        }
+                    }
+
+                    Text {
+                        text: checkBoxText
+                        font.pixelSize: iconSize
+                        color: "black"
+                        anchors.verticalCenter: parent.verticalCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: isDialogCheckBox = !isDialogCheckBox
+                        }
+                    }
+                }
+            }
+
+
             Item {
                 Layout.fillWidth: true
-                Layout.preferredHeight: iconSize * 3
+                Layout.preferredHeight: iconSize * 2
 
                 Row {
                     anchors.right: parent.right
@@ -153,7 +209,7 @@ Rectangle {
 
                             onClicked: {
                                 root.visible = false
-                                GetInterface.checkDialogBtn(true)
+                                GetInterface.checkDialogBtn(true, isDialogCheckBox)
                             }
                         }
                     }
@@ -181,12 +237,16 @@ Rectangle {
 
                             onClicked: {
                                 root.visible = false
-                                GetInterface.checkDialogBtn(false)
+                                GetInterface.checkDialogBtn(false, false)
                             }
                         }
                     }
-
                 }
+            }
+
+            Item {
+                Layout.fillHeight: true
+                Layout.maximumHeight: 1
             }
 
         }

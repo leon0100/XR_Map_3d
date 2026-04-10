@@ -93,6 +93,8 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     case DataProcessorType::kIsobaths:    clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
     case DataProcessorType::kMosaic:      clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
     case DataProcessorType::kSurface:     clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
+    case DataProcessorType::bletoothTrack:clearAllProcessings();        emit allProcessingCleared();         break;
+    case DataProcessorType::staticTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
     default: break;
     }
 
@@ -102,8 +104,34 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     positionCounter_ = 0;
     attitudeCounter_ = 0;
     mosaicCounter_ = 0;
+}
 
-    postState(DataProcessorType::kUndefined);
+void DataProcessor::clearProcessing2(bool isClearTrack)
+{
+    requestCancel();
+
+    if(isClearTrack) {
+        clearAllProcessings();
+        emit allProcessingCleared();
+        chartsCounter_ = 0;
+        bottomTrackCounter_ = 0;
+        epochCounter_ = 0;
+        positionCounter_ = 0;
+        attitudeCounter_ = 0;
+        mosaicCounter_ = 0;
+    } else {
+        clearIsobathsProcessing();
+        emit isobathsProcessingCleared();
+        clearSurfaceProcessing();
+        emit surfaceProcessingCleared();
+    }
+
+    // chartsCounter_ = 0;
+    // bottomTrackCounter_ = 0;
+    // epochCounter_ = 0;
+    // positionCounter_ = 0;
+    // attitudeCounter_ = 0;
+    // mosaicCounter_ = 0;
 }
 
 void DataProcessor::setUpdateBottomTrack(bool state)
@@ -122,7 +150,7 @@ void DataProcessor::setUpdateBottomTrack(bool state)
 
 void DataProcessor::setUpdateIsobaths(bool state)
 {
-    // qDebug() << "setUpdateIsobaths is ........ " << state;
+    qDebug() << "setUpdateIsobaths is ........ " << state;
     updateIsobaths_ = state;
     if (state) {
         scheduleLatest(WorkSet(WF_Isobaths));
@@ -188,7 +216,6 @@ void DataProcessor::onChartsAdded(uint64_t indx)
 
 void DataProcessor::onBottomTrack3DAdded(const QVector<int>& epIndxs, const QVector<int>& vertIndxs, bool isManual)
 {
-    // qDebug() << "DataProcessor::onBottomTrack3DAdded...............";
     if (epIndxs.isEmpty() || vertIndxs.isEmpty()) {
         return;
     }
@@ -247,7 +274,7 @@ void DataProcessor::setSurfaceColorTableThemeById(int id)
 
 void DataProcessor::setSurfaceEdgeLimit(int val)
 {
-    // qDebug() << "DataProcessor::setSurfaceEdgeLimit...........";
+    qDebug() << "DataProcessor::setSurfaceEdgeLimit...........";
     QMetaObject::invokeMethod(worker_, "setSurfaceEdgeLimit", Qt::QueuedConnection, Q_ARG(float, float(val)));
 
     pendingIsobathsWork_ = true;
@@ -271,7 +298,7 @@ void DataProcessor::setIsobathsLabelStepSize(float val)
 
 void DataProcessor::setSurfaceIsobathsStepSize(float val)
 {
-    // qDebug() << "ataProcessor::setSurfaceIsobathsStepSize............";
+    qDebug() << "ataProcessor::setSurfaceIsobathsStepSize............";
     QMetaObject::invokeMethod(worker_, "setSurfaceIsobathsStepSize", Qt::QueuedConnection, Q_ARG(float, val));
 
     pendingIsobathsWork_ = true;
@@ -390,7 +417,7 @@ void DataProcessor::askColorTableForMosaic()
 
 void DataProcessor::onIsobathsUpdated()
 {
-    // qDebug() << "onIsobathsUpdated..........";
+    qDebug() << "onIsobathsUpdated..........";
     if (!updateIsobaths_) {
         return;
     }
@@ -549,9 +576,8 @@ void DataProcessor::postMinZ(float val)
 
     emit sendSurfaceMinZ(val); // to surface view
 
-    pendingIsobathsWork_ = true;
-
-    scheduleLatest(WorkSet(WF_Isobaths));
+    // pendingIsobathsWork_ = true;
+    // scheduleLatest(WorkSet(WF_Isobaths));
 }
 
 void DataProcessor::postMaxZ(float val)
@@ -561,9 +587,8 @@ void DataProcessor::postMaxZ(float val)
 
     emit sendSurfaceMaxZ(val); // to surface view
 
-    pendingIsobathsWork_ = true;
-
-    scheduleLatest(WorkSet(WF_Isobaths));
+    // pendingIsobathsWork_ = true;
+    // scheduleLatest(WorkSet(WF_Isobaths));
 }
 
 void DataProcessor::postSurfaceColorTable(const std::vector<uint8_t> &t)
@@ -674,12 +699,5 @@ void DataProcessor::requestCancel() noexcept
     nextRunPending_.store(true);
     cancelRequested_.store(true);
 }
-
-
-
-
-
-
-
 
 

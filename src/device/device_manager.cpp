@@ -687,7 +687,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         bool enableRender = (z + 1) == tslWCnt ? true : false;
         emit positionComplete_file(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude, enableRender);
     }
-    // qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
+    qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));

@@ -86,16 +86,16 @@ public:
     }
 
     Q_INVOKABLE void dialogYesNoBtn(bool flag) {
-        if(checkDialogCallback_) {
-            checkDialogCallback_(flag);
-            checkDialogCallback_ = nullptr;
-        }
-    }
-
-    Q_INVOKABLE void checkDialogBtn(bool flag) {
         if(yesNoCallback_) {
             yesNoCallback_(flag);
             yesNoCallback_ = nullptr;
+        }
+    }
+
+    Q_INVOKABLE void checkDialogBtn(bool flag, bool isCheck) {
+        if(checkDialogCallback_) {
+            checkDialogCallback_(flag, isCheck);
+            checkDialogCallback_ = nullptr;
         }
     }
 
@@ -105,17 +105,18 @@ public:
         emit showDialogInfo(Dialog_YesNo, msg);
     }
 
-    std::function<void(bool)> checkDialogCallback_;
-    void dialogCheck(const QString &msg, std::function<void(bool)> cb) {
+    std::function<void(bool, bool)> checkDialogCallback_;
+    void dialogCheck(const QString &msg, std::function<void(bool, bool)> cb, const QString &checkBoxText = QString()) {
         checkDialogCallback_ = cb;
         emit showDialogInfo(Dialog_Check, msg);
+        emit setCheckBoxText(checkBoxText);
     }
 
 
 signals:
     void showDialogInfo(int type, const QString &msg);
     void flashDialog(int type);
-
+    void setCheckBoxText(const QString &text);
 
 };
 

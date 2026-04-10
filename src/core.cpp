@@ -362,7 +362,7 @@ void Core::openLogFile(const QString& filePath, bool isAppend, bool onCustomEven
 
         if (scene3dViewPtr_) {
             if (!isAppend) {
-                scene3dViewPtr_->clear();
+                scene3dViewPtr_->clear(true);
             }
         }
 
@@ -396,7 +396,7 @@ bool Core::closeLogFile()
         datasetPtr_->resetRenderBuffers();
     }
     if (scene3dViewPtr_) {
-        scene3dViewPtr_->clear();
+        scene3dViewPtr_->clear(true);
         scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
     }
     dataHorizon_->clear();
@@ -508,7 +508,7 @@ bool Core::openCSV(QString name, int separatorType, int firstRow, int colTime,
 
         if (scene3dViewPtr_) {
             if (!isAppend) {
-                scene3dViewPtr_->clear();
+                scene3dViewPtr_->clear(true);
             }
         }
 
@@ -1333,6 +1333,9 @@ void Core::openFileFromMenu()
     if (progress_) {
         QMetaObject::invokeMethod(progress_, "open");
     }
+    onDataProcesstorStateChanged(DataProcessorType::staticTrack);
+
+    qDebug() << "void Core::openFileFromMenu()...........";
 
     /*-----------------------open kml/kmz--------------------------*/
     if(fileNames.last().endsWith("kml") || fileNames.last().endsWith("kmz")) {
@@ -1440,8 +1443,6 @@ void Core::openFileFromMenu()
         // onChannelsUpdated();
 
 
-
-
         // QTimer::singleShot(5000, []() {
         //     qDebug() << "After 5s: " << QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
         // });
@@ -1458,46 +1459,48 @@ void Core::clearRouteData()
         return;
     }
     if(datasetPtr_->size() == 0) {
-        GIF->dialogInfo(Dialog_OK, "No Trajectory Points Available!");
+        GIF->dialogInfo(Dialog_OK, "No Track Points Available!");
         return;
     }
+    if(dataProcessorState_ == DataProcessorType::bletoothTrack) {
+        GIF->dialogYesNo(tr("Confirm Clear All Historical Data?"),[this](bool confirmed) {
+            if(confirmed) {
+                bleManager_->clearRealData();
+                datasetPtr_->resetDataset();
+                dataHorizon_->clear();
 
-    // GIF->dialogYesNo(tr("Confirm Clear Historical Trajectories?"),[this](bool confirmed) {
-    //     if(confirmed) {
-    //         bleManager_->clearRealData();
-    //         datasetPtr_->resetDataset();
-    //         dataHorizon_->clear();
+                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
 
-    //         QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
+                if (scene3dViewPtr_) {
+                    scene3dViewPtr_->clear(true);
+                    scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+                }
 
-    //         if (scene3dViewPtr_) {
-    //             scene3dViewPtr_->clear();
-    //             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
-    //         }
-
-    //         emit isobathsViewControlMenuController_->edgeLimitChanged(100);
-    //         // GIF->dialogInfo(Dialog_OK, "Cleared successfully!");
-    //     }
-    // });
-
-
-    GIF->dialogCheck(tr("Confirm Clear Historical Trajectories?"),[this](bool confirmed) {
-        if(confirmed) {
-            bleManager_->clearRealData();
-            datasetPtr_->resetDataset();
-            dataHorizon_->clear();
-
-            QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
-
-            if (scene3dViewPtr_) {
-                scene3dViewPtr_->clear();
-                scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+                emit isobathsViewControlMenuController_->edgeLimitChanged(100);
             }
 
-            emit isobathsViewControlMenuController_->edgeLimitChanged(100);
-            // GIF->dialogInfo(Dialog_OK, "Cleared successfully!");
-        }
-    });
+        });
+    }
+    else if(dataProcessorState_ == DataProcessorType::staticTrack) {
+        GIF->dialogCheck(tr("Confirm to Clear Isobaths?"),[this](bool confirmed, bool clearTrack) {
+            if(confirmed) {
+                if(clearTrack) {
+                    bleManager_->clearRealData();
+                    datasetPtr_->resetDataset();
+                    dataHorizon_->clear();
+                    QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool,clearTrack));
+                }
+
+                if (scene3dViewPtr_) {
+                    scene3dViewPtr_->clear(clearTrack);
+                    scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+                }
+
+                // emit isobathsViewControlMenuController_->edgeLimitChanged(100);
+            }
+        }, tr("Clear Track Data"));
+    }
+
 }
 
 void Core::setAutoRenderSpan(bool isAuto)
@@ -1877,8 +1880,11 @@ void Core::onZoomLevelChanged(int level)
 
 void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
 {
+    int vecSize = depthVec.size();
+    if(vecSize > 0 && vecSize < 3) {
+        onDataProcesstorStateChanged(DataProcessorType::bletoothTrack);
+    }
     if(isAutoRenderSpan_) {
-        int vecSize = depthVec.size();
         if(vecSize == 200) {
             isobathsViewControlMenuController_->setEdgeLimitChanged(80);
         } else if(vecSize == 400) {

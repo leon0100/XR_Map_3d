@@ -216,6 +216,7 @@ void IsobathsViewControlMenuController::setEdgeLimitChanged(int val)
 
 void IsobathsViewControlMenuController::onEdgeLimitChanged(int val)
 {
+    // qDebug() << "IsobathsViewControlMenuController::onEdgeLimitChanged............";
     edgeLimit_ = val;
 
     if (graphicsSceneViewPtr_) {

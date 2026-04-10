@@ -211,24 +211,27 @@ void GraphicsScene3dView::setCursorShape(Qt::CursorShape shape)
     emit cursorShapeChanged();
 }
 
-void GraphicsScene3dView::clear(bool cleanMap)
+void GraphicsScene3dView::clear(bool isClearTrack, bool cleanMap)
 {
+    if(isClearTrack) {
+        boatTrack_->clearData();
+        m_bottomTrack->clearData();
+        navigationArrow_->clearData();
+    }
+
     isobathsView_->clear();
     surfaceView_->clear();
     contacts_->clear();
-    imageView_->clear();//
+    imageView_->clear();
     if (cleanMap) {
         mapView_->clear();
     }
-    boatTrack_->clearData();
-    m_bottomTrack->clearData();
     m_polygonGroup->clearData();
     m_pointGroup->clearData();
-    navigationArrow_->clearData();
     usblView_->clearTracks();
     m_bounds = Cube();
 
-    //setMapView();
+    // setMapView();
     updateBounds();
 
     QQuickFramebufferObject::update();
@@ -1037,7 +1040,7 @@ void GraphicsScene3dView::updateBounds()
                    .merge(imageView_->bounds())
                    .merge(usblView_->bounds());
 
-    updatePlaneGrid();
+    // updatePlaneGrid();
 
     QQuickFramebufferObject::update();
 }

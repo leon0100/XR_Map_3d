@@ -221,7 +221,7 @@ public:
     double getCurrLon() const;
     void setCursorShape(Qt::CursorShape shape);
     Qt::CursorShape cursorShape() const { return cursorShape_; }
-    void clear(bool cleanMap = false);
+    void clear(bool isClearTrack, bool cleanMap = false);
     QVector3D calculateIntersectionPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float planeZ);
     void updateProjection();
     void setNeedToResetStartPos(bool state);

@@ -18,7 +18,10 @@ enum class DataProcessorType {
     kBottomTrack,
     kIsobaths,
     kMosaic,
-    kSurface
+    kSurface,
+    bletoothTrack,
+    staticTrack,
+    kmlkmzFile,
 };
 
 Q_DECLARE_METATYPE(DataProcessorType)

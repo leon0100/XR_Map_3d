@@ -52,7 +52,6 @@ void SurfaceProcessor::setSurfaceMeshPtr(SurfaceMesh *surfaceMeshPtr)
 
 void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> &indxs)
 {
-    // qDebug() << "SurfaceProcessor::onUpdatedBottomTrackData...........";
     if (indxs.empty()) {
         return;
     }
@@ -67,7 +66,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         return;
     }
 
-    // QMetaObject::invokeMethod(dataProcessor_, "postState", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kSurface));
 
     //头一次都是初始化时的数据
     auto& tr = delaunayProc_.getTriangles();
