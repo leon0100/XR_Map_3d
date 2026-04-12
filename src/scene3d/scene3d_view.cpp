@@ -676,7 +676,7 @@ void GraphicsScene3dView::updateProjection()
         //这里有个bug，14等级时，地图等级切换会出现抖动现象！！！
         float aspectRatio = width()/height();
         if (m_camera->getIsPerspective()) { //当地图等级大于14的某个值时为perspective透视投影
-            float coeff = m_camera->getHeightAboveGround()/perspectiveEdge_;
+            float coeff = m_camera->getHeightAboveGround() / perspectiveEdge_;
             qreal fixFov = m_camera->fov() + m_camera->fov()*coeff;
             // qDebug() << "coeff: " << coeff << "............  :fixFov:" <<fixFov;
             currProj.perspective(fixFov, aspectRatio, nearPlanePersp_, farPlanePersp_);
@@ -2047,7 +2047,6 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
         m_rotAngle = { 0.0f, 0.0f };
     }
     else if ((isPerspective_ && projectionChanged) || (!isPerspective_ && !projectionChanged)) { // 透视投影切换到正交投影
-        //nie:test 这段注释掉的话，等高线和瓦片地图的拖动会保持同步
         viewPtr_->setNeedToResetStartPos(true);
         viewLlaRef_ = lookAtLlaRef;
         m_lookAt = QVector3D(0.0f, 0.0f, 0.0f);
@@ -2198,6 +2197,7 @@ void GraphicsScene3dView::Camera::updateViewMatrix()
     angleToGround_ = 90.f * std::fabs(cu.z());
 
     QMatrix4x4 view;
+    //LookAt函数：创建一个看着(Look at)给定目标的观察矩阵。三个参数，相机位置pos、目标位置target、相机上向量up
     view.lookAt(cf + m_lookAt, m_lookAt, cu.normalized());
     view.scale(1.0f,1.0f,-1.0f);
 

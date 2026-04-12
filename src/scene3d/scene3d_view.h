@@ -88,7 +88,7 @@ public:
     private:
         void updateCameraParams();
         void tryToChangeViewLlaRef();
-        void updateViewMatrix();
+        void updateViewMatrix();//通过欧拉角和距离参数，计算相机在3D空间中的位置和方向
         void checkRotateAngle();
         void tryResetRotateAngle();
 
