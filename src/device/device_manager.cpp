@@ -34,6 +34,7 @@ DeviceManager::DeviceManager()
     qRegisterMetaType<IDBinDVL::DVLSolution>("IDBinDVL::DVLSolution");
     qRegisterMetaType<uint32_t>("uint32_t");
     qRegisterMetaType<FrameParser>("FrameParser");
+    qRegisterMetaType<EnumFileType>("EnumFileType");
 }
 
 DeviceManager::~DeviceManager()
@@ -587,8 +588,7 @@ void DeviceManager::openFile_CSV(QString filePath)
     emit fileStopsOpening2(vec_CSV, minZ, maxZ);  //这一步使得最后将读取到的轨迹内容绘制到scene3d_view上
 }
 
-
-void DeviceManager::openFile_tslw(QString filePath)
+void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType)
 {
     QFile tslFile;
     tslFile.setFileName(filePath);
@@ -598,19 +598,24 @@ void DeviceManager::openFile_tslw(QString filePath)
             tslByteArray = tslFile.readAll();
             tslFile.close();
         }
-        openFileData_tslw(tslByteArray);
+        if(currentFileType == filetype_tslw) {
+            openFileData_tslw(tslByteArray);
+        }
+        else if(currentFileType == filetype_tsl3) {
+            openFileData_tsl3(tslByteArray);
+        }
+
     }
 }
 
 
-
 double DeviceManager::dm_to_dd(double ddmmmmmmm)
 {
-    double dm = (double)ddmmmmmmm /100.0f;
+    double dm = (double)ddmmmmmmm / 100.0f;
 
     int dd = (int)dm;
 
-    double mm = (dm-dd) /0.6f;
+    double mm = (dm-dd) / 0.6f;
 
     return ((double)dd+mm);
 }
@@ -632,62 +637,227 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     if(tslByteList.isEmpty()) return;
 
     int tslWCnt = tslByteList.count();
-    // mapGraphicsView_->objFileProgress_->setProperty("maxValue",tslWCnt);
-    // tsl_w tslSingleStru;
-    // memcpy(&tslSingleStru, tslByteList.first(), sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w));
-    // double last_lon = dm_to_dd((double)tslSingleStru.boat.longitude/100000.0f);
-    // double last_lat = dm_to_dd((double)tslSingleStru.boat.latitude/100000.0f);
 
-    QList<Position> track;
+    QList<LLA> track;
     QVector<float> vec_CSV;
     double minZ = 0.0, maxZ = 0.0;
 
     qDebug() << "tslWCnt.size()........." << tslWCnt;
-    // tslWCnt -= 230;
+    const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
+    const float SPIKE_THRESHOLD = 10.0f;    // 跳变阈值（米），超过用中值替代
+    QList<LLA> buffer;
     int progressInterval = qMax(1, tslWCnt / 100);
-    for(int z = 0; z < tslWCnt; z++)
+    for(int i = 0; i < tslWCnt; i++)
     {
-        QByteArray tslDataTemp = tslByteList.at(z);
-
-        quint8 chk = 0;
-        for(int i = 3; i < tslDataTemp.count()-1; i++) {
-            chk ^= tslDataTemp.at(i);
-        }
-
-        if(chk != (quint8)tslDataTemp.at(tslDataTemp.count()-1)) {
-            continue;
-        }
-
-        // 更新进度条
-        if (progressDialog_ && (z % progressInterval == 0 || z == (tslWCnt - 1))) {
-            double progress = static_cast<double>(z + 1) / tslWCnt;
-            QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                            .arg(z + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
-            QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
-            QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
-            QCoreApplication::processEvents();
-        }
+        QByteArray tslDataTemp = tslByteList.at(i);
 
         tsl_w tslSingleStruct;
         memcpy(&tslSingleStruct, tslDataTemp, sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w));
         tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
         tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;
 
-        Position pos;
-        pos.lla.latitude = tslSingleStruct.boat.latitude / 100000.f;
-        pos.lla.longitude = tslSingleStruct.boat.longitude / 100000.f;
-        pos.lla.altitude = tslSingleStruct.auxInfo.depth / 100.f;
-        track.append(pos);
+        LLA lla;
+        lla.latitude = tslSingleStruct.boat.latitude / 100000.f;
+        lla.longitude = tslSingleStruct.boat.longitude / 100000.f;
+        lla.altitude = tslSingleStruct.auxInfo.depth / 100.f;
 
-        minZ = std::min(minZ, pos.lla.altitude);
-        maxZ = std::max(maxZ, pos.lla.altitude);
-        vec_CSV.append(pos.lla.altitude);
+        buffer.append(lla);
+        if (buffer.size() < MEDIAN_WINDOW) {
+            // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
+            if (buffer.size() <= MEDIAN_WINDOW / 2) {
+                minZ = std::min(minZ, lla.altitude);
+                maxZ = std::max(maxZ, lla.altitude);
+                vec_CSV.append(lla.altitude);
+                track.append(lla);
+            }
+        } else {
+            // 窗口超过设定大小，移除最旧的点，让窗口滑动
+            if (buffer.size() > MEDIAN_WINDOW) {
+                buffer.removeFirst();
+            }
 
-        // qDebug() << "11111pos.lla.latitude " << pos.lla.latitude << "  " << pos.lla.longitude;
-        bool enableRender = (z + 1) == tslWCnt ? true : false;
-        emit positionComplete_file(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude, enableRender);
+            // 获取窗口正中间的点
+            int midIndex = MEDIAN_WINDOW / 2;
+            LLA targetLla = buffer[midIndex];
+
+            // 提取当前窗口内的所有深度，用于求中值
+            QVector<float> depths;
+            for (const LLA& item : buffer) {
+                depths.append(item.altitude);
+            }
+            // 排序找中位数
+            std::sort(depths.begin(), depths.end());
+            float medianDepth = depths[MEDIAN_WINDOW / 2];
+
+            // 异常值判断：与中位数偏差是否超过阈值
+            if (std::abs(targetLla.altitude - medianDepth) > SPIKE_THRESHOLD) {
+                targetLla.altitude = medianDepth; // 使用中值替代
+                buffer[midIndex].altitude = medianDepth;
+            }
+
+            // 将过滤后的中心点加入最终轨迹
+            minZ = std::min(minZ, targetLla.altitude);
+            maxZ = std::max(maxZ, targetLla.altitude);
+            vec_CSV.append(targetLla.altitude);
+            track.append(targetLla);
+        }
+
+        // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
+        bool enableRender = (i + 1) == tslWCnt ? true : false;
+        emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
+
+        // 更新进度条
+        if (progressDialog_ && (i % progressInterval == 0 || i == (tslWCnt - 1))) {
+            double progress = static_cast<double>(i + 1) / tslWCnt;
+            QString statusText = tr("Processing frame %1 of %2 (%3%)")
+                                     .arg(i + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+            QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
+            QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
+            QCoreApplication::processEvents();
+        }
     }
-    qDebug() << "track size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
+
+    qDebug() << "track-tslw size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
+
+    if (progressDialog_) {
+        QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
+        QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
+    }
+
+    emit fileStopsOpening2(vec_CSV, minZ, maxZ);
+}
+
+
+void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
+{
+    tslByteArray.remove(0, 512);  /*- 把文件头64字节的文件信息去掉，只保留声呐数据 -*/
+
+    /*-将去掉文件头的所有剩下的声呐数据，按照一帧一帧的模式放入临时容器-*/
+    QList<QByteArray> tslByteList;
+    int nowIndex = 0;
+    int byteCount = 0;
+    int maxCount = tslByteArray.count();
+    while((nowIndex) < (maxCount-100))
+    {
+        if('#' == tslByteArray.at(nowIndex)) {
+            byteCount = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3)+
+                        U8_TO_16(tslByteArray.at(nowIndex+22),tslByteArray.at(nowIndex+23))+1;
+            if((byteCount >= 100) && (byteCount <= 2048)) {
+                /*- 检查一下当前序号再加上获取的像素个数是不是已经超过整体长度了，超过的话进入下个循环 -*/
+                if((nowIndex + byteCount) > maxCount) {
+                    nowIndex++;
+                    continue;
+                }
+                else {
+                    QByteArray tslByteArray_xor = tslByteArray.mid(nowIndex,byteCount);
+                    quint8 chk = 0;
+                    for(int i = 3;i < tslByteArray_xor.count()-1;i++) {
+                        chk ^= tslByteArray_xor.at(i);
+                    }
+
+                    if(chk == (quint8)tslByteArray_xor.at(tslByteArray_xor.count()-1)) {
+                        tslByteList.append(tslByteArray.mid(nowIndex,byteCount));
+                        nowIndex += byteCount;
+                    }
+                    else {
+                        nowIndex++;
+                        continue;
+                    }
+                }
+            }
+            else {
+                nowIndex++;
+                continue;
+            }
+        }
+        else {
+            nowIndex++;
+            continue;
+        }
+    }
+
+
+    int tsl3Cnt = tslByteList.count();
+    int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
+
+    QList<LLA> track;
+    QVector<float> vec_CSV;
+    double minZ = 0.0, maxZ = 0.0;
+
+    qDebug() << "tslWCnt.size()........." << tsl3Cnt;
+    const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
+    const float SPIKE_THRESHOLD = 10.0f;    // 跳变阈值（米），超过用中值替代
+    QList<LLA> buffer;
+    int progressInterval = qMax(1, tsl3Cnt / 100);
+
+
+    for(int i = 0; i < tsl3Cnt; i++)
+    {
+        QByteArray tslDataTemp = tslByteList.at(i);
+
+        tsl_3 tslSingleStruct;
+        memcpy(&tslSingleStruct, tslDataTemp, idx);
+        LLA lla;
+        lla.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
+        lla.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
+        lla.altitude = tslSingleStruct.auxInfo.depth / 100.f;
+
+        buffer.append(lla);
+        if (buffer.size() < MEDIAN_WINDOW) {
+            // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
+            if (buffer.size() <= MEDIAN_WINDOW / 2) {
+                minZ = std::min(minZ, lla.altitude);
+                maxZ = std::max(maxZ, lla.altitude);
+                vec_CSV.append(lla.altitude);
+                track.append(lla);
+            }
+        } else {
+            // 窗口超过设定大小，移除最旧的点，让窗口滑动
+            if (buffer.size() > MEDIAN_WINDOW) {
+                buffer.removeFirst();
+            }
+
+            // 获取窗口正中间的点
+            int midIndex = MEDIAN_WINDOW / 2;
+            LLA targetLla = buffer[midIndex];
+
+            // 提取当前窗口内的所有深度，用于求中值
+            QVector<float> depths;
+            for (const LLA& item : buffer) {
+                depths.append(item.altitude);
+            }
+            // 排序找中位数
+            std::sort(depths.begin(), depths.end());
+            float medianDepth = depths[MEDIAN_WINDOW / 2];
+
+            // 异常值判断：与中位数偏差是否超过阈值
+            if (std::abs(targetLla.altitude - medianDepth) > SPIKE_THRESHOLD) {
+                targetLla.altitude = medianDepth; // 使用中值替代
+                buffer[midIndex].altitude = medianDepth;
+            }
+
+            // 将过滤后的中心点加入最终轨迹
+            minZ = std::min(minZ, targetLla.altitude);
+            maxZ = std::max(maxZ, targetLla.altitude);
+            vec_CSV.append(targetLla.altitude);
+            track.append(targetLla);
+        }
+
+        // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
+        bool enableRender = (i + 1) == tsl3Cnt ? true : false;
+        emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
+
+        // 更新进度条
+        if (progressDialog_ && (i % progressInterval == 0 || i == (tsl3Cnt - 1))) {
+            double progress = static_cast<double>(i + 1) / tsl3Cnt;
+            QString statusText = tr("Processing frame %1 of %2 (%3%)")
+                                     .arg(i + 1).arg(tsl3Cnt).arg(static_cast<int>(progress * 100));
+            QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
+            QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
+            QCoreApplication::processEvents();
+        }
+    }
+    qDebug() << "track-tsl3 size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));

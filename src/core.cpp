@@ -30,6 +30,17 @@ Core::Core() : QObject(),
     fixBlackStripesForwardSteps_(0),
     fixBlackStripesBackwardSteps_(0)
 {
+
+    translator_ = new QTranslator;
+    QGuiApplication::instance()->installTranslator(translator_);
+    // translator_->load(":/translations/translation_ch.qm");
+    if (translator_->load(":translations/translation_ch.qm")) {
+        qDebug() << "Translation loaded successfully";
+    }
+    else {
+        qDebug() << "Failed to load translation";
+    }
+
     qRegisterMetaType<uint8_t>("uint8_t");
     createControllers();
     logger_.setDatasetPtr(datasetPtr_);
@@ -41,6 +52,7 @@ Core::Core() : QObject(),
 #endif
 
     createDataProcessor();
+
 
 
 }
@@ -1335,8 +1347,6 @@ void Core::openFileFromMenu()
     }
     onDataProcesstorStateChanged(DataProcessorType::staticTrack);
 
-    qDebug() << "void Core::openFileFromMenu()...........";
-
     /*-----------------------open kml/kmz--------------------------*/
     if(fileNames.last().endsWith("kml") || fileNames.last().endsWith("kmz")) {
          // currentFileType = filetype_kmlkmz;
@@ -1425,7 +1435,10 @@ void Core::openFileFromMenu()
             QString nowFileName = fileNames.at(i);
 
             if(currentFileType_ == filetype_tslw) {
-                emit deviceManagerWrapperPtr_->sendOpenFile_tslw(nowFileName);
+                emit deviceManagerWrapperPtr_->sendOpenFile_tsl(nowFileName,filetype_tslw);
+            }
+            else if(currentFileType_ == filetype_tsl3) {
+                emit deviceManagerWrapperPtr_->sendOpenFile_tsl(nowFileName,filetype_tsl3);
             }
             else if(currentFileType_ == filetype_CSV) {
                 emit deviceManagerWrapperPtr_->sendOpenFile_CSV(nowFileName);
@@ -1503,9 +1516,47 @@ void Core::clearRouteData()
 
 }
 
+void Core::clearAll()
+{
+    if(!datasetPtr_) {
+        return;
+    }
+    if(datasetPtr_->size() == 0) {
+        GIF->dialogInfo(Dialog_OK, "No Track Points Available!");
+        return;
+    }
+
+    GIF->dialogYesNo(tr("Confirm Clear All Historical Data?"),[this](bool confirmed) {
+        if(confirmed) {
+            bleManager_->clearRealData();
+            datasetPtr_->resetDataset();
+            dataHorizon_->clear();
+
+            QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
+
+            if (scene3dViewPtr_) {
+                scene3dViewPtr_->clear(true);
+                scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+            }
+
+            // emit isobathsViewControlMenuController_->edgeLimitChanged(100);
+        }
+
+    });
+}
+
 void Core::setAutoRenderSpan(bool isAuto)
 {
     isAutoRenderSpan_ = isAuto;
+}
+
+void Core::exitApp()
+{
+    GIF->dialogYesNo(tr("Do You Want to Exit the Application?"), [](bool confirmed) {
+        if(confirmed) {
+            QCoreApplication::quit();
+        }
+    });
 }
 
 void Core::location(uint8_t type)

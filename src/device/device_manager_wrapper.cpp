@@ -27,7 +27,8 @@ DeviceManagerWrapper::DeviceManagerWrapper(QObject* parent) :
     auto ct = Qt::DirectConnection;
     QObject::connect(this, &DeviceManagerWrapper::sendOpenFile,  workerObject_.get(), &DeviceManager::openFile,  ct);
     QObject::connect(this, &DeviceManagerWrapper::sendOpenFile_CSV,  workerObject_.get(), &DeviceManager::openFile_CSV, Qt::QueuedConnection);
-    QObject::connect(this, &DeviceManagerWrapper::sendOpenFile_tslw,  workerObject_.get(), &DeviceManager::openFile_tslw, Qt::QueuedConnection);
+    QObject::connect(this, &DeviceManagerWrapper::sendOpenFile_tsl,  workerObject_.get(), &DeviceManager::openFile_tsl, Qt::QueuedConnection);
+
 
     QObject::connect(this, &DeviceManagerWrapper::sendCloseFile, workerObject_.get(), &DeviceManager::closeFile,   ct);
     QObject::connect(workerObject_.get(), &DeviceManager::devChanged,  this,   &DeviceManagerWrapper::devChanged,   ct);

@@ -14,6 +14,9 @@
 #include "id_binnary.h"
 
 
+#define U8_TO_16(a,b)  (((uchar)a)+(((uchar)b)<<8))
+
+
 class LocationReader;
 class DeviceManager : public QObject
 {
@@ -36,7 +39,6 @@ public:
 
     void setProgressDialog(QObject* dialog);
 
-
 public slots:
     Q_INVOKABLE bool isCreatedId(int id);
     Q_INVOKABLE StreamListModel* streamsList();
@@ -45,7 +47,7 @@ public slots:
     void frameInput(QUuid uuid, Link* link, Parsers::FrameParser frame);
     void openFile(QString filePath);
     void openFile_CSV(QString filePath);
-    void openFile_tslw(QString filePath);
+    void openFile_tsl(QString filePath, EnumFileType currentFileType);
 #ifdef SEPARATE_READING
     void closeFile(bool onOpen = false);
 #else
@@ -135,6 +137,7 @@ private:
     DevQProperty* createDev(QUuid uuid, Link* link, uint8_t addr);
 
     void openFileData_tslw(QByteArray &tslByteArray);
+    void openFileData_tsl3(QByteArray &tslByteArray);
     double dm_to_dd(double ddmmmmmmm);
 
 

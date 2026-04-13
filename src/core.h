@@ -35,25 +35,6 @@
 #include "tile_manager.h"
 #include "data_horizon.h"
 #include "blemanager.h"
-#include "tslw.h"
-
-
-
-
-typedef enum
-{
-    filetype_tsl1 = 0,
-    filetype_NMEA,
-    filetype_CSV,
-    filetype_tslw,
-    filetype_tsl2,
-    filetype_tsl3,
-    filetype_serial,
-    filetype_kmlkmz
-}EnumFileType;
-
-
-
 
 class Core : public QObject
 {
@@ -154,8 +135,10 @@ public slots:
     Q_INVOKABLE void setIsAttitudeExpected(bool state);
     Q_INVOKABLE void openFileFromMenu();
     Q_INVOKABLE void clearRouteData();
+    Q_INVOKABLE void clearAll();
     Q_INVOKABLE void location(uint8_t type);
     Q_INVOKABLE void setAutoRenderSpan(bool isAuto);
+    Q_INVOKABLE void exitApp();
 
 signals:
     void connectionChanged(bool duplex = false);
@@ -247,6 +230,7 @@ private:
 #endif
 
     QQmlApplicationEngine* qmlAppEnginePtr_;
+    QTranslator *translator_;
     Dataset* datasetPtr_;
     QPointer<GraphicsScene3dView> scene3dViewPtr_;
     ConverterXTF converterXtf_;

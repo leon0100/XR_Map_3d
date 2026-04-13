@@ -150,7 +150,7 @@ void DataProcessor::setUpdateBottomTrack(bool state)
 
 void DataProcessor::setUpdateIsobaths(bool state)
 {
-    qDebug() << "setUpdateIsobaths is ........ " << state;
+    // qDebug() << "setUpdateIsobaths is ........ " << state;
     updateIsobaths_ = state;
     if (state) {
         scheduleLatest(WorkSet(WF_Isobaths));
@@ -274,7 +274,7 @@ void DataProcessor::setSurfaceColorTableThemeById(int id)
 
 void DataProcessor::setSurfaceEdgeLimit(int val)
 {
-    qDebug() << "DataProcessor::setSurfaceEdgeLimit...........";
+    // qDebug() << "DataProcessor::setSurfaceEdgeLimit...........";
     QMetaObject::invokeMethod(worker_, "setSurfaceEdgeLimit", Qt::QueuedConnection, Q_ARG(float, float(val)));
 
     pendingIsobathsWork_ = true;
@@ -298,7 +298,6 @@ void DataProcessor::setIsobathsLabelStepSize(float val)
 
 void DataProcessor::setSurfaceIsobathsStepSize(float val)
 {
-    qDebug() << "ataProcessor::setSurfaceIsobathsStepSize............";
     QMetaObject::invokeMethod(worker_, "setSurfaceIsobathsStepSize", Qt::QueuedConnection, Q_ARG(float, val));
 
     pendingIsobathsWork_ = true;

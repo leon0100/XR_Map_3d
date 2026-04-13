@@ -13,6 +13,23 @@
 
 
 
+#include "tslw.h"
+#include "tsl3.h"
+
+typedef enum
+{
+    filetype_tsl1 = 0,
+    filetype_NMEA,
+    filetype_CSV,
+    filetype_tslw,
+    filetype_tsl2,
+    filetype_tsl3,
+    filetype_serial,
+    filetype_kmlkmz
+}EnumFileType;
+
+
+
 #if defined(Q_OS_ANDROID) || (defined Q_OS_LINUX)
 #define MAKETIME(t) mktime(t)
 #define GMTIME(t) gmtime(t)

@@ -69,7 +69,7 @@ public slots:
 signals:
     void sendOpenFile(QString path);
     void sendOpenFile_CSV(QString path);
-    void sendOpenFile_tslw(QString path);
+    void sendOpenFile_tsl(QString path, EnumFileType currentFileType);
 #ifdef SEPARATE_READING
     void sendCloseFile(bool);
 #else

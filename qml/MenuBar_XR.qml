@@ -108,14 +108,34 @@ Popup {
                 }
 
                 MenuItem {
-                    id: exit
-                    text: qsTr("Exit")
+                    id: clear
+                    text: qsTr("Clear")
                     font.pixelSize: itemFontSize
                     background: Rectangle {
-                        color: exit.pressed ? menuPressColor : menuBackColor
+                        color: clear.pressed ? menuPressColor : menuBackColor
                     }
-                    onClicked: Qt.quit()
+
+                    onClicked: core.clearAll()
+
+                    Image {
+                        source: "qrc:/icons/ui/erase.svg"
+                        width: itemFontSize * 0.75
+                        height: itemFontSize * 0.75
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 5
+                    }
                 }
+
+                // MenuItem {
+                //     id: exit
+                //     text: qsTr("Exit")
+                //     font.pixelSize: itemFontSize
+                //     background: Rectangle {
+                //         color: exit.pressed ? menuPressColor : menuBackColor
+                //     }
+                //     onClicked: Qt.quit()
+                // }
             }
         }
 
@@ -430,6 +450,18 @@ Popup {
             }
         }
 
+
+        MenuItem {
+            id: exit
+            text: qsTr("Exit")
+            width: parent.width
+            height: itemHeight
+            font.pixelSize: itemFontSize
+            background: Rectangle {
+                color: exit.pressed ? menuPressColor : menuBackColor
+            }
+            onClicked: core.exitApp()
+        }
 
 
     }

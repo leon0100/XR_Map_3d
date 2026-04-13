@@ -35,6 +35,7 @@ HEADERS += \
     src/stream_list.h \
     src/stream_list_model.h \
     src/themes.h \
+    src/tsl3.h \
     src/tslw.h \
     src/xtf_conf.h \
     src/location_reader.h
@@ -67,13 +68,15 @@ FLASHER {
 }
 
 TRANSLATIONS += \
-    translations/translation_en.ts \
-    translations/translation_ru.ts \
-    translations/translation_pl.ts
+    translations/translation_ch.ts \
+    translations/translation_en.ts
+    # translations/translation_ru.ts \
+    # translations/translation_pl.ts
 
 RESOURCES += \
     qml/qml.qrc \
     resources/icons.qrc \
+    resources/resources.qrc \
 
 windows {
     message("Building for Windows with full OpenGL")
