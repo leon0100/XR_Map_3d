@@ -428,7 +428,7 @@ Item {
                         height: layoutHeight * 0.8
                         radius: 4
 
-                        readonly property bool noDevices: (modelData === "No Devices Found")
+                        readonly property bool noDevices: (modelData === qsTr("No Devices Found"))
 
                         border.width: noDevices ? 1 : (switchControl.isOn ? 2 : 1)
                         border.color: noDevices ? "#ecf0f1" : (switchControl.isOn ? "#3498db" : "#ecf0f1")
@@ -448,7 +448,7 @@ Item {
                             }
                             Text {
                                 visible: !noDevices
-                                text: switchControl.isOn ? "Connected" : "Disconnected"
+                                text: switchControl.isOn ? qsTr("Connected") : qsTr("Disconnected")
                                 color: switchControl.isOn ? "#36D85A" : "#7f8c8d"
                                 font.pixelSize: iconSize * 0.6
                                 verticalAlignment: Text.AlignVCenter

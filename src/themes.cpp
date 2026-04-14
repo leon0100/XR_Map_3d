@@ -56,7 +56,8 @@ void Themes::setTheme(int theme_id)
         _disabledBackColor = new QColor(50, 50, 50);
         _hoveredBackColor = new QColor(70,70,70);
 
-    } else if(theme_id == 1) {
+    }
+    else if(theme_id == 1) {
         _textColor = new QColor(255, 255, 255);
         _textSolidColor = new QColor(0, 0, 0);
         _menuBackColor = new QColor(0, 0, 0, 255);
@@ -68,7 +69,8 @@ void Themes::setTheme(int theme_id)
         _disabledTextColor = new QColor(150, 150, 150);
         _disabledBackColor = new QColor(50, 50, 50);
 
-    } else if(theme_id == 2) {
+    }
+    else if(theme_id == 2) {
         _textColor = new QColor(25, 25, 25);
         _textSolidColor = new QColor(25, 25, 25);
         _menuBackColor = new QColor(240, 240, 240, 240);
@@ -80,7 +82,8 @@ void Themes::setTheme(int theme_id)
         _disabledTextColor = new QColor(150, 150, 150);
         _disabledBackColor = new QColor(50, 50, 50);
 
-    } else if(theme_id == 3) {
+    }
+    else if(theme_id == 3) {
         _textColor = new QColor(0, 0, 0);
         _textSolidColor = new QColor(255, 255, 255);
         _menuBackColor = new QColor(250, 250, 250, 250);
@@ -176,9 +179,11 @@ void Themes::bootConfig()
     // QGuiApplication::instance()->removeTranslator(translator_);
 
     if(softwareParameters_.currentLanguage == 1) {
+        qDebug() << "softwareParameters_.currentLanguage111111111111";
         translator_->load(":translations/translation_ch.qm");
     }
     else if(softwareParameters_.currentLanguage == 0) {
+        qDebug() << "softwareParameters_.currentLanguage2222222222222";
         translator_->load(":translations/translation_en.qm");
     }
 
@@ -369,6 +374,7 @@ void Themes::setCurrentLanguage(int lang)
     if(softwareParameters_.currentLanguage == lang) {
         return;
     }
+
     softwareParameters_.currentLanguage = (u8)lang;
     translator_->load(lang == 1 ? ":translations/translation_ch.qm" : ":translations/translation_en.qm");
 

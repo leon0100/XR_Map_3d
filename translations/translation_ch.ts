@@ -41,6 +41,11 @@
         <source>find  %1 devices</source>
         <translation>发现  %1 个设备</translation>
     </message>
+    <message>
+        <location filename="../src/device/blemanager.cpp" line="635"/>
+        <source>No Devices Found</source>
+        <translation>未发现设备</translation>
+    </message>
 </context>
 <context>
     <name>BleButton</name>
@@ -138,6 +143,21 @@
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="404"/>
         <source>Toslon BLE Devices List:</source>
         <translation>途仕龙（Toslon）蓝牙设备列表：</translation>
+    </message>
+    <message>
+        <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="431"/>
+        <source>No Devices Found</source>
+        <translation>未发现设备</translation>
+    </message>
+    <message>
+        <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="451"/>
+        <source>Connected</source>
+        <translation>连接</translation>
+    </message>
+    <message>
+        <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="451"/>
+        <source>Disconnected</source>
+        <translation>断开</translation>
     </message>
 </context>
 <context>
@@ -1562,67 +1582,67 @@
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="208"/>
+        <location filename="../qml/MenuBar_XR.qml" line="209"/>
         <source>English</source>
-        <translation>English</translation>
+        <translation>英文</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="228"/>
+        <location filename="../qml/MenuBar_XR.qml" line="232"/>
         <source>Chinese</source>
         <translation>中文</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="251"/>
+        <location filename="../qml/MenuBar_XR.qml" line="258"/>
         <source>Map</source>
         <translation>地图</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="279"/>
+        <location filename="../qml/MenuBar_XR.qml" line="286"/>
         <source>OpenStreet</source>
         <translation>OpenStreet</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="299"/>
+        <location filename="../qml/MenuBar_XR.qml" line="306"/>
         <source>Google</source>
         <translation>Google</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="319"/>
+        <location filename="../qml/MenuBar_XR.qml" line="326"/>
         <source>User Defined</source>
         <translation>用户自定义</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="341"/>
+        <location filename="../qml/MenuBar_XR.qml" line="348"/>
         <source>Units</source>
         <translation>单位</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="368"/>
+        <location filename="../qml/MenuBar_XR.qml" line="375"/>
         <source>Metres</source>
         <translation>米</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="388"/>
+        <location filename="../qml/MenuBar_XR.qml" line="395"/>
         <source>Feet</source>
         <translation>英尺</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="415"/>
+        <location filename="../qml/MenuBar_XR.qml" line="422"/>
         <source>Help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="442"/>
+        <location filename="../qml/MenuBar_XR.qml" line="449"/>
         <source>Registration</source>
         <translation>注册</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="451"/>
+        <location filename="../qml/MenuBar_XR.qml" line="458"/>
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="464"/>
+        <location filename="../qml/MenuBar_XR.qml" line="471"/>
         <source>Exit</source>
         <translation>退出</translation>
     </message>
@@ -2306,7 +2326,7 @@
     <message>
         <location filename="../qml/Scene3DToolbar.qml" line="233"/>
         <source>Boat track</source>
-        <translation>Ślad łodzi</translation>
+        <translation>船轨迹</translation>
     </message>
     <message>
         <source>Bottom track</source>
@@ -2692,13 +2712,13 @@
 <context>
     <name>Themes</name>
     <message>
-        <location filename="../src/themes.cpp" line="140"/>
-        <source>Message</source>
+        <location filename="../src/themes.cpp" line="147"/>
+        <source>提示</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/themes.cpp" line="140"/>
-        <source>This application relies on OpenStreetMap, and may not be able to use the [Place-Name-Search] in China.</source>
+        <location filename="../src/themes.cpp" line="148"/>
+        <source>本应用依赖OpenStreetMap图源, 在中国大陆地区可能无法使用[地名搜索]功能</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

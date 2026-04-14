@@ -632,7 +632,7 @@ void BLEManager::onScanFinished()
     int deviceCnt = m_devices.size();
     setScanStatus(QString(tr("find  %1 devices")).arg(deviceCnt));
     if(deviceCnt == 0) {
-        m_devices.append("No Devices Found");
+        m_devices.append(tr("No Devices Found"));
         emit devicesChanged(); //发给qml
     }
 }
