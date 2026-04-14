@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
     //qDebug() << "SQL drivers =" << QSqlDatabase::drivers(); // тут должен появиться QSQLITE
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &app,[url](QObject *obj, const QUrl &objUrl) {
+        theme.refreshLanguage();
         corePtr->refreshMap();
         if (!obj && url == objUrl) {
             QCoreApplication::exit(-1);

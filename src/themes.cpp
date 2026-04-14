@@ -28,7 +28,10 @@ void Themes::setTheme(int theme_id)
 
     QSettings settings("Toslon", "ToslonApp");
     translator_ = new QTranslator;
-    QGuiApplication::instance()->installTranslator(translator_);
+    if(translator_) {
+        QGuiApplication::instance()->installTranslator(translator_);
+        translator_->load(":translations/translation_en.qm");
+    }
 
     int fontId = QFontDatabase::addApplicationFont(":/fonts/AlibabaPuHuiTi-3-55-Regular.ttf");
     if (fontId == 0) {
@@ -70,31 +73,6 @@ void Themes::setTheme(int theme_id)
         _disabledBackColor = new QColor(50, 50, 50);
 
     }
-    else if(theme_id == 2) {
-        _textColor = new QColor(25, 25, 25);
-        _textSolidColor = new QColor(25, 25, 25);
-        _menuBackColor = new QColor(240, 240, 240, 240);
-        _controlBackColor = new QColor(250, 250, 250);
-        _controlBorderColor = new QColor(100, 100, 100);
-        _controlSolidBackColor = new QColor(255, 255, 255);
-        _controlSolidBorderColor = new QColor(150, 150, 150);
-
-        _disabledTextColor = new QColor(150, 150, 150);
-        _disabledBackColor = new QColor(50, 50, 50);
-
-    }
-    else if(theme_id == 3) {
-        _textColor = new QColor(0, 0, 0);
-        _textSolidColor = new QColor(255, 255, 255);
-        _menuBackColor = new QColor(250, 250, 250, 250);
-        _controlBackColor = new QColor(255, 255, 255);
-        _controlBorderColor = new QColor(100, 100, 100);
-        _controlSolidBackColor = new QColor(0, 0, 0);
-        _controlSolidBorderColor = new QColor(255, 255, 255);
-
-        _disabledTextColor = new QColor(150, 150, 150);
-        _disabledBackColor = new QColor(50, 50, 50);
-    }
 
     QScreen *screen = QGuiApplication::primaryScreen();
     if (screen) {
@@ -126,7 +104,7 @@ void Themes::updateResCoeff()
 void Themes::bootConfig()
 {
     bool firstRun = softwareParameters_.isFirstRun;
-    firstRun = true;
+    // firstRun = true;
     if (firstRun)
     {
         softwareParameters_.isFirstRun = false;
@@ -176,17 +154,7 @@ void Themes::bootConfig()
                    + QString::number(latiDou, 'f', 6) + latiDirection;
 
 
-    // QGuiApplication::instance()->removeTranslator(translator_);
-
-    if(softwareParameters_.currentLanguage == 1) {
-        qDebug() << "softwareParameters_.currentLanguage111111111111";
-        translator_->load(":translations/translation_ch.qm");
-    }
-    else if(softwareParameters_.currentLanguage == 0) {
-        qDebug() << "softwareParameters_.currentLanguage2222222222222";
-        translator_->load(":translations/translation_en.qm");
-    }
-
+    // QGuiApplication::instance()->installTranslator(translator_);
 
     if(softwareParameters_.inChina) {
 
@@ -385,3 +353,10 @@ void Themes::setCurrentLanguage(int lang)
     emit bootConfigChanged();
 }
 
+void Themes::refreshLanguage()
+{
+    if(softwareParameters_.inChina) {
+        softwareParameters_.currentLanguage = 0;
+        setCurrentLanguage(1);
+    }
+}

@@ -118,6 +118,7 @@ public:
     void bootConfig();
     void getSoftwareParameters();
     void saveSoftwareParameters();
+    void refreshLanguage();
 
 
     Q_INVOKABLE void updateResCoeff();
