@@ -47,31 +47,31 @@
     <message>
         <location filename="../qml/Bluetooth/BleButton.qml" line="38"/>
         <source>Clear</source>
-        <translation type="unfinished">Wyczyść</translation>
+        <translation>清除</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleButton.qml" line="68"/>
         <location filename="../qml/Bluetooth/BleButton.qml" line="80"/>
         <source>Show</source>
-        <translation type="unfinished">Pokaż</translation>
+        <translation>显示</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleButton.qml" line="68"/>
         <location filename="../qml/Bluetooth/BleButton.qml" line="80"/>
         <source>Hide</source>
-        <translation type="unfinished"></translation>
+        <translation>隐藏</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleButton.qml" line="99"/>
         <location filename="../qml/Bluetooth/BleButton.qml" line="111"/>
         <source>Read</source>
-        <translation type="unfinished">Odczyt</translation>
+        <translation>读取</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleButton.qml" line="99"/>
         <location filename="../qml/Bluetooth/BleButton.qml" line="111"/>
         <source>Pause</source>
-        <translation type="unfinished">Pauza</translation>
+        <translation>暂停</translation>
     </message>
 </context>
 <context>
@@ -79,27 +79,27 @@
     <message>
         <location filename="../qml/Bluetooth/BleDataPanel.qml" line="42"/>
         <source>Lat:</source>
-        <translation type="unfinished"></translation>
+        <translation>纬度：</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleDataPanel.qml" line="53"/>
         <source>Lon:</source>
-        <translation type="unfinished"></translation>
+        <translation>经度：</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleDataPanel.qml" line="63"/>
         <source>Course:</source>
-        <translation type="unfinished"></translation>
+        <translation>角度：</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleDataPanel.qml" line="73"/>
         <source>Speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>速度：</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleDataPanel.qml" line="83"/>
         <source>Depth:</source>
-        <translation type="unfinished"></translation>
+        <translation>深度：</translation>
     </message>
 </context>
 <context>
@@ -107,37 +107,37 @@
     <message>
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="117"/>
         <source>Keep Boat in View</source>
-        <translation type="unfinished"></translation>
+        <translation>船只保持可见</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="195"/>
         <source>Show Data Panel</source>
-        <translation type="unfinished"></translation>
+        <translation>显示数据面板</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="270"/>
         <source>ON</source>
-        <translation type="unfinished">ON</translation>
+        <translation>开</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="283"/>
         <source>OFF</source>
-        <translation type="unfinished"></translation>
+        <translation>关</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="347"/>
         <source>Read</source>
-        <translation type="unfinished">Odczyt</translation>
+        <translation>读取</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="360"/>
         <source>Pause</source>
-        <translation type="unfinished">Pauza</translation>
+        <translation>暂停</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/BleLivedataScanning.qml" line="404"/>
         <source>Toslon BLE Devices List:</source>
-        <translation type="unfinished"></translation>
+        <translation>途仕龙（Toslon）蓝牙设备列表：</translation>
     </message>
 </context>
 <context>
@@ -145,12 +145,12 @@
     <message>
         <location filename="../qml/BottomTrackControlMenu.qml" line="24"/>
         <source>Bottom track controls</source>
-        <translation>Kontrolki śledzenia dna</translation>
+        <translation>底部轨迹控制</translation>
     </message>
     <message>
         <location filename="../qml/BottomTrackControlMenu.qml" line="28"/>
         <source>Show</source>
-        <translation>Pokaż</translation>
+        <translation>显示</translation>
     </message>
 </context>
 <context>
@@ -182,7 +182,7 @@
     <message>
         <location filename="../qml/CMouseArea.qml" line="11"/>
         <source>Tooltip</source>
-        <translation type="unfinished">提示</translation>
+        <translation>提示</translation>
     </message>
 </context>
 <context>
@@ -423,38 +423,38 @@
         <location filename="../src/core.cpp" line="1317"/>
         <location filename="../src/core.cpp" line="1321"/>
         <source>Open</source>
-        <translation type="unfinished">Otwórz</translation>
+        <translation>打开</translation>
     </message>
     <message>
         <location filename="../src/core.cpp" line="1390"/>
         <source>File size is too large!</source>
-        <translation type="unfinished"></translation>
+        <translation>文件太大！</translation>
     </message>
     <message>
         <location filename="../src/core.cpp" line="1395"/>
         <source>Opening file %1 / %2</source>
-        <translation type="unfinished"></translation>
+        <translation>正在打开文件 %1 / %2</translation>
     </message>
     <message>
         <location filename="../src/core.cpp" line="1467"/>
         <location filename="../src/core.cpp" line="1517"/>
         <source>Confirm Clear All Historical Data?</source>
-        <translation type="unfinished"></translation>
+        <translation>是否清清除所有历史数据？</translation>
     </message>
     <message>
         <location filename="../src/core.cpp" line="1486"/>
         <source>Confirm to Clear Isobaths?</source>
-        <translation type="unfinished"></translation>
+        <translation>是否清除等高线？</translation>
     </message>
     <message>
         <location filename="../src/core.cpp" line="1502"/>
         <source>Clear Track Data</source>
-        <translation type="unfinished"></translation>
+        <translation>清除轨迹</translation>
     </message>
     <message>
         <location filename="../src/core.cpp" line="1543"/>
         <source>Do You Want to Exit the Application?</source>
-        <translation type="unfinished"></translation>
+        <translation>您确认要关闭此应用吗？</translation>
     </message>
 </context>
 <context>
@@ -462,7 +462,7 @@
     <message>
         <location filename="../src/dataset.cpp" line="727"/>
         <source>Invalid Coordinates!</source>
-        <translation type="unfinished"></translation>
+        <translation>无效经纬度！</translation>
     </message>
     <message>
         <location filename="../src/dataset.cpp" line="1052"/>
@@ -712,20 +712,20 @@
     <message>
         <location filename="../src/device/device_manager.cpp" line="566"/>
         <source>Processing CSV %1 / %2 (%3%)</source>
-        <translation type="unfinished"></translation>
+        <translation>正在处理 CSV %1 / %2 (%3%)</translation>
     </message>
     <message>
         <location filename="../src/device/device_manager.cpp" line="585"/>
         <location filename="../src/device/device_manager.cpp" line="724"/>
         <location filename="../src/device/device_manager.cpp" line="864"/>
         <source>Processing completed!</source>
-        <translation type="unfinished"></translation>
+        <translation>操作完成！</translation>
     </message>
     <message>
         <location filename="../src/device/device_manager.cpp" line="712"/>
         <location filename="../src/device/device_manager.cpp" line="853"/>
         <source>Processing frame %1 of %2 (%3%)</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -1241,12 +1241,12 @@
     <message>
         <location filename="../src/scene3d/scene3d_view.cpp" line="349"/>
         <source>Isobaths Outline Create Successful!</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线轮廓创建成功！</translation>
     </message>
     <message>
         <location filename="../src/scene3d/scene3d_view.cpp" line="946"/>
         <source>No Track Data Found!</source>
-        <translation type="unfinished"></translation>
+        <translation>未发现轨迹！</translation>
     </message>
 </context>
 <context>
@@ -1314,42 +1314,42 @@
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="59"/>
         <source>Isobaths Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线设置</translation>
     </message>
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="77"/>
         <source>Clear Outline</source>
-        <translation type="unfinished"></translation>
+        <translation>清除轮廓</translation>
     </message>
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="77"/>
         <source>Draw Outline</source>
-        <translation type="unfinished"></translation>
+        <translation>绘制轮廓</translation>
     </message>
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="95"/>
         <source>Draw Isobaths</source>
-        <translation type="unfinished"></translation>
+        <translation>绘制等高线</translation>
     </message>
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="162"/>
         <source>Render Span</source>
-        <translation type="unfinished"></translation>
+        <translation>渲染跨度</translation>
     </message>
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="202"/>
         <source>Auto</source>
-        <translation type="unfinished">Auto</translation>
+        <translation>自动</translation>
     </message>
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="267"/>
         <source>Contour Interval</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线间隔</translation>
     </message>
     <message>
         <location filename="../qml/IsobathsExtraSettings.qml" line="364"/>
         <source>Vertical Scale</source>
-        <translation type="unfinished"></translation>
+        <translation>垂直缩放</translation>
     </message>
 </context>
 <context>
@@ -1357,7 +1357,7 @@
     <message>
         <location filename="../qml/QmlCommon/KButton.qml" line="6"/>
         <source>Ok</source>
-        <translation>Ok</translation>
+        <translation>好的</translation>
     </message>
 </context>
 <context>
@@ -1373,22 +1373,22 @@
     <message>
         <location filename="../qml/QmlCommon/KDialogCheck.qml" line="42"/>
         <source>Clear Track</source>
-        <translation type="unfinished"></translation>
+        <translation>清除轨迹</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KDialogCheck.qml" line="93"/>
         <source>Hint</source>
-        <translation type="unfinished"></translation>
+        <translation>隐藏</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KDialogCheck.qml" line="203"/>
         <source>Yes</source>
-        <translation type="unfinished"></translation>
+        <translation>是</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KDialogCheck.qml" line="231"/>
         <source>No</source>
-        <translation type="unfinished"></translation>
+        <translation>否</translation>
     </message>
 </context>
 <context>
@@ -1396,12 +1396,12 @@
     <message>
         <location filename="../qml/QmlCommon/KDialogOK.qml" line="83"/>
         <source>Hint</source>
-        <translation type="unfinished"></translation>
+        <translation>提示</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KDialogOK.qml" line="145"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>好的</translation>
     </message>
 </context>
 <context>
@@ -1409,17 +1409,17 @@
     <message>
         <location filename="../qml/QmlCommon/KDialogYesNo.qml" line="84"/>
         <source>Hint</source>
-        <translation type="unfinished"></translation>
+        <translation>提示</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KDialogYesNo.qml" line="147"/>
         <source>Yes</source>
-        <translation type="unfinished"></translation>
+        <translation>是</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KDialogYesNo.qml" line="175"/>
         <source>No</source>
-        <translation type="unfinished"></translation>
+        <translation>否</translation>
     </message>
 </context>
 <context>
@@ -1443,17 +1443,17 @@
     <message>
         <location filename="../qml/QmlCommon/KProgress.qml" line="19"/>
         <source>Open File</source>
-        <translation type="unfinished"></translation>
+        <translation>打开文件</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KProgress.qml" line="20"/>
         <source>Openging</source>
-        <translation type="unfinished"></translation>
+        <translation>正在打开</translation>
     </message>
     <message>
         <location filename="../qml/QmlCommon/KProgress.qml" line="117"/>
         <source>Close</source>
-        <translation type="unfinished">Zamknij</translation>
+        <translation>关闭</translation>
     </message>
 </context>
 <context>
@@ -1534,97 +1534,97 @@
     <message>
         <location filename="../qml/MenuBar_XR.qml" line="46"/>
         <source>File</source>
-        <translation type="unfinished">File</translation>
+        <translation>文件</translation>
     </message>
     <message>
         <location filename="../qml/MenuBar_XR.qml" line="74"/>
         <source>Open</source>
-        <translation type="unfinished">Otwórz</translation>
+        <translation>打开</translation>
     </message>
     <message>
         <location filename="../qml/MenuBar_XR.qml" line="94"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>保存</translation>
     </message>
     <message>
         <location filename="../qml/MenuBar_XR.qml" line="112"/>
         <source>Clear</source>
-        <translation type="unfinished">Wyczyść</translation>
+        <translation>清除</translation>
     </message>
     <message>
         <location filename="../qml/MenuBar_XR.qml" line="146"/>
         <source>Settings</source>
-        <translation type="unfinished">Właściwości</translation>
+        <translation>设置</translation>
     </message>
     <message>
         <location filename="../qml/MenuBar_XR.qml" line="173"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>语言</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="200"/>
+        <location filename="../qml/MenuBar_XR.qml" line="208"/>
         <source>English</source>
-        <translation type="unfinished">Angielski</translation>
+        <translation>English</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="220"/>
+        <location filename="../qml/MenuBar_XR.qml" line="228"/>
         <source>Chinese</source>
-        <translation type="unfinished"></translation>
+        <translation>中文</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="243"/>
+        <location filename="../qml/MenuBar_XR.qml" line="251"/>
         <source>Map</source>
-        <translation type="unfinished"></translation>
+        <translation>地图</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="271"/>
+        <location filename="../qml/MenuBar_XR.qml" line="279"/>
         <source>OpenStreet</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenStreet</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="291"/>
+        <location filename="../qml/MenuBar_XR.qml" line="299"/>
         <source>Google</source>
-        <translation type="unfinished"></translation>
+        <translation>Google</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="311"/>
+        <location filename="../qml/MenuBar_XR.qml" line="319"/>
         <source>User Defined</source>
-        <translation type="unfinished"></translation>
+        <translation>用户自定义</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="333"/>
+        <location filename="../qml/MenuBar_XR.qml" line="341"/>
         <source>Units</source>
-        <translation type="unfinished"></translation>
+        <translation>单位</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="360"/>
+        <location filename="../qml/MenuBar_XR.qml" line="368"/>
         <source>Metres</source>
-        <translation type="unfinished"></translation>
+        <translation>米</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="380"/>
+        <location filename="../qml/MenuBar_XR.qml" line="388"/>
         <source>Feet</source>
-        <translation type="unfinished"></translation>
+        <translation>英尺</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="407"/>
+        <location filename="../qml/MenuBar_XR.qml" line="415"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="434"/>
+        <location filename="../qml/MenuBar_XR.qml" line="442"/>
         <source>Registration</source>
-        <translation type="unfinished"></translation>
+        <translation>注册</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="443"/>
+        <location filename="../qml/MenuBar_XR.qml" line="451"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>关于</translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="456"/>
+        <location filename="../qml/MenuBar_XR.qml" line="464"/>
         <source>Exit</source>
-        <translation type="unfinished"></translation>
+        <translation>退出</translation>
     </message>
 </context>
 <context>
@@ -2341,27 +2341,27 @@
     <message>
         <location filename="../qml/ScreetRect.qml" line="140"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>编辑</translation>
     </message>
     <message>
         <location filename="../qml/ScreetRect.qml" line="161"/>
         <source>Revoke Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>撤回编辑</translation>
     </message>
     <message>
         <location filename="../qml/ScreetRect.qml" line="181"/>
         <source>Wireless Trans</source>
-        <translation type="unfinished"></translation>
+        <translation>无线发送</translation>
     </message>
     <message>
         <location filename="../qml/ScreetRect.qml" line="201"/>
         <source>Cancel Shot</source>
-        <translation type="unfinished"></translation>
+        <translation>取消截图</translation>
     </message>
     <message>
         <location filename="../qml/ScreetRect.qml" line="226"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>保存截图</translation>
     </message>
 </context>
 <context>
@@ -2369,53 +2369,53 @@
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="56"/>
         <source>Port</source>
-        <translation type="unfinished"></translation>
+        <translation>端口</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="75"/>
         <source>Baud Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>波特率</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="101"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>刷新</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="120"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>断开</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="120"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>连接</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="156"/>
         <source>Select Save Path</source>
-        <translation type="unfinished"></translation>
+        <translation>选择保存路径</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="171"/>
         <source>Select Save Path......</source>
-        <translation type="unfinished"></translation>
+        <translation>选择保存路径...</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="179"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>浏览...</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="231"/>
         <source>Recevied Data</source>
-        <translation type="unfinished"></translation>
+        <translation>接收数据</translation>
     </message>
     <message>
         <location filename="../qml/Bluetooth/SerialPort.qml" line="285"/>
         <source>Waiting to receive serial port data...
 </source>
-        <translation type="unfinished"></translation>
+        <translation>等待接收串口数据...</translation>
     </message>
 </context>
 <context>
@@ -2463,22 +2463,22 @@
     <message>
         <location filename="../qml/Settings3DExtraSettings.qml" line="56"/>
         <source>Scene Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>视图设置</translation>
     </message>
     <message>
         <location filename="../qml/Settings3DExtraSettings.qml" line="92"/>
         <source>North Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>正北模式</translation>
     </message>
     <message>
         <location filename="../qml/Settings3DExtraSettings.qml" line="179"/>
         <source>Boat Visibility</source>
-        <translation type="unfinished"></translation>
+        <translation>船只可见</translation>
     </message>
     <message>
         <location filename="../qml/Settings3DExtraSettings.qml" line="208"/>
         <source>Map Visibility</source>
-        <translation type="unfinished"></translation>
+        <translation>地图可见</translation>
     </message>
 </context>
 <context>
@@ -2690,6 +2690,19 @@
     </message>
 </context>
 <context>
+    <name>Themes</name>
+    <message>
+        <location filename="../src/themes.cpp" line="140"/>
+        <source>Message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/themes.cpp" line="140"/>
+        <source>This application relies on OpenStreetMap, and may not be able to use the [Place-Name-Search] in China.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TitleMeasurement</name>
     <message>
         <location filename="../qml/TitleMeasurement.qml" line="11"/>
@@ -2736,27 +2749,27 @@
     <message>
         <location filename="../qml/ToolBar_XR.qml" line="235"/>
         <source>LandMark</source>
-        <translation type="unfinished"></translation>
+        <translation>地标</translation>
     </message>
     <message>
         <location filename="../qml/ToolBar_XR.qml" line="259"/>
         <source>Contours</source>
-        <translation type="unfinished"></translation>
+        <translation>等高线</translation>
     </message>
     <message>
         <location filename="../qml/ToolBar_XR.qml" line="321"/>
         <source>SerialPort</source>
-        <translation type="unfinished"></translation>
+        <translation>串口</translation>
     </message>
     <message>
         <location filename="../qml/ToolBar_XR.qml" line="345"/>
         <source>Bluetooth</source>
-        <translation type="unfinished"></translation>
+        <translation>蓝牙</translation>
     </message>
     <message>
         <location filename="../qml/ToolBar_XR.qml" line="374"/>
         <source>TOSLON</source>
-        <translation type="unfinished"></translation>
+        <translation>途仕龙</translation>
     </message>
 </context>
 <context>
@@ -2824,12 +2837,12 @@
     <message>
         <location filename="../qml/main.qml" line="114"/>
         <source> Lat:%1°   Lon:%2°</source>
-        <translation type="unfinished"></translation>
+        <translation> 纬度:%1°   经度:%2°</translation>
     </message>
     <message>
         <location filename="../qml/main.qml" line="128"/>
         <source> Zoom: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>地图等级: %1</translation>
     </message>
     <message>
         <location filename="../qml/main.qml" line="1053"/>
@@ -2919,7 +2932,7 @@ Proszę czekać...</translation>
     <message>
         <location filename="../src/scene2d/qPlot2D.cpp" line="175"/>
         <source>No Track Data Found!</source>
-        <translation type="unfinished"></translation>
+        <translation>未发现轨迹！</translation>
     </message>
 </context>
 </TS>

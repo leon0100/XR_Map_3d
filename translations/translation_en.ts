@@ -1284,67 +1284,67 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="200"/>
+        <location filename="../qml/MenuBar_XR.qml" line="208"/>
         <source>English</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="220"/>
+        <location filename="../qml/MenuBar_XR.qml" line="228"/>
         <source>Chinese</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="243"/>
+        <location filename="../qml/MenuBar_XR.qml" line="251"/>
         <source>Map</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="271"/>
+        <location filename="../qml/MenuBar_XR.qml" line="279"/>
         <source>OpenStreet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="291"/>
+        <location filename="../qml/MenuBar_XR.qml" line="299"/>
         <source>Google</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="311"/>
+        <location filename="../qml/MenuBar_XR.qml" line="319"/>
         <source>User Defined</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="333"/>
+        <location filename="../qml/MenuBar_XR.qml" line="341"/>
         <source>Units</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="360"/>
+        <location filename="../qml/MenuBar_XR.qml" line="368"/>
         <source>Metres</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="380"/>
+        <location filename="../qml/MenuBar_XR.qml" line="388"/>
         <source>Feet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="407"/>
+        <location filename="../qml/MenuBar_XR.qml" line="415"/>
         <source>Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="434"/>
+        <location filename="../qml/MenuBar_XR.qml" line="442"/>
         <source>Registration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="443"/>
+        <location filename="../qml/MenuBar_XR.qml" line="451"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/MenuBar_XR.qml" line="456"/>
+        <location filename="../qml/MenuBar_XR.qml" line="464"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1991,6 +1991,19 @@
         <location filename="../qml/SonarBox.qml" line="127"/>
         <source>Export</source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>Themes</name>
+    <message>
+        <location filename="../src/themes.cpp" line="140"/>
+        <source>Message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/themes.cpp" line="140"/>
+        <source>This application relies on OpenStreetMap, and may not be able to use the [Place-Name-Search] in China.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

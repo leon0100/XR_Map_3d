@@ -6,5 +6,6 @@
         <file>../translations/translation_pl.qm</file>
         <file>version.txt</file>
 	<file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
+	<file>config/cfg</file>
     </qresource>
 </RCC>

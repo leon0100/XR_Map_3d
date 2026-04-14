@@ -1,22 +1,14 @@
 #include <QGuiApplication>
 #include <QApplication>
-
-
 #include <QQmlContext>
 #include <QQmlApplicationEngine>
-#include <QTranslator>
 #include <QLocale>
-#include <QSettings>
-#include <QVector>
-#include <QString>
-#include <QThread>
 #include <QResource>
-#include <QFile>
-#include <QByteArray>
 #include <QQuickWindow>
 #include <QSql>
 #include <QSqlDatabase>
 #include <QQuickStyle>
+
 #include "qPlot2D.h"
 #include "core.h"
 #include "themes.h"
@@ -24,43 +16,9 @@
 #include "bottom_track.h"
 
 
+
 Core* corePtr = nullptr;  // 改为指针，延迟初始化
 Themes theme;
-QTranslator translator;
-QVector<QString> availableLanguages{"en", "ru", "pl"};
-
-
-void loadLanguage(QGuiApplication &app)
-{
-    QSettings settings;
-    QString currentLanguage;
-
-    int savedLanguageIndex = settings.value("appLanguage", -1).toInt();
-
-    if (savedLanguageIndex == -1) {
-        currentLanguage = QLocale::system().name().split('_').first();
-        if (auto indx = availableLanguages.indexOf(currentLanguage); indx == -1) {
-            currentLanguage = availableLanguages.front();
-        }
-        else {
-            settings.setValue("appLanguage", indx);
-        }
-    }
-    else {
-        if (savedLanguageIndex >= 0 && savedLanguageIndex < availableLanguages.count()) {
-            currentLanguage = availableLanguages.at(savedLanguageIndex);
-        }
-        else {
-            currentLanguage = availableLanguages.front();
-        }
-    }
-
-    QString translationFile = ":/translations/translation_" + currentLanguage + ".qm";
-
-    if (translator.load(translationFile)) {
-        app.installTranslator(&translator);
-    }
-}
 
 void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
@@ -129,21 +87,20 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     QQuickStyle::setStyle("Basic");
-    corePtr = new Core();   // 在QApplication创建后初始化，避免QEventLoop错误
-
     QCoreApplication::addLibraryPath(QStringLiteral("assets:/qt/plugins"));
     QCoreApplication::addLibraryPath(QStringLiteral(":/android_rcc_bundle/plugins"));
 
-    loadLanguage(app);
+    corePtr = new Core();   // 在QApplication创建后初始化，避免QEventLoop错误
     corePtr->initStreamList();
 
-    setApplicationDisplayName(app);
+    // setApplicationDisplayName(app);
     QQmlApplicationEngine engine;
     engine.addImportPath("qrc:/");
+    theme.setQmlEngine(&engine);
 
     SceneObject::qmlDeclare();
 
-    //qInstallMessageHandler(messageHandler); // TODO: comment this
+    // qInstallMessageHandler(messageHandler); // TODO: comment this
     theme.setTheme();
 
     registerQmlMetaTypes();
@@ -158,6 +115,8 @@ int main(int argc, char *argv[])
 
     corePtr->consoleInfo("Run...");
     corePtr->setEngine(&engine);
+
+    theme.bootConfig();
 
     //qDebug() << "SQL drivers =" << QSqlDatabase::drivers(); // тут должен появиться QSQLITE
     const QUrl url(QStringLiteral("qrc:/main.qml"));
@@ -182,6 +141,7 @@ int main(int argc, char *argv[])
             // corePtr->saveLLARefToSettings();
             corePtr->removeLinkManagerConnections();
             corePtr->stopLinkManagerTimer();
+            theme.saveSoftwareParameters();
 #ifdef SEPARATE_READING
             corePtr->removeDeviceManagerConnections();
             corePtr->stopDeviceManagerThread();

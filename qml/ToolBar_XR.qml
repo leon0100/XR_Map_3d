@@ -18,7 +18,7 @@ Rectangle {
     property  var    targetPlot:    null
     property  var    lastItem:      menuSettings
     property  int    settingsWidth: theme.menuWidth*20
-    property  int    iconSize: Math.min(Screen.width, Screen.height) * 0.05
+    property  int    iconSize:      Math.min(Screen.width, Screen.height) * 0.05
 
     property color backColor: "#d6e6ff"
 

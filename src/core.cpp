@@ -1,6 +1,5 @@
 #include "core.h"
 
-#include <QSettings>
 #include <ctime>
 #include "bottom_track.h"
 #include "hotkeys_manager.h"
@@ -30,17 +29,6 @@ Core::Core() : QObject(),
     fixBlackStripesForwardSteps_(0),
     fixBlackStripesBackwardSteps_(0)
 {
-
-    translator_ = new QTranslator;
-    QGuiApplication::instance()->installTranslator(translator_);
-    // translator_->load(":/translations/translation_ch.qm");
-    if (translator_->load(":translations/translation_ch.qm")) {
-        qDebug() << "Translation loaded successfully";
-    }
-    else {
-        qDebug() << "Failed to load translation";
-    }
-
     qRegisterMetaType<uint8_t>("uint8_t");
     createControllers();
     logger_.setDatasetPtr(datasetPtr_);
@@ -84,7 +72,7 @@ void Core::setEngine(QQmlApplicationEngine *engine)
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",                           bleManager_.get());
 
-    // ── 注册 dataProcessor ──────────────────────────────
+    // ── 注册 dataProcessor ──
     qmlAppEnginePtr_->rootContext()->setContextProperty("dataProcessor", dataProcessor_);
 
     bool flasherState = false;
@@ -1861,7 +1849,7 @@ void Core::loadLLARefFromSettings()
     }
 
     try {
-        QSettings settings("KOGGER", "KoggerApp");
+        QSettings settings("Toslon", "ToslonApp");
         QString group{"LLARef"};
 
         settings.beginGroup(group);

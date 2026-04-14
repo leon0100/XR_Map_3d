@@ -935,7 +935,7 @@ ColumnLayout
                 title: qsTr("Please choose a file")
                 // currentFolder: StandardPaths.writableLocation(StandardPaths.HomeLocation)
 
-                nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Kogger log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
+                nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Toslon log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
 
                 onAccepted: {
                     const file = newFileDialog.selectedFile

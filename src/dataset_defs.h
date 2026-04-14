@@ -7,9 +7,12 @@
 #include <QObject>
 #include <QString>
 #include <QUuid>
+#include <cmath>
+#include <QSettings>
+
+
 #include "math_defs.h"
 #include "dsp_defs.h"
-#include <cmath>
 
 
 
@@ -27,6 +30,40 @@ typedef enum
     filetype_serial,
     filetype_kmlkmz
 }EnumFileType;
+
+
+#define  u32           unsigned int
+#define  u16           unsigned short
+#define  u8            unsigned char
+#define  s16           short
+#define  s32           int
+#define  uint64        unsigned long long
+#define  typDepthInt   unsigned short
+
+//定义一个地图类型
+typedef enum
+{
+    googleMapSource = 0, //谷歌地图
+    amapMapSource,       //高德地图
+    openStreetMapSource,  //OpenStreetMap地图
+    geovisEarthSource,    //星图地球地图
+}MapSourceType;
+
+#pragma pack(push)
+#pragma pack(1)
+typedef struct
+{
+    MapSourceType mapSourceType;
+    int currentLevel;
+    double currentLon;
+    double currentLati;
+    unsigned char existGoogle;      // 0:没有google  1:有google
+    unsigned char currentLanguage;  // 0:english    1:chinese
+    bool inChina;
+    bool isFirstRun;
+    unsigned char crcValue;
+}SoftwareParametersStru;
+#pragma pack(pop)
 
 
 

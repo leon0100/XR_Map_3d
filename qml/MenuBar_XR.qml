@@ -193,7 +193,16 @@ Popup {
                         width: parent.width
                         x: 0
 
-                        property int checkIndex: 0
+                        // property int checkIndex: 0
+                        property int checkIndex: {
+                            if (typeof theme !== 'undefined' && theme.currentLanguage === 0) {
+                                return 0;   // English
+                            }
+                            else if (typeof theme !== 'undefined' && theme.currentLanguage === 1) {
+                                return 1;   // Chinese
+                            }
+                            return -1;
+                        }
 
                         MenuItem {
                             id: english
@@ -202,7 +211,10 @@ Popup {
                             background: Rectangle {
                                 color: english.pressed ? menuPressColor : menuBackColor
                             }
-                            onClicked: langSubsubMenu.checkIndex = 0
+                            onClicked: {
+                                langSubsubMenu.checkIndex = 0
+                                theme.currentLanguage = 0
+                            }
 
                             Image {
                                 source: "qrc:/XR/check.svg"
@@ -222,7 +234,10 @@ Popup {
                             background: Rectangle {
                                 color: chinese.pressed ? menuPressColor : menuBackColor
                             }
-                            onClicked: langSubsubMenu.checkIndex = 1
+                            onClicked: {
+                                langSubsubMenu.checkIndex = 1
+                                theme.currentLanguage = 1
+                            }
 
                             Image {
                                 source: "qrc:/XR/check.svg"

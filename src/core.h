@@ -230,7 +230,6 @@ private:
 #endif
 
     QQmlApplicationEngine* qmlAppEnginePtr_;
-    QTranslator *translator_;
     Dataset* datasetPtr_;
     QPointer<GraphicsScene3dView> scene3dViewPtr_;
     ConverterXTF converterXtf_;

@@ -72,7 +72,7 @@ void ComputeWorker::setDatasetPtr(Dataset* ds)
 
 void ComputeWorker::setBottomTrackPtr(BottomTrack* bt)
 {
-    qDebug() << "ComputeWorker::setBottomTrackPtr...........";
+    // qDebug() << "ComputeWorker::setBottomTrackPtr...........";
     surface_.setBottomTrackPtr(bt);
 }
 

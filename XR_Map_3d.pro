@@ -57,7 +57,8 @@ SOURCES += \
     src/map_defs.cpp \
     src/stream_list.cpp \
     src/stream_list_model.cpp \
-    src/location_reader.cpp
+    src/location_reader.cpp \
+    src/themes.cpp
 
 FLASHER {
     DEFINES += FLASHER

@@ -10,7 +10,15 @@
 #include <QDebug>
 #include <QFontDatabase>
 #include <QApplication>
+#include <QTranslator>
+#include <QQmlApplicationEngine>
 
+
+#include "dataset_defs.h"
+#include "console.h"
+
+
+class QQmlApplicationEngine;
 
 
 class Themes : public QObject
@@ -18,18 +26,7 @@ class Themes : public QObject
     Q_OBJECT
 
 public:
-
-    Themes() :
-        instrumentsGrade_(-1),
-        resolutionCoeff_(1.0),
-        isFakeCoords_(false)
-    {
-#if defined (FAKE_COORDS)
-        isFakeCoords_ = true;
-#endif
-
-        _isConsoleVisible = false;
-    }
+    Themes();
 
     Q_PROPERTY(bool isFakeCoords READ getIsFakeCoords NOTIFY changed)
     Q_PROPERTY(qreal resCoeff READ getResolutionCoeff NOTIFY changed)
@@ -61,14 +58,9 @@ public:
 
     Q_PROPERTY(bool consoleVisible READ consoleVisible WRITE setConsoleVisible NOTIFY interfaceChanged)
     Q_PROPERTY(int instrumentsGrade READ getInstrumentsGrade WRITE setInstrumentsGrade NOTIFY instrumentsGradeChanged)
+    Q_PROPERTY(int currentLanguage  READ getCurrentLanguage  WRITE setCurrentLanguage NOTIFY bootConfigChanged);
 
-    Q_INVOKABLE void updateResCoeff() {
-        qreal currCoeff = checkResolutionCoeff();
-        if (!qFuzzyCompare(1.0 + currCoeff, 1.0 + resolutionCoeff_)) {
-            resolutionCoeff_ = currCoeff;
-            emit changed();
-        }
-    };
+
 
     bool getIsFakeCoords() const { return isFakeCoords_; };
     qreal getResolutionCoeff() const { return resolutionCoeff_; };
@@ -94,86 +86,12 @@ public:
     int menuWidth()    { return menuWidth_; }
     int iconSize()     { return iconSize_;  }
 
-    void setTheme(int theme_id = 0) {
-        _id = theme_id;
+    int getCurrentLanguage();
+    void setCurrentLanguage(int lang);
 
-        int fontId = QFontDatabase::addApplicationFont(":/fonts/AlibabaPuHuiTi-3-55-Regular.ttf");
-        if (fontId == 0) {
-            QString fontFamily = QFontDatabase::applicationFontFamilies(fontId).at(0);
-            QFont font(fontFamily, 12);
-            QApplication::setFont(font);
-            _textFont  = new QFont(fontFamily, 26);
-            _textFontS = new QFont(fontFamily, 20);
-        }
 
-        _textErrorColor = new QColor(250, 0, 0);
-
-        _frameBackColor = new QColor(45, 45, 45, 50);
-
-        if(theme_id == 0) {
-            _textColor = new QColor(250, 250, 250);
-            _textSolidColor = new QColor(250, 250, 250);
-            _menuBackColor = new QColor(45, 45, 45, 240);
-            _controlBackColor = new QColor(60, 60, 60);
-            _controlBorderColor = new QColor(100, 100, 100);
-            _controlSolidBackColor = new QColor(100, 100, 100);
-            _controlSolidBorderColor = new QColor(150, 150, 150);
-
-            _disabledTextColor = new QColor(150, 150, 150);
-            _disabledBackColor = new QColor(50, 50, 50);
-            _hoveredBackColor = new QColor(70,70,70);
-
-        } else if(theme_id == 1) {
-            _textColor = new QColor(255, 255, 255);
-            _textSolidColor = new QColor(0, 0, 0);
-            _menuBackColor = new QColor(0, 0, 0, 255);
-            _controlBackColor = new QColor(55, 55, 55);
-            _controlBorderColor = new QColor(155, 155, 155);
-            _controlSolidBackColor = new QColor(255, 255, 255);
-            _controlSolidBorderColor = new QColor(0, 0, 0, 0);
-
-            _disabledTextColor = new QColor(150, 150, 150);
-            _disabledBackColor = new QColor(50, 50, 50);
-
-        } else if(theme_id == 2) {
-            _textColor = new QColor(25, 25, 25);
-            _textSolidColor = new QColor(25, 25, 25);
-            _menuBackColor = new QColor(240, 240, 240, 240);
-            _controlBackColor = new QColor(250, 250, 250);
-            _controlBorderColor = new QColor(100, 100, 100);
-            _controlSolidBackColor = new QColor(255, 255, 255);
-            _controlSolidBorderColor = new QColor(150, 150, 150);
-
-            _disabledTextColor = new QColor(150, 150, 150);
-            _disabledBackColor = new QColor(50, 50, 50);
-
-        } else if(theme_id == 3) {
-            _textColor = new QColor(0, 0, 0);
-            _textSolidColor = new QColor(255, 255, 255);
-            _menuBackColor = new QColor(250, 250, 250, 250);
-            _controlBackColor = new QColor(255, 255, 255);
-            _controlBorderColor = new QColor(100, 100, 100);
-            _controlSolidBackColor = new QColor(0, 0, 0);
-            _controlSolidBorderColor = new QColor(255, 255, 255);
-
-            _disabledTextColor = new QColor(150, 150, 150);
-            _disabledBackColor = new QColor(50, 50, 50);
-        }
-
-        QScreen *screen = QGuiApplication::primaryScreen();
-        if (screen) {
-            QSize size = screen->size();
-            screenWidth_  = size.width();
-            screenHeight_ = size.height();
-            screenSize_   = qMin(screenWidth_, screenHeight_);
-            menuWidth_    = screenSize_ * 0.06;
-            iconSize_     = menuWidth_  * 0.3;
-        } else {
-            screenSize_ = 600;
-        }
-
-        emit changed();
-    }
+    void setQmlEngine(QQmlApplicationEngine* engine);
+    void setTheme(int theme_id = 0);
 
     int themeId() {
         return _id;
@@ -197,10 +115,22 @@ public:
         emit instrumentsGradeChanged();
     }
 
+    void bootConfig();
+    void getSoftwareParameters();
+    void saveSoftwareParameters();
+
+
+    Q_INVOKABLE void updateResCoeff();
+
+private:
+    u8 XorCheckSum(u8* input, u8 length);
+
+
 signals:
     void changed();
     void interfaceChanged();
     void instrumentsGradeChanged();
+    void bootConfigChanged();
 
 protected:
     int _id = 0;
@@ -226,10 +156,16 @@ protected:
 
     bool _isConsoleVisible;
     int instrumentsGrade_;
+
+
 private:
+    QQmlApplicationEngine* qmlEngine_ = nullptr;
     qreal checkResolutionCoeff() const;
     qreal resolutionCoeff_;
     bool isFakeCoords_;
+
+    QTranslator *translator_;
+    SoftwareParametersStru softwareParameters_;
 };
 
 inline qreal Themes::checkResolutionCoeff() const
@@ -239,18 +175,6 @@ inline qreal Themes::checkResolutionCoeff() const
 #if defined(Q_OS_ANDROID) || defined(LINUX_ES)
     retVal = 2.0;
 #endif
-
-    // QScreen *screen = QApplication::primaryScreen();
-    // if (screen) {
-    //     auto physDotsPerInch = screen->physicalDotsPerInch();
-    //     Q_UNUSED(physDotsPerInch)
-
-
-    //     // retVal = 2.0; // test
-    //     // qDebug() << "Logical DPI:" << screen->logicalDotsPerInch();
-    //     // qDebug() << "Physical DPI:" << screen->physicalDotsPerInch();
-    //     // qDebug() << "Device Pixel Ratio:" << screen->devicePixelRatio();
-    // }
 
     return retVal;
 }
