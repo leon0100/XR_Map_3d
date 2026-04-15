@@ -19,6 +19,7 @@ class TileDB : public QObject
 public:
     explicit TileDB(std::weak_ptr<TileProvider> tileProvider);
     ~TileDB();
+    void switchMapType(MapSourceType type);
 
 public slots:
     void init();

@@ -87,8 +87,6 @@ void Themes::setTheme(int theme_id)
     }
 
     emit changed();
-
-    // getSoftwareParameters();
 }
 
 
@@ -103,8 +101,8 @@ void Themes::updateResCoeff()
 
 void Themes::bootConfig()
 {
+    getSoftwareParameters();
     bool firstRun = softwareParameters_.isFirstRun;
-    // firstRun = true;
     if (firstRun)
     {
         softwareParameters_.isFirstRun = false;
@@ -113,8 +111,6 @@ void Themes::bootConfig()
         msgBox.setWindowTitle("Location Inquiry");
         msgBox.setText("Are you in China?");
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::Yes);
-
         int result = msgBox.exec();
         if(result == QMessageBox::Yes) {
             softwareParameters_.inChina = true;
@@ -129,7 +125,6 @@ void Themes::bootConfig()
             softwareParameters_.inChina = false;
             softwareParameters_.currentLanguage = 0;
             softwareParameters_.mapSourceType = openStreetMapSource;
-
         }
 
         softwareParameters_.currentLon = 118.05459876165770;
@@ -154,10 +149,8 @@ void Themes::bootConfig()
                    + QString::number(latiDou, 'f', 6) + latiDirection;
 
 
-    // QGuiApplication::instance()->installTranslator(translator_);
-
     if(softwareParameters_.inChina) {
-
+        qDebug() <<"inChina........." << softwareParameters_.inChina;
     }
 
 
@@ -180,8 +173,7 @@ void Themes::getSoftwareParameters()
     QAndroidJniObject context = QtAndroid::androidContext();
 
     QAndroidJniObject jArray = QAndroidJniObject::callStaticObjectMethod(
-        "com/nqc/Config",    "loadSoftwareParameters",  "(Landroid/content/Context;)[F",
-        context.object<jobject>()   );
+        "com/nqc/Config",  "loadSoftwareParameters",  "(Landroid/content/Context;)[F", context.object<jobject>());
 
     if (jArray.isValid()) {
         jfloatArray arr = jArray.object<jfloatArray>();
@@ -278,7 +270,7 @@ void Themes::saveSoftwareParameters()
 //         }
 //     }
 
-    // softwareParametersStru.isFirstRun = true;//用来生成配置文件config（已经生成好了，以后打包一般不用打开这行）
+    softwareParameters_.isFirstRun = true;//用来生成配置文件config（已经生成好了，以后打包一般不用打开这行）
 
     //抑或校验
     u8 crc = XorCheckSum((u8*)&softwareParameters_,(sizeof(softwareParameters_)-1));
@@ -287,19 +279,19 @@ void Themes::saveSoftwareParameters()
 #ifdef Q_OS_ANDROID
     QAndroidJniObject context = QtAndroid::androidContext();
     QAndroidJniObject::callStaticMethod<void>(
-        "com/nqc/Config",
+         "com/nqc/Config",
         "saveSoftwareParameters",
         "(Landroid/content/Context;IIDDIIZIZ)V",
         context.object<jobject>(),
-        (jint)softwareParametersStru.mapSourceType,
-        (jint)softwareParametersStru.currentLevel,
-        (jdouble)softwareParametersStru.currentLon,
-        (jdouble)softwareParametersStru.currentLati,
-        (jint)softwareParametersStru.existGoogle,
-        (jint)softwareParametersStru.currentLanguage,
-        (jboolean)softwareParametersStru.inChina,
-        (jint)softwareParametersStru.crcValue,
-        (jboolean)softwareParametersStru.isFirstRun );
+        (jint)softwareParameters_.mapSourceType,
+        (jint)softwareParameters_.currentLevel,
+        (jdouble)softwareParameters_.currentLon,
+        (jdouble)softwareParameters_.currentLati,
+        (jint)softwareParameters_.existGoogle,
+        (jint)softwareParameters_.currentLanguage,
+        (jboolean)softwareParameters_.inChina,
+        (jint)softwareParameters_.crcValue,
+        (jboolean)softwareParameters_.isFirstRun );
 
 #elif defined(Q_OS_WIN)
     QFile file(":/config/cfg");

@@ -139,6 +139,7 @@ public slots:
     Q_INVOKABLE void location(uint8_t type);
     Q_INVOKABLE void setAutoRenderSpan(bool isAuto);
     Q_INVOKABLE void exitApp();
+    Q_INVOKABLE void switchMapType(int sourceType);
 
 signals:
     void connectionChanged(bool duplex = false);

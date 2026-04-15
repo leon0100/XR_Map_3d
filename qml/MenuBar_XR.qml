@@ -288,7 +288,10 @@ Popup {
                             background: Rectangle {
                                 color: openstreet.pressed ? menuPressColor : menuBackColor
                             }
-                            onClicked: mapSubsubMenu.checkIndex = 0
+                            onClicked: {
+                                mapSubsubMenu.checkIndex = 0
+                                core.switchMapType(1)
+                            }
 
                             Image {
                                 source: "qrc:/XR/check.svg"
@@ -308,7 +311,10 @@ Popup {
                             background: Rectangle {
                                 color: google.pressed ? menuPressColor : menuBackColor
                             }
-                            onClicked: mapSubsubMenu.checkIndex = 1
+                            onClicked: {
+                                mapSubsubMenu.checkIndex = 1
+                                core.switchMapType(0)
+                            }
 
                             Image {
                                 source: "qrc:/XR/check.svg"

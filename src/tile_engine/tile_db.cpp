@@ -24,6 +24,12 @@ TileDB::~TileDB()
     db_.close();
 }
 
+void TileDB::switchMapType(MapSourceType type)
+{
+
+    init();
+}
+
 void TileDB::loadTiles(const QSet<map::TileIndex> &tileIndices)
 {
     stopRequested_ = false;
@@ -74,6 +80,7 @@ void TileDB::stopAndClearRequests()
     }
 
     pendingLoadRequests_.clear();
+
 }
 
 void TileDB::init()
@@ -84,6 +91,10 @@ void TileDB::init()
         switch (sharedProvider->getProviderId()) {
         case 1: {
             dbName = "tiles_google";
+            break;
+        }
+        case 2: {
+            dbName = "tiles_amap";
             break;
         }
         default: {

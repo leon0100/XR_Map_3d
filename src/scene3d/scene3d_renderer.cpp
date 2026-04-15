@@ -218,14 +218,12 @@ void GraphicsScene3dRenderer::drawObjects()
         nModel.rotate(navigationArrowRenderImpl_.getAngle(), 0.f, 0.f, 1.f);
         // float distance =  m_camera.distToFocusPoint();
         float distance = m_camera.getHeightAboveGround();
-        qDebug() << "distance is " << distance;
         float perspFixFovRad = qDegreesToRadians(perspFixFov);
         float factor = 2.0f * distance * std::tan(perspFixFovRad * 0.5f) / m_viewSize.height();
-        float worldScale = factor * 7.f * scaleFactor_;
-        float naviArrowSizeFactor = 1.0f;
-        nModel.scale(worldScale * naviArrowSizeFactor);
+        float worldScale = factor * 10.f * scaleFactor_;
+        worldScale  = (worldScale < 0.7) ? 0.7 : worldScale;
+        nModel.scale(worldScale);
         navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
-
         glDisable(GL_DEPTH_TEST);
     }
 

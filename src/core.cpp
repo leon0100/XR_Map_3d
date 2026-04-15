@@ -1547,6 +1547,15 @@ void Core::exitApp()
     });
 }
 
+void Core::switchMapType(int sourceType)
+{
+    qDebug() << "Core::switchMapSource  " << sourceType;
+    MapSourceType type = (MapSourceType)sourceType;
+    if (tileManager_) {
+        tileManager_->switchMapSource(type);
+    }
+}
+
 void Core::location(uint8_t type)
 {
     double latitude = 0.0, longitude = 0.0;

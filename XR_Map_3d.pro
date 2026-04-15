@@ -92,6 +92,10 @@ QML_DESIGNER_IMPORT_PATH = $$PWD/qml
 
 
 DISTFILES += \
+    android/src/.DS_Store \
+    android/src/com/.DS_Store \
+    android/src/com/nqc/Config.java \
+    android/src/com/nqc/FileQtActivity.java \
     qml/Common/MenuBlockEx.qml \
     qml/Scene3DToolbar.qml \
     qml/SceneObjectsControlBar/ActiveObjectParams.qml \

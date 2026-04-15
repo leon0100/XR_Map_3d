@@ -6,6 +6,7 @@
 
 #include "map_defs.h"
 #include "tile_google_provider.h"
+#include "tile_amap_provider.h"
 
 
 namespace map {
@@ -142,6 +143,58 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
 void TileManager::getLlaRef(LLARef viewLlaRef)
 {
     tileSet_->onNewLlaRef(viewLlaRef);
+}
+
+void TileManager::switchMapSource(MapSourceType sourceType)
+{
+    tileDownloader_->stopAndClearRequests();
+    tileDB_->stopAndClearRequests();
+
+
+    switch (sourceType) {
+        case googleMapSource:
+            tileProvider_ = std::make_shared<TileGoogleProvider>();
+            break;
+        case amapMapSource:
+            tileProvider_ = std::make_shared<TileAmapProvider>();
+            break;
+        case openStreetMapSource:
+            // tileProvider_ = std::make_shared<Tile()
+            break;
+
+        default:
+            break;
+    }
+
+    tileDB_->switchMapType(sourceType);
+
+    // 更新下载器、数据库和瓦片集合的提供者
+    tileDownloader_ = std::make_shared<TileDownloader>(tileProvider_, maxConcurrentDownloads_);
+    tileDB_ = std::make_shared<TileDB>(tileProvider_);
+    tileSet_ = std::make_shared<TileSet>(tileProvider_, tileDB_, tileDownloader_, maxTilesCapacity_, minTilesCapacity_);
+
+    QThread* dbThread = new QThread();
+    tileDB_->moveToThread(dbThread);
+    dbThread->setObjectName("MapDBThread");
+
+    // 重新建立连接
+    auto downloaderConnType = Qt::AutoConnection;
+    QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  tileSet_.get(), &TileSet::onTileDownloaded,      downloaderConnType);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadStopped, tileSet_.get(), &TileSet::onTileDownloadStopped, downloaderConnType);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadFailed,  tileSet_.get(), &TileSet::onTileDownloadFailed,  downloaderConnType);
+
+    auto dbConnType = Qt::AutoConnection;
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoaded,           tileSet_.get(), &TileSet::onTileLoaded,        dbConnType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoadFailed,       tileSet_.get(), &TileSet::onTileLoadFailed,    dbConnType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoadStopped,      tileSet_.get(), &TileSet::onTileLoadStopped,   dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbLoadTiles,         tileDB_.get(),  &TileDB::loadTiles,            dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbStopAndClearTasks, tileDB_.get(),  &TileDB::stopAndClearRequests, dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbStopLoadingTile,   tileDB_.get(),  &TileDB::stopLoading,          dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbSaveTile,          tileDB_.get(),  &TileDB::saveTile,             dbConnType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileSaved,            tileSet_.get(), &TileSet::onTileSaved,         dbConnType);
+
+    // 重置缩放级别
+    lastZoomLevel_ = -1;
 }
 
 

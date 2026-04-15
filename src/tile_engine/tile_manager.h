@@ -30,6 +30,7 @@ signals:
 public slots:
     void getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam);
     void getLlaRef(LLARef viewLlaRef);
+    void switchMapSource(MapSourceType sourceType);
 
 private:
     std::shared_ptr<TileProvider> tileProvider_;

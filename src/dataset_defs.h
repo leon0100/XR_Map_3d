@@ -11,6 +11,13 @@
 #include <QSettings>
 
 
+#ifdef Q_OS_ANDROID
+#include <QAndroidJniObject>
+#include <QAndroidJniEnvironment>
+#include <QtAndroid>
+#endif
+
+
 #include "math_defs.h"
 #include "dsp_defs.h"
 

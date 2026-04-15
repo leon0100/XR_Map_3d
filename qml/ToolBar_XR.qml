@@ -88,7 +88,6 @@ Rectangle {
         anchors.margins: 2
         spacing: 3
 
-
         MenuButton {  //菜单
             id: menuBtn
             icon.source: "qrc:/XR/config.png"
@@ -108,8 +107,11 @@ Rectangle {
                 if(menuPopup) {
                     if (menuPopup.visible) {
                         menuPopup.close()
-                    } else {
+                    }
+                    else {
                         menuPopup.open()
+                        contourMode = false
+                        bluetoothMode = false
                     }
                 }
             }
@@ -267,7 +269,9 @@ Rectangle {
 
             onPressed: {
                 contourMode = !contourMode
-                // itemChangeActive(contourBtn)
+                if(contourMode) {
+                    bluetoothMode = false
+                }
             }
         }
 
@@ -353,8 +357,9 @@ Rectangle {
 
             onPressed: {
                 bluetoothMode = !bluetoothMode
-                // itemChangeActive(blueToothBtn)
-                // blueToothClicked(bluetoothMode)
+                if(bluetoothMode) {
+                   contourMode = false
+                }
             }
         }
 
