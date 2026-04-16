@@ -279,11 +279,11 @@ Popup {
                         width: parent.width * 1.2
                         x: 0
 
-                        property int checkIndex: 0
+                        property int checkIndex: 1
 
                         MenuItem {
                             id: openstreet
-                            text: qsTr("OpenStreet")
+                            text: qsTr("Amap")
                             font.pixelSize: itemFontSize
                             background: Rectangle {
                                 color: openstreet.pressed ? menuPressColor : menuBackColor

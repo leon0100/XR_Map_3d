@@ -27,10 +27,14 @@ class TileDownloader : public QObject
 public:
     explicit TileDownloader(std::weak_ptr<TileProvider> provider, int maxConcurrentDownloads = 5);
     ~TileDownloader();
+    void switchMapType(std::weak_ptr<TileProvider> tileProvider);
 
     void downloadTile(const TileIndex& tile);
     void stopAndClearRequests();
     void deleteRequest(const TileIndex& tileIndx);
+
+
+
 
 signals:
     void tileDownloaded(const map::TileIndex& tileIndx, const QImage& image);

@@ -27,6 +27,7 @@ public:
     int32_t latToTileY(double lat, int z) const override final;
     map::TileInfo indexToTileInfo(map::TileIndex tileIndx, map::TilePosition pos = map::TilePosition::kFits) const override final;
     QString createURL(const map::TileIndex& tileIndx) const override final;
+    map::TileIndex llaToTileIndex(LLA lla, int32_t z) override final;
 
 private:
     int generateNum(int x, int y) const;

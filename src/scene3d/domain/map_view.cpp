@@ -206,9 +206,7 @@ void MapView::MapViewRenderImplementation::copyCpuSideFrom(const MapView::MapVie
 
 void MapView::MapViewRenderImplementation::processPendingTextureTasks(QOpenGLFunctions *gl) const
 {
-    if (!gl)
-        return;
-
+    if (!gl)  return;
     gl->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // del

@@ -18,7 +18,10 @@ class TileSet : public QObject
 {
     Q_OBJECT
 public:
-    TileSet(std::weak_ptr<TileProvider> provider, std::weak_ptr<TileDB> db, std::weak_ptr<TileDownloader> downloader, size_t maxCapacity = 1000, size_t minCapacity = 500);
+    TileSet(std::weak_ptr<TileProvider> provider, std::weak_ptr<TileDB> db,
+                    std::weak_ptr<TileDownloader> downloader, size_t maxCapacity = 1000, size_t minCapacity = 500);
+    void switchMapType(std::weak_ptr<TileProvider> provider, std::weak_ptr<TileDB> db,
+                    std::weak_ptr<TileDownloader> downloader, size_t maxCapacity, size_t minCapacity);
 
     void onNewRequest(const QSet<TileIndex>& request, ZoomState zoomState, LLARef viewLlaRef, bool isPerspective, double minLon, double maxLon, bool moveUp);
     void onNewLlaRef(LLARef viewLlaRef);

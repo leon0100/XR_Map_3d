@@ -27,10 +27,12 @@ public:
 signals:
     void zoomLevelChanged(int level);
 
+
 public slots:
     void getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam);
     void getLlaRef(LLARef viewLlaRef);
     void switchMapSource(MapSourceType sourceType);
+
 
 private:
     std::shared_ptr<TileProvider> tileProvider_;
@@ -38,6 +40,7 @@ private:
     std::shared_ptr<TileDB> tileDB_;
     std::shared_ptr<TileSet> tileSet_;
     int lastZoomLevel_;
+    // MapSourceType sourceType_;
 
     static constexpr int maxTilesCapacity_{ 800 };
     static constexpr int minTilesCapacity_{ 400 };

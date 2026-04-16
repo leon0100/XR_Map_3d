@@ -34,6 +34,16 @@ TileDownloader::TileDownloader(std::weak_ptr<TileProvider> provider, int maxConc
     networkCheckTimer_->start(10000);
 }
 
+
+void TileDownloader::switchMapType(std::weak_ptr<TileProvider> tileProvider)
+{
+    tileProvider_ = tileProvider;
+    activeDownloads_ = 0;
+    maxConcurrentDownloads_ = 5;
+    networkAvailable_ = false;
+    hostLookupId_ = -1;
+}
+
 TileDownloader::~TileDownloader()
 {
     if (networkCheckTimer_) {
@@ -146,6 +156,7 @@ void TileDownloader::startNextDownload()
 
 void TileDownloader::onTileDownloaded(QNetworkReply *reply)
 {
+    // qDebug() << "TileDownloader::onTileDownloaded(Q..........";
     if (!reply || !activeReplies_.contains(reply)) {
         qWarning() << "Received a signal from an unknown or inactive reply"; // TODO
         return;

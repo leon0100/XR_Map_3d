@@ -26,6 +26,25 @@ TileSet::TileSet(std::weak_ptr<TileProvider> provider, std::weak_ptr<TileDB> db,
     qRegisterMetaType<QSet<TileIndex>>("QSet<TileIndex>");
 }
 
+void TileSet::switchMapType(std::weak_ptr<TileProvider> provider, std::weak_ptr<TileDB> db,
+                            std::weak_ptr<TileDownloader> downloader, size_t maxCapacity, size_t minCapacity)
+{
+    tileProvider_ = provider;
+    tileDB_ = db;
+    tileDownloader_ = downloader;
+    maxCapacity_ = maxCapacity;
+    minCapacity_ = minCapacity;
+    isPerspective_ = false;
+    zoomState_ = ZoomState::kUndefined;
+    minLon_ = 0.0;
+    maxLon_ = 0.0;
+    currZoom_ = -1;
+    diffLevels_ = std::numeric_limits<int32_t>::max();
+    moveUp_ = false;
+    defaultSize_ = QSize(256, 256);
+    defaultImageFormat_ = QImage::Format_RGB32;
+}
+
 void TileSet::onNewRequest(const QSet<TileIndex>& request, ZoomState zoomState, LLARef viewLlaRef,
                            bool isPerspective, double minLon, double maxLon, bool moveUp)
 {
@@ -43,8 +62,8 @@ void TileSet::onNewRequest(const QSet<TileIndex>& request, ZoomState zoomState, 
     diffLevels_    = std::abs(request.begin()->z_ - currZoom_);
     currZoom_      = request.begin()->z_;
 
-    //QString state = (zoomState_ == ZoomState::kIn ? "IN" : zoomState_ == ZoomState::kOut ? "OUT" : "---");
-    //qDebug() << "ON NEW REQ" << currZoom_ << state << request.size();
+    QString state = (zoomState_ == ZoomState::kIn ? "IN" : zoomState_ == ZoomState::kOut ? "OUT" : "---");
+    // qDebug() << "ON NEW REQ" << currZoom_ << state << request.size();
 
     addTiles(request);
     removeFarDBRequests(request);
@@ -105,7 +124,6 @@ void TileSet::onTileLoaded(const map::TileIndex &tileIndx, const QImage &image)
     dbReq_.remove(tileIndx);
 
     if (image.isNull()) {
-        qWarning() << "TileSet::onTileLoaded: loaded 'null' image";
         return;
     }
 
@@ -153,10 +171,10 @@ void TileSet::onTileSaved(const map::TileIndex &tileIndx)
 
 void TileSet::onTileDownloaded(const map::TileIndex &tileIndx, const QImage &image)
 {
+    // qDebug() << "TileSet::onTileDownloaded(c............";
     dwReq_.remove(tileIndx);
 
     if (image.isNull()) {
-        qWarning() << "TileSet::onTileDownloaded: downloaded 'null' image";
         return;
     }
 

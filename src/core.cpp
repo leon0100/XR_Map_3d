@@ -1554,6 +1554,7 @@ void Core::switchMapType(int sourceType)
     if (tileManager_) {
         tileManager_->switchMapSource(type);
     }
+    scene3dViewPtr_->updateMapView();
 }
 
 void Core::location(uint8_t type)
@@ -1887,7 +1888,6 @@ void Core::loadLLARefFromSettings()
 void Core::createMapTileManagerConnections()
 {
     tileManager_ = std::make_unique<map::TileManager>(this);
-
     QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendRectRequest, tileManager_.get(), &map::TileManager::getRectRequest, Qt::DirectConnection);
     QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendLlaRef, tileManager_.get(), &map::TileManager::getLlaRef, Qt::DirectConnection);
 

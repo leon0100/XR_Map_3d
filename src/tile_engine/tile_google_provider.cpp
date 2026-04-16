@@ -121,12 +121,18 @@ void TileGoogleProvider::generateWords(int x, int y, QString& sec1, QString& sec
 
 QString TileGoogleProvider::createURL(const map::TileIndex& tileIndx) const
 {
+    qDebug() << "TileGoogleProvider::createURL......";
     QString str1, str2;
     generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
     // return QString(QStringLiteral("http://%1%2.google.com/%3/v=%4&hl=%5&x=%6%7&y=%8&z=%9&s=%10"))
     //     .arg(server).arg(generateNum(tileIndx.x_, tileIndx.y_))
     //     .arg(request).arg(googleSat).arg(language).arg(tileIndx.x_).arg(str1).arg(tileIndx.y_).arg(tileIndx.z_).arg(str2);
     return QString("http://mt2.google.com/vt/lyrs=y&hl=en&x=%1&y=%2&z=%3").arg(tileIndx.x_).arg(tileIndx.y_).arg(tileIndx.z_);
+}
+
+map::TileIndex TileGoogleProvider::llaToTileIndex(LLA lla, int32_t z)
+{
+    return map::TileIndex(lonToTileX(lla.longitude, z), latToTileY(lla.latitude, z), z, providerId_);
 }
 
 

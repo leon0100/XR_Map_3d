@@ -24,10 +24,11 @@ TileDB::~TileDB()
     db_.close();
 }
 
-void TileDB::switchMapType(MapSourceType type)
+void TileDB::switchMapType(std::weak_ptr<TileProvider> tileProvider)
 {
-
-    init();
+    tileProvider_ = tileProvider;
+    stopRequested_ = false;
+    // init();
 }
 
 void TileDB::loadTiles(const QSet<map::TileIndex> &tileIndices)
@@ -88,19 +89,20 @@ void TileDB::init()
     QString dbName;
 
     if (auto sharedProvider = tileProvider_.lock(); sharedProvider) {
+        qDebug() << "sharedProvider->getProviderId()...." << sharedProvider->getProviderId();
         switch (sharedProvider->getProviderId()) {
-        case 1: {
-            dbName = "tiles_google";
-            break;
-        }
-        case 2: {
-            dbName = "tiles_amap";
-            break;
-        }
-        default: {
-            dbName = "tiles_undefined";
-            break;
-        }
+            case 1: {
+                dbName = "tiles_google";
+                break;
+            }
+            case 2: {
+                dbName = "tiles_amap";
+                break;
+            }
+            default: {
+                dbName = "tiles_undefined";
+                break;
+            }
         }
     }
 
@@ -109,15 +111,17 @@ void TileDB::init()
         return;
     }
 
+    qDebug() << "dbName is " << dbName;
+
     QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + dbName + ".db";
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     if (!dir.exists()) {
         dir.mkpath(".");
     }
 
-    db_ = QSqlDatabase::addDatabase("QSQLITE", "TileDBConnection");
+    db_ = QSqlDatabase::addDatabase("QSQLITE", "TileDBConnection" + dbName);
     db_.setDatabaseName(dbPath);
-    // qDebug() << "TileDB dbPath:" << dbPath;
+    qDebug() << "TileDB dbPath:" << dbPath;
 
     if (!db_.open()) {
         qWarning() << "Failed to open the database:" << db_.lastError().text();
@@ -133,6 +137,8 @@ void TileDB::init()
             qWarning() << "Failed to create table tiles:" << query.lastError().text();
         }
     }
+
+
 }
 
 void TileDB::processNextTile()
