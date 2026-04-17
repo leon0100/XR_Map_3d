@@ -1,0 +1,8 @@
+module AppXr
+
+MapTileLoad 1.0 MapTileLoad.qml
+MenuBar_XR  1.0 MenuBar_XR.qml
+ToolBar_XR  1.0 ToolBar_XR.qml
+MenuButton  1.0 MenuButton.qml
+CMouseOpacityArea  1.0  CMouseOpacityArea.qml
+CPopup      1.0  CPopup.qml

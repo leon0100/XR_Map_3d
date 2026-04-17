@@ -1554,6 +1554,10 @@ void Core::switchMapType(int sourceType)
     if (tileManager_) {
         tileManager_->switchMapSource(type);
     }
+
+    std::shared_ptr<MapView> mapView = scene3dViewPtr_->getMapViewPtr();
+    mapView->setCurrentMapSource(type);
+
     scene3dViewPtr_->updateMapView();
 }
 

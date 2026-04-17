@@ -21,7 +21,7 @@ public:
     virtual map::TileInfo indexToTileInfo(map::TileIndex tileIndx, map::TilePosition pos = map::TilePosition::kFits) const = 0;
     virtual QString createURL(const map::TileIndex& tileIndx) const = 0;
 
-    virtual map::TileIndex llaToTileIndex(LLA lla, int32_t z) = 0;
+    map::TileIndex llaToTileIndex(LLA lla, int32_t z);
     int32_t getProviderId() const;
 
 protected:

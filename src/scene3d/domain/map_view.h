@@ -52,6 +52,17 @@ public:
 
         void processPendingTextureTasks(QOpenGLFunctions* gl) const;
         void ensureQuadBuffers(QOpenGLFunctions* gl) const;
+
+
+
+        static void   Mars2Wgs(double lng, double lat, double *wgs_lng, double *wgs_lat);
+        static double transformLat(double x, double y);
+        static double transformLon(double x, double y);
+        MapSourceType currentMapType_;
+        LLARef viewLlaRef_;
+        QVector3D calculateAmapOffset() const;
+
+
     };
 
     /*methods*/
@@ -66,6 +77,8 @@ public:
     QVector<map::TileIndex>                    takeDeleteTileTasks();
     bool getTileImage(const map::TileIndex& tileIndx, QImage& out) const;
 
+    void setCurrentMapSource(MapSourceType source);
+    void setViewLlaRef(LLARef viewLlaRef);
 
 
 public slots:
@@ -74,7 +87,6 @@ public slots:
     void onTileImageUpdated(const map::TileIndex& tileIndx, const QImage& image);
     void onTileVerticesUpdated(const map::TileIndex& tileIndx, const QVector<QVector3D>& vertices);
     void onClearAppendTasks();
-
 
 signals:
     void sendTextureId(const map::TileIndex& tileIndx, GLuint textureId);

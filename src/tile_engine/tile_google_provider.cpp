@@ -130,10 +130,5 @@ QString TileGoogleProvider::createURL(const map::TileIndex& tileIndx) const
     return QString("http://mt2.google.com/vt/lyrs=y&hl=en&x=%1&y=%2&z=%3").arg(tileIndx.x_).arg(tileIndx.y_).arg(tileIndx.z_);
 }
 
-map::TileIndex TileGoogleProvider::llaToTileIndex(LLA lla, int32_t z)
-{
-    return map::TileIndex(lonToTileX(lla.longitude, z), latToTileY(lla.latitude, z), z, providerId_);
-}
-
 
 } // namespace map

@@ -35,6 +35,19 @@ Popup {
     property color menuBackColor: "#d6e6ff"
     property color menuPressColor: "#bfefff"
 
+    property int currentLanguage: theme.currentLanguage  //0:english     1:chinese
+    property var mapTileLoad: null
+    property bool hasGoogleMap: false
+
+
+    Connections {
+        target: mapTileLoad
+        function onMapLoadConfirm(googleMapExists) {
+            hasGoogleMap = googleMapExists
+            console.log("Google Map added:", hasGoogleMap)
+        }
+    }
+
 
     contentItem: Column {
         width: parent.availableWidth
@@ -279,23 +292,26 @@ Popup {
                         width: parent.width * 1.2
                         x: 0
 
-                        property int checkIndex: 1
+                        property int checkIndex: (currentLanguage === 0) ? 2 : 3
+
 
                         MenuItem {
                             id: openstreet
-                            text: qsTr("Amap")
+                            text: qsTr("OpenStreet")
                             font.pixelSize: itemFontSize
                             background: Rectangle {
                                 color: openstreet.pressed ? menuPressColor : menuBackColor
                             }
+                            visible: currentLanguage === 0
+                            height: visible ? implicitHeight : 0
                             onClicked: {
-                                mapSubsubMenu.checkIndex = 0
-                                core.switchMapType(1)
+                                mapSubsubMenu.checkIndex = 2
+                                core.switchMapType(2)
                             }
 
                             Image {
                                 source: "qrc:/XR/check.svg"
-                                visible: mapSubsubMenu.checkIndex === 0
+                                visible: mapSubsubMenu.checkIndex === 2
                                 width: itemFontSize
                                 height: itemFontSize
                                 anchors.verticalCenter: parent.verticalCenter
@@ -304,6 +320,62 @@ Popup {
                             }
                         }
 
+
+
+                        MenuItem {
+                            id: genvisEarth
+                            text: qsTr("GeovisEarth")
+                            font.pixelSize: itemFontSize
+                            background: Rectangle {
+                                color: openstreet.pressed ? menuPressColor : menuBackColor
+                            }
+                            visible: currentLanguage === 1
+                            height: visible ? implicitHeight : 0
+                            onClicked: {
+                                mapSubsubMenu.checkIndex = 3
+                                core.switchMapType(3)
+                            }
+
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                visible: mapSubsubMenu.checkIndex === 3
+                                width: itemFontSize
+                                height: itemFontSize
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: 5
+                            }
+                        }
+
+
+
+                        MenuItem {
+                            id: amap
+                            text: qsTr("Amap")
+                            font.pixelSize: itemFontSize
+                            background: Rectangle {
+                                color: openstreet.pressed ? menuPressColor : menuBackColor
+                            }
+                            visible: currentLanguage === 1
+                            height: visible ? implicitHeight : 0
+                            onClicked: {
+                                mapSubsubMenu.checkIndex = 1
+                                core.switchMapType(1)
+                            }
+
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                visible: mapSubsubMenu.checkIndex === 1
+                                width: itemFontSize
+                                height: itemFontSize
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: 5
+                            }
+                        }
+
+
+
                         MenuItem {
                             id: google
                             text: qsTr("Google")
@@ -311,14 +383,16 @@ Popup {
                             background: Rectangle {
                                 color: google.pressed ? menuPressColor : menuBackColor
                             }
+                            visible: hasGoogleMap
+                            height: visible ? implicitHeight : 0
                             onClicked: {
-                                mapSubsubMenu.checkIndex = 1
+                                mapSubsubMenu.checkIndex = 0
                                 core.switchMapType(0)
                             }
 
                             Image {
                                 source: "qrc:/XR/check.svg"
-                                visible: mapSubsubMenu.checkIndex === 1
+                                visible: mapSubsubMenu.checkIndex === 0
                                 width: itemFontSize
                                 height: itemFontSize
                                 anchors.verticalCenter: parent.verticalCenter
@@ -334,17 +408,7 @@ Popup {
                             background: Rectangle {
                                 color: user.pressed ? menuPressColor : menuBackColor
                             }
-                            onClicked: mapSubsubMenu.checkIndex = 2
-
-                            Image {
-                                source: "qrc:/XR/check.svg"
-                                visible: mapSubsubMenu.checkIndex === 2
-                                width: itemFontSize
-                                height: itemFontSize
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.right: parent.right
-                                anchors.rightMargin: 5
-                            }
+                            onClicked: mapTileLoad.visible = true
                         }
                     }
                 }

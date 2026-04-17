@@ -28,17 +28,13 @@ public:
     map::TileInfo indexToTileInfo(map::TileIndex tileIndx, map::TilePosition pos = map::TilePosition::kFits) const override final;
     QString createURL(const map::TileIndex& tileIndx) const override final;
 
-    map::TileIndex llaToTileIndex(LLA lla, int32_t z) override final;
-
 private:
     int generateNum(int x, int y) const;
     void generateWords(const int x, const int y, QString& sec1, QString& sec2) const;
 
-    static double transformLat(double x, double y);
-    static double transformLon(double x, double y);
-    static LLA wgs84ToGcj02(const LLA& wgs84);
-    static LLA gcj02ToWgs84(const LLA& gcj02);
-    static bool outOfChina(double lon, double lat);
+    // static void   Mars2Wgs( double lng, double lat, double *wgs_lng, double *wgs_lat);
+    // static double transformLat(double x, double y);
+    // static double transformLon(double x, double y);
 
 };
 

@@ -1,6 +1,12 @@
 #include "map_view.h"
 #include <QObject>
 
+
+const double PI = 3.141592653589793238;
+const double a = 6378245.0;
+const double ee = 0.006693421622965943;
+
+
 static inline bool toTightRGBA8888(const QImage& in, QByteArray& out, int& w, int& h)
 {
     if (in.isNull()) {
@@ -125,6 +131,18 @@ bool MapView::getTileImage(const map::TileIndex& tileIndx, QImage& out) const
     return true;
 }
 
+void MapView::setCurrentMapSource(MapSourceType source)
+{
+    auto r = RENDER_IMPL(MapView);
+    r->currentMapType_ = source;
+}
+
+void MapView::setViewLlaRef(LLARef viewLlaRef)
+{
+    auto r = RENDER_IMPL(MapView);
+    r->viewLlaRef_ = viewLlaRef;
+}
+
 void MapView::onTileAppend(const map::Tile &tile)
 {
     auto r = RENDER_IMPL(MapView);
@@ -183,6 +201,44 @@ void MapView::onClearAppendTasks()
 }
 
 
+QVector3D MapView::MapViewRenderImplementation::calculateAmapOffset() const
+{
+    if (currentMapType_ != amapMapSource) {
+        return QVector3D(0, 0, 0);
+    }
+
+    // 使用视图中心计算偏移
+    double centerLon = viewLlaRef_.refLla.longitude;
+    double centerLat = viewLlaRef_.refLla.latitude;
+
+    // 计算火星坐标
+    double wgsLon, wgsLat;
+    Mars2Wgs(centerLon, centerLat, &wgsLon, &wgsLat);
+
+    // 计算偏移量（经纬度差）
+    double lonOffset = centerLon - wgsLon;
+    double latOffset = centerLat - wgsLat;
+
+    qDebug() << "Amap offset calculation:";
+    qDebug() << "  Center LLA: lon =" << centerLon << ", lat =" << centerLat;
+    qDebug() << "  WGS84 LLA: lon =" << wgsLon << ", lat =" << wgsLat;
+    qDebug() << "  Offset: lon =" << lonOffset << ", lat =" << latOffset;
+
+    // 将经纬度偏移转换为米（近似）
+    // 经度方向：1度 ≈ 111319.9 * cos(lat) 米
+    // 纬度方向：1度 ≈ 111319.9 米
+    double metersPerDegreeLon = 111319.9 * cos(centerLat * PI / 180.0);
+    double metersPerDegreeLat = 111319.9;
+
+    double offsetX = lonOffset * metersPerDegreeLon;
+    double offsetY = latOffset * metersPerDegreeLat;
+
+    qDebug() << "  Offset in meters: X =" << offsetX << ", Y =" << offsetY;
+
+    return QVector3D(offsetX, offsetY, 0);
+}
+
+
 // MapViewRenderImplementation
 MapView::MapViewRenderImplementation::MapViewRenderImplementation()
 {}
@@ -190,6 +246,8 @@ MapView::MapViewRenderImplementation::MapViewRenderImplementation()
 void MapView::MapViewRenderImplementation::copyCpuSideFrom(const MapView::MapViewRenderImplementation& s)
 {
     m_isVisible = s.m_isVisible;
+    currentMapType_ = s.currentMapType_;
+    viewLlaRef_ = s.viewLlaRef_;
 
     for (const auto& [idx, srcTile] : s.tilesHash_) { // update verts, not textId
         auto it = tilesHash_.find(idx);
@@ -327,7 +385,6 @@ void MapView::MapViewRenderImplementation::ensureQuadBuffers(QOpenGLFunctions *g
     }
 }
 
-
 void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
                             const QMatrix4x4 &model, const QMatrix4x4 &view,  const QMatrix4x4 &projection,
                             const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
@@ -348,7 +405,19 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
         ensureQuadBuffers(ctx);
 
         shaderProgram->bind();
-        shaderProgram->setUniformValue("mvp", projection * view * model);
+
+        QMatrix4x4 mvp = projection * view * model;
+        // if(currentMapType_ == amapMapSource) {
+        //     QVector3D offset = calculateAmapOffset();
+        //     if (!qFuzzyIsNull(offset.x()) || !qFuzzyIsNull(offset.y())) {
+        //         qDebug() << "Applying amap offset: X =" << offset.x() << ", Y =" << offset.y();
+        //         QMatrix4x4 offsetMatrix;
+        //         offsetMatrix.translate(offset.x(), offset.y(), 0);
+        //         mvp = projection * view * model * offsetMatrix;
+        //     }
+        // }
+
+        shaderProgram->setUniformValue("mvp", mvp);
 
         const int posLoc = shaderProgram->attributeLocation("position");
         const int texLoc = shaderProgram->attributeLocation("texCoord");
@@ -397,4 +466,48 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
         ctx->glBindBuffer(GL_ARRAY_BUFFER, 0);
         shaderProgram->release();
     }
+}
+
+
+
+
+double MapView::MapViewRenderImplementation::transformLat(double x, double y)
+{
+    double ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * sqrt(abs(x));
+    ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * sin(y * PI) + 40.0 * sin(y / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (160.0 * sin(y / 12.0 * PI) + 320 * sin(y * PI / 30.0)) * 2.0 / 3.0;
+    return ret;
+}
+
+double MapView::MapViewRenderImplementation::transformLon(double x, double y)
+{
+    double ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * sqrt(abs(x));
+    ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * sin(x * PI) + 40.0 * sin(x / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (150.0 * sin(x / 12.0 * PI) + 300.0 * sin(x / 30.0 * PI)) * 2.0 / 3.0;
+    return ret;
+}
+void MapView::MapViewRenderImplementation::Mars2Wgs(double lng, double lat, double *wgs_lng, double *wgs_lat)
+{
+    if (lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271) {
+        *wgs_lng=lng;
+        *wgs_lat=lat;
+        return;
+    }
+
+    double dlat = transformLat(lng - 105.0, lat - 35.0);
+    double dlng = transformLon(lng - 105.0, lat - 35.0);
+    double radlat = lat / 180.0 * PI;
+    double magic = sin(radlat);
+    magic = 1 - ee * magic * magic;
+    double sqrtmagic = sqrt(magic);
+    dlat = (dlat * 180.0) / ((a * (1 - ee)) / (magic * sqrtmagic) * PI);
+    dlng = (dlng * 180.0) / (a / sqrtmagic * cos(radlat) * PI);
+    double mglat = lat + dlat;
+    double mglng = lng + dlng;
+
+    *wgs_lng=lng * 2 - mglng;
+    *wgs_lat=lat * 2 - mglat;
+
 }

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TILE_OPENSTREET_PROVIDER_H
+#define TILE_OPENSTREET_PROVIDER_H
+
 
 #include "tile_provider.h"
 #include "map_defs.h"
@@ -6,20 +8,18 @@
 
 namespace map {
 
-
-constexpr double GOOGLE_TILE_CONSTANT = 126543000.03392;
-const int GOOGLE_PROVIDER_ID = 1;
-const int googleSat = 997;
-const QString secGoogleWord = QStringLiteral("Galileo");
-const QString language = QStringLiteral("en-US");
-const QString server = QStringLiteral("khm");
-const QString request = QStringLiteral("kh");
+constexpr double OPENSTREET_TILE_CONSTANT = 126543000.03392;
+const int OPENSTREET_PROVIDER_ID = 3;
+const int openStreetSat = 997;
+const QString secOpenStreetWord = QStringLiteral("Galileo");
 
 
-class TileGoogleProvider : public TileProvider
+
+
+class TileOpenStreetProvider : public TileProvider
 {
 public:
-    TileGoogleProvider();
+    TileOpenStreetProvider();
 
     int32_t heightToTileZ(float height) const override final;  //距离地面高度转换成地图等级z
     int32_t lonToTileX(double lon, int z) const override final;
@@ -31,8 +31,17 @@ public:
 private:
     int generateNum(int x, int y) const;
     void generateWords(const int x, const int y, QString& sec1, QString& sec2) const;
+
+    // static void   Mars2Wgs( double lng, double lat, double *wgs_lng, double *wgs_lat);
+    // static double transformLat(double x, double y);
+    // static double transformLon(double x, double y);
+
 };
 
 
-} // namespace map
 
+
+
+}
+
+#endif // TILE_OPENSTREET_PROVIDER_H

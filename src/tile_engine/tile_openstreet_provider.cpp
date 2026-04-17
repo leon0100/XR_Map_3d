@@ -1,22 +1,22 @@
-#include "tile_amap_provider.h"
+#include "tile_openstreet_provider.h"
 
 namespace map {
 
 
-TileAmapProvider::TileAmapProvider() :
-    TileProvider(AMAP_PROVIDER_ID)
+TileOpenStreetProvider::TileOpenStreetProvider() :
+    TileProvider(OPENSTREET_PROVIDER_ID)
 {
 
 }
 
-int32_t TileAmapProvider::heightToTileZ(const float height) const
+int32_t TileOpenStreetProvider::heightToTileZ(const float height) const
 {
-    double z = std::log2(AMAP_TILE_CONSTANT / height);
+    double z = std::log2(OPENSTREET_TILE_CONSTANT / height);
     z = std::max(0.0, std::min(z, 21.0));
     return static_cast<int>(z);
 }
 
-int32_t TileAmapProvider::lonToTileX(const double lon, const int z) const
+int32_t TileOpenStreetProvider::lonToTileX(const double lon, const int z) const
 {
     if (z < 0 || z > 21) {
         qWarning() << "Invalid zoom level:" << z;
@@ -28,7 +28,7 @@ int32_t TileAmapProvider::lonToTileX(const double lon, const int z) const
     return static_cast<int32_t>(floor(normalizedLon / 360.0 * pow(2.0, z)));
 }
 
-std::tuple<int32_t, int32_t, int32_t> TileAmapProvider::lonToTileXWithWrapAndBoundary(const double lonStart, const double lonEnd, const int z) const
+std::tuple<int32_t, int32_t, int32_t> TileOpenStreetProvider::lonToTileXWithWrapAndBoundary(const double lonStart, const double lonEnd, const int z) const
 {
     if (z < 0 || z > 21) {
         qWarning() << "Invalid zoom level:" << z;
@@ -51,7 +51,7 @@ std::tuple<int32_t, int32_t, int32_t> TileAmapProvider::lonToTileXWithWrapAndBou
     }
 }
 
-int32_t TileAmapProvider::latToTileY(const double lat, const int z) const
+int32_t TileOpenStreetProvider::latToTileY(const double lat, const int z) const
 {
     if (z < 0 || z > 21) {
         qWarning() << "Invalid zoom level:" << z;
@@ -68,7 +68,7 @@ int32_t TileAmapProvider::latToTileY(const double lat, const int z) const
     return tileY;
 }
 
-map::TileInfo TileAmapProvider::indexToTileInfo(map::TileIndex tileIndx, map::TilePosition pos) const
+map::TileInfo TileOpenStreetProvider::indexToTileInfo(map::TileIndex tileIndx, map::TilePosition pos) const
 {
     TileInfo info;
     GeoBounds bounds;
@@ -100,26 +100,26 @@ map::TileInfo TileAmapProvider::indexToTileInfo(map::TileIndex tileIndx, map::Ti
     return info;
 }
 
-int TileAmapProvider::generateNum(int x, int y) const
+int TileOpenStreetProvider::generateNum(int x, int y) const
 {
     return (x + y) % 4;
 }
 
-void TileAmapProvider::generateWords(int x, int y, QString& sec1, QString& sec2) const
+void TileOpenStreetProvider::generateWords(int x, int y, QString& sec1, QString& sec2) const
 {
     int setLen = ((x * 3) + y) % 8;
-    sec2 = secAmapWord.left(setLen);
+    sec2 = secOpenStreetWord.left(setLen);
     if (y >= 10000 && y < 100000) {
         sec1 = QStringLiteral("&s=");
     }
 }
 
-QString TileAmapProvider::createURL(const map::TileIndex& tileIndx) const
+QString TileOpenStreetProvider::createURL(const map::TileIndex& tileIndx) const
 {
-    qDebug() <<"TileAmapProvider::createURL...........";
+    qDebug() <<"TileOpenStreetProvider::createURL...........";
     QString str1, str2;
     generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
-    return QString("http://wprd04.is.autonavi.com/appmaptile?style=6&x=%1&y=%2&z=%3").arg(tileIndx.x_).arg(tileIndx.y_).arg(tileIndx.z_);
+    return QString("https://a.tile.openstreetmap.org/%1/%2/%3.png").arg(tileIndx.z_).arg(tileIndx.x_).arg(tileIndx.y_);
 }
 
 

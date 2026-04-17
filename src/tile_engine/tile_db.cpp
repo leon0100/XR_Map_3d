@@ -99,6 +99,10 @@ void TileDB::init()
                 dbName = "tiles_amap";
                 break;
             }
+            case 3: {
+                dbName = "tiles_openStreet";
+                break;
+            }
             default: {
                 dbName = "tiles_undefined";
                 break;
@@ -111,17 +115,22 @@ void TileDB::init()
         return;
     }
 
-    qDebug() << "dbName is " << dbName;
-
     QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + dbName + ".db";
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     if (!dir.exists()) {
         dir.mkpath(".");
     }
 
+    QString connName = "TileDBConnection" + dbName;
+    if (!connName.isEmpty() && QSqlDatabase::contains(connName)) {
+        if (db_.isOpen()) {
+            db_.close();
+        }
+        db_ = QSqlDatabase();
+        QSqlDatabase::removeDatabase(connName);
+    }
     db_ = QSqlDatabase::addDatabase("QSQLITE", "TileDBConnection" + dbName);
     db_.setDatabaseName(dbPath);
-    qDebug() << "TileDB dbPath:" << dbPath;
 
     if (!db_.open()) {
         qWarning() << "Failed to open the database:" << db_.lastError().text();

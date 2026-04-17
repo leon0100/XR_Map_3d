@@ -5,6 +5,7 @@ import QtQuick.Controls 2.15
 import Qt.labs.settings 1.1
 
 
+import AppXr 1.0
 
 //左上方的工具栏
 Item {

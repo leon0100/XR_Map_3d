@@ -7,6 +7,7 @@ HEADERS *= \
 	$$PWD/tile_downloader.h \
 	$$PWD/tile_google_provider.h \
 	$$PWD/tile_manager.h \
+    $$PWD/tile_openstreet_provider.h \
 	$$PWD/tile_provider.h \
 	$$PWD/tile_set.h
 
@@ -16,5 +17,6 @@ SOURCES *= \
 	$$PWD/tile_downloader.cpp \
 	$$PWD/tile_google_provider.cpp \
 	$$PWD/tile_manager.cpp \
+    $$PWD/tile_openstreet_provider.cpp \
 	$$PWD/tile_provider.cpp \
 	$$PWD/tile_set.cpp

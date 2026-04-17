@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>MenuButton.qml</file>
         <file>CustomGroupBox.qml</file>
         <file>MenuViewer.qml</file>
         <file>MainMenuBar.qml</file>
@@ -86,14 +85,10 @@
         <file>MouseOpacityArea.qml</file>
         <file>USBLBox.qml</file>
         <file>DeviceItem.qml</file>
-        <file>CPopup.qml</file>
-        <file>CMouseOpacityArea.qml</file>
         <file>CContact.qml</file>
         <file>Settings3DExtraSettings.qml</file>
         <file>IsobathsExtraSettings.qml</file>
         <file>MosaicExtraSettings.qml</file>
-        <file>MenuBar_XR.qml</file>
-        <file>ToolBar_XR.qml</file>
         <file>ScreetRect.qml</file>
         <file>CMouseArea.qml</file>
         <file>Bluetooth/BleButton.qml</file>
@@ -107,5 +102,12 @@
         <file>QmlCommon/KDialogYesNo.qml</file>
         <file>QmlCommon/KDialogCheck.qml</file>
         <file>PolygonTool.qml</file>
+        <file>AppXr/MapTileLoad.qml</file>
+        <file>AppXr/qmldir</file>
+        <file>AppXr/MenuBar_XR.qml</file>
+        <file>AppXr/ToolBar_XR.qml</file>
+        <file>AppXr/MenuButton.qml</file>
+        <file>AppXr/CMouseOpacityArea.qml</file>
+        <file>AppXr/CPopup.qml</file>
     </qresource>
 </RCC>

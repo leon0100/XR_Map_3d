@@ -1,6 +1,5 @@
 #include "themes.h"
 
-#include <QMessageBox>
 
 
 
@@ -99,10 +98,25 @@ void Themes::updateResCoeff()
     }
 };
 
+void Themes::openGoogleHelpDocument()
+{
+    HelpDialog helpDialog;
+    helpDialog.exec();
+}
+
+
+#include <QSslSocket>
 void Themes::bootConfig()
 {
+
+
+    qDebug() << "支持 SSL:" << QSslSocket::supportsSsl();
+    qDebug() << "SSL 库版本 (编译时):" << QSslSocket::sslLibraryBuildVersionString();
+    qDebug() << "SSL 库版本 (运行时):" << QSslSocket::sslLibraryVersionString();
     getSoftwareParameters();
     bool firstRun = softwareParameters_.isFirstRun;
+    qDebug() << "firstRun ... " <<firstRun;
+    firstRun = true;
     if (firstRun)
     {
         softwareParameters_.isFirstRun = false;
@@ -270,6 +284,7 @@ void Themes::saveSoftwareParameters()
 //         }
 //     }
 
+qDebug() << "saveSoftwareParameters............";
     softwareParameters_.isFirstRun = true;//用来生成配置文件config（已经生成好了，以后打包一般不用打开这行）
 
     //抑或校验

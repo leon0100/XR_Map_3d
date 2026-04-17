@@ -10,6 +10,7 @@ import BottomTrack 1.0
 import Qt.labs.settings 1.1
 
 import Bluetooth 1.0
+import AppXr 1.0
 
 
 ApplicationWindow  {
@@ -42,6 +43,7 @@ ApplicationWindow  {
     MenuBar_XR {
        id: menuToolBar
        visible: false
+       mapTileLoad: mapTileLoad
     }
 
 
@@ -94,6 +96,11 @@ ApplicationWindow  {
 
     BleDataPanel {
         visible: bleLivedataScaning.isShowDataPanel
+    }
+
+    MapTileLoad {
+        id: mapTileLoad
+        menuBar: menuToolBar
     }
 
 

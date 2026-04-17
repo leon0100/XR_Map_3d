@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.3
 import Qt.labs.settings 1.1
 
 
+import AppXr 1.0
 
 //下方中间位置的工具栏
 Item  {

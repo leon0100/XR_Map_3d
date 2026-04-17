@@ -705,6 +705,7 @@ void GraphicsScene3dView::forceUpdateDatasetLlaRef()
     }
 
     m_camera->viewLlaRef_ = m_camera->datasetLlaRef_;
+    mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     QQuickFramebufferObject::update();
 }
@@ -767,6 +768,7 @@ void GraphicsScene3dView::setMapView()
 {
     LLARef llaRef = datasetPtr_->getLlaRef();
     m_camera->viewLlaRef_ = llaRef.isInit ? llaRef : LLARef(m_camera->yerevanLla);
+    mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     m_camera->setMapView();
     m_axesThumbnailCamera->setMapView();
@@ -1128,6 +1130,7 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
 
     // 4. 转换成经纬度
     LLA lla(&ned, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
+    mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     latitude  = lla.latitude;
     longitude = lla.longitude;
@@ -1243,6 +1246,12 @@ void GraphicsScene3dView::updateMapView()
     else {
         emit sendLlaRef(m_camera->viewLlaRef_);
     }
+
+    currentLat_ = m_camera->viewLlaRef_.refLla.latitude;
+    currentLon_ = m_camera->viewLlaRef_.refLla.longitude;
+    emit currentLatChanged();
+    emit currentLonChanged();
+    mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     QQuickFramebufferObject::update();
 }
@@ -1610,7 +1619,7 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject * f
     m_renderer->m_isSceneBoundingBoxVisible = view->m_isSceneBoundingBoxVisible;
     m_renderer->gridVisibility_             = view->gridVisibility_;
 
-    //随后触发void GraphicsScene3dView::InFboRenderer::render()
+    //随后触发void GraphicsScene3dView::InFboRenderer::render()................
 }
 
 QOpenGLFramebufferObject *GraphicsScene3dView::InFboRenderer::createFramebufferObject(const QSize &size)

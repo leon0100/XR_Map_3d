@@ -245,6 +245,7 @@ public:
     void setNavigatorViewLocation(bool state);
 
 
+
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 

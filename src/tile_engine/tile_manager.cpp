@@ -7,6 +7,7 @@
 #include "map_defs.h"
 #include "tile_google_provider.h"
 #include "tile_amap_provider.h"
+#include "tile_openstreet_provider.h"
 
 
 namespace map {
@@ -160,7 +161,8 @@ void TileManager::switchMapSource(MapSourceType sourceType)
             tileProvider_ = std::make_shared<TileAmapProvider>();
             break;
         case openStreetMapSource:
-            // tileProvider_ = std::make_shared<Tile>()
+            qDebug() <<"openStreetMapSource.............";
+            tileProvider_ = std::make_shared<TileOpenStreetProvider>();
             break;
         default:
             break;

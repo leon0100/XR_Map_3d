@@ -1,5 +1,8 @@
 import QtQuick 2.15
 
+
+import QmlCommon 1.0
+
 MouseArea {
     id: hoverArea
     anchors.fill: parent

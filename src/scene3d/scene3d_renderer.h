@@ -97,6 +97,8 @@ private:
     float scaleFactor_;
     float gridVisibility_ = true;
 
+    MapView* mapViewForRenderImpl_ = nullptr;
+
     bool hasDepthRange_ = false;
     float minZ_, maxZ_;
 
