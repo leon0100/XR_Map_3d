@@ -77,6 +77,7 @@ public:
         void setMapView();
         void reset();
         void resetRotationAngle();
+        void setYerevanLla(LLA yerevan);
 
         float getHeightAboveGround() const;
         float getAngleToGround() const;

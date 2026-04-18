@@ -9,6 +9,8 @@
 #include <QUuid>
 #include <cmath>
 #include <QSettings>
+#include <QStandardPaths>
+#include <QDir>
 
 
 #ifdef Q_OS_ANDROID

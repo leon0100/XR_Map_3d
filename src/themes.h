@@ -53,6 +53,8 @@
 #define  GOOGLEMAP          "GoogleMap"
 #define  USERDEFINED        "User Defined"
 
+#define SAVE_SOFTWARE_PAR_PATH    "./config"  //默认保存参数的路径
+#define SAVE_SOFTWARE_PAR         "cfg"      //默认保存参数的路径
 
 
 class HelpDialog : public QDialog {
@@ -214,6 +216,9 @@ public:
     Q_PROPERTY(bool consoleVisible READ consoleVisible WRITE setConsoleVisible NOTIFY interfaceChanged)
     Q_PROPERTY(int instrumentsGrade READ getInstrumentsGrade WRITE setInstrumentsGrade NOTIFY instrumentsGradeChanged)
     Q_PROPERTY(int currentLanguage  READ getCurrentLanguage  WRITE setCurrentLanguage NOTIFY bootConfigChanged);
+    Q_PROPERTY(int mapSourceLoadVisible  READ getMapSourceLoadVisible  WRITE setMapSourceLoadVisible
+                   NOTIFY mapSourceLoadVisibleChanged);
+
 
 
 
@@ -243,6 +248,8 @@ public:
 
     int getCurrentLanguage();
     void setCurrentLanguage(int lang);
+    bool getMapSourceLoadVisible();
+    void setMapSourceLoadVisible(bool visible);
 
 
     void setQmlEngine(QQmlApplicationEngine* engine);
@@ -271,7 +278,9 @@ public:
     }
 
     void bootConfig();
-    void getSoftwareParameters();
+    SoftwareParametersStru getSoftwareParameters();
+    void setExistGoogle(bool exist);
+    void loadSoftwareParameters();
     void saveSoftwareParameters();
     void refreshLanguage();
 
@@ -288,6 +297,8 @@ signals:
     void interfaceChanged();
     void instrumentsGradeChanged();
     void bootConfigChanged();
+    void mapSourceLoadVisibleChanged();
+    void mapLoadConfirm(bool googleMapExists);
 
 protected:
     int _id = 0;
@@ -323,6 +334,8 @@ private:
 
     QTranslator *translator_;
     SoftwareParametersStru softwareParameters_;
+
+    bool mapSourceLoadVisible_ = false;
 };
 
 inline qreal Themes::checkResolutionCoeff() const

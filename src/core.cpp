@@ -113,8 +113,13 @@ void Core::stopLinkManagerTimer() const
     emit linkManagerWrapperPtr_->sendStopTimer();
 }
 
-void Core::refreshMap()
+void Core::refreshMap(LLA lla)
 {
+    std::weak_ptr<GraphicsScene3dView::Camera> camera = scene3dViewPtr_->camera();
+    if (auto cameraShared = camera.lock();cameraShared) {
+        cameraShared->setYerevanLla(lla);
+    }
+
     scene3dViewPtr_->updateMapView();
 }
 

@@ -11,7 +11,7 @@ Rectangle {
     x: Screen.width * 0.5 - width * 0.5
     y: Screen.height * 0.5 - height * 0.8
     z: 99
-    visible: false
+    visible: theme.mapSourceLoadVisible
 
     Rectangle {
         anchors.fill: parent
@@ -309,7 +309,7 @@ Rectangle {
                                 GetInterface.showDialogInfo(0, qsTr("Map is Exist!"))
                             }
                             else {
-                                mapLoadConfirm(googleMapExists)
+                                theme.mapLoadConfirm(googleMapExists)
                                 loadMap.visible = false
                             }
                         } else {
@@ -325,7 +325,7 @@ Rectangle {
                             GetInterface.showDialogInfo(0, qsTr("Map is Exist!"))
                         }
                         else {
-                            mapLoadConfirm(googleMapExists)
+                            theme.mapLoadConfirm(googleMapExists)
                             loadMap.visible = false
                         }
 

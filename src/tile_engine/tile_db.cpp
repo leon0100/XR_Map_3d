@@ -89,7 +89,6 @@ void TileDB::init()
     QString dbName;
 
     if (auto sharedProvider = tileProvider_.lock(); sharedProvider) {
-        qDebug() << "sharedProvider->getProviderId()...." << sharedProvider->getProviderId();
         switch (sharedProvider->getProviderId()) {
             case 1: {
                 dbName = "tiles_google";
@@ -101,6 +100,10 @@ void TileDB::init()
             }
             case 3: {
                 dbName = "tiles_openStreet";
+                break;
+            }
+            case 4: {
+                dbName = "tiles_geovisEarth";
                 break;
             }
             default: {
@@ -116,6 +119,7 @@ void TileDB::init()
     }
 
     QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + dbName + ".db";
+    // qDebug() << "dbPath....." << dbPath;
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     if (!dir.exists()) {
         dir.mkpath(".");

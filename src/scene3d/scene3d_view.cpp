@@ -1263,6 +1263,7 @@ void GraphicsScene3dView::updateViews()
     }
 }
 
+
 void GraphicsScene3dView::onPositionAdded(uint64_t indx)
 {
     // qDebug() << "GraphicsScene3dView::onPositionAdded........";
@@ -2148,6 +2149,12 @@ void GraphicsScene3dView::Camera::resetRotationAngle()
 
     updateCameraParams();
     updateViewMatrix();
+}
+
+void GraphicsScene3dView::Camera::setYerevanLla(LLA yerevan)
+{
+    yerevanLla = yerevan;
+    viewLlaRef_ = LLARef(yerevanLla);
 }
 
 void GraphicsScene3dView::Camera::updateCameraParams()

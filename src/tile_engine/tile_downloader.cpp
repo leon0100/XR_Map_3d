@@ -136,8 +136,10 @@ void TileDownloader::startNextDownload()
     auto index = downloadQueue_.dequeue();
 
     QUrl url;
+    int32_t currentMapType = -1;
     if (auto sharedProvider = tileProvider_.lock(); sharedProvider) {
         url = sharedProvider->createURL(index);
+        currentMapType = sharedProvider->getProviderId();
     }
 
     if (!url.isValid()) {
@@ -147,6 +149,9 @@ void TileDownloader::startNextDownload()
     }
 
     QNetworkRequest request(url);
+    if(currentMapType == 3) {
+        request.setRawHeader("User-Agent", "XR-Map/1.10 (Contact: 2376963887@qq.com)");
+    }
     QNetworkReply* reply = networkManager_->get(request);
     reply->setProperty("tileIndex", QVariant::fromValue(index));
 

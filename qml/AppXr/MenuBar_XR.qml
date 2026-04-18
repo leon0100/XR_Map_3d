@@ -36,12 +36,13 @@ Popup {
     property color menuPressColor: "#bfefff"
 
     property int currentLanguage: theme.currentLanguage  //0:english     1:chinese
-    property var mapTileLoad: null
+    // property var mapTileLoad: null
     property bool hasGoogleMap: false
 
 
     Connections {
-        target: mapTileLoad
+        // target: mapTileLoad
+        target:theme
         function onMapLoadConfirm(googleMapExists) {
             hasGoogleMap = googleMapExists
             console.log("Google Map added:", hasGoogleMap)
@@ -408,7 +409,7 @@ Popup {
                             background: Rectangle {
                                 color: user.pressed ? menuPressColor : menuBackColor
                             }
-                            onClicked: mapTileLoad.visible = true
+                            onClicked: theme.mapSourceLoadVisible = true
                         }
                     }
                 }

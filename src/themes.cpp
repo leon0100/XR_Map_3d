@@ -108,15 +108,8 @@ void Themes::openGoogleHelpDocument()
 #include <QSslSocket>
 void Themes::bootConfig()
 {
-
-
-    qDebug() << "支持 SSL:" << QSslSocket::supportsSsl();
-    qDebug() << "SSL 库版本 (编译时):" << QSslSocket::sslLibraryBuildVersionString();
-    qDebug() << "SSL 库版本 (运行时):" << QSslSocket::sslLibraryVersionString();
-    getSoftwareParameters();
+    loadSoftwareParameters();
     bool firstRun = softwareParameters_.isFirstRun;
-    qDebug() << "firstRun ... " <<firstRun;
-    firstRun = true;
     if (firstRun)
     {
         softwareParameters_.isFirstRun = false;
@@ -147,13 +140,6 @@ void Themes::bootConfig()
     }
 
 
-    // satelliteImageLoad_ = new SatelliteImageLoad;
-    // if(softwareParameters_.existGoogle == 1){
-    //     satelliteImageLoad_->systemAddGoogleMap();
-    // }
-    // satelliteImageLoad_->hide();
-
-
     /*-statusBar-*/
     QString lonDirection = softwareParameters_.currentLon >= 0 ? "°E" : "°W";
     QString latiDirection = softwareParameters_.currentLati >= 0 ? "°N" : "°S";
@@ -177,11 +163,24 @@ void Themes::bootConfig()
         // connect(googleAction_,&QAction::triggered,this,&GraphMenu::slot_actionMapSwitch);
     }
 
+    setExistGoogle(softwareParameters_.existGoogle);
+
 
     emit bootConfigChanged();
 }
 
-void Themes::getSoftwareParameters()
+SoftwareParametersStru Themes::getSoftwareParameters()
+{
+    return softwareParameters_;
+}
+
+void Themes::setExistGoogle(bool exist)
+{
+    softwareParameters_.existGoogle = exist ? 1 : 0;
+    emit mapLoadConfirm(exist);
+}
+
+void Themes::loadSoftwareParameters()
 {
 #ifdef Q_OS_ANDROID
     QAndroidJniObject context = QtAndroid::androidContext();
@@ -213,9 +212,18 @@ void Themes::getSoftwareParameters()
     }
 
 #elif defined(Q_OS_WIN)
-    QFile file(":/config/cfg");
+    QString path = SAVE_SOFTWARE_PAR_PATH;
+    QDir().mkpath(path);
+    path = path + "/" + SAVE_SOFTWARE_PAR;
+    QFile file(path);
 
     int size = sizeof(softwareParameters_);
+
+    if(!file.exists()) {
+        qDebug() << "cfg not exist, create...";
+        softwareParameters_.isFirstRun = true;
+        saveSoftwareParameters();
+    }
 
     if (file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -223,7 +231,7 @@ void Themes::getSoftwareParameters()
         if(in.readRawData((char*)&softwareParameters_,size)) {
             u8 crc = XorCheckSum((u8*)&softwareParameters_,(size-1));
             if(crc == softwareParameters_.crcValue) {
-                qDebug() << "getsoftware: " << softwareParameters_.currentLati << "  " << softwareParameters_.currentLon;
+                // qDebug() << "getsoftware: " << softwareParameters_.currentLati << "  " << softwareParameters_.currentLon;
                 file.close();
                 return;
             }
@@ -285,9 +293,8 @@ void Themes::saveSoftwareParameters()
 //     }
 
 qDebug() << "saveSoftwareParameters............";
-    softwareParameters_.isFirstRun = true;//用来生成配置文件config（已经生成好了，以后打包一般不用打开这行）
 
-    //抑或校验
+    //异或校验
     u8 crc = XorCheckSum((u8*)&softwareParameters_,(sizeof(softwareParameters_)-1));
     softwareParameters_.crcValue = crc;
 
@@ -309,7 +316,10 @@ qDebug() << "saveSoftwareParameters............";
         (jboolean)softwareParameters_.isFirstRun );
 
 #elif defined(Q_OS_WIN)
-    QFile file(":/config/cfg");
+    QString path = SAVE_SOFTWARE_PAR_PATH;
+    QDir().mkpath(path);
+    path = path + "/" + SAVE_SOFTWARE_PAR;
+    QFile file(path);
     if(file.open(QIODevice::WriteOnly)) {
         QDataStream out(&file);
         if(!out.writeRawData((char *)&softwareParameters_,sizeof(softwareParameters_)))
@@ -358,6 +368,17 @@ void Themes::setCurrentLanguage(int lang)
     }
 
     emit bootConfigChanged();
+}
+
+bool Themes::getMapSourceLoadVisible()
+{
+    return mapSourceLoadVisible_;
+}
+
+void Themes::setMapSourceLoadVisible(bool visible)
+{
+    mapSourceLoadVisible_ = visible;
+    emit mapSourceLoadVisibleChanged();
 }
 
 void Themes::refreshLanguage()

@@ -116,7 +116,6 @@ void TileOpenStreetProvider::generateWords(int x, int y, QString& sec1, QString&
 
 QString TileOpenStreetProvider::createURL(const map::TileIndex& tileIndx) const
 {
-    qDebug() <<"TileOpenStreetProvider::createURL...........";
     QString str1, str2;
     generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
     return QString("https://a.tile.openstreetmap.org/%1/%2/%3.png").arg(tileIndx.z_).arg(tileIndx.x_).arg(tileIndx.y_);

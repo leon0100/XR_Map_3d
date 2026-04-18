@@ -116,7 +116,6 @@ void TileAmapProvider::generateWords(int x, int y, QString& sec1, QString& sec2)
 
 QString TileAmapProvider::createURL(const map::TileIndex& tileIndx) const
 {
-    qDebug() <<"TileAmapProvider::createURL...........";
     QString str1, str2;
     generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
     return QString("http://wprd04.is.autonavi.com/appmaptile?style=6&x=%1&y=%2&z=%3").arg(tileIndx.x_).arg(tileIndx.y_).arg(tileIndx.z_);

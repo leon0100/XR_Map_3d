@@ -70,7 +70,7 @@ public:
     DeviceManagerWrapper* getDeviceManagerWrapperPtr() const;
     LinkManagerWrapper* getLinkManagerWrapperPtr() const;
     void stopLinkManagerTimer() const;
-    void refreshMap();
+    void refreshMap(LLA lla);
 
     void consoleInfo(QString msg);
     void consoleWarning(QString msg);

@@ -5,6 +5,7 @@ HEADERS *= \
     $$PWD/tile_amap_provider.h \
     $$PWD/tile_db.h \
 	$$PWD/tile_downloader.h \
+    $$PWD/tile_geovisearth_provider.h \
 	$$PWD/tile_google_provider.h \
 	$$PWD/tile_manager.h \
     $$PWD/tile_openstreet_provider.h \
@@ -15,6 +16,7 @@ SOURCES *= \
     $$PWD/tile_amap_provider.cpp \
     $$PWD/tile_db.cpp \
 	$$PWD/tile_downloader.cpp \
+    $$PWD/tile_geovisearth_provider.cpp \
 	$$PWD/tile_google_provider.cpp \
 	$$PWD/tile_manager.cpp \
     $$PWD/tile_openstreet_provider.cpp \

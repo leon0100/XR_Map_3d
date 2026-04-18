@@ -43,7 +43,7 @@ ApplicationWindow  {
     MenuBar_XR {
        id: menuToolBar
        visible: false
-       mapTileLoad: mapTileLoad
+       // mapTileLoad: mapTileLoad
     }
 
 
