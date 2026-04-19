@@ -163,7 +163,7 @@ void Themes::bootConfig()
         // connect(googleAction_,&QAction::triggered,this,&GraphMenu::slot_actionMapSwitch);
     }
 
-    setExistGoogle(softwareParameters_.existGoogle);
+    // setExistGoogle(softwareParameters_.existGoogle);
 
 
     emit bootConfigChanged();
@@ -176,6 +176,7 @@ SoftwareParametersStru Themes::getSoftwareParameters()
 
 void Themes::setExistGoogle(bool exist)
 {
+    qDebug() << "setExistGoogle(bool exist)...." << exist;
     softwareParameters_.existGoogle = exist ? 1 : 0;
     emit mapLoadConfirm(exist);
 }

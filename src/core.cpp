@@ -115,12 +115,17 @@ void Core::stopLinkManagerTimer() const
 
 void Core::refreshMap(LLA lla)
 {
+    if(!scene3dViewPtr_) {
+        qDebug() << "refreshMap: scene3dViewPtr_ null";
+        return;
+    }
     std::weak_ptr<GraphicsScene3dView::Camera> camera = scene3dViewPtr_->camera();
     if (auto cameraShared = camera.lock();cameraShared) {
         cameraShared->setYerevanLla(lla);
     }
 
     scene3dViewPtr_->updateMapView();
+
 }
 
 void Core::consoleInfo(QString msg)
@@ -1560,10 +1565,13 @@ void Core::switchMapType(int sourceType)
         tileManager_->switchMapSource(type);
     }
 
-    std::shared_ptr<MapView> mapView = scene3dViewPtr_->getMapViewPtr();
-    mapView->setCurrentMapSource(type);
+    if(scene3dViewPtr_) {
+        std::shared_ptr<MapView> mapView = scene3dViewPtr_->getMapViewPtr();
+        mapView->setCurrentMapSource(type);
 
-    scene3dViewPtr_->updateMapView();
+        scene3dViewPtr_->updateMapView();
+    }
+
 }
 
 void Core::location(uint8_t type)

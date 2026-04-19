@@ -124,7 +124,6 @@ int main(int argc, char *argv[])
         theme.refreshLanguage();
         SoftwareParametersStru softPar = theme.getSoftwareParameters();
 
-
         LLA lla(softPar.currentLati, softPar.currentLon, 0.0f);
 
         corePtr->refreshMap(lla);

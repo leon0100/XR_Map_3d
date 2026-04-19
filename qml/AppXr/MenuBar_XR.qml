@@ -46,6 +46,7 @@ Popup {
         function onMapLoadConfirm(googleMapExists) {
             hasGoogleMap = googleMapExists
             console.log("Google Map added:", hasGoogleMap)
+            // theme.setExistGoogle(googleMapExists);
         }
     }
 

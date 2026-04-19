@@ -279,7 +279,6 @@ public:
 
     void bootConfig();
     SoftwareParametersStru getSoftwareParameters();
-    void setExistGoogle(bool exist);
     void loadSoftwareParameters();
     void saveSoftwareParameters();
     void refreshLanguage();
@@ -287,6 +286,7 @@ public:
 
     Q_INVOKABLE void updateResCoeff();
     Q_INVOKABLE void openGoogleHelpDocument();
+    Q_INVOKABLE void setExistGoogle(bool exist);
 
 private:
     u8 XorCheckSum(u8* input, u8 length);
