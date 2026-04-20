@@ -121,7 +121,6 @@ void TileGoogleProvider::generateWords(int x, int y, QString& sec1, QString& sec
 
 QString TileGoogleProvider::createURL(const map::TileIndex& tileIndx) const
 {
-    qDebug() << "TileGoogleProvider::createURL......";
     QString str1, str2;
     generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
     // return QString(QStringLiteral("http://%1%2.google.com/%3/v=%4&hl=%5&x=%6%7&y=%8&z=%9&s=%10"))

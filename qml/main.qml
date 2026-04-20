@@ -100,9 +100,16 @@ ApplicationWindow  {
 
     MapTileLoad {
         id: mapTileLoad
-        menuBar: menuToolBar
     }
 
+
+    Connections {
+        target: mapTileLoad
+
+        function onUpdateMapCheck(value) {
+            menuToolBar.receiveMapCheck(value)
+        }
+    }
 
 
 

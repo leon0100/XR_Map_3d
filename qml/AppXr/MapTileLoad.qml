@@ -22,15 +22,14 @@ Rectangle {
     }
 
 
-    property int  loadSize:         Math.min(Screen.width, Screen.height) * 0.35
-    property int  layoutHeight:    loadSize * 0.1
-    property int  iconSize:        loadSize * 0.06
+    property int  loadSize:     Math.min(Screen.width, Screen.height) * 0.35
+    property int  layoutHeight: loadSize * 0.1
+    property int  iconSize:     loadSize * 0.06
 
-    property bool googleMapExists: false
-    property var menuBar: null
+    property bool googleMapExists_inLoadMap: theme.googleExist
 
-    signal mapLoadConfirm(bool hasGoogle)
-    signal openGoogleHelpDocument()
+    signal updateMapCheck(int value)
+
 
     // 主布局
     ColumnLayout {
@@ -60,6 +59,7 @@ Rectangle {
                 delegate: ItemDelegate {
                     width: listView.width
                     height: model.isSeparator ? 20 : (model.isLine ? 5 : 35)
+                    visible: !(model.isGoogle && !googleMapExists_inLoadMap)
                     enabled: model.isSelectable
                     highlighted: ListView.isCurrentItem
 
@@ -115,8 +115,18 @@ Rectangle {
                         MenuItem {
                             text: qsTr("Delete")
                             onTriggered: {
-                                mapModel.remove(index)
-                                googleMapExists = false
+                                googleMapExists_inLoadMap = false
+                                theme.googleExist = false
+                                if(theme.currentLanguage === 1) {
+                                    core.switchMapType(3)
+                                    theme.currentMaptype = 3
+                                    updateMapCheck(3)
+                                }
+                                else if(theme.currentLanguage === 0) {
+                                    core.switchMapType(2)
+                                    theme.currentMaptype = 2
+                                    updateMapCheck(2)
+                                }
                             }
                         }
                     }
@@ -207,22 +217,13 @@ Rectangle {
                     implicitWidth: 24
                     implicitHeight: 24
                     onClicked: {
-                        if (!googleMapExists) {
+                        if (!googleMapExists_inLoadMap) {
                             if ((urlInputContainer.inputText === urlInputContainer.googleUrlEn)
-                                    || (urlInputContainer.inputText === urlInputContainer.googoleUrlCh)) {
-
-                                mapModel.append({
-                                    "name": "Google Map",
-                                    "isSelectable": true,
-                                    "canDelete": true,
-                                    "isSeparator": false,
-                                    "isLine": false,
-                                    "isCenterText": false
-                                })
-                                googleMapExists = true
+                            || (urlInputContainer.inputText === urlInputContainer.googoleUrlCh)) {
+                                googleMapExists_inLoadMap = true
                                 urlInputContainer.inputText = ""
-                                GetInterface.showDialogInfo(0, qsTr("Map Add Success!"))
-                            } else {
+                            }
+                            else {
                                 urlInputContainer.inputText = ""
                                 GetInterface.showDialogInfo(0, qsTr("Map Url is Error!"))
                             }
@@ -289,44 +290,35 @@ Rectangle {
                 text: qsTr("OK")
                 implicitWidth: 80
                 onClicked: {
-                    if (!googleMapExists) {
+                    if (!googleMapExists_inLoadMap) {
                         if ((urlInputContainer.inputText === urlInputContainer.googleUrlEn)
-                                || (urlInputContainer.inputText === urlInputContainer.googoleUrlCh)) {
-                            mapModel.append({
-                                "name": "Google Map",
-                                "isSelectable": true,
-                                "canDelete": true,
-                                "isSeparator": false,
-                                "isLine": false,
-                                "isCenterText": false
-                            })
-                            googleMapExists = true
+                        || (urlInputContainer.inputText === urlInputContainer.googoleUrlCh)) {
+                            googleMapExists_inLoadMap = true
                             urlInputContainer.inputText = ""
-                            GetInterface.showDialogInfo(0, qsTr("Map Add Success!"))
-                            if(loadMap.menuBar.hasGoogleMap) {
-                                urlInputContainer.inputText = ""
-                                loadMap.visible = false
+
+                            if(theme.googleExist === true) {
+                                theme.mapSourceLoadVisible = false
                                 GetInterface.showDialogInfo(0, qsTr("Map is Exist!"))
                             }
                             else {
-                                theme.mapLoadConfirm(googleMapExists)
-                                loadMap.visible = false
+                                theme.googleExist = true
+                                theme.mapSourceLoadVisible = false
+                                GetInterface.showDialogInfo(0, qsTr("Map Add Success!"))
                             }
-                        } else {
+                        } else if(urlInputContainer.inputText !== "") {
                             urlInputContainer.inputText = ""
                             GetInterface.showDialogInfo(0, qsTr("Map Url is Error!"))
                         }
                     }
                     else {
                         urlInputContainer.inputText = ""
-                        if(loadMap.menuBar.hasGoogleMap) {
-                            urlInputContainer.inputText = ""
-                            loadMap.visible = false
-                            GetInterface.showDialogInfo(0, qsTr("Map is Exist!"))
+                        if(theme.googleExist === true) {
+                            theme.mapSourceLoadVisible = false
                         }
                         else {
-                            theme.mapLoadConfirm(googleMapExists)
-                            loadMap.visible = false
+                            theme.googleExist = true
+                            theme.mapSourceLoadVisible = false
+                            GetInterface.showDialogInfo(0, qsTr("Map Add Success!"))
                         }
 
                     }
@@ -336,10 +328,11 @@ Rectangle {
             Button {
                 text: qsTr("Cancel")
                 implicitWidth: 80
-                onClicked: loadMap.visible = false
+                onClicked: theme.mapSourceLoadVisible = false
             }
         }
     }
+
 
     // 内部数据模型
     ListModel {
@@ -348,8 +341,17 @@ Rectangle {
         ListElement { name: "GeoVisEarthMap"; isSelectable: true; canDelete: false; isSeparator: false; isLine: false; isCenterText: false }
         ListElement { name: "Amap(高德地图)"; isSelectable: true; canDelete: false; isSeparator: false; isLine: false; isCenterText: false }
         ListElement { name: ""; isSelectable: false; canDelete: false; isSeparator: true; isLine: false; isCenterText: false }  // 空白占位
-        ListElement { name: ""; isSelectable: false; canDelete: false; isSeparator: false; isLine: true; isCenterText: false } // 横线
+        ListElement { name: ""; isSelectable: false; canDelete: false; isSeparator: false; isLine: true; isCenterText: false }  // 横线
         ListElement { name: qsTr("User Defined"); isSelectable: false; canDelete: false; isSeparator: false; isLine: false; isCenterText: true }
+        ListElement {
+            name: "Google Map"
+            isSelectable: true
+            canDelete: true
+            isSeparator: false
+            isLine: false
+            isCenterText: false
+            isGoogle: true
+        }
     }
 
 

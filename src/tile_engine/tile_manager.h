@@ -23,10 +23,11 @@ public:
     ~TileManager();
 
     std::shared_ptr<TileSet> getTileSetPtr() const;
+    MapSourceType getCurrentMapType() const;
 
 signals:
     void zoomLevelChanged(int level);
-
+    void tileSetChanged(std::shared_ptr<TileSet> tileSet);
 
 public slots:
     void getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam);
@@ -40,6 +41,7 @@ private:
     std::shared_ptr<TileDB> tileDB_;
     std::shared_ptr<TileSet> tileSet_;
     int lastZoomLevel_;
+    MapSourceType currentMap_ = googleMapSource;
 
     static constexpr int maxTilesCapacity_{ 800 };
     static constexpr int minTilesCapacity_{ 400 };

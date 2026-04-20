@@ -123,9 +123,9 @@ int main(int argc, char *argv[])
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &app,[url](QObject *obj, const QUrl &objUrl) {
         theme.refreshLanguage();
         SoftwareParametersStru softPar = theme.getSoftwareParameters();
+        // theme.setGoogleExist(softPar.existGoogle);
 
         LLA lla(softPar.currentLati, softPar.currentLon, 0.0f);
-
         corePtr->refreshMap(lla);
         corePtr->switchMapType(softPar.mapSourceType);
 

@@ -1559,19 +1559,49 @@ void Core::exitApp()
 
 void Core::switchMapType(int sourceType)
 {
-    qDebug() << "Core::switchMapSource  " << sourceType;
     MapSourceType type = (MapSourceType)sourceType;
     if (tileManager_) {
         tileManager_->switchMapSource(type);
+
+        // auto connType = Qt::DirectConnection;
+        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvAppendTile,         scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileAppend,             connType);
+        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvDeleteTile,         scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileDelete,             connType);
+        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvUpdateTileImage,    scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileImageUpdated,       connType);
+        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvUpdateTileVertices, scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileVerticesUpdated,    connType);
+        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvClearAppendTasks,   scene3dViewPtr_->getMapViewPtr().get(), &MapView::onClearAppendTasks,       connType);
+        // QObject::connect(scene3dViewPtr_->getMapViewPtr().get(), &MapView::deletedFromAppend,         tileManager_->getTileSetPtr().get(),    &map::TileSet::onDeletedFromAppend, connType);
+
     }
+
+    // if(scene3dViewPtr_) {
+    //     std::shared_ptr<MapView> mapView = scene3dViewPtr_->getMapViewPtr();
+    //     mapView->setCurrentMapSource(type);
+
+    //     scene3dViewPtr_->updateMapView();
+    // }
+
+}
+
+void Core::onTileSetChanged(std::shared_ptr<map::TileSet> tileSet)
+{
+    // 断开旧的连接
+    QObject::disconnect(oldTileSetConnection_);
+
+    // 建立新的连接
+    auto connType = Qt::DirectConnection;
+    oldTileSetConnection_ = QObject::connect(tileSet.get(), &map::TileSet::mvAppendTile,  scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileAppend,  connType);
+    QObject::connect(tileSet.get(), &map::TileSet::mvDeleteTile,         scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileDelete,             connType);
+    QObject::connect(tileSet.get(), &map::TileSet::mvUpdateTileImage,    scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileImageUpdated,       connType);
+    QObject::connect(tileSet.get(), &map::TileSet::mvUpdateTileVertices, scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileVerticesUpdated,    connType);
+    QObject::connect(tileSet.get(), &map::TileSet::mvClearAppendTasks,   scene3dViewPtr_->getMapViewPtr().get(), &MapView::onClearAppendTasks,       connType);
+    QObject::connect(scene3dViewPtr_->getMapViewPtr().get(), &MapView::deletedFromAppend, tileSet.get(), &map::TileSet::onDeletedFromAppend, connType);
 
     if(scene3dViewPtr_) {
         std::shared_ptr<MapView> mapView = scene3dViewPtr_->getMapViewPtr();
-        mapView->setCurrentMapSource(type);
+        mapView->setCurrentMapSource(tileManager_->getCurrentMapType());
 
         scene3dViewPtr_->updateMapView();
     }
-
 }
 
 void Core::location(uint8_t type)
@@ -1918,6 +1948,7 @@ void Core::createMapTileManagerConnections()
 
     QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendMapTextureIdByTileIndx, this, &Core::onSendMapTextureIdByTileIndx, connType);
     QObject::connect(tileManager_.get(), &map::TileManager::zoomLevelChanged, this, &Core::onZoomLevelChanged);
+    QObject::connect(tileManager_.get(), &map::TileManager::tileSetChanged, this, &Core::onTileSetChanged, connType);
     QObject::connect(datasetPtr_,  &Dataset::signalDrawOutline, scene3dViewPtr_, &GraphicsScene3dView::setPolygonOutlineMode, connType);
 
 }

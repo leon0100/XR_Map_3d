@@ -213,9 +213,11 @@ public:
 
     Q_PROPERTY(int themeID READ themeId WRITE setTheme NOTIFY changed)
 
-    Q_PROPERTY(bool consoleVisible READ consoleVisible WRITE setConsoleVisible NOTIFY interfaceChanged)
+    Q_PROPERTY(bool consoleVisible  READ consoleVisible WRITE setConsoleVisible NOTIFY interfaceChanged)
     Q_PROPERTY(int instrumentsGrade READ getInstrumentsGrade WRITE setInstrumentsGrade NOTIFY instrumentsGradeChanged)
-    Q_PROPERTY(int currentLanguage  READ getCurrentLanguage  WRITE setCurrentLanguage NOTIFY bootConfigChanged);
+    Q_PROPERTY(int currentLanguage  READ getCurrentLanguage  WRITE setCurrentLanguage  NOTIFY bootConfigChanged);
+    Q_PROPERTY(int currentMaptype   READ getCurrentMaptype   WRITE setCurrentMaptype   NOTIFY bootConfigChanged);
+    Q_PROPERTY(bool googleExist     READ getGoogleExist      WRITE setGoogleExist      NOTIFY bootConfigChanged);
     Q_PROPERTY(int mapSourceLoadVisible  READ getMapSourceLoadVisible  WRITE setMapSourceLoadVisible
                    NOTIFY mapSourceLoadVisibleChanged);
 
@@ -248,6 +250,10 @@ public:
 
     int getCurrentLanguage();
     void setCurrentLanguage(int lang);
+    int getCurrentMaptype();
+    void setCurrentMaptype(int type);
+    bool getGoogleExist();
+    void setGoogleExist(bool googleExist);
     bool getMapSourceLoadVisible();
     void setMapSourceLoadVisible(bool visible);
 
@@ -286,7 +292,6 @@ public:
 
     Q_INVOKABLE void updateResCoeff();
     Q_INVOKABLE void openGoogleHelpDocument();
-    Q_INVOKABLE void setExistGoogle(bool exist);
 
 private:
     u8 XorCheckSum(u8* input, u8 length);
@@ -298,7 +303,7 @@ signals:
     void instrumentsGradeChanged();
     void bootConfigChanged();
     void mapSourceLoadVisibleChanged();
-    void mapLoadConfirm(bool googleMapExists);
+    // void mapLoadConfirm(bool googleMapExists);
 
 protected:
     int _id = 0;

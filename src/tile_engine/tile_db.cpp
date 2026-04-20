@@ -28,7 +28,6 @@ void TileDB::switchMapType(std::weak_ptr<TileProvider> tileProvider)
 {
     tileProvider_ = tileProvider;
     stopRequested_ = false;
-    // init();
 }
 
 void TileDB::loadTiles(const QSet<map::TileIndex> &tileIndices)
@@ -119,7 +118,7 @@ void TileDB::init()
     }
 
     QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + dbName + ".db";
-    // qDebug() << "dbPath....." << dbPath;
+    qDebug() << "dbPath....." << dbPath;
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     if (!dir.exists()) {
         dir.mkpath(".");

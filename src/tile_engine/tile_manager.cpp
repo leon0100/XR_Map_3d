@@ -30,7 +30,7 @@ TileManager::TileManager(QObject *parent) :
 
     QThread* dbThread = new QThread();
     tileDB_->moveToThread(dbThread);
-    dbThread->setObjectName("MapDBThread");
+    dbThread->setObjectName("MapDBThread" + QString::number(currentMap_));
 
     auto dbConnType = Qt::AutoConnection;
     // tileDB_ <-> tileSet_
@@ -58,6 +58,11 @@ TileManager::~TileManager()
 std::shared_ptr<TileSet> TileManager::getTileSetPtr() const
 {
     return tileSet_;
+}
+
+MapSourceType TileManager::getCurrentMapType() const
+{
+    return currentMap_;
 }
 
 void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam)
@@ -149,9 +154,15 @@ void TileManager::getLlaRef(LLARef viewLlaRef)
 
 void TileManager::switchMapSource(MapSourceType sourceType)
 {
+    qDebug() << "111111111111111";
+    if(currentMap_ == sourceType) {
+        return;
+    }
+
     tileDownloader_->stopAndClearRequests();
     tileDB_->stopAndClearRequests();
 
+    currentMap_ = sourceType;
     switch (sourceType) {
         case googleMapSource:
             tileProvider_ = std::make_shared<TileGoogleProvider>();
@@ -169,11 +180,48 @@ void TileManager::switchMapSource(MapSourceType sourceType)
             break;
     }
 
-    tileDownloader_->switchMapType(tileProvider_);
-    tileDB_->switchMapType(tileProvider_);
-    tileSet_->switchMapType(tileProvider_, tileDB_, tileDownloader_, maxTilesCapacity_, minTilesCapacity_);
+    tileDownloader_ = std::make_shared<TileDownloader>(tileProvider_, maxConcurrentDownloads_);
+    tileDB_  = std::make_shared<TileDB>(tileProvider_);
+    tileSet_ = std::make_shared<TileSet>(tileProvider_, tileDB_, tileDownloader_, maxTilesCapacity_, minTilesCapacity_);
+
+    // tileDownloader_->switchMapType(tileProvider_);
+    // tileDB_->switchMapType(tileProvider_);
+    // tileSet_->switchMapType(tileProvider_, tileDB_, tileDownloader_, maxTilesCapacity_, minTilesCapacity_);
     lastZoomLevel_ = -1;
-    tileDB_->init();
+
+
+
+    auto downloaderConnType = Qt::AutoConnection;
+    QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  tileSet_.get(), &TileSet::onTileDownloaded,      downloaderConnType);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadStopped, tileSet_.get(), &TileSet::onTileDownloadStopped, downloaderConnType);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadFailed,  tileSet_.get(), &TileSet::onTileDownloadFailed,  downloaderConnType);
+
+    QThread* dbThread = new QThread();
+    qDebug() << "22222222222222222";
+    tileDB_->moveToThread(dbThread);
+    qDebug() << "3333333333333";
+    dbThread->setObjectName("MapDBThread" + QString::number(currentMap_));
+
+
+
+    auto dbConnType = Qt::AutoConnection;
+    // tileDB_ <-> tileSet_
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoaded,           tileSet_.get(), &TileSet::onTileLoaded,        dbConnType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoadFailed,       tileSet_.get(), &TileSet::onTileLoadFailed,    dbConnType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoadStopped,      tileSet_.get(), &TileSet::onTileLoadStopped,   dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbLoadTiles,         tileDB_.get(),  &TileDB::loadTiles,            dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbStopAndClearTasks, tileDB_.get(),  &TileDB::stopAndClearRequests, dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbStopLoadingTile,   tileDB_.get(),  &TileDB::stopLoading,          dbConnType);
+    QObject::connect(tileSet_.get(), &TileSet::dbSaveTile,          tileDB_.get(),  &TileDB::saveTile,             dbConnType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileSaved,            tileSet_.get(), &TileSet::onTileSaved,         dbConnType);
+
+    QObject::connect(dbThread, &QThread::started,  tileDB_.get(), &TileDB::init,         dbConnType);
+    QObject::connect(dbThread, &QThread::finished, tileDB_.get(), &QObject::deleteLater, dbConnType);
+    QObject::connect(dbThread, &QThread::finished, dbThread,      &QThread::deleteLater, dbConnType);
+
+    dbThread->start();
+
+    emit tileSetChanged(tileSet_);
 
 }
 

@@ -124,6 +124,7 @@ public slots:
     int  getCurrMapLevel() const;
     void createDatasetConnections();
     void createScene3dConnections();
+    void onTileSetChanged(std::shared_ptr<map::TileSet> tileSet);
 
     QObject* progress() const;
     void setProgress(QObject* dialog);
@@ -160,6 +161,7 @@ signals:
 
 private:
     QObject* progress_ = nullptr;
+    QMetaObject::Connection oldTileSetConnection_;
 
 
 private slots:

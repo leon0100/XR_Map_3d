@@ -1,5 +1,6 @@
 #include "themes.h"
 
+#include <QSslSocket>
 
 
 
@@ -105,15 +106,12 @@ void Themes::openGoogleHelpDocument()
 }
 
 
-#include <QSslSocket>
 void Themes::bootConfig()
 {
     loadSoftwareParameters();
     bool firstRun = softwareParameters_.isFirstRun;
     if (firstRun)
     {
-        softwareParameters_.isFirstRun = false;
-
         QMessageBox msgBox;
         msgBox.setWindowTitle("Location Inquiry");
         msgBox.setText("Are you in China?");
@@ -125,8 +123,7 @@ void Themes::bootConfig()
             softwareParameters_.mapSourceType = geovisEarthSource;
             // QMessageBox::warning(nullptr, tr("Hint"), tr("This application relies on OpenStreetMap,"
             //          " and may not be able to use the [Place-Name-Search] in China."));
-            QMessageBox::warning(nullptr, tr("提示"),
-                            tr("本应用依赖OpenStreetMap图源, 在中国大陆地区可能无法使用[地名搜索]功能"));
+            QMessageBox::warning(nullptr, "提示", "本应用依赖OpenStreetMap图源, 在中国大陆地区可能无法使用[地名搜索]功能");
         }
         else {
             softwareParameters_.inChina = false;
@@ -163,22 +160,12 @@ void Themes::bootConfig()
         // connect(googleAction_,&QAction::triggered,this,&GraphMenu::slot_actionMapSwitch);
     }
 
-    // setExistGoogle(softwareParameters_.existGoogle);
-
-
     emit bootConfigChanged();
 }
 
 SoftwareParametersStru Themes::getSoftwareParameters()
 {
     return softwareParameters_;
-}
-
-void Themes::setExistGoogle(bool exist)
-{
-    qDebug() << "setExistGoogle(bool exist)...." << exist;
-    softwareParameters_.existGoogle = exist ? 1 : 0;
-    emit mapLoadConfirm(exist);
 }
 
 void Themes::loadSoftwareParameters()
@@ -261,37 +248,11 @@ void Themes::loadSoftwareParameters()
 
 void Themes::saveSoftwareParameters()
 {
-//     QPoint centeScenePt = mapGraphicsView_->getViewMiddlePos();
-//     Bing::pixelXYToLatLong(centeScenePt,mapGraphicsView_->getCurrentLevel(),
-//                            softwareParameters_.currentLon,softwareParameters_.currentLati);
-//     softwareParameters_.currentLevel = 16;
-//     softwareParameters_.existGoogle = 0;
-//     QList<QAction*> actions;
-// #ifdef Q_OS_WIN
-//     actions = ui->menuMap->actions();
-// #elif defined(Q_OS_ANDROID)
-//     actions = mapMenu_->actions();
-// #endif
-//     for(QAction *action: actions) {
-//         QString mapName = action->text();
-//         if(mapName == GOOGLEMAP) {
-//             softwareParameters_.existGoogle = 1;
-//         }
-//         if(action->isChecked()) {
-//             if(mapName == GOOGLEMAP) {
-//                 softwareParameters_.mapSourceType = googleMapSource;
-//             }
-//             else if(mapName == GEOVISEARTHMAP) {
-//                 softwareParameters_.mapSourceType = geovisEarthSource;
-//             }
-//             else if(mapName == OPENSTREETMAP) {
-//                 softwareParameters_.mapSourceType = openStreetMapSource;
-//             }
-//             else if(mapName == AMAP) {
-//                 softwareParameters_.mapSourceType = amapMapSource;
-//             }
-//         }
-//     }
+    // QPoint centeScenePt = mapGraphicsView_->getViewMiddlePos();
+    // Bing::pixelXYToLatLong(centeScenePt,mapGraphicsView_->getCurrentLevel(),
+    //                        softwareParameters_.currentLon,softwareParameters_.currentLati);
+    // softwareParameters_.currentLevel = 16;
+    // softwareParameters_.existGoogle = 0;
 
 qDebug() << "saveSoftwareParameters............";
 
@@ -371,6 +332,33 @@ void Themes::setCurrentLanguage(int lang)
     emit bootConfigChanged();
 }
 
+int Themes::getCurrentMaptype()
+{
+    return softwareParameters_.mapSourceType;
+}
+
+void Themes::setCurrentMaptype(int type)
+{
+    softwareParameters_.mapSourceType = MapSourceType(type);
+
+    emit bootConfigChanged();
+}
+
+bool Themes::getGoogleExist()
+{
+    return softwareParameters_.existGoogle;
+}
+
+void Themes::setGoogleExist(bool googleExist)
+{
+    if(softwareParameters_.existGoogle == googleExist) {
+        return;
+    }
+    softwareParameters_.existGoogle = googleExist;
+
+    emit bootConfigChanged();
+}
+
 bool Themes::getMapSourceLoadVisible()
 {
     return mapSourceLoadVisible_;
@@ -378,14 +366,28 @@ bool Themes::getMapSourceLoadVisible()
 
 void Themes::setMapSourceLoadVisible(bool visible)
 {
+    if(mapSourceLoadVisible_ == visible) {
+        return;
+    }
     mapSourceLoadVisible_ = visible;
+
     emit mapSourceLoadVisibleChanged();
 }
 
 void Themes::refreshLanguage()
 {
-    if(softwareParameters_.inChina) {
+    if(softwareParameters_.isFirstRun) {
+        softwareParameters_.isFirstRun = false;
+        if(softwareParameters_.inChina) {
+            softwareParameters_.currentLanguage = 0;
+            setCurrentLanguage(1);
+        }
+        return;
+    }
+
+    if(softwareParameters_.currentLanguage == 1) {
         softwareParameters_.currentLanguage = 0;
         setCurrentLanguage(1);
     }
+
 }

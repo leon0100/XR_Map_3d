@@ -35,21 +35,9 @@ Popup {
     property color menuBackColor: "#d6e6ff"
     property color menuPressColor: "#bfefff"
 
-    property int currentLanguage: theme.currentLanguage  //0:english     1:chinese
-    // property var mapTileLoad: null
-    property bool hasGoogleMap: false
-
-
-    Connections {
-        // target: mapTileLoad
-        target:theme
-        function onMapLoadConfirm(googleMapExists) {
-            hasGoogleMap = googleMapExists
-            console.log("Google Map added:", hasGoogleMap)
-            // theme.setExistGoogle(googleMapExists);
-        }
+    function receiveMapCheck(value) {
+        mapSubsubMenu.checkIndex = value
     }
-
 
     contentItem: Column {
         width: parent.availableWidth
@@ -142,15 +130,6 @@ Popup {
                     }
                 }
 
-                // MenuItem {
-                //     id: exit
-                //     text: qsTr("Exit")
-                //     font.pixelSize: itemFontSize
-                //     background: Rectangle {
-                //         color: exit.pressed ? menuPressColor : menuBackColor
-                //     }
-                //     onClicked: Qt.quit()
-                // }
             }
         }
 
@@ -208,16 +187,7 @@ Popup {
                         width: parent.width
                         x: 0
 
-                        // property int checkIndex: 0
-                        property int checkIndex: {
-                            if (typeof theme !== 'undefined' && theme.currentLanguage === 0) {
-                                return 0;   // English
-                            }
-                            else if (typeof theme !== 'undefined' && theme.currentLanguage === 1) {
-                                return 1;   // Chinese
-                            }
-                            return -1;
-                        }
+                        property int checkIndex: theme.currentLanguage === 0 ? 0 : 1;
 
                         MenuItem {
                             id: english
@@ -229,6 +199,9 @@ Popup {
                             onClicked: {
                                 langSubsubMenu.checkIndex = 0
                                 theme.currentLanguage = 0
+                                mapSubsubMenu.checkIndex = 2
+                                core.switchMapType(2)
+                                theme.currentMaptype = 2
                             }
 
                             Image {
@@ -252,6 +225,9 @@ Popup {
                             onClicked: {
                                 langSubsubMenu.checkIndex = 1
                                 theme.currentLanguage = 1
+                                mapSubsubMenu.checkIndex = 3
+                                core.switchMapType(3)
+                                theme.currentMaptype = 3
                             }
 
                             Image {
@@ -294,8 +270,7 @@ Popup {
                         width: parent.width * 1.2
                         x: 0
 
-                        property int checkIndex: (currentLanguage === 0) ? 2 : 3
-
+                        property int checkIndex: theme.currentMaptype
 
                         MenuItem {
                             id: openstreet
@@ -304,11 +279,10 @@ Popup {
                             background: Rectangle {
                                 color: openstreet.pressed ? menuPressColor : menuBackColor
                             }
-                            visible: currentLanguage === 0
-                            height: visible ? implicitHeight : 0
                             onClicked: {
                                 mapSubsubMenu.checkIndex = 2
                                 core.switchMapType(2)
+                                theme.currentMaptype = 2
                             }
 
                             Image {
@@ -331,11 +305,12 @@ Popup {
                             background: Rectangle {
                                 color: openstreet.pressed ? menuPressColor : menuBackColor
                             }
-                            visible: currentLanguage === 1
+                            visible: theme.currentLanguage === 1
                             height: visible ? implicitHeight : 0
                             onClicked: {
                                 mapSubsubMenu.checkIndex = 3
                                 core.switchMapType(3)
+                                theme.currentMaptype = 3
                             }
 
                             Image {
@@ -358,11 +333,12 @@ Popup {
                             background: Rectangle {
                                 color: openstreet.pressed ? menuPressColor : menuBackColor
                             }
-                            visible: currentLanguage === 1
+                            visible: theme.currentLanguage === 1
                             height: visible ? implicitHeight : 0
                             onClicked: {
                                 mapSubsubMenu.checkIndex = 1
                                 core.switchMapType(1)
+                                theme.currentMaptype = 1
                             }
 
                             Image {
@@ -385,11 +361,12 @@ Popup {
                             background: Rectangle {
                                 color: google.pressed ? menuPressColor : menuBackColor
                             }
-                            visible: hasGoogleMap
+                            visible: theme.googleExist
                             height: visible ? implicitHeight : 0
                             onClicked: {
                                 mapSubsubMenu.checkIndex = 0
                                 core.switchMapType(0)
+                                theme.currentMaptype = 0
                             }
 
                             Image {
