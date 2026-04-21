@@ -162,6 +162,8 @@ void TileManager::switchMapSource(MapSourceType sourceType)
     tileDownloader_->stopAndClearRequests();
     tileDB_->stopAndClearRequests();
 
+    QThread::msleep(500);
+
     currentMap_ = sourceType;
     switch (sourceType) {
         case googleMapSource:
@@ -183,12 +185,7 @@ void TileManager::switchMapSource(MapSourceType sourceType)
     tileDownloader_ = std::make_shared<TileDownloader>(tileProvider_, maxConcurrentDownloads_);
     tileDB_  = std::make_shared<TileDB>(tileProvider_);
     tileSet_ = std::make_shared<TileSet>(tileProvider_, tileDB_, tileDownloader_, maxTilesCapacity_, minTilesCapacity_);
-
-    // tileDownloader_->switchMapType(tileProvider_);
-    // tileDB_->switchMapType(tileProvider_);
-    // tileSet_->switchMapType(tileProvider_, tileDB_, tileDownloader_, maxTilesCapacity_, minTilesCapacity_);
     lastZoomLevel_ = -1;
-
 
 
     auto downloaderConnType = Qt::AutoConnection;
@@ -197,11 +194,8 @@ void TileManager::switchMapSource(MapSourceType sourceType)
     QObject::connect(tileDownloader_.get(), &TileDownloader::downloadFailed,  tileSet_.get(), &TileSet::onTileDownloadFailed,  downloaderConnType);
 
     QThread* dbThread = new QThread();
-    qDebug() << "22222222222222222";
     tileDB_->moveToThread(dbThread);
-    qDebug() << "3333333333333";
     dbThread->setObjectName("MapDBThread" + QString::number(currentMap_));
-
 
 
     auto dbConnType = Qt::AutoConnection;
@@ -215,9 +209,9 @@ void TileManager::switchMapSource(MapSourceType sourceType)
     QObject::connect(tileSet_.get(), &TileSet::dbSaveTile,          tileDB_.get(),  &TileDB::saveTile,             dbConnType);
     QObject::connect(tileDB_.get(),  &TileDB::tileSaved,            tileSet_.get(), &TileSet::onTileSaved,         dbConnType);
 
-    QObject::connect(dbThread, &QThread::started,  tileDB_.get(), &TileDB::init,         dbConnType);
-    QObject::connect(dbThread, &QThread::finished, tileDB_.get(), &QObject::deleteLater, dbConnType);
-    QObject::connect(dbThread, &QThread::finished, dbThread,      &QThread::deleteLater, dbConnType);
+    QObject::connect(dbThread,  &QThread::started,   tileDB_.get(),   &TileDB::init,         dbConnType);
+    QObject::connect(dbThread,  &QThread::finished,  tileDB_.get(),   &QObject::deleteLater, dbConnType);
+    QObject::connect(dbThread,  &QThread::finished,  dbThread,        &QThread::deleteLater, dbConnType);
 
     dbThread->start();
 

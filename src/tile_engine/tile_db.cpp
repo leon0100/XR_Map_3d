@@ -24,12 +24,6 @@ TileDB::~TileDB()
     db_.close();
 }
 
-void TileDB::switchMapType(std::weak_ptr<TileProvider> tileProvider)
-{
-    tileProvider_ = tileProvider;
-    stopRequested_ = false;
-}
-
 void TileDB::loadTiles(const QSet<map::TileIndex> &tileIndices)
 {
     stopRequested_ = false;
@@ -118,7 +112,7 @@ void TileDB::init()
     }
 
     QString dbPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/" + dbName + ".db";
-    qDebug() << "dbPath....." << dbPath;
+    // qDebug() << "dbPath....." << dbPath;
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     if (!dir.exists()) {
         dir.mkpath(".");
@@ -134,7 +128,6 @@ void TileDB::init()
     }
     db_ = QSqlDatabase::addDatabase("QSQLITE", "TileDBConnection" + dbName);
     db_.setDatabaseName(dbPath);
-
     if (!db_.open()) {
         qWarning() << "Failed to open the database:" << db_.lastError().text();
     }
@@ -149,7 +142,6 @@ void TileDB::init()
             qWarning() << "Failed to create table tiles:" << query.lastError().text();
         }
     }
-
 
 }
 

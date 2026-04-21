@@ -41,8 +41,6 @@ Core::Core() : QObject(),
 
     createDataProcessor();
 
-
-
 }
 
 Core::~Core()
@@ -1087,7 +1085,6 @@ void Core::UILoad(QObject* object, const QUrl& url)
     auto hotkeysVariant = HotkeysManager::toVariantMap(hotkeysMap);
     qmlAppEnginePtr_->rootContext()->setContextProperty("hotkeysMapScan", hotkeysVariant);
 #endif
-
     scene3dViewPtr_ = object->findChild<GraphicsScene3dView*> ();
     plot2dList_ = object->findChildren<qPlot2D*>();
     scene3dViewPtr_->setDataset(datasetPtr_);
@@ -1562,28 +1559,22 @@ void Core::switchMapType(int sourceType)
     MapSourceType type = (MapSourceType)sourceType;
     if (tileManager_) {
         tileManager_->switchMapSource(type);
-
-        // auto connType = Qt::DirectConnection;
-        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvAppendTile,         scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileAppend,             connType);
-        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvDeleteTile,         scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileDelete,             connType);
-        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvUpdateTileImage,    scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileImageUpdated,       connType);
-        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvUpdateTileVertices, scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileVerticesUpdated,    connType);
-        // QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvClearAppendTasks,   scene3dViewPtr_->getMapViewPtr().get(), &MapView::onClearAppendTasks,       connType);
-        // QObject::connect(scene3dViewPtr_->getMapViewPtr().get(), &MapView::deletedFromAppend,         tileManager_->getTileSetPtr().get(),    &map::TileSet::onDeletedFromAppend, connType);
-
     }
-
-    // if(scene3dViewPtr_) {
-    //     std::shared_ptr<MapView> mapView = scene3dViewPtr_->getMapViewPtr();
-    //     mapView->setCurrentMapSource(type);
-
-    //     scene3dViewPtr_->updateMapView();
-    // }
-
 }
 
 void Core::onTileSetChanged(std::shared_ptr<map::TileSet> tileSet)
 {
+    if(!tileSet) {
+        qDebug() << "Core::onTileSetChanged: tileSet is null, returning";
+        return;
+    }
+
+    // 清除 MapView 中的旧瓦片
+    if (scene3dViewPtr_ && scene3dViewPtr_->getMapViewPtr()) {
+        qDebug() << "Core::onTileSetChanged: clearing old tiles from MapView";
+        scene3dViewPtr_->getMapViewPtr()->clear();
+    }
+
     // 断开旧的连接
     QObject::disconnect(oldTileSetConnection_);
 

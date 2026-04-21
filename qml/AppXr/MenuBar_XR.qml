@@ -263,7 +263,6 @@ Popup {
                         anchors.rightMargin: 5
                     }
 
-
                     Menu {
                         id: mapSubsubMenu
                         background: menuBackground.createObject(fileSubMenu)
@@ -297,13 +296,12 @@ Popup {
                         }
 
 
-
                         MenuItem {
                             id: genvisEarth
                             text: qsTr("GeovisEarth")
                             font.pixelSize: itemFontSize
                             background: Rectangle {
-                                color: openstreet.pressed ? menuPressColor : menuBackColor
+                                color: genvisEarth.pressed ? menuPressColor : menuBackColor
                             }
                             visible: theme.currentLanguage === 1
                             height: visible ? implicitHeight : 0
@@ -331,7 +329,7 @@ Popup {
                             text: qsTr("Amap")
                             font.pixelSize: itemFontSize
                             background: Rectangle {
-                                color: openstreet.pressed ? menuPressColor : menuBackColor
+                                color: amap.pressed ? menuPressColor : menuBackColor
                             }
                             visible: theme.currentLanguage === 1
                             height: visible ? implicitHeight : 0

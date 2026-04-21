@@ -32,7 +32,6 @@
 
 #include <QVector2D>
 #include <QMutex>
-
 #include <memory>
 
 

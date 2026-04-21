@@ -1367,10 +1367,6 @@ void GraphicsScene3dView::slotScreetGraphics()
             screetShot_.pixelXYToLatLong(square.bottomRight().toPoint(),mapLevel_,btmRightLon,btmRightLati);
             screetShot_.pixelXYToLatLong(square.topRight(), mapLevel_, topRightLon, topRightLati);
             // screetShot_.pixelXYToLatLong(square.bottomLeft(), mapLevel_, bottomLeftLon, bottomLeftLon);
-             // if(isAmapSource_){
-             // Mars2Wgs(topLeftLon,topLeftLati,&topLeftLon,&topLeftLati);
-            // Mars2Wgs(btmRightLon,btmRightLati,&btmRightLon,&btmRightLati);
-            // }
             QString baseDir = QCoreApplication::applicationDirPath() + "/screetTest/";
             rowStr_ = QString::number(row + 1);
             colStr_ = QString::number(col + 1);

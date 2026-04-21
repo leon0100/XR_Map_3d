@@ -308,8 +308,8 @@ private:
     std::shared_ptr<RayCaster>    m_rayCaster;
     std::shared_ptr<IsobathsView> isobathsView_;
     std::shared_ptr<SurfaceView>  surfaceView_;
-    std::shared_ptr<ImageView>    imageView_;//管理和渲染多个瓦片组成地图
-    std::shared_ptr<MapView>      mapView_;  //渲染单个图片/纹理
+    std::shared_ptr<ImageView>    imageView_; //管理和渲染多个瓦片组成地图
+    std::shared_ptr<MapView>      mapView_;   //渲染单个图片/纹理
     std::shared_ptr<Contacts>     contacts_;
     std::shared_ptr<BoatTrack>    boatTrack_;
     std::shared_ptr<PolygonOutline>  polygonOutline_;

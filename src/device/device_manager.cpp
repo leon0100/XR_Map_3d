@@ -670,7 +670,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
                 vec_CSV.append(lla.altitude);
                 track.append(lla);
             }
-        } else {
+        }
+        else {
             // 窗口超过设定大小，移除最旧的点，让窗口滑动
             if (buffer.size() > MEDIAN_WINDOW) {
                 buffer.removeFirst();

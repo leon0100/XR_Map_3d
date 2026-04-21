@@ -68,6 +68,68 @@ int32_t TileAmapProvider::latToTileY(const double lat, const int z) const
     return tileY;
 }
 
+
+double TileAmapProvider::transformLat(double x, double y)
+{
+    double ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * sqrt(abs(x));
+    ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * sin(y * PI) + 40.0 * sin(y / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (160.0 * sin(y / 12.0 * PI) + 320 * sin(y * PI / 30.0)) * 2.0 / 3.0;
+    return ret;
+}
+
+double TileAmapProvider::transformLon(double x, double y)
+{
+    double ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * sqrt(abs(x));
+    ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * sin(x * PI) + 40.0 * sin(x / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (150.0 * sin(x / 12.0 * PI) + 300.0 * sin(x / 30.0 * PI)) * 2.0 / 3.0;
+    return ret;
+}
+void TileAmapProvider::Mars2Wgs(double mgs_lng, double mgs_lat, double &wgs_lng, double &wgs_lat)
+{
+    if (mgs_lng < 72.004 || mgs_lng > 137.8347 || mgs_lat < 0.8293 || mgs_lat > 55.8271) {
+        wgs_lng = mgs_lng;
+        wgs_lat = mgs_lat;
+        return;
+    }
+
+    double dlat = transformLat(mgs_lng - 105.0, mgs_lat - 35.0);
+    double dlng = transformLon(mgs_lng - 105.0, mgs_lat - 35.0);
+    double radlat = mgs_lat / 180.0 * PI;
+    double magic = sin(radlat);
+    magic = 1 - EE * magic * magic;
+    double sqrtmagic = sqrt(magic);
+    dlat = (dlat * 180.0) / ((SEMI_MAJOR_AXIS * (1 - EE)) / (magic * sqrtmagic) * PI);
+    dlng = (dlng * 180.0) / (SEMI_MAJOR_AXIS / sqrtmagic * cos(radlat) * PI);
+    double mglat = mgs_lat + dlat;
+    double mglng = mgs_lng + dlng;
+
+    wgs_lng = mgs_lng * 2 - mglng;
+    wgs_lat = mgs_lat * 2 - mglat;
+}
+
+void TileAmapProvider::Wgs2Mars(double wgLon, double wgLat, double &mgLon,double &mgLat)
+{
+    if (wgLon < 72.004 || wgLon > 137.8347 || wgLat < 0.8293 || wgLat > 55.8271) {
+        mgLon = wgLon;
+        mgLat = wgLat;
+        return;
+    }
+
+    double dLat = transformLat(wgLon - 105.0, wgLat - 35.0);
+    double dLon = transformLon(wgLon - 105.0, wgLat - 35.0);
+    double radLat = wgLat / 180.0 * PI;
+    double magic = sin(radLat);
+    magic = 1 - EE * magic * magic;
+    double sqrtMagic = sqrt(magic);
+    dLat = (dLat * 180.0) / ((SEMI_MAJOR_AXIS * (1 - EE)) / (magic * sqrtMagic) * PI);
+    dLon = (dLon * 180.0) / (SEMI_MAJOR_AXIS / sqrtMagic * cos(radLat) * PI);
+    mgLat = wgLat + dLat;
+    mgLon = wgLon + dLon;
+}
+
+
 map::TileInfo TileAmapProvider::indexToTileInfo(map::TileIndex tileIndx, map::TilePosition pos) const
 {
     TileInfo info;
@@ -85,10 +147,25 @@ map::TileInfo TileAmapProvider::indexToTileInfo(map::TileIndex tileIndx, map::Ti
     if (pos == TilePosition::kOnLeft) {
         bounds.west += 360.0;
         bounds.east += 360.0;
-    } else if (pos == TilePosition::kOnRight) {
+    }
+    else if (pos == TilePosition::kOnRight) {
         bounds.west -= 360.0;
         bounds.east -= 360.0;
     }
+
+
+
+    // 应用火星坐标偏移校正，将 GCJ-02 坐标转换为 WGS-84 坐标
+    double wgsWest, wgsNorth, wgsEast, wgsSouth;
+    Mars2Wgs(bounds.west, bounds.north, wgsWest, wgsNorth);
+    Mars2Wgs(bounds.east, bounds.south, wgsEast, wgsSouth);
+
+    // 更新边界为 WGS-84 坐标
+    bounds.west = wgsWest;
+    bounds.north = wgsNorth;
+    bounds.east = wgsEast;
+    bounds.south = wgsSouth;
+
 
     double lat_center = (bounds.north + bounds.south) / 2.0;
     double resolution = (156543.03392804062 * cos(lat_center * M_PI / 180.0)) / pow(2.0, tileIndx.z_);
@@ -116,83 +193,9 @@ void TileAmapProvider::generateWords(int x, int y, QString& sec1, QString& sec2)
 
 QString TileAmapProvider::createURL(const map::TileIndex& tileIndx) const
 {
-    QString str1, str2;
-    generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
-    return QString("http://wprd04.is.autonavi.com/appmaptile?style=6&x=%1&y=%2&z=%3").arg(tileIndx.x_).arg(tileIndx.y_).arg(tileIndx.z_);
+    return QString("http://wprd04.is.autonavi.com/appmaptile?style=6&x=%1&y=%2&z=%3")
+        .arg(tileIndx.x_).arg(tileIndx.y_).arg(tileIndx.z_);
 }
-
-
-
-// double TileAmapProvider::transformLat(double x, double y)
-// {
-//     double ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * sqrt(abs(x));
-//     ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
-//     ret += (20.0 * sin(y * PI) + 40.0 * sin(y / 3.0 * PI)) * 2.0 / 3.0;
-//     ret += (160.0 * sin(y / 12.0 * PI) + 320 * sin(y * PI / 30.0)) * 2.0 / 3.0;
-//     return ret;
-// }
-
-// double TileAmapProvider::transformLon(double x, double y)
-// {
-//     double ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * sqrt(abs(x));
-//     ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
-//     ret += (20.0 * sin(x * PI) + 40.0 * sin(x / 3.0 * PI)) * 2.0 / 3.0;
-//     ret += (150.0 * sin(x / 12.0 * PI) + 300.0 * sin(x / 30.0 * PI)) * 2.0 / 3.0;
-//     return ret;
-// }
-// void TileAmapProvider::Mars2Wgs(double lng, double lat, double *wgs_lng, double *wgs_lat)
-// {
-//     if (lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271) {
-//         *wgs_lng=lng;
-//         *wgs_lat=lat;
-//         return;
-//     }
-
-//     double dlat = transformLat(lng - 105.0, lat - 35.0);
-//     double dlng = transformLon(lng - 105.0, lat - 35.0);
-//     double radlat = lat / 180.0 * PI;
-//     double magic = sin(radlat);
-//     magic = 1 - ee * magic * magic;
-//     double sqrtmagic = sqrt(magic);
-//     dlat = (dlat * 180.0) / ((a * (1 - ee)) / (magic * sqrtmagic) * PI);
-//     dlng = (dlng * 180.0) / (a / sqrtmagic * cos(radlat) * PI);
-//     double mglat = lat + dlat;
-//     double mglng = lng + dlng;
-
-//     *wgs_lng=lng * 2 - mglng;
-//     *wgs_lat=lat * 2 - mglat;
-
-// }
-
-
-// bool outOfChina(double lat, double lon)
-// {
-//     if (lon < 72.004 || lon > 137.8347)
-//         return true;
-//     if (lat < 0.8293 || lat > 55.8271)
-//         return true;
-//     return false;
-// }
-// void transform2Mars(double wgLat, double wgLon,double &mgLat,double &mgLon)
-// {
-//     if (outOfChina(wgLat, wgLon))
-//     {
-//         mgLat  = wgLat;
-//         mgLon = wgLon;
-//         return ;
-//     }
-//     double dLat = transformLat(wgLon - 105.0, wgLat - 35.0);
-//     double dLon = transformLon(wgLon - 105.0, wgLat - 35.0);
-//     double radLat = wgLat / 180.0 * pi;
-//     double magic = sin(radLat);
-//     magic = 1 - ee * magic * magic;
-//     double sqrtMagic = sqrt(magic);
-//     dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * pi);
-//     dLon = (dLon * 180.0) / (a / sqrtMagic * cos(radLat) * pi);
-//     mgLat = wgLat + dLat;
-//     mgLon = wgLon + dLon;
-// }
-
 
 
 }

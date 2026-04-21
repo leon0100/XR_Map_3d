@@ -34,16 +34,6 @@ TileDownloader::TileDownloader(std::weak_ptr<TileProvider> provider, int maxConc
     networkCheckTimer_->start(10000);
 }
 
-
-void TileDownloader::switchMapType(std::weak_ptr<TileProvider> tileProvider)
-{
-    tileProvider_ = tileProvider;
-    activeDownloads_ = 0;
-    maxConcurrentDownloads_ = 5;
-    networkAvailable_ = false;
-    hostLookupId_ = -1;
-}
-
 TileDownloader::~TileDownloader()
 {
     if (networkCheckTimer_) {

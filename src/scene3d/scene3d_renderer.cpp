@@ -9,9 +9,6 @@
 #include <QDebug>
 
 #include "text_renderer.h"
-//#include "ft2build.h"
-
-//#include FT_FREETYPE_H
 
 
 QString getShaderPath(const QString& name)

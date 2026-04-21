@@ -336,10 +336,6 @@ void ScreetShot::slot_downloadScreenFinished()
     //             double topLeftLon,topLeftLati,btmRightLon,btmRightLati;
     //             Bing::pixelXYToLatLong(square.topLeft().toPoint(),currMapLevel_,topLeftLon,topLeftLati);
     //             Bing::pixelXYToLatLong(square.bottomRight().toPoint(),currMapLevel_,btmRightLon,btmRightLati);
-    //             // if(isAmapSource_) {
-    //             //     Mars2Wgs(topLeftLon,topLeftLati,&topLeftLon,&topLeftLati);
-    //             //     Mars2Wgs(btmRightLon,btmRightLati,&btmRightLon,&btmRightLati);
-    //             // }
 
     //             QString rowStr = QString::number(row + 1);
     //             QString colStr = QString::number(col + 1);

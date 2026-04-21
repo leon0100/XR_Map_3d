@@ -84,12 +84,16 @@ typedef struct
 #define GMTIME(t) _gmtime64(&sec);
 #endif
 
-// #define CONSTANTS_RADIUS_OF_EARTH 6371000 /* meters (m) */
-#define CONSTANTS_RADIUS_OF_EARTH 6378137 /* meters (m) */
-#define M_TWOPI_F 6.28318530717958647692f
-#define M_PI_2_F  1.57079632679489661923f
+#define PI           3.141592653589793238
+#define CONSTANTS_RADIUS_OF_EARTH 6378137.0    /* meters (m) WGS-84 */
+#define SEMI_MAJOR_AXIS           6378245.0    /* meters (m) GCJ-02 */
+#define EE           0.006693421622965943
+#define M_TWOPI_F    6.28318530717958647692f
+#define M_PI_2_F     1.57079632679489661923f
 #define M_RAD_TO_DEG 57.29577951308232087679f
 #define M_DEG_TO_RAD 0.01745329251994329576f
+
+
 
 enum PositionSource {
     PositionSourceNone,

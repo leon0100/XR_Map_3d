@@ -18,7 +18,6 @@ void BottomTrackControlMenuController::onVisibilityCheckBoxCheckedChanged(bool c
 {
     visibility_ = checked;
 
-
     if (graphicsSceneViewPtr_) {
         qDebug() << "graphicsSceneViewPtr_.....";
         checked = false;

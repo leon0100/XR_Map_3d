@@ -32,10 +32,11 @@ private:
     int generateNum(int x, int y) const;
     void generateWords(const int x, const int y, QString& sec1, QString& sec2) const;
 
-    // static void   Mars2Wgs( double lng, double lat, double *wgs_lng, double *wgs_lat);
-    // static double transformLat(double x, double y);
-    // static double transformLon(double x, double y);
 
+    static double transformLat(double x, double y);
+    static double transformLon(double x, double y);
+    static void   Mars2Wgs(double lng, double lat, double &wgs_lng, double &wgs_lat);
+    static void   Wgs2Mars(double wgLat, double wgLon,double &mgLat,double &mgLon);
 };
 
 

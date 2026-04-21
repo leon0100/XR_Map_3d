@@ -187,6 +187,6 @@ inline TileKey tileKeyFromWorld(float worldX, float worldY, int zoom, int tileSi
 inline QVector2D worldOriginFromKey(const TileKey& k, int tileSidePx = 256)
 {
     const float S = tileSideMetersFromZoom(k.zoom, tileSidePx);
-    return { k.x * S, k.y * S }; // общий “якорь” = (0,0)
+    return { k.x * S, k.y * S };
 }
 
