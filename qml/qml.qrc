@@ -109,5 +109,6 @@
         <file>AppXr/MenuButton.qml</file>
         <file>AppXr/CMouseOpacityArea.qml</file>
         <file>AppXr/CPopup.qml</file>
+        <file>AppXr/HelpDialog.qml</file>
     </qresource>
 </RCC>
