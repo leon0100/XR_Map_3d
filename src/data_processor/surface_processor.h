@@ -36,6 +36,7 @@ public:
     float getSurfaceStepSize() const;
     int getThemeId() const;
     int getExtraWidth() const;
+    QVector<IsobathUtils::ColorInterval> getColorIntervals();
 
 
 private:

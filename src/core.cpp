@@ -1496,15 +1496,12 @@ void Core::clearRouteData()
                     bleManager_->clearRealData();
                     datasetPtr_->resetDataset();
                     dataHorizon_->clear();
-                    QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool,clearTrack));
+                    if (scene3dViewPtr_) {
+                        scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+                    }
                 }
-
-                if (scene3dViewPtr_) {
-                    scene3dViewPtr_->clear(clearTrack);
-                    scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
-                }
-
-                // emit isobathsViewControlMenuController_->edgeLimitChanged(100);
+                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2",
+                                          Qt::QueuedConnection, Q_ARG(bool,clearTrack));
             }
         }, tr("Clear Track Data"));
     }
@@ -2084,6 +2081,7 @@ void Core::createScene3dConnections()
     // IsobathsView
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLabels,            scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLabels,                     connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineSegments,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineSegments,               connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsColoredLineSegments, scene3dViewPtr_->getIsobathsViewPtr().get(),   &IsobathsView::setColoredLineSegments,        connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineStepSize,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineStepSize,               connType);
     // Mosaic
     QObject::connect(dataProcessor_, &DataProcessor::sendMosaicColorTable,          scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMosaicColorTableTextureTask, connType);
@@ -2093,7 +2091,6 @@ void Core::createScene3dConnections()
     QObject::connect(dataProcessor_, &DataProcessor::isobathsProcessingCleared,     scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::clear,                         connType);
     QObject::connect(dataProcessor_, &DataProcessor::mosaicProcessingCleared,       this, [](){ /*qDebug() << "TODO: mosaicProcessingCleared";*/ },                               connType); // тут тайлы не трогаем и картинку в них пока
     QObject::connect(dataProcessor_, &DataProcessor::surfaceProcessingCleared,      scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::clear,                          connType);
-    QObject::connect(dataProcessor_, &DataProcessor::allProcessingCleared,          this, [](){ /*qDebug() << "TODO: allProcessingCleared";*/ },                                  connType); // TODO
 
     QMetaObject::invokeMethod(dataProcessor_, "askColorTableForMosaic", Qt::QueuedConnection);
 }

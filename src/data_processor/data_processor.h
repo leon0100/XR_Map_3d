@@ -77,7 +77,7 @@ public slots:
     void setSurfaceIsobathsStepSize(float val);
 
 
-    // ── 多边形裁剪（QML 调用）────────────────────────
+    // ------------------- 多边形裁剪（QML 调用） --------------------
     Q_INVOKABLE void setSurfaceIsobathsPolygon(const QVariantList& points);
     Q_INVOKABLE void clearSurfaceIsobathsPolygon();
 
@@ -98,25 +98,27 @@ public slots:
     void requestCancel() noexcept;
 
 signals:
-    // this
     void sendState(DataProcessorType state);
     void bottomTrackProcessingCleared();
     void isobathsProcessingCleared();
     void mosaicProcessingCleared();
     void surfaceProcessingCleared();
-    void allProcessingCleared();
+
     // BottomTrackProcessor
     void distCompletedByProcessing(int epIndx, const ChannelId& channelId, float dist);
     void lastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll);
+
     // SurfaceProcessor
     void sendSurfaceMinZ(float minZ);
     void sendSurfaceMaxZ(float maxZ);
     void sendSurfaceTextureTask(const std::vector<uint8_t>& textureTask);
     void sendSurfaceColorIntervalsSize(int size);
     void sendSurfaceStepSize(float lineStepSize);
+
     // IsobathsProcessor
     void sendIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);
     void sendIsobathsLineSegments(const QVector<QVector3D>& lineSegments);
+    void sendIsobathsColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg>& coloredLineSegments);
     void sendIsobathsPts(const QVector<QVector3D>& pts);
     void sendIsobathsEdgePts(const QVector<QVector3D>& edgePts);
     void sendIsobathsLineStepSize(float lineStepSize);
@@ -149,6 +151,7 @@ private slots:
     // Isobaths
     void postIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);
     void postIsobathsLineSegments(const QVector<QVector3D>& lineSegments);
+    void postIsobathsColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg>& coloredLineSegments);
 
     void onBottomTrackStarted();
     void onBottomTrackFinished();

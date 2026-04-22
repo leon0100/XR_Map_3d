@@ -188,6 +188,8 @@ void ComputeWorker::processBundle(const WorkBundle& wb)
     if (!wb.surfaceVec.isEmpty() && !isCanceled()) {
         surface_.onUpdatedBottomTrackData(wb.surfaceVec); //生成高度场，不负责等值线的绘制，但是却为等值线提供高度场网格
         surface_.rebuildColorIntervals();
+        auto colorIntervals = surface_.getColorIntervals();
+        isobaths_.setColorsFromSurfaceProcessor(colorIntervals);
     }
 
     // if (!wb.mosaicVec.isEmpty() && !isCanceled()) {

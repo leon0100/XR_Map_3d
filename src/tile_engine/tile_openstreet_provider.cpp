@@ -100,24 +100,9 @@ map::TileInfo TileOpenStreetProvider::indexToTileInfo(map::TileIndex tileIndx, m
     return info;
 }
 
-int TileOpenStreetProvider::generateNum(int x, int y) const
-{
-    return (x + y) % 4;
-}
-
-void TileOpenStreetProvider::generateWords(int x, int y, QString& sec1, QString& sec2) const
-{
-    int setLen = ((x * 3) + y) % 8;
-    sec2 = secOpenStreetWord.left(setLen);
-    if (y >= 10000 && y < 100000) {
-        sec1 = QStringLiteral("&s=");
-    }
-}
 
 QString TileOpenStreetProvider::createURL(const map::TileIndex& tileIndx) const
 {
-    QString str1, str2;
-    generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
     return QString("https://a.tile.openstreetmap.org/%1/%2/%3.png").arg(tileIndx.z_).arg(tileIndx.x_).arg(tileIndx.y_);
 }
 

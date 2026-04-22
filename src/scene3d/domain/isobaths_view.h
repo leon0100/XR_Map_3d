@@ -25,7 +25,9 @@ public:
 
         QVector<IsobathUtils::LabelParameters> labels_; // from dataprocessor
         QVector<QVector3D> lineSegments_; // from dataprocessor
+        QVector<IsobathUtils::ColoredIsobathsSeg> coloredLineSegments_;
         QVector3D color_;
+        QVector3D labelColor_;
         float distToFocusPoint_;
         float lineStepSize_; // from dataprocessor
         bool  mVis_ = false;
@@ -43,4 +45,5 @@ public slots:
     void setLabels(const QVector<IsobathUtils::LabelParameters>& labels);
     void setLineSegments(const QVector<QVector3D>& lineSegments);
     void setLineStepSize(float lineStepSize);
+    void setColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg>& coloredLineSegments);
 };

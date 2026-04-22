@@ -47,15 +47,6 @@ private:
     static constexpr int minTilesCapacity_{ 400 };
     static constexpr int maxConcurrentDownloads_{ 10 };
 
-
-
-
-
-
-    double transformLat(double x, double y);
-    double transformLon(double x, double y);
-    void   Mars2Wgs(double lng, double lat, double &wgs_lng, double &wgs_lat);
-    void   Wgs2Mars(double wgLat, double wgLon,double &mgLat,double &mgLon);
 };
 
 

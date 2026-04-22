@@ -75,7 +75,7 @@ MenuFrame {
             Button {
                 id: outlineButton
                 text: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
-                font.pixelSize: iconSize * 1.1
+                font.pixelSize: iconSize
                 implicitWidth:  isobathSize * 0.5
                 // Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: iconSize * 1.1
@@ -93,7 +93,7 @@ MenuFrame {
             Button {
                 id: updateBottomTrackButton
                 text: qsTr("Draw Isobaths")
-                font.pixelSize: iconSize * 1.1
+                font.pixelSize: iconSize
                 implicitWidth:  isobathSize * 0.5
                 // Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: iconSize * 1.1
@@ -166,7 +166,7 @@ MenuFrame {
 
             Rectangle {
                 id: renderSpanControl
-                width:  iconSize * 3.2
+                width:  iconSize * 3.6
                 height: iconSize * 1.3
                 radius: iconSize * 0.35
                 color:  hovered ? (renderSpanControl.isOn ? "#36D85A" : "#AFCFFF")

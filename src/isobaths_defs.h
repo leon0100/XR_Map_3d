@@ -20,6 +20,19 @@ using IsobathsPolyline = QVector<QVector3D>;
 using IsobathsPolylines = QVector<IsobathsPolyline>;
 
 
+struct ColoredIsobathsSeg {
+    QVector3D start;
+    QVector3D end;
+    QVector3D color;
+    ColoredIsobathsSeg() = default;
+    ColoredIsobathsSeg(const QVector3D& s, const QVector3D& e, const QVector3D& c) : start(s), end(e), color(c) {}
+};
+using ColoredIsobathsSegVec    = QVector<ColoredIsobathsSeg>;
+using ColoredIsobathsPolyline  = QPair<QVector3D, QVector<ColoredIsobathsSeg>>;
+using ColoredIsobathsPolylines = QVector<ColoredIsobathsPolyline>;
+
+
+
 // functions
 template <typename T>
 inline void appendUnique(QVector<T>& dst, const QVector<T>& src)

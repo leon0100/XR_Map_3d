@@ -596,7 +596,7 @@ void GraphicsScene3dView::bottomTrackActionEvent(BottomTrack::ActionEvent action
 
 void GraphicsScene3dView::setCurrentMapLevel(int mapLevel)
 {
-    qDebug() << "mapLevel...." << mapLevel;
+    // qDebug() << "mapLevel...." << mapLevel;
     screetShot_.currMapLevel_ = mapLevel;
 }
 

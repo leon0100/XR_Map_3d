@@ -4,7 +4,9 @@
 
 
 IsobathsView::IsobathsView(QObject* parent) : SceneObject(new IsobathsViewRenderImplementation, parent)
-{}
+{
+    qRegisterMetaType<QVector<IsobathUtils::ColoredIsobathsSeg>>("QVector<IsobathUtils::ColoredIsobathsSeg>");
+}
 
 IsobathsView::~IsobathsView()
 {}
@@ -53,8 +55,17 @@ void IsobathsView::setLineStepSize(float lineStepSize)
     }
 }
 
+void IsobathsView::setColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg> &coloredLineSegments)
+{
+    // qDebug() << "IsobathsView::setColoredLineSegments" << coloredLineSegments.size();
+    if (auto* r = RENDER_IMPL(IsobathsView); r) {
+        r->coloredLineSegments_ = coloredLineSegments;
+        Q_EMIT changed();
+    }
+}
+
 IsobathsView::IsobathsViewRenderImplementation::IsobathsViewRenderImplementation()
-    : color_(1.f, 1.f, 1.f), distToFocusPoint_(10.0f), lineStepSize_(3.0f)
+    : color_(0.0f, 0.0f, 0.0f), labelColor_(1.f, 1.f, 1.f),distToFocusPoint_(10.0f), lineStepSize_(3.0f)
 {}
 
 void IsobathsView::IsobathsViewRenderImplementation::render(QOpenGLFunctions *ctx, const QMatrix4x4 &model,
@@ -62,7 +73,7 @@ void IsobathsView::IsobathsViewRenderImplementation::render(QOpenGLFunctions *ct
                  std::shared_ptr<QOpenGLShaderProgram>> &spMap) const
 {
     // qDebug() << "IsobathsView::IsobathsViewRenderImplementation::render...........";
-    if (mVis_ || !m_isVisible || lineSegments_.isEmpty()) {
+    if (mVis_ || !m_isVisible || (lineSegments_.isEmpty() && coloredLineSegments_.isEmpty())) {
         return;
     }
     auto spIt = spMap.find("isobaths");
@@ -75,14 +86,24 @@ void IsobathsView::IsobathsViewRenderImplementation::render(QOpenGLFunctions *ct
     const QMatrix4x4 mvp = projection * view * model;
     sp.setUniformValue("matrix",    mvp);
     sp.setUniformValue("linePass",  true);
-    sp.setUniformValue("lineColor", color_);
-
     const int posLoc = sp.attributeLocation("position");
     sp.enableAttributeArray(posLoc);
-    sp.setAttributeArray(posLoc, lineSegments_.constData());
 
-    ctx->glLineWidth(1.f);
-    ctx->glDrawArrays(GL_LINES, 0, lineSegments_.size());
+    if (!coloredLineSegments_.isEmpty()) {
+        for (const auto& seg : coloredLineSegments_) {
+            sp.setUniformValue("lineColor", seg.color);
+            QVector3D vertices[2] = {seg.start, seg.end};
+            sp.setAttributeArray(posLoc, vertices);
+            ctx->glLineWidth(1.f);
+            ctx->glDrawArrays(GL_LINES, 0, 2);
+        }
+    }
+    else {
+        sp.setUniformValue("lineColor", color_);
+        sp.setAttributeArray(posLoc, lineSegments_.constData());
+        ctx->glLineWidth(1.f);
+        ctx->glDrawArrays(GL_LINES, 0, lineSegments_.size());
+    }
 
     sp.disableAttributeArray(posLoc);
     sp.release();
@@ -90,10 +111,10 @@ void IsobathsView::IsobathsViewRenderImplementation::render(QOpenGLFunctions *ct
     if (!labels_.isEmpty()) {
         glDisable(GL_DEPTH_TEST);
         const QColor oldCol = TextRenderer::instance().getColor();
-        TextRenderer::instance().setColor(QColor::fromRgbF(color_.x(), color_.y(), color_.z()));
+        TextRenderer::instance().setColor(QColor::fromRgbF(labelColor_.x(), labelColor_.y(), labelColor_.z()));
 
-        const float sizeFromStep = lineStepSize_  * 0.20f;
-        const float sizeFromDist = distToFocusPoint_  * 0.0015f;
+        const float sizeFromStep = lineStepSize_ * 0.20f;
+        const float sizeFromDist = distToFocusPoint_ * 0.0015f;
         const float scale = qBound(0.15f, qMin(sizeFromStep, sizeFromDist), 0.30f);
 
         for (const auto& lbl : labels_) {

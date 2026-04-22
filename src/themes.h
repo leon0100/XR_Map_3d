@@ -64,7 +64,10 @@ public:
     {
         setWindowTitle(tr("Help Document"));
         setWindowFlags(Qt::Dialog | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
-        resize(800, 600);
+        QScreen *screen = QGuiApplication::primaryScreen();
+        if (screen) {
+            resize(screen->size());
+        }
 
         QVBoxLayout *layout = new QVBoxLayout(this);
 
@@ -85,7 +88,7 @@ public:
             "<p>You can directly copy the URL path below, paste it into the text box below this dialog, and click the green button on the right to successfully load Google tile maps. You can view and select the Google map source in the \"Map\" settings.</p>"
             "<pre style=\"font-size: 17px;text-decoration: underline;\">"
             "<div style=\"background-color:#f8f9fa;border:1px solid #ddd;padding:10px;border-radius:6px;\">"
-            "<div style=\"font-family:monospace;font-size:14px;\">"
+            "<div style=\"font-family:monospace;font-size:20px;\">"
             "http://mt2.google.com/vt/lyrs=y&hl=en&x=%1&y=%2&z=%3"
             "</div>"
             "<a href=\"copy-en-url\" "
@@ -113,7 +116,7 @@ public:
             "<p>您可以直接复制以下URL路径，粘贴到该对话框下方的文本框内，并点击右侧绿色按钮，则Google瓦片地图可成功加载，您可在设置的 \"Map\" 中查看，并选中Google图源使用。</p>"
             "<pre style=\"font-size: 17px;text-decoration: underline;\">"
             "<div style=\"background-color:#f8f9fa;border:1px solid #ddd;padding:10px;border-radius:6px;\">"
-            "<div style=\"font-family:monospace;font-size:14px;\">"
+            "<div style=\"font-family:monospace;font-size:20px;\">"
             "http://mt2.google.com/vt/lyrs=y&hl=zh-CN&x=%1&y=%2&z=%3"
             "</div>"
             "<a href=\"copy-cn-url\" "

@@ -8,14 +8,6 @@
 
 namespace map {
 
-constexpr double AMAP_TILE_CONSTANT = 126543000.03392;
-const int AMAP_PROVIDER_ID = 2;
-const int amapSat = 997;
-const QString secAmapWord = QStringLiteral("Galileo");
-
-
-
-
 class TileAmapProvider : public TileProvider
 {
 public:
@@ -29,14 +21,11 @@ public:
     QString createURL(const map::TileIndex& tileIndx) const override final;
 
 private:
-    int generateNum(int x, int y) const;
-    void generateWords(const int x, const int y, QString& sec1, QString& sec2) const;
 
-
-    // static double transformLat(double x, double y);
-    // static double transformLon(double x, double y);
-    // static void   Mars2Wgs(double lng, double lat, double &wgs_lng, double &wgs_lat);
-    // static void   Wgs2Mars(double wgLat, double wgLon,double &mgLat,double &mgLon);
+    static double transformLat(double x, double y);
+    static double transformLon(double x, double y);
+    static void   Mars2Wgs(double lng, double lat, double &wgs_lng, double &wgs_lat);
+    static void   Wgs2Mars(double wgLat, double wgLon,double &mgLat,double &mgLon);
 };
 
 

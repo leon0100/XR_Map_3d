@@ -125,28 +125,61 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
         return;
     }
 
+
+    // 对于高德地图，扩大请求范围，补偿火星坐标偏移
+    if (currentMap_ == amapMapSource) {
+        double expandFactor = 0.02; // 大约2公里左右的缓冲区
+        minLon -= expandFactor;
+        maxLon += expandFactor;
+        minLat -= expandFactor;
+        maxLat += expandFactor;
+    }
+
+
     auto [lonStartTile, lonEndTile, boundaryTile] = tileProvider_.get()->lonToTileXWithWrapAndBoundary(minLon, maxLon, zoomLevel);
 
     uint64_t reqSize = 0;
     QSet<TileIndex> indxRequest;
 
-    if (boundaryTile == -1) {
-        reqSize = (lonEndTile - lonStartTile + 1) * (maxY - minY + 1);
-        if (reqSize < minTilesCapacity_) {
-            for (int x = lonStartTile; x <= lonEndTile; ++x) {
-                for (int y = minY; y <= maxY; ++y) {
-                    TileIndex tileIndx(x, y, zoomLevel, tileProvider_->getProviderId());
-                    indxRequest.insert(tileIndx);
+    if (boundaryTile == -1)
+    {
+        if(currentMap_ == amapMapSource) {
+            int extraTilesX = 1;
+            int extraTilesY = 2;
+            int expandedLonStart = lonStartTile - extraTilesX;
+            int expandedLonEnd   = lonEndTile + extraTilesX;
+            int expandedMinY     = minY - extraTilesY;
+            int expandedMaxY     = maxY + extraTilesY;
+
+            // 确保瓦片索引有效
+            int numTiles = 1 << zoomLevel;
+            expandedLonStart = std::max(0, expandedLonStart);
+            expandedLonEnd   = std::min(expandedLonEnd, numTiles - 1);
+            expandedMinY     = std::max(0, expandedMinY);
+            expandedMaxY     = std::min(expandedMaxY, numTiles - 1);
+
+            reqSize = (expandedLonEnd - expandedLonStart + 1) * (expandedMaxY - expandedMinY + 1);
+            if (reqSize < minTilesCapacity_) {
+                for (int x = expandedLonStart; x <= expandedLonEnd; ++x) {
+                    for (int y = expandedMinY; y <= expandedMaxY; ++y) {
+                        TileIndex tileIndx(x, y, zoomLevel, tileProvider_->getProviderId());
+                        indxRequest.insert(tileIndx);
+                    }
                 }
             }
         }
-    }
+        else {
+            reqSize = (lonEndTile - lonStartTile + 1) * (maxY - minY + 1);
+            if (reqSize < minTilesCapacity_) {
+                for (int x = lonStartTile; x <= lonEndTile; ++x) {
+                    for (int y = minY; y <= maxY; ++y) {
+                        TileIndex tileIndx(x, y, zoomLevel, tileProvider_->getProviderId());
+                        indxRequest.insert(tileIndx);
+                    }
+                }
+            }
+        }
 
-    //nie:test
-    if(currentMap_ == amapMapSource) {
-        LLA lla = viewLlaRef.refLla;
-        Mars2Wgs(lla.longitude, lla.altitude,lla.longitude, lla.altitude);
-        viewLlaRef.refLla = lla;
     }
 
     if (!indxRequest.isEmpty()) {
@@ -223,67 +256,6 @@ void TileManager::switchMapSource(MapSourceType sourceType)
 
     emit tileSetChanged(tileSet_);
 
-}
-
-
-double TileManager::transformLat(double x, double y)
-{
-    double ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * sqrt(abs(x));
-    ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
-    ret += (20.0 * sin(y * PI) + 40.0 * sin(y / 3.0 * PI)) * 2.0 / 3.0;
-    ret += (160.0 * sin(y / 12.0 * PI) + 320 * sin(y * PI / 30.0)) * 2.0 / 3.0;
-    return ret;
-}
-
-double TileManager::transformLon(double x, double y)
-{
-    double ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * sqrt(abs(x));
-    ret += (20.0 * sin(6.0 * x * PI) + 20.0 * sin(2.0 * x * PI)) * 2.0 / 3.0;
-    ret += (20.0 * sin(x * PI) + 40.0 * sin(x / 3.0 * PI)) * 2.0 / 3.0;
-    ret += (150.0 * sin(x / 12.0 * PI) + 300.0 * sin(x / 30.0 * PI)) * 2.0 / 3.0;
-    return ret;
-}
-void TileManager::Mars2Wgs(double mgs_lng, double mgs_lat, double &wgs_lng, double &wgs_lat)
-{
-    if (mgs_lng < 72.004 || mgs_lng > 137.8347 || mgs_lat < 0.8293 || mgs_lat > 55.8271) {
-        wgs_lng = mgs_lng;
-        wgs_lat = mgs_lat;
-        return;
-    }
-
-    double dlat = transformLat(mgs_lng - 105.0, mgs_lat - 35.0);
-    double dlng = transformLon(mgs_lng - 105.0, mgs_lat - 35.0);
-    double radlat = mgs_lat / 180.0 * PI;
-    double magic = sin(radlat);
-    magic = 1 - EE * magic * magic;
-    double sqrtmagic = sqrt(magic);
-    dlat = (dlat * 180.0) / ((SEMI_MAJOR_AXIS * (1 - EE)) / (magic * sqrtmagic) * PI);
-    dlng = (dlng * 180.0) / (SEMI_MAJOR_AXIS / sqrtmagic * cos(radlat) * PI);
-    double mglat = mgs_lat + dlat;
-    double mglng = mgs_lng + dlng;
-
-    wgs_lng = mgs_lng * 2 - mglng;
-    wgs_lat = mgs_lat * 2 - mglat;
-}
-
-void TileManager::Wgs2Mars(double wgLon, double wgLat, double &mgLon,double &mgLat)
-{
-    if (wgLon < 72.004 || wgLon > 137.8347 || wgLat < 0.8293 || wgLat > 55.8271) {
-        mgLon = wgLon;
-        mgLat = wgLat;
-        return;
-    }
-
-    double dLat = transformLat(wgLon - 105.0, wgLat - 35.0);
-    double dLon = transformLon(wgLon - 105.0, wgLat - 35.0);
-    double radLat = wgLat / 180.0 * PI;
-    double magic = sin(radLat);
-    magic = 1 - EE * magic * magic;
-    double sqrtMagic = sqrt(magic);
-    dLat = (dLat * 180.0) / ((SEMI_MAJOR_AXIS * (1 - EE)) / (magic * sqrtMagic) * PI);
-    dLon = (dLon * 180.0) / (SEMI_MAJOR_AXIS / sqrtMagic * cos(radLat) * PI);
-    mgLat = wgLat + dLat;
-    mgLon = wgLon + dLon;
 }
 
 

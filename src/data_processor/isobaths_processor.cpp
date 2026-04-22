@@ -29,6 +29,7 @@ IsobathsProcessor::IsobathsProcessor(DataProcessor* dataProcessorPtr):
     lineStepSize_(3.0f),labelStepSize_(100.f)
 {
     qRegisterMetaType<QVector<IsobathUtils::LabelParameters>>("QVector<IsobathUtils::LabelParameters>");
+    qRegisterMetaType<QVector<IsobathUtils::ColoredIsobathsSeg>>("QVector<IsobathUtils::ColoredIsobathsSeg>");
 }
 
 void IsobathsProcessor::clear()
@@ -47,8 +48,31 @@ void IsobathsProcessor::setSurfaceMeshPtr(SurfaceMesh* surfaceMeshPtr)
 
 void IsobathsProcessor::onUpdatedBottomTrackData()
 {
-    // qDebug() << "IsobathsProcessor::onUpdatedBottomTrackData.............";
+    // qDebug() << "IsobathsProcessor::onUpdatedBottomTrackData...";
     fullRebuildLinesLabels();
+}
+
+void IsobathsProcessor::setColorsFromSurfaceProcessor(const QVector<IsobathUtils::ColorInterval>& colorIntervals)
+{
+    colorIntervals_ = colorIntervals;
+}
+
+QVector3D IsobathsProcessor::getColorForDepth(float depth) const
+{
+    if (colorIntervals_.isEmpty()) {
+        return QVector3D(0.0f, 0.0f, 0.0f);
+    }
+
+    // 找到最接近且小于等于当前深度的颜色区间
+    QVector3D color = colorIntervals_.last().color;
+    for (int i = colorIntervals_.size() - 1; i >= 0; --i) {
+        const auto& interval = colorIntervals_[i];
+        if (interval.depth <= depth) {
+            color = interval.color;
+            break;
+        }
+    }
+    return color;
 }
 
 void IsobathsProcessor::setMinZ(float v)
@@ -214,6 +238,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
     }
 
     QHash<int, IsobathsPolylines> polysByLvl; // 多线段
+    QVector<IsobathUtils::ColoredIsobathsSeg> resColoredLines;
     for (auto it = segsByLvl.begin(); it != segsByLvl.end(); ++it) {
         buildPolylines(it.value(), polysByLvl[it.key()]);
     }
@@ -226,10 +251,13 @@ void IsobathsProcessor::fullRebuildLinesLabels()
         const float depth = minZ_ + lvl * lineStepSize_;
         const auto& polys = it.value();
 
+        QVector3D color = getColorForDepth(depth);
+
         // 线条
         for (const auto& p : polys) {
             for (int i = 0; i + 1 < p.size(); ++i) {
                 resLines << p[i] << p[i + 1];
+                resColoredLines << IsobathUtils::ColoredIsobathsSeg(p[i], p[i+1], color);
             }
         }
 
@@ -276,8 +304,11 @@ void IsobathsProcessor::fullRebuildLinesLabels()
     // qDebug() << "resLines.size() " << resLines.size();
     filterNearbyLabels(resLabels, labels_);
     lineSegments_ = std::move(resLines);
+    coloredLineSegments_ = std::move(resColoredLines);
 
     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsLineSegments", Qt::QueuedConnection, Q_ARG(QVector<QVector3D>, lineSegments_));
+    QMetaObject::invokeMethod(dataProcessor_, "postIsobathsColoredLineSegments",
+            Qt::QueuedConnection, Q_ARG(QVector<IsobathUtils::ColoredIsobathsSeg>, coloredLineSegments_));
     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsLabels", Qt::QueuedConnection, Q_ARG(QVector<IsobathUtils::LabelParameters>, labels_));
 }
 

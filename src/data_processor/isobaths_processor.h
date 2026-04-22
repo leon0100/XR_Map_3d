@@ -26,6 +26,8 @@ public:
     void  setLabelStepSize(float v);
     float getLineStepSize()  const;
     float getLabelStepSize() const;
+    void  setColorsFromSurfaceProcessor(const QVector<IsobathUtils::ColorInterval>& colorIntervals);
+    QVector3D getColorForDepth(float depth) const;
 
 
 private:
@@ -46,7 +48,9 @@ private:
     std::vector<HeightType> vertMark_;
     std::vector<TrIndxs> tris_;
     QVector<QVector3D> lineSegments_;
+    QVector<IsobathUtils::ColoredIsobathsSeg> coloredLineSegments_;
     QVector<LabelParameters> labels_;
+    QVector<IsobathUtils::ColorInterval> colorIntervals_;
     float minZ_;
     float maxZ_;
     float lineStepSize_; //相邻两条等高线之间的高度差

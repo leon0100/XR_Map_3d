@@ -28,11 +28,6 @@ public:
     map::TileInfo indexToTileInfo(map::TileIndex tileIndx, map::TilePosition pos = map::TilePosition::kFits) const override final;
     QString createURL(const map::TileIndex& tileIndx) const override final;
 
-
-private:
-    int generateNum(int x, int y) const;
-    void generateWords(const int x, const int y, QString& sec1, QString& sec2) const;
-
 };
 
 

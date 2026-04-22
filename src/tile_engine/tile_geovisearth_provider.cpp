@@ -2,6 +2,10 @@
 
 namespace map {
 
+#define  API_KEY_GEOVIS  "09515d5bc175c18a6a097754db864b9310673643bb305d4e2a95fc8cab2ae8c4"
+
+constexpr double GEOVISEARTH_TILE_CONSTANT = 126543000.03392;
+const int GEOVISEARTH_PROVIDER_ID = 4;
 
 TileGeovisEarthProvider::TileGeovisEarthProvider() :
     TileProvider(GEOVISEARTH_PROVIDER_ID)
@@ -100,24 +104,8 @@ map::TileInfo TileGeovisEarthProvider::indexToTileInfo(map::TileIndex tileIndx, 
     return info;
 }
 
-int TileGeovisEarthProvider::generateNum(int x, int y) const
-{
-    return (x + y) % 4;
-}
-
-void TileGeovisEarthProvider::generateWords(int x, int y, QString& sec1, QString& sec2) const
-{
-    int setLen = ((x * 3) + y) % 8;
-    sec2 = secGeovisEarthWord.left(setLen);
-    if (y >= 10000 && y < 100000) {
-        sec1 = QStringLiteral("&s=");
-    }
-}
-
 QString TileGeovisEarthProvider::createURL(const map::TileIndex& tileIndx) const
 {
-    QString str1, str2;
-    generateWords(tileIndx.x_, tileIndx.y_, str1, str2);
     return QString("https://tiles1.geovisearth.com/base/v1/img/%1/%2/%3?format=webp&tmsIds=w&token=%4")
         .arg(tileIndx.z_).arg(tileIndx.x_).arg(tileIndx.y_).arg(API_KEY_GEOVIS);
 }

@@ -6,9 +6,9 @@ import QtQuick.Window 2.15
 
 Rectangle {
     id: loadMap
-    width: loadSize * 1.3
+    width:  loadSize * 1.5
     height: loadSize * 1.6
-    x: Screen.width * 0.5 - width * 0.5
+    x: Screen.width * 0.5  - width * 0.5
     y: Screen.height * 0.5 - height * 0.8
     z: 99
     visible: theme.mapSourceLoadVisible
@@ -16,16 +16,14 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#f5f7fa" }
-            GradientStop { position: 1.0; color: "#c3cfe2" }
+            GradientStop { position: 0.0;  color: "#f5f7fa" }
+            GradientStop { position: 1.0;  color: "#c3cfe2" }
         }
     }
 
 
     property int  loadSize:     Math.min(Screen.width, Screen.height) * 0.35
-    property int  layoutHeight: loadSize * 0.1
     property int  iconSize:     loadSize * 0.06
-
     property bool googleMapExists_inLoadMap: theme.googleExist
 
     signal updateMapCheck(int value)
@@ -39,7 +37,7 @@ Rectangle {
         anchors.rightMargin: 40
         spacing: 10
 
-        Label { text: qsTr("Available Map Source") }
+        Label { text: qsTr("Available Map Source");  font.pixelSize: iconSize; }
 
         // 列表区域
         Rectangle {
@@ -55,10 +53,12 @@ Rectangle {
                 clip: true
                 model: mapModel
                 currentIndex: -1
+                spacing: 25
 
-                delegate: ItemDelegate {
-                    width: listView.width
-                    height: model.isSeparator ? 20 : (model.isLine ? 5 : 35)
+                delegate: ItemDelegate
+                {
+                    width: parent.width
+                    height: model.isSeparator ? 20 : (model.isLine ? 5 : iconSize)
                     visible: !(model.isGoogle && !googleMapExists_inLoadMap)
                     enabled: model.isSelectable
                     highlighted: ListView.isCurrentItem
@@ -73,6 +73,7 @@ Rectangle {
                             anchors.left: parent.left
                             anchors.leftMargin: 10
                             text: model.name
+                            font.pixelSize: iconSize
                             visible: !model.isSeparator && !model.isLine && !model.isCenterText
                         }
 
@@ -80,6 +81,7 @@ Rectangle {
                         Text {
                             anchors.centerIn: parent
                             text: model.name
+                            font.pixelSize: iconSize
                             visible: model.isCenterText
                             color: "gray"
                         }
@@ -114,6 +116,7 @@ Rectangle {
                         id: contextMenu
                         MenuItem {
                             text: qsTr("Delete")
+                            font.pixelSize: iconSize
                             onTriggered: {
                                 googleMapExists_inLoadMap = false
                                 theme.googleExist = false
@@ -140,13 +143,14 @@ Rectangle {
             Label {
                 id: configTileLabel
                 text: qsTr("User Config")
+                font.pixelSize: iconSize
             }
             Item { Layout.fillWidth: true }
             ToolButton {
                 id: helpBtn
                 icon.source: "qrc:/XR/question_mark.svg"
-                implicitWidth: 24
-                implicitHeight: 24
+                implicitWidth:  iconSize
+                implicitHeight: iconSize
                 ToolTip.visible: hovered
                 ToolTip.text: qsTr("Help Document")
                 onClicked: theme.openGoogleHelpDocument();
@@ -157,7 +161,7 @@ Rectangle {
         Item {
             id: urlInputContainer
             Layout.fillWidth: true
-            height: 40
+            height: iconSize * 1.2
 
             // 当前输入内容
             property string inputText: ""
@@ -175,7 +179,8 @@ Rectangle {
                     id: fakeInput
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    radius: 4
+                    // implicitHeight:iconSize * 1.2
+                    radius: 5
                     border.color: "#999"
                     border.width: 1
                     color: "white"
@@ -186,6 +191,7 @@ Rectangle {
                         text: urlInputContainer.inputText === ""
                               ? qsTr("Enter URL here...")
                               : urlInputContainer.inputText
+                        font.pixelSize: iconSize
                         color: urlInputContainer.inputText === "" ? "#999" : "#000"
                         elide: Text.ElideRight
                         width: parent.width - 20
@@ -214,8 +220,8 @@ Rectangle {
                 ToolButton {
                     id: addUrlBtn
                     icon.source: "qrc:/XR/plus.svg"
-                    implicitWidth: 24
-                    implicitHeight: 24
+                    implicitWidth: iconSize
+                    implicitHeight: iconSize
                     onClicked: {
                         if (!googleMapExists_inLoadMap) {
                             if ((urlInputContainer.inputText === urlInputContainer.googleUrlEn)
@@ -252,8 +258,8 @@ Rectangle {
             // 粘贴提示按钮
             Rectangle {
                 id: pasteHint
-                width: 50
-                height: 28
+                width: loadSize * 2
+                height: loadSize
                 radius: 4
                 color: "#00ee76"
                 visible: false
@@ -262,8 +268,8 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text: qsTr("Paste")
+                    font.pixelSize: iconSize
                     color: "white"
-                    font.pixelSize: 13
                     font.bold: true
                 }
 
@@ -284,11 +290,12 @@ Rectangle {
         // 底部按钮
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 100
+            spacing: loadSize * 0.75
 
             Button {
                 text: qsTr("OK")
-                implicitWidth: 80
+                font.pixelSize: iconSize
+                implicitWidth: iconSize * 2
                 onClicked: {
                     if (!googleMapExists_inLoadMap) {
                         if ((urlInputContainer.inputText === urlInputContainer.googleUrlEn)
@@ -327,7 +334,8 @@ Rectangle {
             }
             Button {
                 text: qsTr("Cancel")
-                implicitWidth: 80
+                font.pixelSize: iconSize
+                implicitWidth: iconSize * 2
                 onClicked: theme.mapSourceLoadVisible = false
             }
         }

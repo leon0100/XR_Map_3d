@@ -54,7 +54,6 @@ MapView::~MapView()
 
 void MapView::clear()
 {
-    qDebug() << "MapView::clear()............";
     appendTasks_.clear();
     updateImageTasks_.clear();
 

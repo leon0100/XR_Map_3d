@@ -44,6 +44,7 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     qRegisterMetaType<TileMap>("TileMap");
     qRegisterMetaType<Dataset*>("Dataset*");
     qRegisterMetaType<std::uint8_t>("std::uint8_t");
+    qRegisterMetaType<QVector<IsobathUtils::ColoredIsobathsSeg>>("QVector<IsobathUtils::ColoredIsobathsSeg>");
 
     worker_ = new ComputeWorker(this, datasetPtr_);
     worker_->setDatasetPtr(datasetPtr_);
@@ -88,12 +89,12 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     requestCancel();
 
     switch (procType) {
-    case DataProcessorType::kUndefined:   clearAllProcessings();        emit allProcessingCleared();         break;
+    case DataProcessorType::kUndefined:   clearAllProcessings();              break;
     case DataProcessorType::kBottomTrack: clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
     case DataProcessorType::kIsobaths:    clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
     case DataProcessorType::kMosaic:      clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
     case DataProcessorType::kSurface:     clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
-    case DataProcessorType::bletoothTrack:clearAllProcessings();        emit allProcessingCleared();         break;
+    case DataProcessorType::bletoothTrack:clearAllProcessings();              break;
     case DataProcessorType::staticTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
     default: break;
     }
@@ -109,29 +110,21 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
 void DataProcessor::clearProcessing2(bool isClearTrack)
 {
     requestCancel();
-
+    clearAllProcessings();
     if(isClearTrack) {
-        clearAllProcessings();
-        emit allProcessingCleared();
         chartsCounter_ = 0;
         bottomTrackCounter_ = 0;
         epochCounter_ = 0;
         positionCounter_ = 0;
         attitudeCounter_ = 0;
         mosaicCounter_ = 0;
-    } else {
+    }
+    else {
         clearIsobathsProcessing();
         emit isobathsProcessingCleared();
         clearSurfaceProcessing();
         emit surfaceProcessingCleared();
     }
-
-    // chartsCounter_ = 0;
-    // bottomTrackCounter_ = 0;
-    // epochCounter_ = 0;
-    // positionCounter_ = 0;
-    // attitudeCounter_ = 0;
-    // mosaicCounter_ = 0;
 }
 
 void DataProcessor::setUpdateBottomTrack(bool state)
@@ -545,6 +538,12 @@ void DataProcessor::postIsobathsLineSegments(const QVector<QVector3D>& lineSegme
 {
     // qDebug() << "DataProcessor::postIsobathsLineSegments lineSegments.size():" << lineSegments.size();
     emit sendIsobathsLineSegments(lineSegments);
+}
+
+void DataProcessor::postIsobathsColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg>& coloredLineSegments)
+{
+    // qDebug() << "DataProcessor::postIsobathsColoredLineSegments coloredLineSegments.size():" << coloredLineSegments.size();
+    emit sendIsobathsColoredLineSegments(coloredLineSegments);
 }
 
 void DataProcessor::onBottomTrackStarted()

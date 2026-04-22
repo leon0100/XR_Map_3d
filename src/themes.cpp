@@ -71,7 +71,6 @@ void Themes::setTheme(int theme_id)
 
         _disabledTextColor = new QColor(150, 150, 150);
         _disabledBackColor = new QColor(50, 50, 50);
-
     }
 
     QScreen *screen = QGuiApplication::primaryScreen();

@@ -228,10 +228,8 @@ bool SurfaceTile::getInFov() const
 
 bool SurfaceTile::checkVerticesDepth(int topLeft, int topRight, int bottomLeft, int bottomRight) const
 {
-    if (qFuzzyIsNull(heightVertices_[topLeft].z())     || // someone zero
-        qFuzzyIsNull(heightVertices_[topRight].z())    ||
-        qFuzzyIsNull(heightVertices_[bottomLeft].z())  ||
-        qFuzzyIsNull(heightVertices_[bottomRight].z())) {
+    if (qFuzzyIsNull(heightVertices_[topLeft].z())     || qFuzzyIsNull(heightVertices_[topRight].z())    ||
+        qFuzzyIsNull(heightVertices_[bottomLeft].z())  || qFuzzyIsNull(heightVertices_[bottomRight].z())) {
         return false;
     }
     return true;
