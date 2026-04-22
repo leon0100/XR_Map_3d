@@ -137,6 +137,19 @@ Rectangle {
             }
         }
 
+
+        Loader {
+            id: helpLoader
+            active: false
+            source: "HelpDialog.qml"
+
+            onLoaded: {
+                if (item && item.open) {
+                    item.open()
+                }
+            }
+        }
+
         // User Config 区域
         RowLayout {
             Layout.fillWidth: true
@@ -153,7 +166,7 @@ Rectangle {
                 implicitHeight: iconSize
                 ToolTip.visible: hovered
                 ToolTip.text: qsTr("Help Document")
-                onClicked: theme.openGoogleHelpDocument();
+                onClicked: helpLoader.active = true
             }
         }
 
