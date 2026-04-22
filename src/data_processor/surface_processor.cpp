@@ -181,7 +181,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     propagateBorderHeights(changedTiles);
     const int stepPix  = surfaceMeshPtr_->getStepSizeHeightMatrix();
-    const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / (stepPix+1);
+    const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
     for (SurfaceTile* t : std::as_const(changedTiles)) {
         smoothTileHeights(t, hvSide);   // 对高度场进行平滑处理，减少噪声
         t->updateHeightIndices();
