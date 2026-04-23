@@ -203,9 +203,15 @@ void MapView::onClearAppendTasks()
 
 
 // MapViewRenderImplementation
-MapView::MapViewRenderImplementation::MapViewRenderImplementation()
-{}
+// MapView::MapViewRenderImplementation::MapViewRenderImplementation()
+// {}
 MapView::MapViewRenderImplementation::MapViewRenderImplementation(MapView* mapView) : mapView_(mapView)
+{}
+
+MapView::MapViewRenderImplementation::MapViewRenderImplementation() : mapView_(nullptr)
+{}
+
+MapView::MapViewRenderImplementation::~MapViewRenderImplementation()
 {}
 
 void MapView::MapViewRenderImplementation::copyCpuSideFrom(const MapView::MapViewRenderImplementation& s)
@@ -390,7 +396,6 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
         QRectF surfaceBounds;
         bool hasSurface = false;
 
-
         if (mapView_) {
             auto graphicsScene3dView = qobject_cast<GraphicsScene3dView*>(mapView_->parent());
             if (graphicsScene3dView) {
@@ -416,6 +421,7 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
                     // 检查瓦片边界与高度场边界是否重叠
                     QRectF tileBounds(tileMinX, tileMinY, tileMaxX - tileMinX, tileMaxY - tileMinY);
                     if (tileBounds.intersects(surfaceBounds)) {
+                        qDebug() << "tileBounds.intersects(surfaceBounds).......";
                         // 瓦片与高度场重叠，不渲染
                         continue;
                     }

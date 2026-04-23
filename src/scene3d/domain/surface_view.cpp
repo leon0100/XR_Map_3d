@@ -12,6 +12,9 @@ SurfaceView::SurfaceView(QObject* parent)
 QRectF SurfaceView::getSurfaceBounds() const
 {
     auto r = RENDER_IMPL(SurfaceView);
+    if(!r){
+        return QRectF();
+    }
     return r->getSurfaceBounds();
 }
 
