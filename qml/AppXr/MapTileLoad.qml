@@ -22,22 +22,22 @@ Rectangle {
     }
 
 
-    property int  loadSize:     Math.min(Screen.width, Screen.height) * 0.35
-    property int  iconSize:     loadSize * 0.06
+    property int  loadSize:  Math.min(Screen.width, Screen.height) * 0.35
+    property int  iconSize:  loadSize * 0.06
     property bool googleMapExists_inLoadMap: theme.googleExist
 
     signal updateMapCheck(int value)
 
 
-    // 主布局
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 20
         anchors.leftMargin: 40
         anchors.rightMargin: 40
+        anchors.bottomMargin: loadSize * 0.05
         spacing: 10
 
-        Label { text: qsTr("Available Map Source");  font.pixelSize: iconSize; }
+        Label { text: qsTr("Available Map Source");  font.pixelSize: iconSize * 0.8; }
 
         // 列表区域
         Rectangle {
@@ -63,11 +63,9 @@ Rectangle {
                     enabled: model.isSelectable
                     highlighted: ListView.isCurrentItem
 
-                    // 内容区
                     contentItem: Item {
                         anchors.fill: parent
 
-                        // 正常文本
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.left: parent.left
@@ -86,7 +84,6 @@ Rectangle {
                             color: "gray"
                         }
 
-                        // 分割线
                         Rectangle {
                             anchors.centerIn: parent
                             width: parent.width - 20
@@ -117,6 +114,7 @@ Rectangle {
                         MenuItem {
                             text: qsTr("Delete")
                             font.pixelSize: iconSize
+                            implicitWidth: iconSize * 6
                             onTriggered: {
                                 googleMapExists_inLoadMap = false
                                 theme.googleExist = false
@@ -133,7 +131,9 @@ Rectangle {
                             }
                         }
                     }
+
                 }
+
             }
         }
 
@@ -162,21 +162,32 @@ Rectangle {
             ToolButton {
                 id: helpBtn
                 icon.source: "qrc:/XR/question_mark.svg"
-                implicitWidth:  iconSize
-                implicitHeight: iconSize
+                icon.width: iconSize * 1.2
+                icon.height: iconSize * 1.2
+                implicitWidth:  iconSize * 1.2
+                implicitHeight: iconSize * 1.2
                 ToolTip.visible: hovered
                 ToolTip.text: qsTr("Help Document")
-                onClicked: helpLoader.active = true
+                onClicked: {
+                    if(Qt.platform.os === "android") {
+                        helpLoader.active = true
+                        helpLoader.item.open()
+                    }
+                    else {
+                        theme.openGoogleHelpDocument()
+                    }
+                }
             }
         }
+
+        Item { Layout.preferredHeight: 10 }
 
         // 添加 URL 区域
         Item {
             id: urlInputContainer
             Layout.fillWidth: true
-            height: iconSize * 1.2
+            height: iconSize * 1.5
 
-            // 当前输入内容
             property string inputText: ""
             readonly property string googleUrlEn: "http://mt2.google.com/vt/lyrs=y&hl=en&x=%1&y=%2&z=%3"
             readonly property string googoleUrlCh: "http://mt2.google.com/vt/lyrs=y&hl=zh-CN&x=%1&y=%2&z=%3"
@@ -192,7 +203,6 @@ Rectangle {
                     id: fakeInput
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    // implicitHeight:iconSize * 1.2
                     radius: 5
                     border.color: "#999"
                     border.width: 1
@@ -233,8 +243,10 @@ Rectangle {
                 ToolButton {
                     id: addUrlBtn
                     icon.source: "qrc:/XR/plus.svg"
-                    implicitWidth: iconSize
-                    implicitHeight: iconSize
+                    icon.width: iconSize * 1.2
+                    icon.height: iconSize * 1.2
+                    implicitWidth: iconSize * 1.5
+                    implicitHeight: iconSize * 1.5
                     onClicked: {
                         if (!googleMapExists_inLoadMap) {
                             if ((urlInputContainer.inputText === urlInputContainer.googleUrlEn)
@@ -271,10 +283,9 @@ Rectangle {
             // 粘贴提示按钮
             Rectangle {
                 id: pasteHint
-                width: loadSize * 2
-                height: loadSize
+                width: iconSize * 3
+                height: iconSize
                 radius: 4
-                color: "#00ee76"
                 visible: false
                 z: 10
 
@@ -282,7 +293,6 @@ Rectangle {
                     anchors.centerIn: parent
                     text: qsTr("Paste")
                     font.pixelSize: iconSize
-                    color: "white"
                     font.bold: true
                 }
 
@@ -298,17 +308,18 @@ Rectangle {
         }
 
 
-        Item { Layout.preferredHeight: 2 }
+        Item { Layout.preferredHeight: loadSize * 0.05 }
 
         // 底部按钮
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: loadSize * 0.75
+            spacing: loadSize * 0.5
 
             Button {
                 text: qsTr("OK")
                 font.pixelSize: iconSize
-                implicitWidth: iconSize * 2
+                implicitWidth: iconSize * 5
+                implicitHeight: iconSize
                 onClicked: {
                     if (!googleMapExists_inLoadMap) {
                         if ((urlInputContainer.inputText === urlInputContainer.googleUrlEn)
@@ -348,7 +359,8 @@ Rectangle {
             Button {
                 text: qsTr("Cancel")
                 font.pixelSize: iconSize
-                implicitWidth: iconSize * 2
+                implicitWidth: iconSize * 5
+                implicitHeight: iconSize
                 onClicked: theme.mapSourceLoadVisible = false
             }
         }

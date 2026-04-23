@@ -100,24 +100,8 @@ void Themes::updateResCoeff()
 
 void Themes::openGoogleHelpDocument()
 {
-    // HelpDialog helpDialog;
-    // helpDialog.exec();
-
-    if (qmlEngine_) {
-        // Create QML HelpDialog
-        QQmlComponent component(qmlEngine_, QUrl("qrc:/qml/AppXr/HelpDialog.qml"));
-        if (component.status() == QQmlComponent::Ready) {
-            QObject *dialogObject = component.create();
-            if (dialogObject) {
-
-                // Set theme property
-                dialogObject->setProperty("theme", QVariant::fromValue(this));
-
-                // Show the dialog
-                QMetaObject::invokeMethod(dialogObject, "open");
-            }
-        }
-    }
+    HelpDialog helpDialog;
+    helpDialog.exec();
 }
 
 

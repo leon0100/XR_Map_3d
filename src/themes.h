@@ -66,8 +66,11 @@ public:
         setWindowFlags(Qt::Dialog | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
         QScreen *screen = QGuiApplication::primaryScreen();
         if (screen) {
-            resize(screen->size());
+        //     // resize(screen->size().width() * 0.75, screen->size().height() * 0.8);
+            resize(screen->availableGeometry().size());
         }
+        showMaximized();
+
 
         QVBoxLayout *layout = new QVBoxLayout(this);
 

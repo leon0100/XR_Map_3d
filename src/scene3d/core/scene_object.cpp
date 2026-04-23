@@ -16,6 +16,11 @@ SceneObject::SceneObject(RenderImplementation *impl, GraphicsScene3dView *view, 
     Q_UNUSED(name);
 }
 
+// SceneObject::RenderImplementation* SceneObject::renderImplementation() const
+// {
+//     return m_renderImpl;
+// }
+
 void SceneObject::mouseMoveEvent(Qt::MouseButtons buttons, qreal x, qreal y)
 {
     Q_UNUSED(buttons)

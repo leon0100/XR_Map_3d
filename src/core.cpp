@@ -1497,6 +1497,7 @@ void Core::clearRouteData()
                     datasetPtr_->resetDataset();
                     dataHorizon_->clear();
                     if (scene3dViewPtr_) {
+                        scene3dViewPtr_->clear(true);
                         scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
                     }
                 }

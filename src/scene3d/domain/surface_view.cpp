@@ -8,6 +8,13 @@ SurfaceView::SurfaceView(QObject* parent)
     mosaicColorTableToDelete_(0), surfaceColorTableToDelete_(0)
 {}
 
+
+QRectF SurfaceView::getSurfaceBounds() const
+{
+    auto r = RENDER_IMPL(SurfaceView);
+    return r->getSurfaceBounds();
+}
+
 SurfaceView::~SurfaceView()
 {
     auto* r = RENDER_IMPL(SurfaceView);
@@ -494,4 +501,32 @@ float SurfaceView::SurfaceViewRenderImplementation::getMaxZ()
 float SurfaceView::SurfaceViewRenderImplementation::getMinZ()
 {
     return minZ_;
+}
+
+QRectF SurfaceView::SurfaceViewRenderImplementation::getSurfaceBounds() const
+{
+    if (tiles_.isEmpty()) {
+        return QRectF();
+    }
+
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::lowest();
+
+    for (auto tile : tiles_) {
+        if (!tile.getIsInited()) {
+            continue;
+        }
+
+        auto& vertices = tile.getHeightVerticesRef();
+        for (const auto& vert : vertices) {
+            minX = std::min(minX, vert.x());
+            maxX = std::max(maxX, vert.x());
+            minY = std::min(minY, vert.y());
+            maxY = std::max(maxY, vert.y());
+        }
+    }
+
+    return QRectF(minX, minY, maxX - minX, maxY - minY);
 }

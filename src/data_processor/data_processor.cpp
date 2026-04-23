@@ -650,6 +650,7 @@ void DataProcessor::clearAllProcessings()
 
     QMetaObject::invokeMethod(worker_, "clearAll", Qt::QueuedConnection);
 
+    emit bottomTrackProcessingCleared();
     emit isobathsProcessingCleared();
     emit surfaceProcessingCleared();
     emit mosaicProcessingCleared();

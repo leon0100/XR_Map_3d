@@ -35,7 +35,9 @@ IsobathsProcessor::IsobathsProcessor(DataProcessor* dataProcessorPtr):
 void IsobathsProcessor::clear()
 {
     lineSegments_.clear();
+    coloredLineSegments_.clear();
     labels_.clear();
+    colorIntervals_.clear();
     vertPool_.clear();
     vertMark_.clear();
     tris_.clear();

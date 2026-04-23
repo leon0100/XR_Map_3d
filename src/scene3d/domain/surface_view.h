@@ -17,6 +17,11 @@ class SurfaceView : public SceneObject
     QML_NAMED_ELEMENT(SurfaceView)
 
 public:
+    QRectF getSurfaceBounds() const;
+
+
+
+public:
     class SurfaceViewRenderImplementation : public SceneObject::RenderImplementation
     {
     public:
@@ -26,6 +31,8 @@ public:
 
         float getMaxZ();
         float getMinZ();
+
+        QRectF getSurfaceBounds() const;
 
     private:
         friend class SurfaceView;

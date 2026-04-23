@@ -16,6 +16,7 @@ void IsobathsView::clear()
     if (auto* r = RENDER_IMPL(IsobathsView); r) {
         r->lineSegments_.clear();
         r->labels_.clear();
+        r->coloredLineSegments_.clear();
     }
 
     Q_EMIT changed();

@@ -1,6 +1,8 @@
 #include "map_view.h"
 #include <QObject>
 
+// #include "surface_view.h"
+#include "scene3d_view.h"
 
 // const double a = 6378245.0;
 // const double ee = 0.006693421622965943;
@@ -41,7 +43,8 @@ static inline bool toTightRGBA8888(const QImage& in, QByteArray& out, int& w, in
 }
 
 
-MapView::MapView(QObject *parent) : SceneObject(new MapViewRenderImplementation, parent)
+// MapView::MapView(QObject *parent) : SceneObject(new MapViewRenderImplementation, parent)
+MapView::MapView(QObject *parent) : SceneObject(new MapViewRenderImplementation(this), parent)
 {
     qRegisterMetaType<map::TileIndex>("map::TileIndex");
     qRegisterMetaType<GLuint>("GLuint");
@@ -202,6 +205,8 @@ void MapView::onClearAppendTasks()
 // MapViewRenderImplementation
 MapView::MapViewRenderImplementation::MapViewRenderImplementation()
 {}
+MapView::MapViewRenderImplementation::MapViewRenderImplementation(MapView* mapView) : mapView_(mapView)
+{}
 
 void MapView::MapViewRenderImplementation::copyCpuSideFrom(const MapView::MapViewRenderImplementation& s)
 {
@@ -346,8 +351,8 @@ void MapView::MapViewRenderImplementation::ensureQuadBuffers(QOpenGLFunctions *g
 }
 
 void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
-                            const QMatrix4x4 &model, const QMatrix4x4 &view,  const QMatrix4x4 &projection,
-                            const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
+                        const QMatrix4x4 &model, const QMatrix4x4 &view,  const QMatrix4x4 &projection,
+                        const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
 {
     if (!m_isVisible || !ctx) {
         return;
@@ -379,7 +384,44 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
         ctx->glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(0));
         ctx->glEnableVertexAttribArray(texLoc);
 
+
+
+        // 获取高度场边界
+        QRectF surfaceBounds;
+        bool hasSurface = false;
+
+
+        if (mapView_) {
+            auto graphicsScene3dView = qobject_cast<GraphicsScene3dView*>(mapView_->parent());
+            if (graphicsScene3dView) {
+                auto surfaceView = graphicsScene3dView->getSurfaceViewPtr();
+                if (surfaceView) {
+                    // 获取 SurfaceView 的渲染实现
+                    surfaceBounds = surfaceView->getSurfaceBounds();
+                     hasSurface = !surfaceBounds.isEmpty();
+                }
+            }
+        }
         for (auto& [tileIndx, tile] : tilesHash_) {
+            // 检查瓦片是否与高度场重叠
+            if (hasSurface) {
+                const auto& verts = tile.getVerticesRef();
+                if (verts.size() >= 4) {
+                    // 计算瓦片的边界
+                    float tileMinX = std::min({verts[0].x(), verts[1].x(), verts[2].x(), verts[3].x()});
+                    float tileMaxX = std::max({verts[0].x(), verts[1].x(), verts[2].x(), verts[3].x()});
+                    float tileMinY = std::min({verts[0].y(), verts[1].y(), verts[2].y(), verts[3].y()});
+                    float tileMaxY = std::max({verts[0].y(), verts[1].y(), verts[2].y(), verts[3].y()});
+
+                    // 检查瓦片边界与高度场边界是否重叠
+                    QRectF tileBounds(tileMinX, tileMinY, tileMaxX - tileMinX, tileMaxY - tileMinY);
+                    if (tileBounds.intersects(surfaceBounds)) {
+                        // 瓦片与高度场重叠，不渲染
+                        continue;
+                    }
+                }
+            }
+
             const GLuint tex = tile.getTextureId();
             if (!tex) {
                 continue;

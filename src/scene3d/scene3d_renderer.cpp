@@ -179,13 +179,13 @@ void GraphicsScene3dRenderer::drawObjects()
     m_polygonOutlineRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);
 
     glEnable(GL_DEPTH_TEST);
-    float zOffset = surfaceViewRenderImpl_.getMaxZ() + 0.01f;
-    zOffset = qMax(0.01f, zOffset);
-    QMatrix4x4 upModel = m_model;
-    upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
+    // float zOffset = surfaceViewRenderImpl_.getMaxZ() + 0.01f;
+    // zOffset = qMax(0.01f, zOffset);
+    // QMatrix4x4 upModel = m_model;
+    // upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
 
-    surfaceViewRenderImpl_.render(this,  m_projection * view * upModel, m_shaderProgramMap);  //高度场
-    isobathsViewRenderImpl_.render(this, upModel, view, m_projection, m_shaderProgramMap);    //等值线
+    surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
+    isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
     m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
 
     // // navigation arrow - 应用相同的 zOffset, 保持与等值线同一高度

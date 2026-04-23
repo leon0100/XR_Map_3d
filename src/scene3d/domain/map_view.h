@@ -20,8 +20,7 @@ public:
     class MapViewRenderImplementation : public SceneObject::RenderImplementation
     {
     public:
-        struct InitTask
-        {
+        struct InitTask {
             map::TileIndex idx;
             QImage img;
         };
@@ -31,10 +30,15 @@ public:
             QImage img;
         };
 
+        struct DeleteTask {
+            map::TileIndex idx;
+        };
+
+        MapViewRenderImplementation(MapView* mapView);
         MapViewRenderImplementation();
-        virtual void render(QOpenGLFunctions* ctx,
-                            const QMatrix4x4& model, const QMatrix4x4& view, const QMatrix4x4& projection,
-                            const QMap <QString, std::shared_ptr <QOpenGLShaderProgram>>& shaderProgramMap) const override final;
+        virtual ~MapViewRenderImplementation() override;
+        virtual void render(QOpenGLFunctions* ctx, const QMatrix4x4& model, const QMatrix4x4& view, const QMatrix4x4& projection,
+                    const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const override final;
 
         void copyCpuSideFrom(const MapViewRenderImplementation& s); // copy cpu data
 
@@ -55,6 +59,8 @@ public:
 
         MapSourceType currentMapType_;
         LLARef viewLlaRef_;
+
+        MapView* mapView_;
 
     };
 
@@ -80,6 +86,7 @@ public slots:
     void onTileImageUpdated(const map::TileIndex& tileIndx, const QImage& image);
     void onTileVerticesUpdated(const map::TileIndex& tileIndx, const QVector<QVector3D>& vertices);
     void onClearAppendTasks();
+
 
 signals:
     void sendTextureId(const map::TileIndex& tileIndx, GLuint textureId);

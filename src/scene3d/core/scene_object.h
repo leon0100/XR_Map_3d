@@ -18,6 +18,7 @@
 #define RENDER_IMPL(Class) dynamic_cast<Class##RenderImplementation*>(m_renderImpl)
 
 class GraphicsScene3dView;
+class RenderImplementation;
 class SceneObject : public QObject, public std::enable_shared_from_this<SceneObject>
 {
     Q_OBJECT
@@ -27,6 +28,13 @@ class SceneObject : public QObject, public std::enable_shared_from_this<SceneObj
     Q_PROPERTY(bool                      visible  READ isVisible  WRITE setVisible)
     Q_PROPERTY(QColor                    color    READ color                        CONSTANT)
     Q_PROPERTY(qreal                     width    READ width                        CONSTANT)
+
+
+public:
+    RenderImplementation* renderImplementation() const;
+
+
+
 
 public:
     class RenderImplementation
