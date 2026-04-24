@@ -28,7 +28,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     m_coordAxes(std::make_shared<CoordinateAxes>()),
     m_planeGrid(std::make_shared<PlaneGrid>()),
     navigationArrow_(std::make_shared<NavigationArrow>()),
-
     usblView_(std::make_shared<UsblView>()),
     wasMoved_(false),
     wasMovedMouseButton_(Qt::MouseButton::NoButton),
@@ -1572,10 +1571,10 @@ void GraphicsScene3dView::InFboRenderer::render()
 
 }
 
-void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject * fbo)
+void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fbo)
 {
-    //仅在 synchronize()中，将 Item 的属性 复制 到 Renderer 的成员变量中。
-    auto view = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
+    //仅在 synchronize()中，将 Item 的属性复制到 Renderer 的成员变量中
+    GraphicsScene3dView* view = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
     if (!view) {
         return;
     }
@@ -1811,7 +1810,7 @@ void GraphicsScene3dView::InFboRenderer::processImageTexture(GraphicsScene3dView
 
 void GraphicsScene3dView::InFboRenderer::processSurfaceTexture(GraphicsScene3dView *viewPtr) const
 {
-    // init/reinit
+    // init / reinit
     auto surfacePtr = viewPtr->getSurfaceViewPtr();
     auto task = surfacePtr->takeSurfaceColorTableToAppend();
 

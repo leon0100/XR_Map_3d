@@ -42,6 +42,8 @@ public:
 
         void copyCpuSideFrom(const MapViewRenderImplementation& s); // copy cpu data
 
+        bool isPointInPolygon(const QVector3D& point, const QVector<QVector3D>& polygon) const;
+
     private:
         friend class GraphicsScene3dView;
         friend class MapView;
@@ -59,9 +61,7 @@ public:
 
         MapSourceType currentMapType_;
         LLARef viewLlaRef_;
-
         MapView* mapView_;
-
     };
 
     /*methods*/

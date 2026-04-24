@@ -1,11 +1,7 @@
 #include "map_view.h"
 #include <QObject>
 
-// #include "surface_view.h"
 #include "scene3d_view.h"
-
-// const double a = 6378245.0;
-// const double ee = 0.006693421622965943;
 
 
 static inline bool toTightRGBA8888(const QImage& in, QByteArray& out, int& w, int& h)
@@ -152,7 +148,7 @@ void MapView::onTileAppend(const map::Tile &tile)
     r->tilesHash_.emplace(tileIndx, tile);
     appendTasks_[tileIndx] = tile.getImage();
     tileImages_[tileIndx]  = tile.getImage();
-    Q_EMIT changed();
+    Q_EMIT changed();  
 }
 
 void MapView::onTileDelete(const map::TileIndex& tileIndx)
@@ -202,11 +198,11 @@ void MapView::onClearAppendTasks()
 }
 
 
-// MapViewRenderImplementation
 // MapView::MapViewRenderImplementation::MapViewRenderImplementation()
 // {}
 MapView::MapViewRenderImplementation::MapViewRenderImplementation(MapView* mapView) : mapView_(mapView)
-{}
+{
+}
 
 MapView::MapViewRenderImplementation::MapViewRenderImplementation() : mapView_(nullptr)
 {}
@@ -219,6 +215,7 @@ void MapView::MapViewRenderImplementation::copyCpuSideFrom(const MapView::MapVie
     m_isVisible     = s.m_isVisible;
     currentMapType_ = s.currentMapType_;
     viewLlaRef_     = s.viewLlaRef_;
+    mapView_        = s.mapView_;
 
     for (const auto& [idx, srcTile] : s.tilesHash_) { // update verts, not textId
         auto it = tilesHash_.find(idx);
@@ -231,6 +228,20 @@ void MapView::MapViewRenderImplementation::copyCpuSideFrom(const MapView::MapVie
             it->second.setVertices(srcTile.getVerticesRef());
         }
     }
+}
+
+// 使用射线法判断点是否在多边形内
+bool MapView::MapViewRenderImplementation::isPointInPolygon(const QVector3D& point, const QVector<QVector3D>& polygon) const
+{
+    bool inside = false;
+    int n = polygon.size();
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+        if (((polygon[i].y() > point.y()) != (polygon[j].y() > point.y())) &&
+            (point.x() < (polygon[j].x() - polygon[i].x()) * (point.y() - polygon[i].y()) / (polygon[j].y() - polygon[i].y()) + polygon[i].x())) {
+            inside = !inside;
+        }
+    }
+    return inside;
 }
 
 void MapView::MapViewRenderImplementation::processPendingTextureTasks(QOpenGLFunctions *gl) const
@@ -356,9 +367,115 @@ void MapView::MapViewRenderImplementation::ensureQuadBuffers(QOpenGLFunctions *g
     }
 }
 
+// void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
+//                         const QMatrix4x4 &model, const QMatrix4x4 &view,  const QMatrix4x4 &projection,
+//                         const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
+// {
+//     if (!m_isVisible || !ctx) {
+//         return;
+//     }
+
+//     processPendingTextureTasks(ctx);
+
+//     if (!tilesHash_.empty()) {
+//         auto shaderProgram = shaderProgramMap.value("image", nullptr);
+//         if (!shaderProgram) {
+//             qWarning() << "Shader program 'image' not found!";
+//             return;
+//         }
+
+//         ensureQuadBuffers(ctx);
+
+//         shaderProgram->bind();
+//         shaderProgram->setUniformValue("mvp", projection * view * model);
+
+//         const int posLoc = shaderProgram->attributeLocation("position");
+//         const int texLoc = shaderProgram->attributeLocation("texCoord");
+//         if (posLoc < 0 || texLoc < 0) {
+//             shaderProgram->release();
+//             return;
+//         }
+
+//         ctx->glBindBuffer(GL_ARRAY_BUFFER, vboUV_);
+//         ctx->glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(0));
+//         ctx->glEnableVertexAttribArray(texLoc);
+
+
+
+//         // 获取多边形轮廓
+//         QVector<QVector3D> polygonOutline;
+//         bool hasPolygon = false;
+
+//         if (mapView_) {
+//             auto graphicsScene3dView = qobject_cast<GraphicsScene3dView*>(mapView_->parent());
+//             if (graphicsScene3dView) {
+//                 auto dataset = graphicsScene3dView->dataset();
+//                 if (dataset) {
+//                     const QVector<North_East_Down>& polygonOutlineNed = dataset->getPolygonOutlineNED();
+//                     for(const auto& ned : polygonOutlineNed) {
+//                         polygonOutline.append(QVector3D(ned.n, ned.e, 0.0f));
+//                     }
+//                     hasPolygon = !polygonOutline.isEmpty();
+//                 }
+//             }
+//         }
+
+//         for (auto& [tileIndx, tile] : tilesHash_) {
+//             // 检查瓦片是否在多边形轮廓内
+//             if (hasPolygon) {
+//                 const auto& verts = tile.getVerticesRef();
+//                 if (verts.size() >= 4) {
+//                     // 检查瓦片的中心点是否在多边形轮廓内
+//                     QVector3D center = (verts[0] + verts[1] + verts[2] + verts[3]) / 4.0f;
+//                     if (isPointInPolygon(center, polygonOutline)) {
+//                         // 瓦片在多边形轮廓内，不渲染
+//                         continue;
+//                     }
+//                 }
+//             }
+
+//             const GLuint tex = tile.getTextureId();
+//             if (!tex) {
+//                 continue;
+//             }
+
+//             const auto& verts = tile.getVerticesRef();
+//             if (verts.size() < 4) {
+//                 continue;
+//             }
+
+//             GLfloat pos[12] = {
+//                 verts[0].x(), verts[0].y(), verts[0].z(),
+//                 verts[1].x(), verts[1].y(), verts[1].z(),
+//                 verts[2].x(), verts[2].y(), verts[2].z(),
+//                 verts[3].x(), verts[3].y(), verts[3].z()
+//             };
+
+//             ctx->glBindBuffer(GL_ARRAY_BUFFER, vboPos_);
+//             ctx->glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STREAM_DRAW);
+//             ctx->glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(0));
+//             ctx->glEnableVertexAttribArray(posLoc);
+
+//             ctx->glActiveTexture(GL_TEXTURE0);
+//             ctx->glBindTexture(GL_TEXTURE_2D, tex);
+//             shaderProgram->setUniformValue("imageTexture", 0);
+
+//             ctx->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+//             ctx->glDisableVertexAttribArray(posLoc);
+//         }
+
+//         ctx->glDisableVertexAttribArray(texLoc);
+//         ctx->glBindBuffer(GL_ARRAY_BUFFER, 0);
+//         shaderProgram->release();
+//     }
+// }
+
+
+
 void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
-                        const QMatrix4x4 &model, const QMatrix4x4 &view,  const QMatrix4x4 &projection,
-                        const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
+        const QMatrix4x4 &model, const QMatrix4x4 &view,  const QMatrix4x4 &projection,
+        const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
 {
     if (!m_isVisible || !ctx) {
         return;
@@ -375,8 +492,76 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
 
         ensureQuadBuffers(ctx);
 
-        shaderProgram->bind();
+        // 获取多边形轮廓
+        QVector<QVector3D> polygonOutline;
+        bool hasPolygon = false;
 
+        if (mapView_) {
+            auto graphicsScene3dView = qobject_cast<GraphicsScene3dView*>(mapView_->parent());
+            if (graphicsScene3dView) {
+                auto dataset = graphicsScene3dView->dataset();
+                if (dataset) {
+                    const QVector<North_East_Down>& polygonOutlineNed = dataset->getPolygonOutlineNED();
+                    for(const auto& ned : polygonOutlineNed) {
+                        polygonOutline.append(QVector3D(ned.n, ned.e, 0.0f));
+                    }
+                    hasPolygon = !polygonOutline.isEmpty();
+                }
+            }
+        }
+
+
+        // 启用模板测试
+        if (hasPolygon) {
+            GLint depthTestEnabled, blendEnabled;
+            ctx->glGetIntegerv(GL_DEPTH_TEST, &depthTestEnabled);
+            ctx->glGetIntegerv(GL_BLEND, &blendEnabled);
+
+            // 禁用深度测试和混合
+            ctx->glDisable(GL_DEPTH_TEST);
+            ctx->glDisable(GL_BLEND);
+
+            // 启用模板测试  镂空模版
+            ctx->glEnable(GL_STENCIL_TEST);
+            ctx->glClearStencil(0);
+            ctx->glClear(GL_STENCIL_BUFFER_BIT);
+            ctx->glStencilFunc(GL_ALWAYS, 1, 0xFF);
+            ctx->glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+
+            // 绘制多边形轮廓到模板缓冲区
+            auto staticShaderProgram = shaderProgramMap.value("static", nullptr);
+            if (staticShaderProgram) {
+                staticShaderProgram->bind();
+                staticShaderProgram->setUniformValue("mvp", projection * view * model);
+                staticShaderProgram->setUniformValue("color", QVector3D(0, 0, 0));
+
+                const int posLoc = staticShaderProgram->attributeLocation("position");
+                if (posLoc >= 0) {
+                    // 创建多边形顶点缓冲区
+                    std::vector<GLfloat> polygonVerts(polygonOutline.size() * 3);
+                    for (int i = 0; i < polygonOutline.size(); ++i) {
+                        polygonVerts[i * 3]     = polygonOutline[i].x();
+                        polygonVerts[i * 3 + 1] = polygonOutline[i].y();
+                        polygonVerts[i * 3 + 2] = polygonOutline[i].z();
+                    }
+
+                    GLuint polygonVbo;
+                    ctx->glGenBuffers(1, &polygonVbo);
+                    ctx->glBindBuffer(GL_ARRAY_BUFFER, polygonVbo);
+                    ctx->glBufferData(GL_ARRAY_BUFFER, polygonVerts.size() * sizeof(GLfloat), polygonVerts.data(), GL_STATIC_DRAW);
+                    ctx->glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(0));
+                    ctx->glEnableVertexAttribArray(posLoc);
+                }
+                staticShaderProgram->release();
+            }
+
+            // 设置模板测试条件：只渲染模板值为0的像素（即多边形外的区域）
+            ctx->glStencilFunc(GL_EQUAL, 0, 0xFF);
+            ctx->glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+        }
+
+
+        shaderProgram->bind();
         shaderProgram->setUniformValue("mvp", projection * view * model);
 
         const int posLoc = shaderProgram->attributeLocation("position");
@@ -390,44 +575,7 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
         ctx->glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<const void*>(0));
         ctx->glEnableVertexAttribArray(texLoc);
 
-
-
-        // 获取高度场边界
-        QRectF surfaceBounds;
-        bool hasSurface = false;
-
-        if (mapView_) {
-            auto graphicsScene3dView = qobject_cast<GraphicsScene3dView*>(mapView_->parent());
-            if (graphicsScene3dView) {
-                auto surfaceView = graphicsScene3dView->getSurfaceViewPtr();
-                if (surfaceView) {
-                    // 获取 SurfaceView 的渲染实现
-                    surfaceBounds = surfaceView->getSurfaceBounds();
-                     hasSurface = !surfaceBounds.isEmpty();
-                }
-            }
-        }
         for (auto& [tileIndx, tile] : tilesHash_) {
-            // 检查瓦片是否与高度场重叠
-            if (hasSurface) {
-                const auto& verts = tile.getVerticesRef();
-                if (verts.size() >= 4) {
-                    // 计算瓦片的边界
-                    float tileMinX = std::min({verts[0].x(), verts[1].x(), verts[2].x(), verts[3].x()});
-                    float tileMaxX = std::max({verts[0].x(), verts[1].x(), verts[2].x(), verts[3].x()});
-                    float tileMinY = std::min({verts[0].y(), verts[1].y(), verts[2].y(), verts[3].y()});
-                    float tileMaxY = std::max({verts[0].y(), verts[1].y(), verts[2].y(), verts[3].y()});
-
-                    // 检查瓦片边界与高度场边界是否重叠
-                    QRectF tileBounds(tileMinX, tileMinY, tileMaxX - tileMinX, tileMaxY - tileMinY);
-                    if (tileBounds.intersects(surfaceBounds)) {
-                        qDebug() << "tileBounds.intersects(surfaceBounds).......";
-                        // 瓦片与高度场重叠，不渲染
-                        continue;
-                    }
-                }
-            }
-
             const GLuint tex = tile.getTextureId();
             if (!tex) {
                 continue;
@@ -462,5 +610,10 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
         ctx->glDisableVertexAttribArray(texLoc);
         ctx->glBindBuffer(GL_ARRAY_BUFFER, 0);
         shaderProgram->release();
+
+        // 禁用模板测试
+        if (hasPolygon) {
+            ctx->glDisable(GL_STENCIL_TEST);
+        }
     }
 }

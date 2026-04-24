@@ -30,11 +30,6 @@ class SceneObject : public QObject, public std::enable_shared_from_this<SceneObj
     Q_PROPERTY(qreal                     width    READ width                        CONSTANT)
 
 
-public:
-    RenderImplementation* renderImplementation() const;
-
-
-
 
 public:
     class RenderImplementation

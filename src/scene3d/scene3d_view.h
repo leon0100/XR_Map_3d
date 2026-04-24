@@ -152,7 +152,7 @@ public:
         /*
          * 渲染将在专用线程上进行，因此需要避免在渲染线程和GUI线程之间共享变量，使用synchronize()进行通信。
          *它是 QQuickFramebufferObject(在GUI线程)向 QQuickFramebufferObject::Renderer(在渲染线程)传递状态和数据的唯一安全场所
-         *QQuickFramebufferObject::update() -----> 触发synchronize（） ------> 然后触发render()
+         *QQuickFramebufferObject::update() -----> 触发synchronize() ------> 然后触发render()
         */
         virtual void synchronize(QQuickFramebufferObject * fbo) override;
 
