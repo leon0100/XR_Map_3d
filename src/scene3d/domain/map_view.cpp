@@ -513,10 +513,6 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
 
         // 启用模板测试
         if (hasPolygon) {
-            GLint depthTestEnabled, blendEnabled;
-            ctx->glGetIntegerv(GL_DEPTH_TEST, &depthTestEnabled);
-            ctx->glGetIntegerv(GL_BLEND, &blendEnabled);
-
             // 禁用深度测试和混合
             ctx->glDisable(GL_DEPTH_TEST);
             ctx->glDisable(GL_BLEND);
@@ -532,8 +528,8 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
             auto staticShaderProgram = shaderProgramMap.value("static", nullptr);
             if (staticShaderProgram) {
                 staticShaderProgram->bind();
-                staticShaderProgram->setUniformValue("mvp", projection * view * model);
-                staticShaderProgram->setUniformValue("color", QVector3D(0, 0, 0));
+                // staticShaderProgram->setUniformValue("matrix", projection * view * model);
+                // staticShaderProgram->setUniformValue("color", QVector3D(0, 0, 0));
 
                 const int posLoc = staticShaderProgram->attributeLocation("position");
                 if (posLoc >= 0) {
