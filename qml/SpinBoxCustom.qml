@@ -3,6 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Templates 2.15 as T
 import QtQuick.Layouts 1.15
 
+
 T.SpinBox {
     id: control
 
@@ -15,11 +16,11 @@ T.SpinBox {
     from: 20
     to: 30000
     editable: true
-    font.pixelSize: 16
+    font.pixelSize: theme.iconSize
     padding: 2
 
-    implicitHeight: theme.menuWidth * 0.65
-    implicitWidth:  implicitHeight * 3
+    implicitHeight: theme.menuWidth * 0.5
+    implicitWidth:  implicitHeight * 2
 
     valueFromText: function(text, locale) {
         return Number.fromLocaleString(locale, text);
@@ -35,7 +36,7 @@ T.SpinBox {
         anchors.bottom: parent.bottom
 
         text: control.textFromValue(control.value, control.locale) + "(m)"
-        font.pixelSize: theme.iconSize
+        font.pixelSize: theme.iconSize * 0.85
         color: "black"
         selectedTextColor: theme.textColor
         horizontalAlignment: Qt.AlignHCenter
@@ -59,8 +60,8 @@ T.SpinBox {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        width: control.spinner ? (theme.menuWidth * 0.6) : 0
-        implicitWidth: theme.menuWidth * 0.6
+        width: control.spinner ? (theme.menuWidth * 0.5) : 0
+        implicitWidth: theme.menuWidth * 0.5
         color: control.up.pressed ? "#d0d0d0" : "#eee9e9"
 
         Connections {
@@ -89,8 +90,8 @@ T.SpinBox {
         anchors.left: parent.left
         anchors.top:  parent.top
         anchors.bottom: parent.bottom
-        width: control.spinner ? (theme.menuWidth * 0.6) : 0
-        implicitWidth: theme.menuWidth * 0.6
+        width: control.spinner ? (theme.menuWidth * 0.5) : 0
+        implicitWidth: theme.menuWidth * 0.5
         color: control.down.pressed ? "#d0d0d0" : "#eee9e9"
 
         Connections {

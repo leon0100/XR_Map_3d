@@ -94,6 +94,24 @@ void IsobathsViewControlMenuController::onIsobathsVisibilityCheckBoxCheckedChang
     }
 }
 
+void IsobathsViewControlMenuController::onOutlineVisibleChanged(bool visible)
+{
+    if (graphicsSceneViewPtr_) {
+        // graphicsSceneViewPtr_->getSurfaceViewPtr()->setIVisible(visible);
+        graphicsSceneViewPtr_->polygonOutline()->setVisible(visible);
+
+        // if (visibility_) {
+        //     if (dataProcessorPtr_) {
+        //         if (visible) {
+        //             // QMetaObject::invokeMethod(dataProcessorPtr_, "clearProcessing", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kSurface));
+        //             // QMetaObject::invokeMethod(dataProcessorPtr_, "clearProcessing", Qt::QueuedConnection, Q_ARG(DataProcessorType, DataProcessorType::kIsobaths));
+        //             // QMetaObject::invokeMethod(dataProcessorPtr_, "onIsobathsUpdated", Qt::QueuedConnection);
+        //         }
+        //     }
+        // }
+    }
+}
+
 void IsobathsViewControlMenuController::onUpdateIsobathsButtonClicked()
 {
     //if (graphicsSceneViewPtr_) {

@@ -7,6 +7,7 @@ import Qt.labs.settings 1.1
 
 import AppXr 1.0
 
+
 //左侧的工具栏
 Item  {
     id: toolbarRoot
@@ -159,8 +160,8 @@ Item  {
                 borderColor: theme.controlBackColor
                 checkedBorderColor: theme.controlBorderColor
                 checkable: false
-                implicitHeight: theme.menuWidth
                 implicitWidth:  theme.menuWidth
+                implicitHeight: theme.menuWidth
 
                 property bool settingsPressTriggered: false
 

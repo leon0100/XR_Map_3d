@@ -528,9 +528,6 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
             auto staticShaderProgram = shaderProgramMap.value("static", nullptr);
             if (staticShaderProgram) {
                 staticShaderProgram->bind();
-                // staticShaderProgram->setUniformValue("matrix", projection * view * model);
-                // staticShaderProgram->setUniformValue("color", QVector3D(0, 0, 0));
-
                 const int posLoc = staticShaderProgram->attributeLocation("position");
                 if (posLoc >= 0) {
                     // 创建多边形顶点缓冲区
@@ -539,7 +536,7 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
                         polygonVerts[i * 3]     = polygonOutline[i].x();
                         polygonVerts[i * 3 + 1] = polygonOutline[i].y();
                         polygonVerts[i * 3 + 2] = polygonOutline[i].z();
-                    }
+                    }               
 
                     GLuint polygonVbo;
                     ctx->glGenBuffers(1, &polygonVbo);

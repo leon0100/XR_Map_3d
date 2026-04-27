@@ -70,6 +70,7 @@ ApplicationWindow  {
 
     }
 
+
     CollapseRectangle {
         id: collapseBar
         anchors.top: expandSate ? headerContainer.bottom : parent.top
@@ -102,6 +103,13 @@ ApplicationWindow  {
         id: mapTileLoad
     }
 
+    IsobathsSettings {
+        id: isobathsSettings
+        visible: true
+        x: Screen.width - isobathsSettings.width
+        y: bleLivedataScaning.height - 20
+        targetPlot: toolBarXR.targetPlot
+    }
 
     Connections {
         target: mapTileLoad
@@ -110,8 +118,6 @@ ApplicationWindow  {
             menuToolBar.receiveMapCheck(value)
         }
     }
-
-
 
 
 
@@ -795,7 +801,7 @@ ApplicationWindow  {
                 //     }
                 // }
 
-                Scene3DToolbar{
+                Scene3DToolbar {
                     id: scene3DToolbar
                     y: renderer.height - height * 2
                     Keys.forwardTo:  [mousearea3D]

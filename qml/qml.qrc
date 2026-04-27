@@ -97,6 +97,7 @@
         <file>Bluetooth/SerialPort.qml</file>
         <file>Bluetooth/qmldir</file>
         <file>Bluetooth/loading.qml</file>
+	<file>Bluetooth/IsobathsSettings.qml</file>
         <file>CollapseRectangle.qml</file>
         <file>QmlCommon/KDialogOK.qml</file>
         <file>QmlCommon/KDialogYesNo.qml</file>
