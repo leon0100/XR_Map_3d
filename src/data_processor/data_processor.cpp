@@ -78,6 +78,11 @@ void DataProcessor::setDatasetPtr(Dataset *datasetPtr)
     QMetaObject::invokeMethod(worker_, "setDatasetPtr", Qt::QueuedConnection, Q_ARG(Dataset*, datasetPtr_));
 }
 
+void DataProcessor::setAutoBounadry(QVector<QVector3D>& autoBoundary)
+{
+    datasetPtr_->setAutoBounadry(autoBoundary);
+}
+
 void DataProcessor::setBottomTrackPtr(BottomTrack *bottomTrackPtr)
 {
     // qDebug() << "DataProcessor::setBottomTrackPtr............";
@@ -565,6 +570,7 @@ void DataProcessor::postSurfaceTiles(const TileMap& tiles, bool useTextures)
 {
     //qDebug() << "   DataProcessor::postSurfaceTiles" << tiles.size();
     emit sendSurfaceTiles(tiles, useTextures);
+
 }
 
 void DataProcessor::postMinZ(float val)

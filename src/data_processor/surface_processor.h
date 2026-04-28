@@ -38,6 +38,9 @@ public:
     int getExtraWidth() const;
     QVector<IsobathUtils::ColorInterval> getColorIntervals();
 
+    // 使用 Alpha Shape 算法从三角网提取边界轮廓
+    QVector<QVector3D> extractAlphaShapeBoundary(double alpha = 0.0);
+
 
 private:
     void writeTriangleToMesh(const QVector3D& A, const QVector3D& B, const QVector3D& C, QSet<SurfaceTile*>& updatedTiles);

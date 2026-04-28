@@ -278,3 +278,14 @@ float IsobathsViewControlMenuController::verticalScale() const
     }
     return graphicsSceneViewPtr_->verticalScale();
 }
+
+
+void IsobathsViewControlMenuController::autoDrawTrackBoundary()
+{
+    if (!graphicsSceneViewPtr_) {
+        return;
+    }
+    qDebug() << "olMenuController::autoDrawTrackBoundary().....";
+    auto polygon = graphicsSceneViewPtr_->polygonOutline();
+    polygon->autoGenerateFromAlphaShape();
+}

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <QDebug>
 #include "isobaths_processor.h"
+#include "scene3d/domain/boundary_detector.h"
 
 SurfaceProcessor::SurfaceProcessor(DataProcessor* parent) :
     dataProcessor_(parent),
@@ -219,6 +220,8 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         res.insert((*it)->getUuid(), (*(*it)));
     }
 
+    QVector<QVector3D> boundary = extractAlphaShapeBoundary();
+    dataProcessor_->setAutoBounadry(boundary); //获取自动边界
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
 }
 
@@ -667,4 +670,51 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
             vertices[i].setZ(smoothedZ[i]);
         }
     }
+}
+
+
+QVector<QVector3D> SurfaceProcessor::extractAlphaShapeBoundary(double alpha)
+{
+    QVector<QVector3D> boundaryPoints;
+
+    // 获取三角网数据
+    const auto& triangles = delaunayProc_.getTriangles();
+    if (triangles.empty()) {
+        return boundaryPoints;
+    }
+
+    // 将 delaunay 三角形转换为 BoundaryDetector 使用的 Triangle 格式
+    std::vector<Triangle<double>> triangleVector;
+    const auto& points = delaunayProc_.getPoints();
+
+    for (const auto& t : triangles) {
+        if (t.is_bad || t.a < 4 || t.b < 4 || t.c < 4) {
+            continue;
+        }
+
+        // 从 delaunay 获取点坐标
+        const auto& pa = points[t.a];
+        const auto& pb = points[t.b];
+        const auto& pc = points[t.c];
+
+        // 创建 Triangle 对象
+        Point3D<double> A(pa.x, pa.y, pa.z);
+        Point3D<double> B(pb.x, pb.y, pb.z);
+        Point3D<double> C(pc.x, pc.y, pc.z);
+
+        triangleVector.emplace_back(A, B, C);
+    }
+
+    // 使用 Alpha Shape 算法提取边界
+    auto boundaryEdges = BoundaryDetector<double>::alphaShapeBoundary(triangleVector, alpha);
+
+    // 将边界边转换为有序的多边形点序列
+    auto polygonPoints = BoundaryDetector<double>::edgesToPolygon(boundaryEdges);
+
+    // 转换为 QVector3D
+    for (const auto& pt : polygonPoints) {
+        boundaryPoints.append(QVector3D(pt.x(), pt.y(), pt.z()));
+    }
+
+    return boundaryPoints;
 }

@@ -236,6 +236,13 @@ public:
     QVector<North_East_Down>& getPolygonOutlineNED() {
         return polygonOutlineNED_;
     }
+    void setAutoBounadry(QVector<QVector3D>& autoBoundary) {
+        autoBoundary_ = autoBoundary;
+    }
+    QVector<QVector3D> getAutoBounadry() {
+        return autoBoundary_;
+    }
+
 
 public slots:
     friend class DataProcessor;
@@ -430,4 +437,5 @@ public:
         return vec_CSV_.at(index);
     }
     double minDepth_, maxDepth_;
+    QVector<QVector3D> autoBoundary_;
 };

@@ -16,37 +16,34 @@ Item {
     height: Math.max(content.height, toggleButton.height)
     z: 9999
 
-    property bool drawerOpen: false
-    property int isobathSize: theme.screenSize * 0.35
+    property bool drawerOpen:  false
+    property int  isobathSize: theme.screenSize * 0.35
     property int  layoutHeight:  isobathSize * 0.1
-    property CheckButton isobathsCheckButton
-    property var targetPlot: null
-    property int iconSize: isobathSize * 0.05
-    property bool outlineMode: false
+    property var  targetPlot:  null
+    property int  iconSize:    isobathSize * 0.05
+
 
     property bool isShowBoatTrack: true
-    property bool isShowOutline: true
-    property bool isShowIsobaths: true
-    property bool isShowBoat: true
+    property bool isShowOutline:   true
+    property bool isShowIsobaths:  true
+    property bool isShowBoat:      true
 
-
-    onVisibleChanged: if (visible) focus = true
-
-    onFocusChanged: {
-        if (Qt.platform.os === "android" && !focus) {
-            isobathsCheckButton.isobathsLongPressTriggered = false
-        }
+    Component.onCompleted: {
+       IsobathsViewControlMenuController.onProcessStateChanged(isShowIsobaths)
+       IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
     }
 
-    // ================= 侧边按钮 =================
+
+
+    // ---------------- 侧边按钮 -----------------
     Rectangle {
         id: toggleButton
-        width: 25
-        height: 200
+        width: iconSize * 1.5
+        height: iconSize * 7
         anchors.right: parent.right
-        anchors.top: parent.top
-        color: "#3498db"
-        opacity: 0.75
+        anchors.top:   parent.top
+        color: "#879fc6"
+        opacity: 0.7
 
         MouseArea {
             anchors.fill: parent
@@ -58,18 +55,17 @@ Item {
             text: qsTr("Isobaths Settings")
             rotation: 90
             color: "white"
-            font.pixelSize: 14
+            font.pixelSize: iconSize * 0.8
         }
     }
 
-    // ================= 抽屉 =================
+    // ----------------- 抽屉 ------------------
     Rectangle {
         id: content
         width: isobathSize
         height: isobathSize
         anchors.top: parent.top
         anchors.right: toggleButton.left
-
         anchors.rightMargin: drawerOpen ? 0 : -(width + toggleButton.width)
 
         color: "#f0f0f0"
@@ -78,11 +74,11 @@ Item {
         radius: 8
 
         // 拦截鼠标事件，防止点击穿透到地图
-       MouseArea {
-           anchors.fill: parent
-           enabled: drawerOpen
-           preventStealing: true
-       }
+        MouseArea {
+            anchors.fill: parent
+            enabled: drawerOpen
+            preventStealing: true
+        }
 
         Rectangle {
             anchors.fill: parent
@@ -97,7 +93,6 @@ Item {
             anchors.fill: parent
             anchors.margins: 16
             spacing: 12
-
 
             Rectangle {
                 id: boatTrack
@@ -248,7 +243,7 @@ Item {
                     }
 
                     Text {
-                        text: qsTr("Outline")
+                        text: qsTr("Track Boundary")
                         font.pixelSize: iconSize
                         color: "black"
                         anchors.verticalCenter: parent.verticalCenter
@@ -262,7 +257,8 @@ Item {
                     onClicked: {
                         flashAnim2.restart()
                         isShowOutline = !isShowOutline
-                        IsobathsViewControlMenuController.onOutlineVisibleChanged(isShowOutline)
+                        IsobathsViewControlMenuController.onOutlineVisibleChanged(true)
+                        IsobathsViewControlMenuController.autoDrawTrackBoundary()
                     }
 
                     onEntered: parent.color = "#d6e6ff"
@@ -354,7 +350,7 @@ Item {
                     }
 
                     onEntered: parent.color = "#d6e6ff"
-                    onExited: parent.color = "#f9f9fb"
+                    onExited:  parent.color = "#f9f9fb"
                 }
             }
 
@@ -422,7 +418,7 @@ Item {
                     }
 
                     Text {
-                        text: qsTr("Show Boat")
+                        text: qsTr("Boat")
                         font.pixelSize: iconSize
                         color: "black"
                         anchors.verticalCenter: parent.verticalCenter
@@ -531,16 +527,38 @@ Item {
                 }
 
 
+
                 SpinBoxCustom {
-                    id: edgeLimit
+                    id: edgeLimitSpinBox
                     implicitWidth: isobathSize * 0.4
-                    from: 10; to: 1000; stepSize: 5
+                    from: 10
+                    to: 1000
+                    stepSize: 5
                     value: 100
+                    editable: false
+                    Layout.rightMargin: 10
                     enabled: !renderSpanControl.isOn
 
-                    onValueChanged:
-                        IsobathsViewControlMenuController.onEdgeLimitChanged(value)
+                    property int decimals: 1
+
+                    onFocusChanged: isobathsSettings.focus = true
+
+                    Component.onCompleted: {
+                        IsobathsViewControlMenuController.onEdgeLimitChanged(edgeLimitSpinBox.value)
+                    }
+
+                    onValueChanged: {
+                        IsobathsViewControlMenuController.onEdgeLimitChanged(edgeLimitSpinBox.value)
+                    }
+
+                    Connections {
+                        target: IsobathsViewControlMenuController
+                        function onEdgeLimitChanged(val) {
+                            edgeLimitSpinBox.value = val
+                        }
+                    }
                 }
+
             }
 
 
@@ -555,15 +573,31 @@ Item {
                 SpinBoxCustom {
                     id: contourStep
                     implicitWidth: isobathSize * 0.4
-                    from: 1; to: 200; stepSize: 1
+                    from: 1
+                    to: 200
+                    stepSize: 1
                     value: 10
+                    editable: false
+                    Layout.rightMargin: 10
 
                     property real realValue: value / 10
 
-                    onRealValueChanged:
-                        IsobathsViewControlMenuController.onSetSurfaceLineStepSize(realValue)
+                    onFocusChanged:  isobathsSettings.focus = true
+
+                    Component.onCompleted: {
+                        IsobathsViewControlMenuController.onSetSurfaceLineStepSize(contourStep.realValue)
+                    }
+
+                    onRealValueChanged: {
+                        IsobathsViewControlMenuController.onSetSurfaceLineStepSize(contourStep.realValue)
+                    }
+
+                    Settings {
+                        property alias isobathsSurfaceLineStepSizeSpinBox: contourStep.value
+                    }
                 }
             }
+
 
             // ================= 分隔线 =================
             Rectangle {

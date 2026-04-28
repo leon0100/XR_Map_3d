@@ -36,6 +36,8 @@ public:
     Q_INVOKABLE void onVerticalScaleSliderValueChanged(float value);
     Q_INVOKABLE float verticalScale() const;
 
+    Q_INVOKABLE void autoDrawTrackBoundary();
+
 protected:
     virtual void findComponent() override;
 

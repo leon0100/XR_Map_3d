@@ -10,8 +10,8 @@ import Qt.labs.settings 1.1
 MenuFrame {
     id: isobathsSettings
     objectName: "isobathsSettings"
-    width:  isobathSize * 1.28
-    height: isobathSize * 0.6
+    width:  isobathSize
+    height: isobathSize * 0.1
     z: 9999
 
 
@@ -69,15 +69,14 @@ MenuFrame {
         // }
 
 
-        ColumnLayout {
+        RowLayout {
             spacing: 32
 
             Button {
                 id: outlineButton
                 text: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
                 font.pixelSize: iconSize
-                implicitWidth:  isobathSize * 0.5
-                // Layout.alignment: Qt.AlignCenter
+                implicitWidth:  isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.1
                 palette.button: "#b9c6db"
 
@@ -87,15 +86,13 @@ MenuFrame {
                         targetPlot.drawPolygonOutline(outlineMode)
                     }
                 }
-
             }
 
             Button {
                 id: updateBottomTrackButton
                 text: qsTr("Draw Isobaths")
                 font.pixelSize: iconSize
-                implicitWidth:  isobathSize * 0.5
-                // Layout.alignment: Qt.AlignCenter
+                implicitWidth:  isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.1
                 palette.button: "#b9c6db"
 
@@ -152,7 +149,7 @@ MenuFrame {
         //     }
         // }
 
-
+/*
         RowLayout {
             spacing: 10
 
@@ -565,5 +562,7 @@ MenuFrame {
         //         isobathsSettings.focus = true
         //     }
         // }
+
+        */
     }
 }

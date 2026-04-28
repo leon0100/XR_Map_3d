@@ -12,6 +12,15 @@ class PolygonOutline : public SceneObject
     QML_NAMED_ELEMENT(PolygonOutline)
 
 public:
+    explicit PolygonOutline(GraphicsScene3dView* view = nullptr, QObject* parent = nullptr);
+    virtual ~PolygonOutline();
+    virtual SceneObjectType type() const override final;
+
+    void setDatasetPtr(Dataset* datasetPtr);
+    void polygonAddPoint(double latitude, double longitude);
+    void modifyPolygonVertex(int index, LLA lla);
+    int getNearestVertexIndex(LLA lla) const;
+
     void setQmlRootObject(QObject* object);
 
     void setOutlineMode(bool outline);
@@ -21,6 +30,8 @@ public:
     bool getDraggingPoint();
 
     void selectVertex(int index, bool isDraggingPt);
+
+    void autoGenerateFromAlphaShape();
 
 public:
     class PolygonOutlineRenderImplementation : public SceneObject::RenderImplementation
@@ -44,15 +55,6 @@ public:
         bool isDraggingPoint_ = false;
 
     };
-
-    explicit PolygonOutline(GraphicsScene3dView* view = nullptr, QObject* parent = nullptr);
-    virtual ~PolygonOutline();
-    virtual SceneObjectType type() const override final;
-
-    void setDatasetPtr(Dataset* datasetPtr);
-    void polygonAddPoint(double latitude, double longitude);
-    void modifyPolygonVertex(int index, LLA lla);
-    int getNearestVertexIndex(LLA lla) const;
 
 
 public Q_SLOTS:

@@ -46,6 +46,8 @@ public:
     void setDatasetPtr(Dataset* datasetPtr);
     inline bool isCancelRequested() const noexcept { return cancelRequested_.load(); }
 
+    void setAutoBounadry(QVector<QVector3D>& autoBoundary);
+
 public slots:
     // this
     void setBottomTrackPtr(BottomTrack* bottomTrackPtr);
