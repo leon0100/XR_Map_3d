@@ -332,7 +332,7 @@ Item {
 
                     Text {
                         text: qsTr("Isobaths")
-                        font.pixelSize: 0
+                        font.pixelSize: iconSize
                         color: "black"
                         anchors.verticalCenter: parent.verticalCenter
                     }

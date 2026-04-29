@@ -692,10 +692,7 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
 
 
 
-
-
-
-
+/*--------------------自动绘制多边形--------------------------*/
 // // Edge（无向边，自动排序）
 struct Edge2 {
     int a, b;
