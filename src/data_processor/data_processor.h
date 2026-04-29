@@ -116,6 +116,7 @@ signals:
     void sendSurfaceTextureTask(const std::vector<uint8_t>& textureTask);
     void sendSurfaceColorIntervalsSize(int size);
     void sendSurfaceStepSize(float lineStepSize);
+    void sendPolygonOulineAuto();
 
     // IsobathsProcessor
     void sendIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);

@@ -9,6 +9,7 @@
 #include "isobaths_defs.h"
 #include "surface_tile.h"
 #include "bottom_track.h"
+#include "point_3d.h"
 
 
 class BottomTrack;
@@ -38,10 +39,6 @@ public:
     int getExtraWidth() const;
     QVector<IsobathUtils::ColorInterval> getColorIntervals();
 
-    // 使用 Alpha Shape 算法从三角网提取边界轮廓
-    QVector<QVector3D> extractAlphaShapeBoundary(double alpha = 0.0);
-
-
 private:
     void writeTriangleToMesh(const QVector3D& A, const QVector3D& B, const QVector3D& C, QSet<SurfaceTile*>& updatedTiles);
     QVector<QVector3D> generateExpandedPalette(int totalColors) const;
@@ -52,6 +49,13 @@ private:
     bool canceled() const noexcept;
     bool isPointInPolygon(const QVector3D& point) const;
 
+    //从三角网提取边界轮廓
+    static double circumradius(const QPointF& A, const QPointF& B, const QPointF& C);
+    static double polygonArea(const QPolygonF& poly);
+    double estimateAlpha(const std::vector<delaunay::Triangle>& triangles, const std::vector<delaunay::Point>& points);
+    static double cross(const Point3D<double>& o, const Point3D<double>& a, const Point3D<double>& b);
+    static std::vector<Point3D<double>> convexHull(std::vector<Point3D<double>> points);
+    QVector<QVector3D> extractAlphaShapeBoundary(double alpha = 0.0);
 
 private:
     DataProcessor* dataProcessor_;
@@ -77,6 +81,13 @@ private:
     int extraWidth_;
     bool originSet_;
     QSet<TileKey> visibleTileKeys_;
+
+
+    // 边界框成员变量
+    float minX_ = std::numeric_limits<float>::max();
+    float maxX_ = std::numeric_limits<float>::lowest();
+    float minY_ = std::numeric_limits<float>::max();
+    float maxY_ = std::numeric_limits<float>::lowest();
 
 
 

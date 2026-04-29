@@ -3,7 +3,6 @@
 #include <cmath>
 #include <QDebug>
 #include "isobaths_processor.h"
-#include "scene3d/domain/boundary_detector.h"
 
 SurfaceProcessor::SurfaceProcessor(DataProcessor* parent) :
     dataProcessor_(parent),
@@ -39,6 +38,10 @@ void SurfaceProcessor::clear()
     minZ_ = std::numeric_limits<float>::max();
     maxZ_ = std::numeric_limits<float>::lowest();
     originSet_ = false;
+    minX_ = std::numeric_limits<float>::max();
+    maxX_ = std::numeric_limits<float>::lowest();
+    minY_ = std::numeric_limits<float>::max();
+    maxY_ = std::numeric_limits<float>::lowest();
 }
 
 void SurfaceProcessor::setBottomTrackPtr(BottomTrack *bottomTrackPtr)
@@ -66,6 +69,20 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     if (bTrData.empty()) {
         return;
     }
+
+
+    // 添加边界框的四个顶点（顺时针方向）
+    QVector3D lastPt = bTrData.last();
+    minX_ = std::min(minX_, lastPt.x());
+    maxX_ = std::max(maxX_, lastPt.x());
+    minY_ = std::min(minY_, lastPt.y());
+    maxY_ = std::max(maxY_, lastPt.y());
+    QVector<QVector3D> boundary;
+    boundary.append(QVector3D(minY_, minX_, 0));
+    boundary.append(QVector3D(maxY_, minX_, 0));
+    boundary.append(QVector3D(maxY_, maxX_, 0));
+    boundary.append(QVector3D(minY_, maxX_, 0));
+    boundary.append(QVector3D(minY_, minX_, 0));
 
 
     //头一次都是初始化时的数据
@@ -220,7 +237,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         res.insert((*it)->getUuid(), (*(*it)));
     }
 
-    QVector<QVector3D> boundary = extractAlphaShapeBoundary();
+    // QVector<QVector3D> boundary = extractAlphaShapeBoundary();
     dataProcessor_->setAutoBounadry(boundary); //获取自动边界
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
 }
@@ -673,48 +690,281 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
 }
 
 
+
+
+
+
+
+
+// // Edge（无向边，自动排序）
+struct Edge2 {
+    int a, b;
+
+    Edge2(int p1, int p2) {
+        if (p1 < p2) { a = p1; b = p2; }
+        else { a = p2; b = p1; }
+    }
+
+    bool operator==(const Edge2& other) const {
+        return a == other.a && b == other.b;
+    }
+    // 添加 operator< 用于 QMap
+    bool operator<(const Edge2& other) const {
+        if (a != other.a) return a < other.a;
+        return b < other.b;
+    }
+};
+inline uint qHash(const Edge2& e, uint seed = 0) {
+    return qHash(e.a, seed) ^ qHash(e.b, seed);
+}
+
+// 外接圆半径计算
+double SurfaceProcessor::circumradius(const QPointF& A, const QPointF& B, const QPointF& C)
+{
+    double a = QLineF(B, C).length();
+    double b = QLineF(A, C).length();
+    double c = QLineF(A, B).length();
+
+    double s = (a + b + c) * 0.5;
+    double area = std::sqrt(std::max(s * (s - a) * (s - b) * (s - c), 0.0));
+
+    if (area < 1e-12) return 1e12;
+
+    return (a * b * c) / (4.0 * area);
+}
+
+// 多边形面积（判断方向）
+double SurfaceProcessor::polygonArea(const QPolygonF& poly)
+{
+    double area = 0;
+    for (int i = 0; i < poly.size(); ++i)
+    {
+        const QPointF& p1 = poly[i];
+        const QPointF& p2 = poly[(i + 1) % poly.size()];
+        area += (p1.x() * p2.y() - p2.x() * p1.y());
+    }
+    return area * 0.5;
+}
+
+
+// 自动估计 alpha 值
+double SurfaceProcessor::estimateAlpha(const std::vector<delaunay::Triangle>& triangles, const std::vector<delaunay::Point>& points)
+{
+    if (triangles.empty()) return 1.0;
+
+    double totalRadius = 0.0;
+    double maxRadius = 0.0;
+    int count = 0;
+
+    QVector<QPointF> qpoints;
+    qpoints.reserve(points.size());
+    for (const auto& pt : points) {
+        qpoints.append(QPointF(pt.x, pt.y));
+    }
+
+    for (const auto& t : triangles) {
+        if (t.is_bad) continue;
+        if (t.a >= points.size() || t.b >= points.size() || t.c >= points.size()) {
+            continue;
+        }
+
+        QPointF A = qpoints[t.a];
+        QPointF B = qpoints[t.b];
+        QPointF C = qpoints[t.c];
+
+        double r = circumradius(A, B, C);
+        totalRadius += r;
+        if (r > maxRadius) maxRadius = r;
+        count++;
+    }
+
+    if (count == 0) return 1.0;
+
+    double avgRadius = totalRadius / count;
+    return (avgRadius + maxRadius) / 2.0;
+}
+
+
+// 计算叉积 (o -> a) x (o -> b)
+double SurfaceProcessor::cross(const Point3D<double>& o, const Point3D<double>& a, const Point3D<double>& b)
+{
+    return (a.x() - o.x()) * (b.y() - o.y()) - (a.y() - o.y()) * (b.x() - o.x());
+}
+// 凸包算法：Andrew 单调链算法
+std::vector<Point3D<double>> SurfaceProcessor::convexHull(std::vector<Point3D<double>> points)
+{
+    // 1. 按 x 坐标排序，x 相同按 y 坐标排序
+    std::sort(points.begin(), points.end(), [](const Point3D<double>& a, const Point3D<double>& b) {
+        if (a.x() != b.x()) return a.x() < b.x();
+        return a.y() < b.y();
+    });
+
+    int n = points.size();
+
+    // 2. 构建下凸包
+    std::vector<Point3D<double>> lower;
+    for (int i = 0; i < n; i++) {
+        while (lower.size() >= 2 && cross(lower[lower.size()-2], lower.back(), points[i]) <= 0) {
+            lower.pop_back();
+        }
+        lower.push_back(points[i]);
+    }
+
+    // 3. 构建上凸包
+    std::vector<Point3D<double>> upper;
+    for (int i = n - 1; i >= 0; i--) {
+        while (upper.size() >= 2 && cross(upper[upper.size()-2], upper.back(), points[i]) <= 0) {
+            upper.pop_back();
+        }
+        upper.push_back(points[i]);
+    }
+
+    // 4. 合并上下凸包
+    lower.pop_back();
+    upper.pop_back();
+    lower.insert(lower.end(), upper.begin(), upper.end());
+
+    return lower;
+}
+
 QVector<QVector3D> SurfaceProcessor::extractAlphaShapeBoundary(double alpha)
 {
     QVector<QVector3D> boundaryPoints;
 
     // 获取三角网数据
     const auto& triangles = delaunayProc_.getTriangles();
-    if (triangles.empty()) {
+    const auto& points = delaunayProc_.getPoints();
+    if (triangles.empty() || points.empty()) {
         return boundaryPoints;
     }
 
-    // 将 delaunay 三角形转换为 BoundaryDetector 使用的 Triangle 格式
-    std::vector<Triangle<double>> triangleVector;
-    const auto& points = delaunayProc_.getPoints();
+    QVector<QPointF> qpoints;
+    qpoints.reserve(points.size());
+    for (const auto& pt : points) {
+        qpoints.append(QPointF(pt.y, pt.x));
+    }
 
-    for (const auto& t : triangles) {
-        if (t.is_bad || t.a < 4 || t.b < 4 || t.c < 4) {
+    // 如果没有指定 alpha，自动计算
+    double effectiveAlpha = alpha;
+    if (effectiveAlpha <= 0.0) {
+        effectiveAlpha = estimateAlpha(triangles, points);
+    }
+
+    QMap<Edge2, int> edgeCount;
+
+    // Alpha过滤
+    for (const auto& t : triangles)
+    {
+        if (t.is_bad) continue;
+
+        if (t.a >= points.size() || t.b >= points.size() || t.c >= points.size()) {
             continue;
         }
 
-        // 从 delaunay 获取点坐标
-        const auto& pa = points[t.a];
-        const auto& pb = points[t.b];
-        const auto& pc = points[t.c];
+        QPointF A = qpoints[t.a];
+        QPointF B = qpoints[t.b];
+        QPointF C = qpoints[t.c];
 
-        // 创建 Triangle 对象
-        Point3D<double> A(pa.x, pa.y, pa.z);
-        Point3D<double> B(pb.x, pb.y, pb.z);
-        Point3D<double> C(pc.x, pc.y, pc.z);
+        double r = circumradius(A, B, C);
 
-        triangleVector.emplace_back(A, B, C);
+        if (r > effectiveAlpha) continue;
+
+        Edge2 e1(t.a, t.b);
+        Edge2 e2(t.b, t.c);
+        Edge2 e3(t.c, t.a);
+
+        edgeCount[e1]++;
+        edgeCount[e2]++;
+        edgeCount[e3]++;
     }
 
-    // 使用 Alpha Shape 算法提取边界
-    auto boundaryEdges = BoundaryDetector<double>::alphaShapeBoundary(triangleVector, alpha);
+    // 取边界边（只出现1次）
+    QMultiMap<int, int> adj;
 
-    // 将边界边转换为有序的多边形点序列
-    auto polygonPoints = BoundaryDetector<double>::edgesToPolygon(boundaryEdges);
+    for (auto it = edgeCount.begin(); it != edgeCount.end(); ++it)
+    {
+        if (it.value() == 1)
+        {
+            adj.insert(it.key().a, it.key().b);
+            adj.insert(it.key().b, it.key().a);
+        }
+    }
 
-    // 转换为 QVector3D
-    for (const auto& pt : polygonPoints) {
-        boundaryPoints.append(QVector3D(pt.x(), pt.y(), pt.z()));
+    // 多轮廓提取
+    QSet<int> visited;
+    QVector<QPolygonF> result;
+
+    for (int start : adj.keys())
+    {
+        if (visited.contains(start)) continue;
+
+        QPolygonF poly;
+
+        int current = start;
+        int prev = -1;
+
+        while (true) {
+            poly << qpoints[current];
+            visited.insert(current);
+
+            auto neighbors = adj.values(current);
+
+            int next = -1;
+            for (int n : neighbors) {
+                if (n != prev) {
+                    next = n;
+                    break;
+                }
+            }
+
+            if (next == -1 || next == start)
+                break;
+
+            prev = current;
+            current = next;
+        }
+
+        if (poly.size() > 2)  result.push_back(poly);
+    }
+
+    // 统一方向（外环CCW，内环CW）
+    for (auto& poly : result)
+    {
+        if (polygonArea(poly) < 0) {
+            std::reverse(poly.begin(), poly.end());
+        }
+    }
+
+    // 提取最大的轮廓（假设是外环）
+    if (result.isEmpty()) {
+        // 回退到凸包
+        std::vector<Point3D<double>> allPoints;
+        allPoints.reserve(points.size());
+        for (const auto& pt : points) {
+            allPoints.emplace_back(pt.x, pt.y, pt.z);
+        }
+        auto polygonPoints = convexHull(allPoints);
+        for (const auto& pt : polygonPoints) {
+            boundaryPoints.append(QVector3D(pt.x(), pt.y(), pt.z()));
+        }
+    }
+    else {
+        // 选择最大的轮廓
+        QPolygonF maxPoly = result[0];
+        double maxArea = std::abs(polygonArea(maxPoly));
+        for (int i = 1; i < result.size(); ++i) {
+            double area = std::abs(polygonArea(result[i]));
+            if (area > maxArea) {
+                maxArea = area;
+                maxPoly = result[i];
+            }
+        }
+
+        for (const auto& pt : maxPoly) {
+            boundaryPoints.append(QVector3D(pt.x(), pt.y(), 0));
+        }
     }
 
     return boundaryPoints;
 }
+

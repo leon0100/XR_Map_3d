@@ -285,7 +285,7 @@ void IsobathsViewControlMenuController::autoDrawTrackBoundary()
     if (!graphicsSceneViewPtr_) {
         return;
     }
-    qDebug() << "olMenuController::autoDrawTrackBoundary().....";
+    qDebug() << "IsobathsViewControlMenuController::autoDrawTrackBoundary().....";
     auto polygon = graphicsSceneViewPtr_->polygonOutline();
     polygon->autoGenerateFromAlphaShape();
 }

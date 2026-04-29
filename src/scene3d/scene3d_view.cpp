@@ -88,9 +88,8 @@ GraphicsScene3dView::GraphicsScene3dView() :
     connect(&screetShot_, &ScreetShot::signalScreetGraphics, this, &GraphicsScene3dView::slotScreetGraphics, Qt::DirectConnection);
     // 连接信号，在GUI线程触发更新
     connect(this, &GraphicsScene3dView::requestRenderUpdate, this, [this]() {
-        qDebug() << "GraphicsScene3dView::requestRenderUpdate...........";
         QQuickFramebufferObject::update();          }, Qt::QueuedConnection);
-    updatePlaneGrid();
+    // updatePlaneGrid();
 
 #ifdef SCENE_TESTING
     initAutoDistTimer();
@@ -553,7 +552,7 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
         cameraWasMoved = true;
     }
 
-    updatePlaneGrid();
+    // updatePlaneGrid();
     QQuickFramebufferObject::update();
 
     if (cameraWasMoved) {
@@ -573,7 +572,7 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
         m_axesThumbnailCamera->rotate(prevCenter, currCenter, angleDelta , height());
     }
 
-    updatePlaneGrid();
+    // updatePlaneGrid();
     QQuickFramebufferObject::update();
 
     emit cameraIsMoved();
@@ -736,7 +735,7 @@ void GraphicsScene3dView::fitAllInView()
 
     m_camera->focusOnPosition(m_bounds.center());
 
-    updatePlaneGrid();
+    // updatePlaneGrid();
 
     QQuickFramebufferObject::update();
 
@@ -749,7 +748,7 @@ void GraphicsScene3dView::setIsometricView()
     m_axesThumbnailCamera->setIsometricView();
 
     fitAllInView();
-    updatePlaneGrid();
+    // updatePlaneGrid();
 
     QQuickFramebufferObject::update();
 
@@ -773,7 +772,7 @@ void GraphicsScene3dView::setMapView()
     m_axesThumbnailCamera->setMapView();
 
     fitAllInView();
-    updatePlaneGrid();
+    // updatePlaneGrid();
 
     QQuickFramebufferObject::update();
 
@@ -1034,14 +1033,13 @@ void GraphicsScene3dView::updateBounds()
                    .merge(isobathsView_->bounds())
                    .merge(m_bottomTrack->bounds())
                    .merge(polygonOutline_->bounds())
-                   .merge(boatTrack_->bounds())
                    .merge(m_polygonGroup->bounds())
                    .merge(m_pointGroup->bounds())
                    .merge(surfaceView_->bounds())
                    .merge(imageView_->bounds())
                    .merge(usblView_->bounds());
 
-    // updatePlaneGrid();
+    // updatePlaneGrid();    
 
     QQuickFramebufferObject::update();
 }

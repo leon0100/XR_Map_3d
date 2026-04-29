@@ -31,7 +31,7 @@ public:
 
     void selectVertex(int index, bool isDraggingPt);
 
-    void autoGenerateFromAlphaShape();
+
 
 public:
     class PolygonOutlineRenderImplementation : public SceneObject::RenderImplementation
@@ -59,6 +59,9 @@ public:
 
 public Q_SLOTS:
     virtual void clearData() override final;
+
+public slots:
+    void autoGenerateFromAlphaShape();
 
 
 protected:

@@ -570,6 +570,7 @@ void DataProcessor::postSurfaceTiles(const TileMap& tiles, bool useTextures)
 {
     //qDebug() << "   DataProcessor::postSurfaceTiles" << tiles.size();
     emit sendSurfaceTiles(tiles, useTextures);
+    emit sendPolygonOulineAuto();  //自动绘制多边形轮廓
 
 }
 

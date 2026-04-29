@@ -2079,6 +2079,7 @@ void Core::createScene3dConnections()
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceMaxZ,               scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMaxZ,                        connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceStepSize,           scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setSurfaceStep,                 connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceColorIntervalsSize, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setColorIntervalsSize,          connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendPolygonOulineAuto,         scene3dViewPtr_->polygonOutline().get(),        &PolygonOutline::autoGenerateFromAlphaShape,  connType);
     // IsobathsView
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLabels,            scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLabels,                     connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineSegments,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineSegments,               connType);
@@ -2086,7 +2087,7 @@ void Core::createScene3dConnections()
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineStepSize,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineStepSize,               connType);
     // Mosaic
     QObject::connect(dataProcessor_, &DataProcessor::sendMosaicColorTable,          scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMosaicColorTableTextureTask, connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTiles,               scene3dViewPtr_->getSurfaceViewPtr().get(),    &SurfaceView::setTiles,                       connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTiles,              scene3dViewPtr_->getSurfaceViewPtr().get(),    &SurfaceView::setTiles,                       connType);
     // clear render
     QObject::connect(dataProcessor_, &DataProcessor::bottomTrackProcessingCleared,  scene3dViewPtr_->bottomTrack().get(),           &BottomTrack::clearData,                      connType);
     QObject::connect(dataProcessor_, &DataProcessor::isobathsProcessingCleared,     scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::clear,                         connType);

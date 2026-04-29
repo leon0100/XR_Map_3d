@@ -142,100 +142,7 @@ public:
     }
 
 
-
-
-    // Alpha Shape 算法：从三角网中提取边界轮廓
-    // alpha: 阈值参数，较小的值会保留更多细节，较大的值会生成更平滑的轮廓
-    static std::vector<Edge<T>> alphaShapeBoundary(std::vector<Triangle<T>>& triangles, double alpha = 0.0)
-    {
-        std::vector<Edge<T>> allEdges;
-        std::unordered_map<Edge<T>, uint64_t> edgeCount;
-
-        // 如果没有指定 alpha，自动计算一个合理值
-        if (alpha <= 0.0) {
-            alpha = estimateAlpha(triangles);
-        }
-
-        // 遍历所有三角形，收集边界边候选
-        for (const auto& triangle : triangles) {
-            // 判断三角形是否属于 Alpha Shape（外接圆半径 <= alpha）
-            double circumRadius = triangle.circle().radius();
-            if (circumRadius <= alpha) {
-                auto edges = triangle.edges();
-                for (const auto& edge : edges) {
-                    allEdges.push_back(edge);
-                    edgeCount[edge]++;
-                }
-            }
-        }
-
-        // 提取边界边（只出现一次的边）
-        std::vector<Edge<T>> boundaryEdges;
-        for (const auto& pair : edgeCount) {
-            if (pair.second == 1) {
-                boundaryEdges.push_back(pair.first);
-            }
-        }
-
-        return boundaryEdges;
-    }
-
-    // 将边列表转换为有序的点序列（多边形轮廓）
-    static std::vector<Point3D<T>> edgesToPolygon(std::vector<Edge<T>>& edges)
-    {
-        std::vector<Point3D<T>> polygon;
-        if (edges.empty()) return polygon;
-
-        // 构建边的映射：起点 -> 终点
-        std::unordered_map<Point3D<T>, Point3D<T>, Point3DHash<T>> edgeMap;
-        std::unordered_set<Point3D<T>, Point3DHash<T>> allPoints;
-
-        for (const auto& edge : edges) {
-            edgeMap[edge.p1()] = edge.p2();
-            allPoints.insert(edge.p1());
-            allPoints.insert(edge.p2());
-        }
-
-        // 找到起点（入度为0的点）
-        Point3D<T> current = edges[0].p1();
-        Point3D<T> start = current;
-
-        // 遍历构建多边形
-        polygon.push_back(current);
-        size_t maxIterations = edges.size() + 1;
-        size_t iterations = 0;
-
-        while (iterations < maxIterations) {
-            auto it = edgeMap.find(current);
-            if (it == edgeMap.end()) break;
-
-            Point3D<T> next = it->second;
-            if (next == start && polygon.size() > 2) break;
-
-            polygon.push_back(next);
-            current = next;
-            iterations++;
-        }
-
-        return polygon;
-    }
-
-
 private:
-    // 自动估计 alpha 值（基于平均三角形外接圆半径）
-    static double estimateAlpha(const std::vector<Triangle<T>>& triangles)
-    {
-        if (triangles.empty()) return 1.0;
-
-        double totalRadius = 0.0;
-        for (const auto& triangle : triangles) {
-            totalRadius += triangle.circle().radius();
-        }
-
-        double avgRadius = totalRadius / triangles.size();
-        return avgRadius * 1.5;
-    }
-
     void detectBoundary(std::vector <Edge <T>>& edges)
     {
         mBoundary.clear();
@@ -257,16 +164,6 @@ private:
 
     std::vector <Edge <T>> mBoundary;
 
-    // Point3D 的哈希函数，用于 unordered_map
-    template <typename U>
-    struct Point3DHash {
-        size_t operator()(const Point3D<T>& p) const {
-            auto h1 = std::hash<T>{}(p.x());
-            auto h2 = std::hash<T>{}(p.y());
-            auto h3 = std::hash<T>{}(p.z());
-            return h1 ^ (h2 << 1) ^ (h3 << 2);
-        }
-    };
 };
 
 #endif // BOUNDARYDETECTOR_H

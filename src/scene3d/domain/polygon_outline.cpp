@@ -187,14 +187,14 @@ void PolygonOutline::selectVertex(int index, bool isDraggingPt)
 void PolygonOutline::autoGenerateFromAlphaShape()
 {
     if (!datasetPtr_) return;
-    auto boundary = datasetPtr_->getAutoBounadry();
-
+    datasetPtr_->resetPolygonOutline();
     clearData();
+
+    auto boundary = datasetPtr_->getAutoBounadry();
 
     qDebug() << "boundary size() .... " << boundary.size();
 
     for (const auto& pt : boundary) {
-        qDebug() << "pt..." << pt.x() << "  " << pt.y();
         QVector<QVector3D> prepData;
         North_East_Down posNed = North_East_Down(pt.y(), pt.x(), 0);
         prepData.push_back(QVector3D(posNed.n, posNed.e, 0));
@@ -204,7 +204,6 @@ void PolygonOutline::autoGenerateFromAlphaShape()
 
     Q_EMIT changed();
 }
-
 
 
 // RenderImplementation 实现
