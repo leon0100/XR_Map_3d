@@ -258,7 +258,7 @@ Item {
                         flashAnim2.restart()
                         isShowOutline = !isShowOutline
                         IsobathsViewControlMenuController.onOutlineVisibleChanged(true)
-                        IsobathsViewControlMenuController.autoDrawTrackBoundary()
+                        // IsobathsViewControlMenuController.autoDrawTrackBoundary()
                     }
 
                     onEntered: parent.color = "#d6e6ff"

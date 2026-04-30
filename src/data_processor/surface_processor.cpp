@@ -162,7 +162,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     float lastMinZ = minZ_;
     float lastMaxZ = maxZ_;
-    for (int triIdx : std::as_const(updsTrIndx)) { // 网格内三角形的追踪
+    for (int triIdx : std::as_const(updsTrIndx)) {  // 网格内三角形的追踪
         if (canceled()) {
             return;
         }
@@ -200,10 +200,12 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     propagateBorderHeights(changedTiles);
     const int stepPix  = surfaceMeshPtr_->getStepSizeHeightMatrix();
     const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
-    for (SurfaceTile* t : std::as_const(changedTiles)) {
-        smoothTileHeights(t, hvSide);   // 对高度场进行平滑处理，减少噪声
-        t->updateHeightIndices();
-        t->setIsUpdated(false);
+    for (SurfaceTile* tile : std::as_const(changedTiles)) {
+        smoothTileHeights(tile, hvSide);   // 对高度场进行平滑处理，减少噪声
+
+         // fillHeightFieldToPolygonOutline(tile, hvSide);
+        tile->updateHeightIndices();
+        tile->setIsUpdated(false);
     }
 
     if (beenManualChanged) {
@@ -238,7 +240,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     // QVector<QVector3D> boundary = extractAlphaShapeBoundary();
-    dataProcessor_->setAutoBounadry(boundary); //获取自动边界
+    // dataProcessor_->setAutoBounadry(boundary); //获取自动边界
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
 }
 
@@ -608,6 +610,10 @@ bool SurfaceProcessor::canceled() const noexcept
 
 bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
 {
+    if (!dataProcessor_ || !dataProcessor_->datasetPtr_) {
+        return true;
+    }
+
     // 使用射线法判断点是否在多边形内
     const QVector<North_East_Down>& polygonOutlineNed = dataProcessor_->datasetPtr_->getPolygonOutlineNED();
     if(polygonOutlineNed.isEmpty()) {
@@ -616,15 +622,224 @@ bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
     bool inside = false;
     int n = polygonOutlineNed.size();
     for(int i = 0, j = (n-1); i < n; j = i++) {
-        QVector3D vi = QVector3D(polygonOutlineNed.at(i).n, polygonOutlineNed.at(i).e, 0.0f);
-        QVector3D vj = QVector3D(polygonOutlineNed.at(j).n, polygonOutlineNed.at(j).e, 0.0f);
-        if (  ( (vi.y() > point.y()) != (vj.y() > point.y()) ) &&
-            (point.x() < (vj.x()-vi.x()) * (point.y()-vi.y()) / (vj.y()-vi.y())+vi.x()) ) {
+        const float xi = polygonOutlineNed.at(i).n;
+        const float yi = polygonOutlineNed.at(i).e;
+        const float xj = polygonOutlineNed.at(j).n;
+        const float yj = polygonOutlineNed.at(j).e;
+        const bool intersect = ((yi > point.y()) != (yj > point.y())) &&
+                            (point.x() < (xj - xi) * (point.y() - yi) / (yj - yi + 1e-12f) + xi);
+        if (intersect) {
             inside = !inside;
         }
     }
+
     return inside;
 }
+
+void SurfaceProcessor::fillHeightFieldToPolygonOutline(SurfaceTile* tile, int hvSide)
+{
+    if (!tile || !tile->getIsInited()) {
+        return;
+    }
+
+    if (!dataProcessor_ || !dataProcessor_->datasetPtr_) {
+        return;
+    }
+
+    const QVector<North_East_Down>& polygonOutlineNed = dataProcessor_->datasetPtr_->getPolygonOutlineNED();
+    if (polygonOutlineNed.size() < 3) {
+        return;
+    }
+
+    auto& vertices = tile->getHeightVerticesRef();
+    auto& marks    = tile->getHeightMarkVerticesRef();
+
+    if (vertices.isEmpty() || marks.isEmpty() || vertices.size() != marks.size() || hvSide <= 0) {
+        return;
+    }
+
+    QVector<float> originalZ(vertices.size());
+    QVector<float> filledZ(vertices.size());
+    for (int i = 0; i < vertices.size(); ++i) {
+        originalZ[i] = vertices[i].z();
+        filledZ[i] = vertices[i].z();
+    }
+
+    const auto inRange = [hvSide](int x, int y) -> bool {
+        return x >= 0 && x < hvSide && y >= 0 && y < hvSide;
+    };
+
+    const auto sampleZ = [&](int x, int y) -> float {
+        return originalZ[y * hvSide + x];
+    };
+
+    // 将多边形轮廓转换为 2D 点集
+    QVector<QVector2D> polygon2d;
+    polygon2d.reserve(polygonOutlineNed.size());
+    for (const auto& p : polygonOutlineNed) {
+        polygon2d.append(QVector2D(p.n, p.e));
+    }
+
+    // 点到线段距离
+    const auto pointToSegmentDistance = [](const QVector2D& p, const QVector2D& a, const QVector2D& b) -> float {
+        const QVector2D ab = b - a;
+        const float ab2 = QVector2D::dotProduct(ab, ab);
+        if (ab2 <= 1e-12f) {
+            return (p - a).length();
+        }
+
+        const float t = qBound(0.0f, QVector2D::dotProduct(p - a, ab) / ab2, 1.0f);
+        const QVector2D proj = a + t * ab;
+        return (p - proj).length();
+    };
+
+    // 判断点是否接近多边形边界
+    const auto isNearPolygonBoundary = [&](const QVector2D& p, float threshold) -> bool {
+        const int n = polygon2d.size();
+        for (int i = 0; i < n; ++i) {
+            const QVector2D a = polygon2d[i];
+            const QVector2D b = polygon2d[(i + 1) % n];
+            if (pointToSegmentDistance(p, a, b) <= threshold) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // 计算 tile 的“有效空间坐标范围”
+    // 这里直接使用 vertices 的 x/y 作为平面坐标，与 isPointInPolygon 保持一致
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::lowest();
+
+    for (const auto& v : vertices) {
+        minX = std::min(minX, v.x());
+        maxX = std::max(maxX, v.x());
+        minY = std::min(minY, v.y());
+        maxY = std::max(maxY, v.y());
+    }
+
+    // boundaryThreshold 控制“多近算轮廓边”
+    // 这里给一个和 tileResolution_ 相关的保守阈值
+    const float boundaryThreshold = std::max(tileResolution_ * 1.5f, 0.5f);
+
+    QVector<int> boundaryCandidates;
+    boundaryCandidates.reserve(vertices.size() / 4);
+
+    for (int idx = 0; idx < vertices.size(); ++idx) {
+        if (marks[idx] != HeightType::kTriangulation) {
+            continue;
+        }
+
+        const QVector3D& v = vertices[idx];
+
+        // 只处理 polygon 内的点
+        if (!isPointInPolygon(v)) {
+            continue;
+        }
+
+        // 只处理接近多边形边界的点
+        if (isNearPolygonBoundary(QVector2D(v.x(), v.y()), boundaryThreshold)) {
+            boundaryCandidates.append(idx);
+        }
+    }
+
+    // 第一轮：对接近轮廓的点做邻域加权平均
+    for (int idx : std::as_const(boundaryCandidates)) {
+        const int x = idx % hvSide;
+        const int y = idx / hvSide;
+
+        float sum = 0.0f;
+        float wsum = 0.0f;
+        int validCount = 0;
+
+        for (int ky = -2; ky <= 2; ++ky) {
+            for (int kx = -2; kx <= 2; ++kx) {
+                const int nx = x + kx;
+                const int ny = y + ky;
+
+                if (!inRange(nx, ny)) {
+                    continue;
+                }
+
+                const int nIdx = ny * hvSide + nx;
+                if (marks[nIdx] != HeightType::kTriangulation) {
+                    continue;
+                }
+
+                const float z = sampleZ(nx, ny);
+                if (qFuzzyIsNull(z)) {
+                    continue;
+                }
+
+                // 距离越远，权重越低
+                const float dist = std::sqrt(float(kx * kx + ky * ky));
+                const float w = 1.0f / (1.0f + dist);
+
+                sum += z * w;
+                wsum += w;
+                ++validCount;
+            }
+        }
+
+        if (wsum > 0.0f && validCount >= 3) {
+            filledZ[idx] = sum / wsum;
+        }
+    }
+
+    // 第二轮：对仍然接近轮廓但值为空的点，做更大半径的补齐
+    for (int idx : std::as_const(boundaryCandidates)) {
+        if (!qFuzzyIsNull(filledZ[idx])) {
+            continue;
+        }
+
+        const int x = idx % hvSide;
+        const int y = idx / hvSide;
+
+        float sum = 0.0f;
+        float wsum = 0.0f;
+
+        for (int ky = -3; ky <= 3; ++ky) {
+            for (int kx = -3; kx <= 3; ++kx) {
+                const int nx = x + kx;
+                const int ny = y + ky;
+
+                if (!inRange(nx, ny)) {
+                    continue;
+                }
+
+                const int nIdx = ny * hvSide + nx;
+                if (marks[nIdx] != HeightType::kTriangulation) {
+                    continue;
+                }
+
+                const float z = originalZ[nIdx];
+                if (qFuzzyIsNull(z)) {
+                    continue;
+                }
+
+                const float dist2 = float(kx * kx + ky * ky);
+                const float w = 1.0f / (1.0f + dist2);
+
+                sum += z * w;
+                wsum += w;
+            }
+        }
+
+        if (wsum > 0.0f) {
+            filledZ[idx] = sum / wsum;
+        }
+    }
+
+    // 写回
+    for (int i = 0; i < vertices.size(); ++i) {
+        if (!qFuzzyIsNull(originalZ[i])) {
+            vertices[i].setZ(filledZ[i]);
+        }
+    }
+}
+
 
 
 void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
@@ -634,7 +849,7 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
     }
 
     auto& vertices = tile->getHeightVerticesRef();
-    auto& marks = tile->getHeightMarkVerticesRef();
+    auto& marks    = tile->getHeightMarkVerticesRef();
 
     // 创建平滑后的高度副本
     QVector<float> smoothedZ(vertices.size());
@@ -644,13 +859,13 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
 
     // 3x3高斯核平滑，但只对非边界点进行处理
     const float kernel[3][3] = {
-        {0.0625f, 0.125f, 0.0625f},
-        {0.125f,  0.25f,  0.125f},
-        {0.0625f, 0.125f, 0.0625f}
+        { 0.0625f, 0.125f, 0.0625f },
+        { 0.125f,  0.25f,  0.125f  },
+        { 0.0625f, 0.125f, 0.0625f }
     };
 
-    for (int y = 1; y < hvSide - 1; ++y) {
-        for (int x = 1; x < hvSide - 1; ++x) {
+    for (int y = 1; y < hvSide-1; ++y) {
+        for (int x = 1; x < hvSide-1; ++x) {
             int idx = y * hvSide + x;
 
             // 只平滑有效的三角剖分点
@@ -688,7 +903,6 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
         }
     }
 }
-
 
 
 

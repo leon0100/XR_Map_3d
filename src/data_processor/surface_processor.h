@@ -48,6 +48,8 @@ private:
     void refreshAfterEdgeLimitChange();
     bool canceled() const noexcept;
     bool isPointInPolygon(const QVector3D& point) const;
+void fillHeightFieldToPolygonOutline(SurfaceTile* tile, int hvSide);
+
 
     //从三角网提取边界轮廓
     static double circumradius(const QPointF& A, const QPointF& B, const QPointF& C);

@@ -45,7 +45,7 @@ void SurfaceTile::init(int sidePixelSize, int heightMatrixRatio, float resolutio
         for (int j = 0; j < heightMatSideSize; ++j) {
             textureVertices_.append(QVector2D(float(j) / (heightMatSideSize - 1), float(i) / (heightMatSideSize - 1)));
         }
-    }
+    } 
 
     isInited_ = true;
 }
