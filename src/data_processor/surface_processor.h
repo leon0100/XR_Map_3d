@@ -44,11 +44,14 @@ private:
     QVector<QVector3D> generateExpandedPalette(int totalColors) const;
     void updateTexture() const;
     void propagateBorderHeights(QSet<SurfaceTile*>& changedTiles);
-    void smoothTileHeights(SurfaceTile* tile, int hvSide);
     void refreshAfterEdgeLimitChange();
     bool canceled() const noexcept;
     bool isPointInPolygon(const QVector3D& point) const;
-void fillHeightFieldToPolygonOutline(SurfaceTile* tile, int hvSide);
+    void smoothTileHeights(SurfaceTile* tile, int hvSide);
+
+
+
+
 
 
     //从三角网提取边界轮廓

@@ -69,7 +69,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("Toslon.tech");
     QCoreApplication::setApplicationName("ToslonApp");
     QCoreApplication::setApplicationVersion("0.10");
-
 #if defined(Q_OS_WIN)
     //QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);

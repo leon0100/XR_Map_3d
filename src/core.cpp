@@ -1322,11 +1322,11 @@ void Core::openFileFromMenu()
     QStringList fileNames;
     if(lastOpenFilePath_.isNull()) {
         fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), qApp->applicationDirPath().append("/data/"),
-            "Toslon Sonar Log(*.csv);;Toslon Sonar Log(*.tsl3);;Toslon Sonar Log(*.tslw);;Toslon Sonar(*.kml *.kmz)");
+            "Toslon Sonar Log(*.tslw);;Toslon Sonar Log(*.tsl3);;Toslon Sonar(*.kml *.kmz);;Toslon Sonar Log(*.csv)");
     }
     else {
         fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), lastOpenFilePath_,
-            "Toslon Sonar Log(*.csv);;Toslon Sonar Log(*.tsl3);;Toslon Sonar Log(*.tslw);;Toslon Sonar(*.kml *.kmz)");
+            "Toslon Sonar Log(*.tslw);;Toslon Sonar Log(*.tsl3);;Toslon Sonar(*.kml *.kmz);;Toslon Sonar Log(*.csv)");
     }
 
     int fileCnt = fileNames.count();

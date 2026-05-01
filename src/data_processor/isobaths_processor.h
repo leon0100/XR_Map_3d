@@ -4,7 +4,7 @@
 #include <QVector3D>
 #include "isobaths_defs.h"
 #include "surface_mesh.h"
-
+#include "dataset_defs.h"
 
 using namespace IsobathUtils;
 
@@ -55,5 +55,21 @@ private:
     float maxZ_;
     float lineStepSize_; //相邻两条等高线之间的高度差
     float labelStepSize_;
+
+
+
+    // 在 IsobathsProcessor 类中添加：
+private:
+    // 新增：多边形裁剪相关
+    bool isPointInPolygon(const QVector3D& point, const QVector<North_East_Down>& polygon) const;
+    QVector<QVector3D> clipSegmentToPolygon(const QVector3D& start, const QVector3D& end,
+                                            const QVector<North_East_Down>& polygon) const;
+    QVector<QVector3D> clipPolylineToPolygon(const QVector<QVector3D>& polyline,
+                                             const QVector<North_East_Down>& polygon) const;
+    bool lineSegmentIntersection(const QVector3D& p1, const QVector3D& p2,
+                                                    const QVector3D& p3, const QVector3D& p4,
+                                                    QVector3D& intersection) const;
+    QVector3D findIntersectionWithPolygonEdge(const QVector3D& start, const QVector3D& end,
+                                              const QVector<North_East_Down>& polygon) const;
 
 };
