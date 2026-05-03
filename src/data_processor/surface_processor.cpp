@@ -201,8 +201,8 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     const int stepPix  = surfaceMeshPtr_->getStepSizeHeightMatrix();
     const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
     for (SurfaceTile* tile : std::as_const(changedTiles)) {
-
         smoothTileHeights(tile, hvSide);   // 对高度场进行平滑处理，减少噪声
+        clipHeightFieldToPolygon();
         tile->updateHeightIndices();
         tile->setIsUpdated(false);
     }
@@ -703,6 +703,60 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
 
 
 
+void SurfaceProcessor::clipHeightFieldToPolygon()
+{
+    if (!dataProcessor_ || !dataProcessor_->datasetPtr_) {
+        return;
+    }
+
+    const QVector<North_East_Down>& polygonNed = dataProcessor_->datasetPtr_->getPolygonOutlineNED();
+    if (polygonNed.isEmpty()) {
+        return;
+    }
+
+    qDebug() << "Clipping height field to polygon boundary, polygon size:" << polygonNed.size();
+
+    const auto& tilesRef = surfaceMeshPtr_->getTilesCRef();
+    const int stepPix = surfaceMeshPtr_->getStepSizeHeightMatrix();
+    const int tileSidePix = surfaceMeshPtr_->getTileSidePixelSize();
+    const int hvSide = tileSidePix / stepPix + 1;
+
+    // 遍历所有瓦片
+    for (auto* tile : tilesRef) {
+        if (!tile || !tile->getIsInited()) {
+            continue;
+        }
+
+        auto& vertices = tile->getHeightVerticesRef();
+        auto& marks = tile->getHeightMarkVerticesRef();
+
+
+        // 遍历瓦片内的所有顶点
+        for (int y = 0; y < hvSide; ++y) {
+            for (int x = 0; x < hvSide; ++x) {
+                int idx = y * hvSide + x;
+                QVector3D& vertex = vertices[idx];
+
+                // 计算该顶点相对于瓦片原点的偏移
+                // 注意：顶点数组中的坐标可能已经是物理坐标，直接使用即可
+                float worldX = vertex.x();
+                float worldY = vertex.y();
+
+                // 如果顶点在多边形外，设置为无效高度
+                if (!isPointInPolygon(QVector3D(worldX, worldY, 0))) {
+                    vertex.setZ(std::numeric_limits<float>::quiet_NaN());
+                    marks[idx] = HeightType::kUndefined;
+                }
+            }
+        }
+
+        tile->setIsUpdated(true);
+
+    }
+
+}
+
+
 
 
 
@@ -982,4 +1036,3 @@ QVector<QVector3D> SurfaceProcessor::extractAlphaShapeBoundary(double alpha)
 
     return boundaryPoints;
 }
-

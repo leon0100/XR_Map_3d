@@ -146,205 +146,9 @@ void IsobathsProcessor::edgeIntersection(const QVector3D& a,const QVector3D& b, 
 }
 
 //等深线（Isobaths）创建（重建）
-// void IsobathsProcessor::fullRebuildLinesLabels()
-// {
-//     // qDebug() << "等深线重绘......." << maxZ_ << "  " << minZ_;
-//     if (!surfaceMeshPtr_ || (minZ_ >= maxZ_ - kmath::fltEps)) {
-//         return;
-//     }
-
-//     lineSegments_.clear();
-//     labels_.clear();
-
-//     // 唯一顶点, 三角形列表
-//     vertPool_.clear();
-//     vertMark_.clear();
-//     tris_.clear();
-//     std::unordered_map<VKey,int> vDict;
-//     vDict.reserve(1 << 20);
-//     for (auto* tile: surfaceMeshPtr_->getTilesCRef()) {
-//         const auto& V = tile->getHeightVerticesCRef();
-//         const auto& M = tile->getHeightMarkVerticesRef();
-//         const int   N = qRound(std::sqrt(V.size()));
-
-//         if (N < 2) {
-//             continue;
-//         }
-
-//         if (canceled()) {
-//             return;
-//         }
-
-//         for (int y = 0; y < N - 1; ++y) {
-//             for (int x = 0; x < N - 1; ++x) {
-//                 const int tl = y * N + x;
-//                 const int tr = tl + 1;
-//                 const int bl = (y + 1) * N + x;
-//                 const int br = bl + 1;
-
-//                 int v0 = findOrAddVertex(V[tl], M[tl], vDict, vertPool_, vertMark_);
-//                 int v1 = findOrAddVertex(V[bl], M[bl], vDict, vertPool_, vertMark_);
-//                 int v2 = findOrAddVertex(V[tr], M[tr], vDict, vertPool_, vertMark_);
-//                 int v3 = findOrAddVertex(V[br], M[br], vDict, vertPool_, vertMark_);
-
-//                 tris_.push_back({v0, v1, v2});
-//                 tris_.push_back({v2, v1, v3});
-//             }
-//         }
-//     }
-//     // qDebug() << "tris_................" << tris_.size();
-
-//     if (vertPool_.empty()) {
-//         return;
-//     }
-
-//     const int levelCnt = static_cast<int>((maxZ_ - minZ_) / lineStepSize_) + 1; //等深线层数
-
-//     QHash<int, IsobathsSegVec> segsByLvl;
-
-//     for (const TrIndxs& t : tris_) { // 三角形的交点
-//         const QVector3D  A   = vertPool_[t.a];
-//         const QVector3D  B   = vertPool_[t.b];
-//         const QVector3D  C   = vertPool_[t.c];
-//         const HeightType mA  = vertMark_[t.a];
-//         const HeightType mB  = vertMark_[t.b];
-//         const HeightType mC  = vertMark_[t.c];
-
-//         if (canceled()) {
-//             return;
-//         }
-
-//         if (mA == HeightType::kUndefined || mB == HeightType::kUndefined || mC == HeightType::kUndefined) {
-//             continue;
-//         }
-
-//         for (int lvl = 0; lvl < levelCnt; ++lvl) {
-//             const float L = minZ_ + lvl * lineStepSize_;
-//             QVector<QVector3D> ip;
-//             edgeIntersection(A, B, L, ip);
-//             edgeIntersection(B, C, L, ip);
-//             edgeIntersection(C, A, L, ip);
-
-//             if (ip.size() == 2) {
-//                 segsByLvl[lvl] << canonSeg(ip[0], ip[1]);
-//             }
-//             else if (ip.size() == 3) {
-//                 if (!fuzzyEq(ip[0], ip[1])) {
-//                     segsByLvl[lvl] << canonSeg(ip[0], ip[1]);
-//                 }
-//                 if (!fuzzyEq(ip[1], ip[2])) {
-//                     segsByLvl[lvl] << canonSeg(ip[1], ip[2]);
-//                 }
-//             }
-//         }
-//     }
-
-//     QHash<int, IsobathsPolylines> polysByLvl; // 多线段
-//     QVector<IsobathUtils::ColoredIsobathsSeg> resColoredLines;
-//     for (auto it = segsByLvl.begin(); it != segsByLvl.end(); ++it) {
-//         buildPolylines(it.value(), polysByLvl[it.key()]);
-//     }
-
-//     QVector<QVector3D> resLines;
-//     QVector<LabelParameters> resLabels;
-
-//     for (auto it = polysByLvl.begin(); it != polysByLvl.end(); ++it) {
-//         const int lvl = it.key();
-//         const float depth = minZ_ + lvl * lineStepSize_;
-//         const auto& polys = it.value();
-
-//         QVector3D color = getColorForDepth(depth);
-
-//         // 线条
-//         for (const auto& p : polys) {
-//             for (int i = 0; i + 1 < p.size(); ++i) {
-//                 resLines << p[i] << p[i + 1];
-//                 resColoredLines << IsobathUtils::ColoredIsobathsSeg(p[i], p[i+1], color);
-//             }
-//         }
-
-//         // label
-//         float distNext = 0.0f;
-//         for (const auto& p : polys) {
-//             if (canceled()) {
-//                 return;
-//             }
-
-//             QVector<float> segLen(p.size() - 1);
-//             float polyLen = 0.0f;
-
-//             for (int i = 0; i + 1 < p.size(); ++i) {
-//                 segLen[i] = (p[i + 1] - p[i]).length();
-//                 polyLen += segLen[i];
-//             }
-
-//             int cur = 0;
-//             float off = 0.0f;
-
-//             while(distNext < (polyLen - kmath::fltEps)) {
-//                 while(cur < segLen.size() && (off + segLen[cur]) < (distNext - kmath::fltEps)) {
-//                     off += segLen[cur];
-//                     ++cur;
-//                 }
-
-//                 if (cur >= segLen.size()) {
-//                     break;
-//                 }
-
-//                 float t = (distNext-off) / segLen[cur];
-//                 QVector3D pos = p[cur] + t * (p[cur+1] - p[cur]);
-//                 QVector3D dir = (p[cur+1] - p[cur]).normalized();
-//                 dir.setZ(0.0f);
-//                 resLabels << LabelParameters{ pos, dir, fabsf(depth) };
-//                 distNext += labelStepSize_;
-//             }
-
-//             distNext -= polyLen;
-//         }
-//     }
-
-//     if (dataProcessor_ && dataProcessor_->datasetPtr_) {
-//         const QVector<North_East_Down>& polygonOutlineNed = dataProcessor_->datasetPtr_->getPolygonOutlineNED();
-
-//         if (!polygonOutlineNed.isEmpty()) {
-//             // 获取最外层等高线的高度（最低高度层）
-//             float outermostHeight = minZ_;  // 最外层等高线的高度
-
-//             // 外层轮廓的高度设为最外层等高线的1/2
-//             float outlineHeight = outermostHeight / 2.0f;
-
-//             // 获取外层轮廓的颜色（使用最外层等高线的颜色）
-//             QVector3D outlineColor = getColorForDepth(outermostHeight);
-
-//             // 将轮廓点转换为QVector3D格式
-//             QVector<QVector3D> outlinePoints;
-//             for (const auto& ned : polygonOutlineNed) {
-//                 outlinePoints.append(QVector3D(ned.n, ned.e, outlineHeight));
-//             }
-
-//             // 将轮廓点连接成线段
-//             for (int i = 0; i < outlinePoints.size(); ++i) {
-//                 int next = (i + 1) % outlinePoints.size();
-//                 resColoredLines << IsobathUtils::ColoredIsobathsSeg(outlinePoints[i], outlinePoints[next], outlineColor);
-//             }
-
-//             qDebug() << "Added user polygon outline as outermost contour with height:" << outlineHeight;
-//         }
-//     }
-
-//     // qDebug() << "resLines.size() " << resLines.size();
-//     filterNearbyLabels(resLabels, labels_);
-//     lineSegments_ = std::move(resLines);
-//     coloredLineSegments_ = std::move(resColoredLines);
-
-//     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsLineSegments", Qt::QueuedConnection, Q_ARG(QVector<QVector3D>, lineSegments_));
-//     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsColoredLineSegments",
-//             Qt::QueuedConnection, Q_ARG(QVector<IsobathUtils::ColoredIsobathsSeg>, coloredLineSegments_));
-//     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsLabels", Qt::QueuedConnection, Q_ARG(QVector<IsobathUtils::LabelParameters>, labels_));
-// }
-
 void IsobathsProcessor::fullRebuildLinesLabels()
 {
+    // qDebug() << "等深线重绘......." << maxZ_ << "  " << minZ_;
     if (!surfaceMeshPtr_ || (minZ_ >= maxZ_ - kmath::fltEps)) {
         return;
     }
@@ -388,16 +192,17 @@ void IsobathsProcessor::fullRebuildLinesLabels()
             }
         }
     }
+    // qDebug() << "tris_................" << tris_.size();
 
     if (vertPool_.empty()) {
         return;
     }
 
-    const int levelCnt = static_cast<int>((maxZ_ - minZ_) / lineStepSize_) + 1;
+    const int levelCnt = static_cast<int>((maxZ_ - minZ_) / lineStepSize_) + 1; //等深线层数
 
     QHash<int, IsobathsSegVec> segsByLvl;
 
-    for (const TrIndxs& t : tris_) {
+    for (const TrIndxs& t : tris_) { // 三角形的交点
         const QVector3D  A   = vertPool_[t.a];
         const QVector3D  B   = vertPool_[t.b];
         const QVector3D  C   = vertPool_[t.c];
@@ -434,24 +239,15 @@ void IsobathsProcessor::fullRebuildLinesLabels()
         }
     }
 
-    QHash<int, IsobathsPolylines> polysByLvl;
+    QHash<int, IsobathsPolylines> polysByLvl; // 多线段
+    QVector<IsobathUtils::ColoredIsobathsSeg> resColoredLines;
     for (auto it = segsByLvl.begin(); it != segsByLvl.end(); ++it) {
         buildPolylines(it.value(), polysByLvl[it.key()]);
     }
 
-    // ========== 获取用户绘制的多边形轮廓 ==========
-    QVector<North_East_Down> polygonOutlineNed;
-    bool hasPolygon = false;
-
-    if (dataProcessor_ && dataProcessor_->datasetPtr_) {
-        polygonOutlineNed = dataProcessor_->datasetPtr_->getPolygonOutlineNED();
-        hasPolygon = !polygonOutlineNed.isEmpty();
-    }
-    // ============================================
-
     QVector<QVector3D> resLines;
     QVector<LabelParameters> resLabels;
-    QVector<IsobathUtils::ColoredIsobathsSeg> resColoredLines;
+
 
     for (auto it = polysByLvl.begin(); it != polysByLvl.end(); ++it) {
         const int lvl = it.key();
@@ -462,17 +258,9 @@ void IsobathsProcessor::fullRebuildLinesLabels()
 
         // 线条
         for (const auto& p : polys) {
-            // ========== 裁剪等高线到多边形内 ==========
-            QVector<QVector3D> processPoly = p;
-
-            if (hasPolygon) {
-                processPoly = clipPolylineToPolygon(p, polygonOutlineNed);
-            }
-            // =========================================
-
-            for (int i = 0; i + 1 < processPoly.size(); ++i) {
-                resLines << processPoly[i] << processPoly[i + 1];
-                resColoredLines << IsobathUtils::ColoredIsobathsSeg(processPoly[i], processPoly[i+1], color);
+            for (int i = 0; i + 1 < p.size(); ++i) {
+                resLines << p[i] << p[i + 1];
+                resColoredLines << IsobathUtils::ColoredIsobathsSeg(p[i], p[i+1], color);
             }
         }
 
@@ -516,170 +304,15 @@ void IsobathsProcessor::fullRebuildLinesLabels()
         }
     }
 
-    // ========== 添加用户绘制的多边形轮廓作为最外层等高线 ==========
-    if (hasPolygon) {
-        float outlineHeight = minZ_ / 2.0f;
-        QVector3D outlineColor = getColorForDepth(minZ_);
-
-        QVector<QVector3D> outlinePoints;
-        for (const auto& ned : polygonOutlineNed) {
-            outlinePoints.append(QVector3D(ned.n, ned.e, outlineHeight));
-        }
-
-        for (int i = 0; i < outlinePoints.size(); ++i) {
-            int next = (i + 1) % outlinePoints.size();
-            resColoredLines << IsobathUtils::ColoredIsobathsSeg(outlinePoints[i], outlinePoints[next], outlineColor);
-        }
-
-        qDebug() << "Added user polygon outline as outermost contour with height:" << outlineHeight;
-    }
-    // ===============================================================
-
+    // qDebug() << "resLines.size() " << resLines.size();
     filterNearbyLabels(resLabels, labels_);
     lineSegments_ = std::move(resLines);
     coloredLineSegments_ = std::move(resColoredLines);
 
     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsLineSegments", Qt::QueuedConnection, Q_ARG(QVector<QVector3D>, lineSegments_));
     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsColoredLineSegments",
-                              Qt::QueuedConnection, Q_ARG(QVector<IsobathUtils::ColoredIsobathsSeg>, coloredLineSegments_));
+            Qt::QueuedConnection, Q_ARG(QVector<IsobathUtils::ColoredIsobathsSeg>, coloredLineSegments_));
     QMetaObject::invokeMethod(dataProcessor_, "postIsobathsLabels", Qt::QueuedConnection, Q_ARG(QVector<IsobathUtils::LabelParameters>, labels_));
-}
-
-// 判断点是否在多边形内（射线法）
-bool IsobathsProcessor::isPointInPolygon(const QVector3D& point, const QVector<North_East_Down>& polygon) const
-{
-    if (polygon.isEmpty()) {
-        return true;
-    }
-
-    bool inside = false;
-    int n = polygon.size();
-    for (int i = 0, j = n - 1; i < n; j = i++) {
-        const float xi = polygon.at(i).n;
-        const float yi = polygon.at(i).e;
-        const float xj = polygon.at(j).n;
-        const float yj = polygon.at(j).e;
-
-        const bool intersect = ((yi > point.y()) != (yj > point.y())) &&
-                               (point.x() < (xj - xi) * (point.y() - yi) / (yj - yi + 1e-12f) + xi);
-        if (intersect) {
-            inside = !inside;
-        }
-    }
-
-    return inside;
-}
-
-// 线段与多边形求交，返回裁剪后的线段
-QVector<QVector3D> IsobathsProcessor::clipSegmentToPolygon(const QVector3D& start, const QVector3D& end,
-                                                           const QVector<North_East_Down>& polygon) const
-{
-    QVector<QVector3D> result;
-
-    bool startInside = isPointInPolygon(start, polygon);
-    bool endInside = isPointInPolygon(end, polygon);
-
-    if (startInside && endInside) {
-        // 两者都在多边形内，保留整个线段
-        result.append(start);
-        result.append(end);
-    }
-    else if (startInside && !endInside) {
-        // 起点在内，终点在外，保留从起点到交点的部分
-        QVector3D intersection = findIntersectionWithPolygonEdge(start, end, polygon);
-        if (!intersection.isNull()) {
-            result.append(start);
-            result.append(intersection);
-        }
-    }
-    else if (!startInside && endInside) {
-        // 起点在外，终点在内，保留从交点到终点的部分
-        QVector3D intersection = findIntersectionWithPolygonEdge(start, end, polygon);
-        if (!intersection.isNull()) {
-            result.append(intersection);
-            result.append(end);
-        }
-    }
-    // 两者都在外，丢弃整个线段
-
-    return result;
-}
-
-// 找到线段与多边形边的第一个交点
-QVector3D IsobathsProcessor::findIntersectionWithPolygonEdge(const QVector3D& start, const QVector3D& end,
-                                                             const QVector<North_East_Down>& polygon) const
-{
-    QVector3D closestIntersection;
-    float minDist = std::numeric_limits<float>::max();
-
-    int n = polygon.size();
-    for (int i = 0; i < n; ++i) {
-        const QVector3D a(polygon.at(i).n, polygon.at(i).e, 0);
-        const QVector3D b(polygon.at((i + 1) % n).n, polygon.at((i + 1) % n).e, 0);
-
-        QVector3D intersection;
-        if (lineSegmentIntersection(start, end, a, b, intersection)) {
-            float dist = (intersection - start).length();
-            if (dist < minDist) {
-                minDist = dist;
-                closestIntersection = intersection;
-            }
-        }
-    }
-
-    if (minDist < std::numeric_limits<float>::max()) {
-        return closestIntersection;
-    }
-    return QVector3D();  // 返回无效值
-}
-
-// 线段相交检测
-bool IsobathsProcessor::lineSegmentIntersection(const QVector3D& p1, const QVector3D& p2,
-                                                const QVector3D& p3, const QVector3D& p4,
-                                                QVector3D& intersection) const
-{
-    const float eps = 1e-6f;
-
-    QVector3D d1 = p2 - p1;
-    QVector3D d2 = p4 - p3;
-    QVector3D d3 = p1 - p3;
-
-    float cross = d1.x() * d2.y() - d1.y() * d2.x();
-
-    if (qAbs(cross) < eps) {
-        return false;  // 平行线
-    }
-
-    float t = (d3.x() * d2.y() - d3.y() * d2.x()) / cross;
-    float u = (d3.x() * d1.y() - d3.y() * d1.x()) / cross;
-
-    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
-        intersection = p1 + t * d1;
-        return true;
-    }
-
-    return false;
-}
-
-// 裁剪折线到多边形内
-QVector<QVector3D> IsobathsProcessor::clipPolylineToPolygon(const QVector<QVector3D>& polyline,
-                                                            const QVector<North_East_Down>& polygon) const
-{
-    if (polyline.isEmpty() || polygon.isEmpty()) {
-        return polyline;
-    }
-
-    QVector<QVector3D> result;
-
-    for (int i = 0; i < polyline.size() - 1; ++i) {
-        const QVector3D& start = polyline[i];
-        const QVector3D& end = polyline[i + 1];
-
-        QVector<QVector3D> clipped = clipSegmentToPolygon(start, end, polygon);
-        result.append(clipped);
-    }
-
-    return result;
 }
 
 

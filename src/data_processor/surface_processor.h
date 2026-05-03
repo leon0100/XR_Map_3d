@@ -48,8 +48,7 @@ private:
     bool canceled() const noexcept;
     bool isPointInPolygon(const QVector3D& point) const;
     void smoothTileHeights(SurfaceTile* tile, int hvSide);
-
-
+    void clipHeightFieldToPolygon();
 
 
 
