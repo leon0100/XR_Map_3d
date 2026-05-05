@@ -1,7 +1,6 @@
 #include "surface_processor.h"
 
 #include <cmath>
-#include <QDebug>
 #include "isobaths_processor.h"
 
 SurfaceProcessor::SurfaceProcessor(DataProcessor* parent) :
@@ -197,6 +196,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         maxZ_ = std::max(static_cast<double>(maxZ_), std::max({ pt[t.a].z, pt[t.b].z, pt[t.c].z }));
     }
 
+    // filterMinHeightBlocks();
     propagateBorderHeights(changedTiles);
     const int stepPix  = surfaceMeshPtr_->getStepSizeHeightMatrix();
     const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
@@ -237,7 +237,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     for (auto it = changedTiles.cbegin(); it != changedTiles.cend(); ++it) {
         res.insert((*it)->getUuid(), (*(*it)));
     }
-
     // QVector<QVector3D> boundary = extractAlphaShapeBoundary();
     // dataProcessor_->setAutoBounadry(boundary); //获取自动边界
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
@@ -701,8 +700,6 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
 
 
 
-
-
 void SurfaceProcessor::clipHeightFieldToPolygon()
 {
     if (!dataProcessor_ || !dataProcessor_->datasetPtr_) {
@@ -714,7 +711,7 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
         return;
     }
 
-    qDebug() << "Clipping height field to polygon boundary, polygon size:" << polygonNed.size();
+    // qDebug() << "Clipping height field to polygon boundary, polygon size:" << polygonNed.size();
 
     const auto& tilesRef = surfaceMeshPtr_->getTilesCRef();
     const int stepPix = surfaceMeshPtr_->getStepSizeHeightMatrix();
@@ -757,11 +754,60 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
 }
 
 
+void SurfaceProcessor::filterMinHeightBlocks()
+{
+    qDebug() << "=== filterMinHeightBlocks called ===";
 
+    const auto& triangles = delaunayProc_.getTriangles();
+    const auto& points = delaunayProc_.getPoints();
 
+    if (triangles.empty()) return;
 
+    // 1. 计算层数
+    int levelCount = static_cast<int>(((maxZ_ - minZ_) / surfaceStepSize_) + 1);
+    qDebug() << "Total levels:" << levelCount;
+    qDebug() << "minZ:" << minZ_ << "maxZ:" << maxZ_ << "step:" << surfaceStepSize_;
 
+    // 2. 确定要过滤的层级（从最小的开始）
+    std::vector<int> levelsToFilter;
+    for (int i = 0; i < std::min(1, levelCount); ++i) {
+        levelsToFilter.push_back(i);
+        float heightValue = minZ_ + i * surfaceStepSize_;
+        qDebug() << "Filter level" << i << "height:" << heightValue;
+    }
 
+    // 3. 过滤这些层级的三角形
+    int removedCount = 0;
+    float tolerance = surfaceStepSize_ / 2.0f;  // 容差为步长的一半
+
+    for (size_t i = 0; i < triangles.size(); ++i) {
+        if (triangles[i].a < 4 || triangles[i].b < 4 || triangles[i].c < 4 || triangles[i].is_bad) continue;
+
+        const delaunay::Point& p1 = points[triangles[i].a];
+        const delaunay::Point& p2 = points[triangles[i].b];
+        const delaunay::Point& p3 = points[triangles[i].c];
+
+        float avgHeight = (p1.z + p2.z + p3.z) / 3.0f;
+
+        // 检查这个三角形是否属于要过滤的层级
+        bool shouldFilter = false;
+        for (int levelIdx : levelsToFilter) {
+            float targetHeight = minZ_ + levelIdx * surfaceStepSize_;
+            if (std::abs(avgHeight - targetHeight) < tolerance) {
+                shouldFilter = true;
+                break;
+            }
+        }
+
+        if (shouldFilter) {
+            const_cast<delaunay::Triangle&>(triangles[i]).is_bad = true;
+            removedCount++;
+        }
+    }
+
+    qDebug() << "Removed" << removedCount << "triangles";
+    qDebug() << "=== filterMinHeightBlocks finished ===";
+}
 
 
 /*--------------------自动绘制多边形--------------------------*/

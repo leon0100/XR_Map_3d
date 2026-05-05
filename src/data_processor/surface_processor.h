@@ -5,6 +5,7 @@
 #include <QPair>
 #include <QPointF>
 #include <QReadWriteLock>
+#include <unordered_set>
 #include "delaunay.h"
 #include "isobaths_defs.h"
 #include "surface_tile.h"
@@ -49,6 +50,8 @@ private:
     bool isPointInPolygon(const QVector3D& point) const;
     void smoothTileHeights(SurfaceTile* tile, int hvSide);
     void clipHeightFieldToPolygon();
+
+    void filterMinHeightBlocks();
 
 
 
