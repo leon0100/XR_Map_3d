@@ -176,7 +176,7 @@ inline QVector3D nanVec()
                      std::numeric_limits<float>::quiet_NaN());
 }
 
-inline float twiceArea(const QVector3D& p, const QVector3D& q, const QVector3D& r) // удвоенная площадь с ориентацией
+inline float twiceArea(const QVector3D& p, const QVector3D& q, const QVector3D& r) //带朝向的双倍面积
 {
     return (q.x() - p.x()) * (r.y() - p.y()) - (q.y() - p.y()) * (r.x() - p.x());
 }

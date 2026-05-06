@@ -97,8 +97,8 @@ void IsobathsViewControlMenuController::onIsobathsVisibilityCheckBoxCheckedChang
 void IsobathsViewControlMenuController::onOutlineVisibleChanged(bool visible)
 {
     if (graphicsSceneViewPtr_) {
-        // graphicsSceneViewPtr_->getSurfaceViewPtr()->setIVisible(visible);
         graphicsSceneViewPtr_->polygonOutline()->setVisible(visible);
+        graphicsSceneViewPtr_->polygonOutline()->setFatherVisible(visible);
 
         // if (visibility_) {
         //     if (dataProcessorPtr_) {

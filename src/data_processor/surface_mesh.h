@@ -30,6 +30,7 @@ public:
     int                                     getNumWidthTiles() const;
     int                                     getNumHeightTiles() const;
     int                                     getStepSizeHeightMatrix() const;
+    int                                     getTileHeightMatrixRatio() const;
     bool                                    getIsInited() const;
 
 

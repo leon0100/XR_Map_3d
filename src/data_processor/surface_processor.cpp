@@ -196,12 +196,10 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         maxZ_ = std::max(static_cast<double>(maxZ_), std::max({ pt[t.a].z, pt[t.b].z, pt[t.c].z }));
     }
 
-    // filterMinHeightBlocks();
     propagateBorderHeights(changedTiles);
-    const int stepPix  = surfaceMeshPtr_->getStepSizeHeightMatrix();
-    const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
     for (SurfaceTile* tile : std::as_const(changedTiles)) {
-        smoothTileHeights(tile, hvSide);   // 对高度场进行平滑处理，减少噪声
+        smoothTileHeights(tile);  // 对高度场进行平滑处理，减少噪声
+        // smoothBoundaryContours();
         clipHeightFieldToPolygon();
         tile->updateHeightIndices();
         tile->setIsUpdated(false);
@@ -324,8 +322,8 @@ void SurfaceProcessor::writeTriangleToMesh(const QVector3D &A, const QVector3D &
     }
 
     const int stepPix     = surfaceMeshPtr_->getStepSizeHeightMatrix();
-    const int tileSidePix = surfaceMeshPtr_->getTileSidePixelSize();
-    const int hvSide      = tileSidePix / stepPix + 1;
+    const int tileSidePix = tileSidePixelSize_;
+    const int hvSide      = tileHeightMatrixRatio_ + 1;
     const int tilesY      = surfaceMeshPtr_->getNumHeightTiles();
     const int meshW       = surfaceMeshPtr_->getPixelWidth();
     const int meshH       = surfaceMeshPtr_->getPixelHeight();
@@ -334,17 +332,17 @@ void SurfaceProcessor::writeTriangleToMesh(const QVector3D &A, const QVector3D &
     QVector3D Bp = surfaceMeshPtr_->convertPhToPixCoords(B);
     QVector3D Cp = surfaceMeshPtr_->convertPhToPixCoords(C);
 
-    int minPx = std::floor(std::min({ Ap.x(), Bp.x(), Cp.x() })) - stepPix; // описывающий прямоугольник с запасом stepPix (вершина на границе)
+    int minPx = std::floor(std::min({ Ap.x(), Bp.x(), Cp.x() })) - stepPix; // 描述带有 stepPix 余量的矩形（顶点位于边界上）
     int maxPx = std::ceil (std::max({ Ap.x(), Bp.x(), Cp.x() })) + stepPix;
     int minPy = std::floor(std::min({ Ap.y(), Bp.y(), Cp.y() })) - stepPix;
     int maxPy = std::ceil (std::max({ Ap.y(), Bp.y(), Cp.y() })) + stepPix;
-    minPx = std::clamp((minPx / stepPix) * stepPix, 0, meshW - 1); // сдвигаем описывающий прямоугольник на сетку (кратность stepPix)
+    minPx = std::clamp((minPx / stepPix) * stepPix, 0, meshW - 1); // 将外接矩形按网格进行偏移（步长 stepPix 整数倍对齐）
     maxPx = std::clamp((maxPx / stepPix) * stepPix, 0, meshW - 1);
     minPy = std::clamp((minPy / stepPix) * stepPix, 0, meshH - 1);
     maxPy = std::clamp((maxPy / stepPix) * stepPix, 0, meshH - 1);
 
     const float denom = kmath::twiceArea(Ap, Bp, Cp);
-    if (qFuzzyIsNull(denom)) { // вырожденный треугольник
+    if (qFuzzyIsNull(denom)) { // 退化三角形
         return;
     }
 
@@ -433,8 +431,7 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
         return;
     }
 
-    const int stepPix  = surfaceMeshPtr_->getStepSizeHeightMatrix();
-    const int hvSide   = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
+    const int hvSide   = tileHeightMatrixRatio_ + 1;
     const int tilesY   = surfaceMeshPtr_->getNumHeightTiles();
     const int tilesX   = surfaceMeshPtr_->getNumWidthTiles();
 
@@ -635,9 +632,9 @@ bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
 }
 
 
-
-void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
+void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile)
 {
+    int hvSide = tileHeightMatrixRatio_ + 1;
     if (!tile || !tile->getIsInited()) {
         return;
     }
@@ -700,6 +697,138 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile, int hvSide)
 
 
 
+void SurfaceProcessor::smoothBoundaryContours()
+{
+    const int stepPix = surfaceMeshPtr_->getStepSizeHeightMatrix();
+    const int hvSide = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
+
+    // 遍历所有瓦片
+    auto& matrix = surfaceMeshPtr_->getTileMatrixRef();
+    for (int ty = 0; ty < surfaceMeshPtr_->getNumHeightTiles(); ++ty) {
+        for (int tx = 0; tx < surfaceMeshPtr_->getNumWidthTiles(); ++tx) {
+            SurfaceTile* t = matrix[ty][tx];
+            if (!t || !t->getIsInited()) continue;
+
+            auto& vertices = t->getHeightVerticesRef();
+            auto& marks = t->getHeightMarkVerticesRef();
+
+            // 创建临时数组存储平滑结果
+            QVector<float> smoothedZ(vertices.size());
+            for (int i = 0; i < vertices.size(); ++i) {
+                smoothedZ[i] = vertices[i].z();
+            }
+
+            // 专门处理四条边上的三角剖分点
+            processEdgeContour(smoothedZ, vertices, marks, hvSide, 0, EdgeDirection::Bottom);   // 上边
+            processEdgeContour(smoothedZ, vertices, marks, hvSide, hvSide-1, EdgeDirection::Top);  // 下边
+            processEdgeContour(smoothedZ, vertices, marks, hvSide, 0, EdgeDirection::Right);  // 左边
+            processEdgeContour(smoothedZ, vertices, marks, hvSide, hvSide-1, EdgeDirection::Left);  // 右边
+
+            // 应用结果
+            for (int i = 0; i < vertices.size(); ++i) {
+                if (!qFuzzyIsNull(vertices[i].z())) {
+                    vertices[i].setZ(smoothedZ[i]);
+                }
+            }
+        }
+    }
+}
+
+
+
+void SurfaceProcessor::processEdgeContour(
+    QVector<float>& smoothedZ,
+    const QVector<QVector3D>& vertices,
+    const QVector<HeightType>& marks,
+    int hvSide,
+    int fixedIdx,  // 固定的坐标（如 y=0 或 x=0）
+    EdgeDirection direction)
+{
+    int start, end, step;
+
+    switch (direction) {
+    case EdgeDirection::Bottom:  // y=0，向下搜索邻居
+    case EdgeDirection::Top:     // y=hvSide-1，向上搜索邻居
+        start = 0;
+        end = hvSide;
+        step = 1;
+        break;
+    case EdgeDirection::Right:   // x=0，向右搜索邻居
+    case EdgeDirection::Left:    // x=hvSide-1，向左搜索邻居
+        start = 0;
+        end = hvSide;
+        step = 1;
+        break;
+    }
+
+    for (int i = start; i < end; i += step) {
+        int idx;
+        if (direction == EdgeDirection::Bottom || direction == EdgeDirection::Top) {
+            idx = fixedIdx * hvSide + i;
+        } else {
+            idx = i * hvSide + fixedIdx;
+        }
+
+        // 只处理有效的三角剖分点（即等高线经过的点）
+        if (marks[idx] != HeightType::kTriangulation) {
+            continue;
+        }
+
+        // 收集同一等高线的相邻点
+        QVector<float> sameContourHeights;
+
+        // 根据方向搜索有效邻居
+        int dy = (direction == EdgeDirection::Bottom) ? 1 :
+                     (direction == EdgeDirection::Top) ? -1 : 0;
+        int dx = (direction == EdgeDirection::Right) ? 1 :
+                     (direction == EdgeDirection::Left) ? -1 : 0;
+
+        // 搜索该方向的连续等高线点
+        for (int offset = -2; offset <= 2; ++offset) {
+            int ny, nx;
+
+            if (direction == EdgeDirection::Bottom || direction == EdgeDirection::Top) {
+                ny = fixedIdx + dy;
+                nx = i + offset;
+            } else {
+                ny = i + offset;
+                nx = fixedIdx + dx;
+            }
+
+            if (ny < 0 || ny >= hvSide || nx < 0 || nx >= hvSide) {
+                continue;
+            }
+
+            int nIdx = ny * hvSide + nx;
+
+            // 检查是否为同一等高线（高度相近）
+            if (!qFuzzyIsNull(vertices[nIdx].z()) &&
+                qAbs(vertices[nIdx].z() - vertices[idx].z()) < 0.5f) {  // 高度差阈值
+                sameContourHeights.append(vertices[nIdx].z());
+            }
+        }
+
+        // 对收集到的等高线点进行平滑
+        if (sameContourHeights.size() >= 2) {
+            float avg = std::accumulate(sameContourHeights.begin(), sameContourHeights.end(), 0.0f) /
+                        sameContourHeights.size();
+            smoothedZ[idx] = avg;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 void SurfaceProcessor::clipHeightFieldToPolygon()
 {
     if (!dataProcessor_ || !dataProcessor_->datasetPtr_) {
@@ -754,60 +883,10 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
 }
 
 
-void SurfaceProcessor::filterMinHeightBlocks()
-{
-    qDebug() << "=== filterMinHeightBlocks called ===";
 
-    const auto& triangles = delaunayProc_.getTriangles();
-    const auto& points = delaunayProc_.getPoints();
 
-    if (triangles.empty()) return;
 
-    // 1. 计算层数
-    int levelCount = static_cast<int>(((maxZ_ - minZ_) / surfaceStepSize_) + 1);
-    qDebug() << "Total levels:" << levelCount;
-    qDebug() << "minZ:" << minZ_ << "maxZ:" << maxZ_ << "step:" << surfaceStepSize_;
 
-    // 2. 确定要过滤的层级（从最小的开始）
-    std::vector<int> levelsToFilter;
-    for (int i = 0; i < std::min(1, levelCount); ++i) {
-        levelsToFilter.push_back(i);
-        float heightValue = minZ_ + i * surfaceStepSize_;
-        qDebug() << "Filter level" << i << "height:" << heightValue;
-    }
-
-    // 3. 过滤这些层级的三角形
-    int removedCount = 0;
-    float tolerance = surfaceStepSize_ / 2.0f;  // 容差为步长的一半
-
-    for (size_t i = 0; i < triangles.size(); ++i) {
-        if (triangles[i].a < 4 || triangles[i].b < 4 || triangles[i].c < 4 || triangles[i].is_bad) continue;
-
-        const delaunay::Point& p1 = points[triangles[i].a];
-        const delaunay::Point& p2 = points[triangles[i].b];
-        const delaunay::Point& p3 = points[triangles[i].c];
-
-        float avgHeight = (p1.z + p2.z + p3.z) / 3.0f;
-
-        // 检查这个三角形是否属于要过滤的层级
-        bool shouldFilter = false;
-        for (int levelIdx : levelsToFilter) {
-            float targetHeight = minZ_ + levelIdx * surfaceStepSize_;
-            if (std::abs(avgHeight - targetHeight) < tolerance) {
-                shouldFilter = true;
-                break;
-            }
-        }
-
-        if (shouldFilter) {
-            const_cast<delaunay::Triangle&>(triangles[i]).is_bad = true;
-            removedCount++;
-        }
-    }
-
-    qDebug() << "Removed" << removedCount << "triangles";
-    qDebug() << "=== filterMinHeightBlocks finished ===";
-}
 
 
 /*--------------------自动绘制多边形--------------------------*/

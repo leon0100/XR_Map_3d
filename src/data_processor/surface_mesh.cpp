@@ -204,6 +204,11 @@ int SurfaceMesh::getStepSizeHeightMatrix() const
     return tileSidePixelSize_ / tileHeightMatrixRatio_;
 }
 
+int  SurfaceMesh::getTileHeightMatrixRatio() const
+{
+    return tileHeightMatrixRatio_;
+}
+
 bool SurfaceMesh::getIsInited() const
 {
     return !tiles_.empty();
@@ -300,12 +305,11 @@ void SurfaceMesh::resizeRowsTop(int rowsToAdd)
     }
 
     for (int i = 0; i < rowsToAdd; ++i) {
-
         tileMatrix_[i].resize(numWidthTiles_);
 
         for (int j = 0; j < numWidthTiles_; ++j) {
             tiles_.push_back(new SurfaceTile({ origin_.x() + j * tileSideMeterSize_,
-                                       origin_.y() + ((numHeightTiles_ + rowsToAdd - 1) - i) * tileSideMeterSize_, 0.0f }));
+                            origin_.y() + ((numHeightTiles_ + rowsToAdd - 1) - i) * tileSideMeterSize_, 0.0f }));
             tileMatrix_[i][j] = tiles_.back();
         }
     }

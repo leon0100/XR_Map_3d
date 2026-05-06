@@ -184,6 +184,16 @@ void PolygonOutline::selectVertex(int index, bool isDraggingPt)
     emit changed();
 }
 
+void PolygonOutline::setFatherVisible(bool visible)
+{
+    isVisible_ = visible;
+}
+
+bool PolygonOutline::getFatherVisible()
+{
+    return isVisible_;
+}
+
 void PolygonOutline::autoGenerateFromAlphaShape()
 {
     if (!datasetPtr_) return;

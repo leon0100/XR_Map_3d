@@ -12,6 +12,8 @@
 #include "bottom_track.h"
 #include "point_3d.h"
 
+enum class EdgeDirection { Top, Bottom, Left, Right };
+
 
 class BottomTrack;
 class DataProcessor;
@@ -48,10 +50,14 @@ private:
     void refreshAfterEdgeLimitChange();
     bool canceled() const noexcept;
     bool isPointInPolygon(const QVector3D& point) const;
-    void smoothTileHeights(SurfaceTile* tile, int hvSide);
+    void smoothTileHeights(SurfaceTile* tile);
     void clipHeightFieldToPolygon();
 
-    void filterMinHeightBlocks();
+
+    void smoothBoundaryContours();
+    void processEdgeContour(QVector<float>& smoothedZ,const QVector<QVector3D>& vertices,
+        const QVector<HeightType>& marks,int hvSide,int fixedIdx,  // 固定的坐标（如 y=0 或 x=0）
+        EdgeDirection direction);
 
 
 

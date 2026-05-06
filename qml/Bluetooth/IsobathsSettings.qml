@@ -257,7 +257,7 @@ Item {
                     onClicked: {
                         flashAnim2.restart()
                         isShowOutline = !isShowOutline
-                        IsobathsViewControlMenuController.onOutlineVisibleChanged(true)
+                        IsobathsViewControlMenuController.onOutlineVisibleChanged(isShowOutline)
                         // IsobathsViewControlMenuController.autoDrawTrackBoundary()
                     }
 

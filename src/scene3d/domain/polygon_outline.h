@@ -31,6 +31,9 @@ public:
 
     void selectVertex(int index, bool isDraggingPt);
 
+    void setFatherVisible(bool visible);
+    bool getFatherVisible();
+
 
 
 public:
@@ -76,13 +79,8 @@ private:
     bool isDrawOutlineMode_ = false;
     bool isDraggingPoint_ = false;
 
-    bool m_vertexEditable = false;
-    int m_selectedVertexIndex = -1;
-
-
 public:
     int draggingPtIndex_ = -1;        //当前拖动的点索引，-1表示无
-
-
+    bool isVisible_ = true;
 
 };

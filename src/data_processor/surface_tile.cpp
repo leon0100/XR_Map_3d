@@ -1,5 +1,6 @@
 #include "surface_tile.h"
 
+
 #include <cmath>
 
 
@@ -52,7 +53,7 @@ void SurfaceTile::init(int sidePixelSize, int heightMatrixRatio, float resolutio
 
 void SurfaceTile::initImageData(int sidePixelSize, int heightMatrixRatio)
 {
-    const int   heightMatSideSize = heightMatrixRatio + 1;
+    const int heightMatSideSize = heightMatrixRatio + 1;
 
     // image data
     imageData_.resize(sidePixelSize * sidePixelSize, 0);
@@ -62,8 +63,7 @@ void SurfaceTile::initImageData(int sidePixelSize, int heightMatrixRatio)
     textureVertices_.reserve(heightMatSideSize * heightMatSideSize);
     for (int i = 0; i < heightMatSideSize; ++i) {
         for (int j = 0; j < heightMatSideSize; ++j) {
-            textureVertices_.append(QVector2D(float(j) / (heightMatSideSize - 1),
-                                              float(i) / (heightMatSideSize - 1)));
+            textureVertices_.append(QVector2D(float(j) / (heightMatSideSize - 1), float(i) / (heightMatSideSize - 1)));
         }
     }
 }
