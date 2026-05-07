@@ -155,6 +155,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     smoothDuringTriangulation();
+    extractBoundaryVertices();  // 新增
 
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {
@@ -768,76 +769,161 @@ void SurfaceProcessor::smoothBoundaryVerticesEx(
     const std::vector<double>& originalZ,
     const std::vector<int>& boundaryVertices)
 {
-    // 创建顶点到三角形的映射
-    std::unordered_map<int, std::vector<int>> vertexToTriangles;
-    for (size_t i = 0; i < triangles.size(); ++i) {
-        auto& tri = triangles[i];
-        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) {
-            continue;
-        }
-        vertexToTriangles[tri.a].push_back(i);
-        vertexToTriangles[tri.b].push_back(i);
-        vertexToTriangles[tri.c].push_back(i);
+    // 找出边界边并连接成链
+    std::map<std::pair<int, int>, int> edgeCount;
+    for (auto& tri : triangles) {
+        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) continue;
+        int a = std::min(tri.a, tri.b);
+        int b = std::max(tri.a, tri.b);
+        edgeCount[{a, b}]++;
+        a = std::min(tri.b, tri.c);
+        b = std::max(tri.b, tri.c);
+        edgeCount[{a, b}]++;
+        a = std::min(tri.c, tri.a);
+        b = std::max(tri.c, tri.a);
+        edgeCount[{a, b}]++;
     }
 
-    // 对边界顶点进行多次迭代平滑
-    const int iterations = 5;  // 增加迭代次数
-    for (int iter = 0; iter < iterations; ++iter) {
-        // 每次迭代都基于原始值进行计算
-        for (int vertexIdx : boundaryVertices) {
-            if (vertexIdx < 0 || vertexIdx >= static_cast<int>(points.size())) {
-                continue;
-            }
-
-            const auto& triIndices = vertexToTriangles[vertexIdx];
-            if (triIndices.empty()) {
-                continue;
-            }
-
-            // 收集相邻顶点
-            std::set<int> neighbors;
-            for (int triIdx : triIndices) {
-                auto& tri = triangles[triIdx];
-                neighbors.insert(tri.a);
-                neighbors.insert(tri.b);
-                neighbors.insert(tri.c);
-            }
-            neighbors.erase(vertexIdx);
-
-            // 计算加权平均
-            double sumZ = 0.0;
-            double weightSum = 0.0;
-
-            for (int nIdx : neighbors) {
-                if (nIdx < 0 || nIdx >= static_cast<int>(originalZ.size())) {
-                    continue;
-                }
-
-                // 距离加权
-                double dist = calculateDistance(points[vertexIdx], points[nIdx]);
-                double weight = (dist < 0.001) ? 1.0 : (1.0 / (dist * dist));
-
-                sumZ += originalZ[nIdx] * weight;
-                weightSum += weight;
-            }
-
-            if (weightSum > 0.0) {
-                double avgZ = sumZ / weightSum;
-                double weight = 0.8;  // 更强的平滑强度
-                double newZ = originalZ[vertexIdx] * (1 - weight) + avgZ * weight;
-                double delta = std::abs(newZ - originalZ[vertexIdx]);
-
-                // 放宽限制
-                if (delta < 5.0) {
-                    points[vertexIdx].z = newZ;
-                }
-            }
+    std::vector<std::pair<int, int>> boundaryEdges;
+    for (const auto& pair : edgeCount) {
+        if (pair.second == 1) {
+            boundaryEdges.push_back(pair.first);
         }
     }
 
-    // qDebug() << QString("边界顶点平滑完成，处理了 %1 个顶点，迭代 %2 次")
-    //                 .arg(boundaryVertices.size()).arg(iterations);
+    // 构建边界链
+    std::vector<std::vector<int>> chains = buildBoundaryChains(boundaryEdges, points);
+
+    // 对每条链进行曲线拟合
+    for (auto& chain : chains) {
+        if (chain.size() < 3) continue;
+
+        // 提取坐标
+        std::vector<double> xs, ys, zs;
+        for (int idx : chain) {
+            xs.push_back(points[idx].x);
+            ys.push_back(points[idx].y);
+            zs.push_back(originalZ[idx]);
+        }
+
+        // ========== 使用简单的线性拟合替代 Eigen ==========
+        // 拟合平面: z = ax + by + c
+
+        int n = xs.size();
+        double sumX = 0, sumY = 0, sumZ = 0;
+        double sumXX = 0, sumYY = 0, sumXY = 0;
+        double sumXZ = 0, sumYZ = 0;
+
+        for (int i = 0; i < n; i++) {
+            sumX += xs[i];
+            sumY += ys[i];
+            sumZ += zs[i];
+            sumXX += xs[i] * xs[i];
+            sumYY += ys[i] * ys[i];
+            sumXY += xs[i] * ys[i];
+            sumXZ += xs[i] * zs[i];
+            sumYZ += ys[i] * zs[i];
+        }
+
+        // 解线性方程组
+        double denom = n * (sumXX + sumYY) - (sumX * sumX + sumY * sumY);
+
+        if (std::abs(denom) < 1e-10) continue;  // 避免除零
+
+        // 计算系数
+        double a = (n * sumXZ - sumX * sumZ) / denom;
+        double b = (n * sumYZ - sumY * sumZ) / denom;
+        double c = (sumZ - a * sumX - b * sumY) / n;
+
+        // 使用拟合结果更新边界顶点高度
+        for (int i = 0; i < chain.size(); i++) {
+            int idx = chain[i];
+            double x = xs[i];
+            double y = ys[i];
+            double fittedZ = a * x + b * y + c;
+
+            // 平滑过渡到拟合值
+            points[idx].z = originalZ[idx] * 0.4 + fittedZ * 0.6;
+        }
+    }
 }
+
+std::vector<std::vector<int>> SurfaceProcessor::buildBoundaryChains(
+    const std::vector<std::pair<int, int>>& boundaryEdges,
+    const std::vector<delaunay::Point>& points)
+{
+    std::vector<std::vector<int>> chains;
+
+    if (boundaryEdges.empty()) {
+        return chains;
+    }
+
+    // 构建邻接表
+    std::unordered_map<int, std::vector<int>> adjacency;
+    for (const auto& edge : boundaryEdges) {
+        adjacency[edge.first].push_back(edge.second);
+        adjacency[edge.second].push_back(edge.first);
+    }
+
+    // 找出链的起点（度数为1的顶点）
+    std::vector<int> chainStarts;
+    for (const auto& pair : adjacency) {
+        if (pair.second.size() == 1) {
+            chainStarts.push_back(pair.first);
+        }
+    }
+
+    // 如果没有度数为1的顶点（环形边界），使用第一个顶点作为起点
+    if (chainStarts.empty() && !adjacency.empty()) {
+        chainStarts.push_back(adjacency.begin()->first);
+    }
+
+    // 标记已访问的顶点
+    std::unordered_set<int> visited;
+
+    // 构建每条链
+    for (int start : chainStarts) {
+        if (visited.count(start)) continue;
+
+        std::vector<int> chain;
+        int current = start;
+        int prev = -1;
+
+        while (current != -1 && !visited.count(current)) {
+            visited.insert(current);
+            chain.push_back(current);
+
+            // 找到下一个顶点
+            int next = -1;
+            for (int neighbor : adjacency[current]) {
+                if (neighbor != prev) {
+                    next = neighbor;
+                    break;
+                }
+            }
+
+            prev = current;
+            current = next;
+        }
+
+        // 如果形成环，闭合链
+        if (!chain.empty() && chain.size() > 2 && adjacency[chain.back()].size() > 1) {
+            // 检查是否形成环
+            for (int neighbor : adjacency[chain.back()]) {
+                if (neighbor == chain.front()) {
+                    // 是环，但不需要闭合
+                    break;
+                }
+            }
+        }
+
+        chains.push_back(chain);
+    }
+
+    qDebug() << QString("构建了 %1 条边界链").arg(chains.size());
+    return chains;
+}
+
 
 void SurfaceProcessor::smoothInnerVerticesEx(
     std::vector<delaunay::Triangle>& triangles,
@@ -1117,7 +1203,69 @@ int SurfaceProcessor::countEdgeOccurrences(
 }
 
 
+// 在 surface_processor.cpp 中实现边界顶点提取
+// surface_processor.cpp
+void SurfaceProcessor::extractBoundaryVertices()
+{
+    boundaryVertexIndices_.clear();
 
+    const auto& triangles = delaunayProc_.getTriangles();
+
+    if (triangles.empty()) {
+        qDebug() << "extractBoundaryVertices: triangles empty";
+        return;
+    }
+
+    // 统计每条边出现的次数
+    std::map<std::pair<int, int>, int> edgeCount;
+    for (const auto& tri : triangles) {
+        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) {
+            continue;
+        }
+
+        int a = std::min(tri.a, tri.b);
+        int b = std::max(tri.a, tri.b);
+        edgeCount[{a, b}]++;
+
+        a = std::min(tri.b, tri.c);
+        b = std::max(tri.b, tri.c);
+        edgeCount[{a, b}]++;
+
+        a = std::min(tri.c, tri.a);
+        b = std::max(tri.c, tri.a);
+        edgeCount[{a, b}]++;
+    }
+
+    // 找出边界顶点索引
+    std::unordered_set<int> boundaryVertexSet;
+    for (const auto& pair : edgeCount) {
+        if (pair.second == 1) {  // 只出现一次的边是边界边
+            boundaryVertexSet.insert(pair.first.first);
+            boundaryVertexSet.insert(pair.first.second);
+        }
+    }
+
+    boundaryVertexIndices_.assign(boundaryVertexSet.begin(), boundaryVertexSet.end());
+
+    qDebug() << QString("extractBoundaryVertices: found %1 boundary vertices").arg(boundaryVertexIndices_.size());
+
+    // 将边界顶点传递给 SurfaceView
+    if (surfaceView_) {
+        const auto& pts = delaunayProc_.getPoints();
+        QVector<QVector3D> boundaryVertices;
+
+        for (int idx : boundaryVertexIndices_) {
+            if (idx >= 4 && idx < static_cast<int>(pts.size())) {
+                boundaryVertices.append(QVector3D(static_cast<float>(pts[idx].x),
+                    static_cast<float>(pts[idx].y), static_cast<float>(pts[idx].z)));
+            }
+        }
+        qDebug() << "2222222222222222222222";
+        // 通过 DataProcessor 发送
+        QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
+                                  Q_ARG(QVector<QVector3D>, boundaryVertices));
+    }
+}
 
 
 

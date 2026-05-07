@@ -2079,6 +2079,7 @@ void Core::createScene3dConnections()
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceMaxZ,               scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMaxZ,                        connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceStepSize,           scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setSurfaceStep,                 connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceColorIntervalsSize, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setColorIntervalsSize,          connType);
+    QObject::connect(dataProcessor_, &DataProcessor::surfaceBoundaryVerticesUpdated, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setBoundaryVertices,          connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendPolygonOulineAuto,         scene3dViewPtr_->polygonOutline().get(),        &PolygonOutline::autoGenerateFromAlphaShape,  connType);
     // IsobathsView
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLabels,            scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLabels,                     connType);

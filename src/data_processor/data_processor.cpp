@@ -611,6 +611,12 @@ void DataProcessor::postSurfaceStepSize(float lineStepSize)
     emit sendSurfaceStepSize(lineStepSize);
 }
 
+// data_processor.cpp
+void DataProcessor::postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices)
+{
+    emit surfaceBoundaryVerticesUpdated(vertices);
+}
+
 void DataProcessor::changeState(const DataProcessorType& state)
 {
     emit sendState(state_ = state);

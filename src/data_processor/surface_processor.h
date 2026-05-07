@@ -83,11 +83,28 @@ private:
         const std::vector<int>& boundaryVertices);
 
 
+    std::vector<std::vector<int>> buildBoundaryChains(const std::vector<std::pair<int, int>>& boundaryEdges,
+                                     const std::vector<delaunay::Point>& points);
 
 
+    std::vector<delaunay::Point> boundaryVertices_;  // 存储边界顶点
+public:
+    const std::vector<delaunay::Point>& getBoundaryVertices() const {
+        return boundaryVertices_;
+    }
+    void extractBoundaryVertices();
+    // 获取边界顶点索引（用于调试）
+    const std::vector<int>& getBoundaryVertexIndices() const {
+        return boundaryVertexIndices_;
+    }
 
+    // 设置 SurfaceView 指针
+    void setSurfaceView(SurfaceView* view) {
+        surfaceView_ = view;
+    }
 
-
+    std::vector<int> boundaryVertexIndices_;  // 存储边界顶点索引
+    SurfaceView* surfaceView_ = nullptr;       // 指向 SurfaceView 的指针
 
 
     //从三角网提取边界轮廓

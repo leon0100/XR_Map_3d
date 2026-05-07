@@ -20,7 +20,6 @@ public:
     QRectF getSurfaceBounds() const;
 
 
-
 public:
     class SurfaceViewRenderImplementation : public SceneObject::RenderImplementation
     {
@@ -33,6 +32,8 @@ public:
         float getMinZ();
 
         QRectF getSurfaceBounds() const;
+
+        void renderBoundaryVertices(QOpenGLFunctions* ctx, const QMatrix4x4& mvp) const;
 
     private:
         friend class SurfaceView;
@@ -47,6 +48,10 @@ public:
         int   colorIntervalsSize_; // from dataprocessor
         bool  iVis_;
         bool  mVis_;
+
+        // ===== 新增：边界顶点 =====
+        QVector<QVector3D> boundaryVertices_;  // 存储边界顶点
+        bool boundaryVerticesVisible_ = false;  // 是否显示边界顶点
     };    
 
     explicit SurfaceView(QObject* parent = nullptr);
@@ -72,6 +77,10 @@ public:
 
     void setLlaRef(LLARef llaRef);
     void saveVerticesToFile(const QString& path);
+
+    // ===== 新增：边界顶点相关方法 =====
+    void setBoundaryVertices(const QVector<QVector3D>& vertices);
+    void setBoundaryVerticesVisible(bool visible);
 
 public slots: // from dataprocessor
     void clear();

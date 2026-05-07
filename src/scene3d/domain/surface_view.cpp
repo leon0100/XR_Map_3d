@@ -9,6 +9,24 @@ SurfaceView::SurfaceView(QObject* parent)
 {}
 
 
+// ===== 新增：设置边界顶点 =====
+void SurfaceView::setBoundaryVertices(const QVector<QVector3D>& vertices)
+{
+    if (auto* r = RENDER_IMPL(SurfaceView); r) {
+        r->boundaryVertices_ = vertices;
+        Q_EMIT changed();
+    }
+}
+
+// ===== 新增：设置边界顶点可见性 =====
+void SurfaceView::setBoundaryVerticesVisible(bool visible)
+{
+    if (auto* r = RENDER_IMPL(SurfaceView); r) {
+        r->boundaryVerticesVisible_ = visible;
+        Q_EMIT changed();
+    }
+}
+
 QRectF SurfaceView::getSurfaceBounds() const
 {
     auto r = RENDER_IMPL(SurfaceView);
@@ -405,7 +423,8 @@ SurfaceView::SurfaceViewRenderImplementation::SurfaceViewRenderImplementation() 
     surfaceStep_(3.0f),
     colorIntervalsSize_(-1),
     iVis_(false),
-    mVis_(false)
+    mVis_(false),
+    boundaryVerticesVisible_(false)  // 初始化
 {
 #if defined(Q_OS_ANDROID) || defined(LINUX_ES)
     mosaicColorTableTextureType_ = GL_TEXTURE_2D;
@@ -418,6 +437,10 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
                         const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
 {
     if (!iVis_ && !mVis_) {
+        // 即使没有显示高度场，如果边界顶点可见也需要渲染
+        if (boundaryVerticesVisible_ && !boundaryVertices_.empty()) {
+            renderBoundaryVertices(ctx, mvp);
+        }
         return;
     }
 
@@ -494,6 +517,83 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
             shP->release();
         }
     }
+
+    // ===== 新增：渲染边界顶点 =====
+    if (boundaryVerticesVisible_ && !boundaryVertices_.empty()) {
+        renderBoundaryVertices(ctx, mvp);
+    }
+}
+
+// ===== 新增：边界顶点渲染函数 =====
+void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(QOpenGLFunctions* ctx, const QMatrix4x4& mvp) const
+{
+    if (boundaryVertices_.empty()) return;
+
+    // 保存当前状态
+    // ctx->glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+    // 设置点渲染状态
+    ctx->glEnable(GL_POINT_SMOOTH);
+    ctx->glEnable(GL_BLEND);
+    ctx->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // 使用简单的颜色设置（不使用着色器）
+    // 需要使用固定功能管线或简单着色器
+
+    // 创建简单的着色器程序用于渲染点
+    static GLuint pointShaderProgram = 0;
+    if (pointShaderProgram == 0) {
+        const char* vertexShaderSource =
+            "attribute vec3 position;\n"
+            "uniform mat4 mvp;\n"
+            "void main() {\n"
+            "    gl_Position = mvp * vec4(position, 1.0);\n"
+            "    gl_PointSize = 8.0;\n"
+            "}\n";
+
+        const char* fragmentShaderSource =
+            "void main() {\n"
+            "    gl_FragColor = vec4(1.0, 0.0, 0.0, 0.9);\n"
+            "}\n";
+
+        GLuint vertexShader = ctx->glCreateShader(GL_VERTEX_SHADER);
+        ctx->glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+        ctx->glCompileShader(vertexShader);
+
+        GLuint fragmentShader = ctx->glCreateShader(GL_FRAGMENT_SHADER);
+        ctx->glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+        ctx->glCompileShader(fragmentShader);
+
+        pointShaderProgram = ctx->glCreateProgram();
+        ctx->glAttachShader(pointShaderProgram, vertexShader);
+        ctx->glAttachShader(pointShaderProgram, fragmentShader);
+        ctx->glLinkProgram(pointShaderProgram);
+
+        ctx->glDeleteShader(vertexShader);
+        ctx->glDeleteShader(fragmentShader);
+    }
+
+    // 使用点着色器
+    ctx->glUseProgram(pointShaderProgram);
+
+    // 设置 MVP 矩阵
+    GLint mvpLoc = ctx->glGetUniformLocation(pointShaderProgram, "mvp");
+    ctx->glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, mvp.data());
+
+    // 设置顶点属性
+    GLint positionLoc = ctx->glGetAttribLocation(pointShaderProgram, "position");
+    ctx->glEnableVertexAttribArray(positionLoc);
+    ctx->glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 0, boundaryVertices_.constData());
+
+    // 绘制点
+    ctx->glDrawArrays(GL_POINTS, 0, boundaryVertices_.size());
+
+    // 清理
+    ctx->glDisableVertexAttribArray(positionLoc);
+    ctx->glUseProgram(0);
+
+    // 恢复状态
+    // ctx->glPopAttrib();
 }
 
 float SurfaceView::SurfaceViewRenderImplementation::getMaxZ()
