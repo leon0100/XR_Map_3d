@@ -25,12 +25,13 @@ Item {
 
     property bool isShowBoatTrack: true
     property bool isShowOutline:   true
+    property bool isContours:  true
     property bool isShowIsobaths:  true
     property bool isShowBoat:      true
 
     Component.onCompleted: {
-       IsobathsViewControlMenuController.onProcessStateChanged(isShowIsobaths)
        IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
+       IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isShowIsobaths)
     }
 
 
@@ -305,6 +306,93 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
 
                     Image {
+                        source: "qrc:/XR/contour_map.svg"
+                        width: iconSize * 1.2
+                        height: iconSize * 1.2
+                        fillMode: Image.PreserveAspectFit
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Rectangle {
+                        width: iconSize * 1.1
+                        height: iconSize * 1.1
+                        radius: 5
+                        border.color: "#b0b3b8"
+                        border.width: 1
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: parent.width * 0.8
+                            height: parent.height * 0.8
+                            radius: parent.height * 0.4
+                            color: "#66E07A"
+                            visible: isContours
+                        }
+                    }
+
+                    Text {
+                        text: qsTr("Contours")
+                        font.pixelSize: iconSize
+                        color: "black"
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+
+                    onClicked: {
+                        flashAnim3.restart()
+                        isContours = !isContours
+                        // IsobathsViewControlMenuController.onProcessStateChanged(isContours);
+                        IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isContours)
+                    }
+
+                    onEntered: parent.color = "#d6e6ff"
+                    onExited:  parent.color = "#f9f9fb"
+                }
+            }
+
+
+            Rectangle {
+                id: isobaths
+                Layout.fillWidth: true
+                Layout.preferredHeight: layoutHeight
+                color: "#f9f9fb"
+                border.color: "#b0b3b8"
+                border.width: 1
+
+                property bool checked: true
+
+                SequentialAnimation {
+                   id: flashAnim_isobaths
+                   running: false
+                   loops: 1
+
+                   ColorAnimation {
+                       target: isobaths
+                       property: "color"
+                       to: "#9ecbff"
+                       duration: 100
+                   }
+                   ColorAnimation {
+                       target: isobaths
+                       property: "color"
+                       to: "#d6e6ff"
+                       duration: 100
+                   }
+                }
+
+                Row {
+                    anchors.fill: parent
+                    anchors.leftMargin: iconSize * 0.5
+                    anchors.rightMargin: iconSize * 0.5
+                    spacing: iconSize * 0.5
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    Image {
                         source: "qrc:/XR/contour.png"
                         width: iconSize * 1.2
                         height: iconSize * 1.2
@@ -343,9 +431,9 @@ Item {
                     hoverEnabled: true
 
                     onClicked: {
-                        flashAnim3.restart()
+                        flashAnim_isobaths.restart()
                         isShowIsobaths = !isShowIsobaths
-                        IsobathsViewControlMenuController.onProcessStateChanged(isShowIsobaths);
+                        // IsobathsViewControlMenuController.onProcessStateChanged(isShowIsobaths);
                         IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
                     }
 

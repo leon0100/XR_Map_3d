@@ -30,7 +30,7 @@ enum class HeightType {
     kUndefined = 0,
     kExrtapolation,
     kMosaic,
-    kTriangulation
+    kTriangulation,
 };
 
 static inline bool canOverwriteHeight(HeightType srcMark, HeightType dstMark) {

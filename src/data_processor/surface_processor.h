@@ -54,10 +54,38 @@ private:
     void clipHeightFieldToPolygon();
 
 
-    void smoothBoundaryContours();
-    void processEdgeContour(QVector<float>& smoothedZ,const QVector<QVector3D>& vertices,
-        const QVector<HeightType>& marks,int hvSide,int fixedIdx,  // 固定的坐标（如 y=0 或 x=0）
-        EdgeDirection direction);
+
+
+    void smoothDuringTriangulation();
+    void addEdgeToMap(std::map<std::pair<int, int>, std::vector<int>>& edgeMap, int a, int b, int triIdx);
+    void smoothEdgeVertices(int v1, int v2, bool isBoundaryEdge,const std::vector<int>& triIndices,
+        std::vector<delaunay::Triangle>& triangles,std::vector<delaunay::Point>& points,
+        const std::vector<double>& originalZ);
+    void smoothInnerVertices( std::vector<delaunay::Triangle>& triangles,std::vector<delaunay::Point>& points,
+                        const std::vector<double>& originalZ);
+    double calculateDistance(const delaunay::Point& p1, const delaunay::Point& p2);
+    bool isBoundaryVertex(int vertexIdx, const std::vector<int>& triIndices,
+        std::vector<delaunay::Triangle>& triangles);
+    void addEdge(std::set<std::pair<int, int>>& edges, int a, int b);
+    int countEdgeOccurrences(
+        int a, int b,
+        std::vector<delaunay::Triangle>& triangles);
+    std::vector<int> findBoundaryVertices(std::vector<delaunay::Triangle>& triangles);
+    void smoothBoundaryVerticesEx(
+        std::vector<delaunay::Triangle>& triangles,
+        std::vector<delaunay::Point>& points,
+        const std::vector<double>& originalZ,
+        const std::vector<int>& boundaryVertices);
+    void smoothInnerVerticesEx(
+        std::vector<delaunay::Triangle>& triangles,
+        std::vector<delaunay::Point>& points,
+        const std::vector<double>& originalZ,
+        const std::vector<int>& boundaryVertices);
+
+
+
+
+
 
 
 

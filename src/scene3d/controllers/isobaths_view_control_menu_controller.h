@@ -20,6 +20,7 @@ public:
     void setEdgeLimitChanged(int val);
 
     Q_INVOKABLE void onIsobathsVisibilityCheckBoxCheckedChanged(bool checked);
+    Q_INVOKABLE void onContoursVisibilityCheckBoxCheckedChanged(bool checked);
     Q_INVOKABLE void onOutlineVisibleChanged(bool visible);
     Q_INVOKABLE void onUpdateIsobathsButtonClicked();
     Q_INVOKABLE void onTrianglesVisible(bool state);

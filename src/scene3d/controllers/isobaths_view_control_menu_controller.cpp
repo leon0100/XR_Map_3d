@@ -70,13 +70,23 @@ void IsobathsViewControlMenuController::tryInitPendingLambda()
     }
 }
 
+
+void IsobathsViewControlMenuController::onContoursVisibilityCheckBoxCheckedChanged(bool checked)
+{
+    if (graphicsSceneViewPtr_) {
+        graphicsSceneViewPtr_->getSurfaceViewPtr()->setIVisible(checked);
+    }
+    else {
+        tryInitPendingLambda();
+    }
+}
+
 void IsobathsViewControlMenuController::onIsobathsVisibilityCheckBoxCheckedChanged(bool checked)
 {
     // qDebug() << "onIsobathsVisibilityCheckBoxCheckedChanged " << checked;
     visibility_ = checked;
 
     if (graphicsSceneViewPtr_) {
-        graphicsSceneViewPtr_->getSurfaceViewPtr()->setIVisible(checked);
         graphicsSceneViewPtr_->getIsobathsViewPtr()->setVisible(checked);
 
         if (visibility_) {

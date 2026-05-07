@@ -146,7 +146,7 @@ int PolygonOutline::getNearestVertexIndex(LLA lla) const
     North_East_Down ned = North_East_Down(&lla, &llaRef);
     QVector3D point = QVector3D(ned.n, ned.e, 0.0);
 
-    const float threshold = 10.0;
+    const float threshold = 2.0;
     int nearestIndex = -1;
 
     for (int i = 0; i < nedVec.size(); i++) {

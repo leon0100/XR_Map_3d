@@ -268,7 +268,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 {
     Q_UNUSED(keyboardKey)
 
-
     //当前点x,y的经纬度坐标
     calculateLatLong(x, y, currentLat_, currentLon_);
     emit currentLatChanged();
@@ -314,7 +313,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
                 setCursorShape(Qt::ArrowCursor);
             }
         }
-
     }
 
     wasMoved_ = false;

@@ -77,12 +77,12 @@ public:
     }
 
     // Access current triangle list
-    const std::vector<Triangle>& getTriangles() const  //surface_processor.cpp
+    std::vector<Triangle>& getTriangles()  //surface_processor.cpp
     {
         return triangles;
     }
     // Access point list
-    const std::vector<Point>& getPoints() const  //surface_processor.cpp
+    std::vector<Point>& getPoints() //surface_processor.cpp
     {
         return points;
     }
@@ -109,7 +109,7 @@ private:
                 markTriangleAsBad(i);
             }
         }
-        return badIdx;  
+        return badIdx;
     }
 
     std::vector<size_t> findBadTrianglesByVertice(size_t p_idx)
@@ -285,7 +285,7 @@ private:
         } else {
             tid = triangles.size();
             triangles.push_back(tri);
-        }      
+        }
         return tid;
     }
 

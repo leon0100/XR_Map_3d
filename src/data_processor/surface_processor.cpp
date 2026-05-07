@@ -154,6 +154,8 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         processOneCenter(point);
     }
 
+    smoothDuringTriangulation();
+
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {
         return;
@@ -198,8 +200,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
     propagateBorderHeights(changedTiles);
     for (SurfaceTile* tile : std::as_const(changedTiles)) {
-        smoothTileHeights(tile);  // 对高度场进行平滑处理，减少噪声
-        // smoothBoundaryContours();
+        // smoothTileHeights(tile);  // 对高度场进行平滑处理，减少噪声
         clipHeightFieldToPolygon();
         tile->updateHeightIndices();
         tile->setIsUpdated(false);
@@ -632,190 +633,493 @@ bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
 }
 
 
-void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile)
+// void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile)
+// {
+//     int hvSide = tileHeightMatrixRatio_ + 1;
+//     if (!tile || !tile->getIsInited()) {
+//         return;
+//     }
+
+//     auto& vertices = tile->getHeightVerticesRef();
+//     auto& marks    = tile->getHeightMarkVerticesRef();
+
+//     // 创建平滑后的高度副本
+//     QVector<float> smoothedZ(vertices.size());
+//     for (int i = 0; i < vertices.size(); ++i) {
+//         smoothedZ[i] = vertices[i].z();
+//     }
+
+//     // 3x3高斯核平滑，但只对非边界点进行处理
+//     const float kernel[3][3] = {
+//         {0.0625f, 0.125f, 0.0625f},
+//         {0.125f,  0.25f,  0.125f },
+//         {0.0625f, 0.125f, 0.0625f}
+//     };
+
+//     for (int y = 1; y < hvSide-1; ++y) {
+//         for (int x = 1; x < hvSide-1; ++x) {
+//             int idx = y * hvSide + x;
+
+//             // 只平滑有效的三角剖分点
+//             if (marks[idx] != HeightType::kTriangulation) {
+//                 continue;
+//             }
+
+//             float newZ = 0.0f;
+//             float weightSum = 0.0f;
+
+//             for (int ky = -1; ky <= 1; ++ky) {
+//                 for (int kx = -1; kx <= 1; ++kx) {
+//                     int nIdx = (y + ky) * hvSide + (x + kx);
+//                     float z = vertices[nIdx].z();
+
+//                     // 只考虑有效的邻居点
+//                     if (!qFuzzyIsNull(z)) {
+//                         float w = kernel[ky + 1][kx + 1];
+//                         newZ += w * z;
+//                         weightSum += w;
+//                     }
+//                 }
+//             }
+
+//             if (weightSum > 0.0f) {
+//                 smoothedZ[idx] = newZ / weightSum;
+//             }
+//         }
+//     }
+
+//     // 应用平滑后的高度
+//     for (int i = 0; i < vertices.size(); ++i) {
+//         if (!qFuzzyIsNull(vertices[i].z())) {
+//             vertices[i].setZ(smoothedZ[i]);
+//         }
+//     }
+// }
+
+
+
+
+void SurfaceProcessor::smoothDuringTriangulation()
 {
-    int hvSide = tileHeightMatrixRatio_ + 1;
-    if (!tile || !tile->getIsInited()) {
+    auto& triangles = delaunayProc_.getTriangles();
+    auto& points = delaunayProc_.getPointsRef();
+
+    if (triangles.empty()) {
+        qDebug() << "smoothDuringTriangulation: triangles empty";
         return;
     }
 
-    auto& vertices = tile->getHeightVerticesRef();
-    auto& marks    = tile->getHeightMarkVerticesRef();
+    qDebug() << QString("smoothDuringTriangulation: processing, triangles: %1, points: %2")
+                    .arg(triangles.size()).arg(points.size());
 
-    // 创建平滑后的高度副本
-    QVector<float> smoothedZ(vertices.size());
-    for (int i = 0; i < vertices.size(); ++i) {
-        smoothedZ[i] = vertices[i].z();
+    std::vector<double> originalZ(points.size());
+    for (size_t i = 0; i < points.size(); ++i) {
+        originalZ[i] = points[i].z;
     }
 
-    // 3x3高斯核平滑，但只对非边界点进行处理
-    const float kernel[3][3] = {
-        { 0.0625f, 0.125f, 0.0625f },
-        { 0.125f,  0.25f,  0.125f  },
-        { 0.0625f, 0.125f, 0.0625f }
-    };
+    std::vector<int> boundaryVertices = findBoundaryVertices(triangles);
+    qDebug() << QString("Found %1 boundary vertices").arg(boundaryVertices.size());
 
-    for (int y = 1; y < hvSide-1; ++y) {
-        for (int x = 1; x < hvSide-1; ++x) {
-            int idx = y * hvSide + x;
+    smoothBoundaryVerticesEx(triangles, points, originalZ, boundaryVertices);
+    smoothInnerVerticesEx(triangles, points, originalZ, boundaryVertices);
 
-            // 只平滑有效的三角剖分点
-            if (marks[idx] != HeightType::kTriangulation) {
-                continue;
-            }
-
-            float newZ = 0.0f;
-            float weightSum = 0.0f;
-
-            for (int ky = -1; ky <= 1; ++ky) {
-                for (int kx = -1; kx <= 1; ++kx) {
-                    int nIdx = (y + ky) * hvSide + (x + kx);
-                    float z = vertices[nIdx].z();
-
-                    // 只考虑有效的邻居点
-                    if (!qFuzzyIsNull(z)) {
-                        float w = kernel[ky + 1][kx + 1];
-                        newZ += w * z;
-                        weightSum += w;
-                    }
-                }
-            }
-
-            if (weightSum > 0.0f) {
-                smoothedZ[idx] = newZ / weightSum;
-            }
-        }
-    }
-
-    // 应用平滑后的高度
-    for (int i = 0; i < vertices.size(); ++i) {
-        if (!qFuzzyIsNull(vertices[i].z())) {
-            vertices[i].setZ(smoothedZ[i]);
-        }
-    }
+    qDebug() << "smoothDuringTriangulation: done";
 }
-
-
-
-void SurfaceProcessor::smoothBoundaryContours()
+std::vector<int> SurfaceProcessor::findBoundaryVertices(std::vector<delaunay::Triangle>& triangles)
 {
-    const int stepPix = surfaceMeshPtr_->getStepSizeHeightMatrix();
-    const int hvSide = surfaceMeshPtr_->getTileSidePixelSize() / stepPix + 1;
+    std::map<std::pair<int, int>, int> edgeCount;
+    std::unordered_set<int> boundaryVerticesSet;
 
-    // 遍历所有瓦片
-    auto& matrix = surfaceMeshPtr_->getTileMatrixRef();
-    for (int ty = 0; ty < surfaceMeshPtr_->getNumHeightTiles(); ++ty) {
-        for (int tx = 0; tx < surfaceMeshPtr_->getNumWidthTiles(); ++tx) {
-            SurfaceTile* t = matrix[ty][tx];
-            if (!t || !t->getIsInited()) continue;
-
-            auto& vertices = t->getHeightVerticesRef();
-            auto& marks = t->getHeightMarkVerticesRef();
-
-            // 创建临时数组存储平滑结果
-            QVector<float> smoothedZ(vertices.size());
-            for (int i = 0; i < vertices.size(); ++i) {
-                smoothedZ[i] = vertices[i].z();
-            }
-
-            // 专门处理四条边上的三角剖分点
-            processEdgeContour(smoothedZ, vertices, marks, hvSide, 0, EdgeDirection::Bottom);   // 上边
-            processEdgeContour(smoothedZ, vertices, marks, hvSide, hvSide-1, EdgeDirection::Top);  // 下边
-            processEdgeContour(smoothedZ, vertices, marks, hvSide, 0, EdgeDirection::Right);  // 左边
-            processEdgeContour(smoothedZ, vertices, marks, hvSide, hvSide-1, EdgeDirection::Left);  // 右边
-
-            // 应用结果
-            for (int i = 0; i < vertices.size(); ++i) {
-                if (!qFuzzyIsNull(vertices[i].z())) {
-                    vertices[i].setZ(smoothedZ[i]);
-                }
-            }
-        }
-    }
-}
-
-
-
-void SurfaceProcessor::processEdgeContour(
-    QVector<float>& smoothedZ,
-    const QVector<QVector3D>& vertices,
-    const QVector<HeightType>& marks,
-    int hvSide,
-    int fixedIdx,  // 固定的坐标（如 y=0 或 x=0）
-    EdgeDirection direction)
-{
-    int start, end, step;
-
-    switch (direction) {
-    case EdgeDirection::Bottom:  // y=0，向下搜索邻居
-    case EdgeDirection::Top:     // y=hvSide-1，向上搜索邻居
-        start = 0;
-        end = hvSide;
-        step = 1;
-        break;
-    case EdgeDirection::Right:   // x=0，向右搜索邻居
-    case EdgeDirection::Left:    // x=hvSide-1，向左搜索邻居
-        start = 0;
-        end = hvSide;
-        step = 1;
-        break;
-    }
-
-    for (int i = start; i < end; i += step) {
-        int idx;
-        if (direction == EdgeDirection::Bottom || direction == EdgeDirection::Top) {
-            idx = fixedIdx * hvSide + i;
-        } else {
-            idx = i * hvSide + fixedIdx;
-        }
-
-        // 只处理有效的三角剖分点（即等高线经过的点）
-        if (marks[idx] != HeightType::kTriangulation) {
+    // 统计每条边出现的次数
+    for (auto& tri : triangles) {
+        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) {
             continue;
         }
 
-        // 收集同一等高线的相邻点
-        QVector<float> sameContourHeights;
+        // 确保顶点索引有序
+        int a = std::min(tri.a, tri.b);
+        int b = std::max(tri.a, tri.b);
+        edgeCount[{a, b}]++;
 
-        // 根据方向搜索有效邻居
-        int dy = (direction == EdgeDirection::Bottom) ? 1 :
-                     (direction == EdgeDirection::Top) ? -1 : 0;
-        int dx = (direction == EdgeDirection::Right) ? 1 :
-                     (direction == EdgeDirection::Left) ? -1 : 0;
+        a = std::min(tri.b, tri.c);
+        b = std::max(tri.b, tri.c);
+        edgeCount[{a, b}]++;
 
-        // 搜索该方向的连续等高线点
-        for (int offset = -2; offset <= 2; ++offset) {
-            int ny, nx;
+        a = std::min(tri.c, tri.a);
+        b = std::max(tri.c, tri.a);
+        edgeCount[{a, b}]++;
+    }
 
-            if (direction == EdgeDirection::Bottom || direction == EdgeDirection::Top) {
-                ny = fixedIdx + dy;
-                nx = i + offset;
-            } else {
-                ny = i + offset;
-                nx = fixedIdx + dx;
-            }
+    // 找出只出现一次的边（边界边）上的顶点
+    for (const auto& pair : edgeCount) {
+        if (pair.second == 1) {
+            boundaryVerticesSet.insert(pair.first.first);
+            boundaryVerticesSet.insert(pair.first.second);
+        }
+    }
 
-            if (ny < 0 || ny >= hvSide || nx < 0 || nx >= hvSide) {
+    return std::vector<int>(boundaryVerticesSet.begin(), boundaryVerticesSet.end());
+}
+
+
+void SurfaceProcessor::smoothBoundaryVerticesEx(
+    std::vector<delaunay::Triangle>& triangles,
+    std::vector<delaunay::Point>& points,
+    const std::vector<double>& originalZ,
+    const std::vector<int>& boundaryVertices)
+{
+    // 创建顶点到三角形的映射
+    std::unordered_map<int, std::vector<int>> vertexToTriangles;
+    for (size_t i = 0; i < triangles.size(); ++i) {
+        auto& tri = triangles[i];
+        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) {
+            continue;
+        }
+        vertexToTriangles[tri.a].push_back(i);
+        vertexToTriangles[tri.b].push_back(i);
+        vertexToTriangles[tri.c].push_back(i);
+    }
+
+    // 对边界顶点进行多次迭代平滑
+    const int iterations = 5;  // 增加迭代次数
+    for (int iter = 0; iter < iterations; ++iter) {
+        // 每次迭代都基于原始值进行计算
+        for (int vertexIdx : boundaryVertices) {
+            if (vertexIdx < 0 || vertexIdx >= static_cast<int>(points.size())) {
                 continue;
             }
 
-            int nIdx = ny * hvSide + nx;
+            const auto& triIndices = vertexToTriangles[vertexIdx];
+            if (triIndices.empty()) {
+                continue;
+            }
 
-            // 检查是否为同一等高线（高度相近）
-            if (!qFuzzyIsNull(vertices[nIdx].z()) &&
-                qAbs(vertices[nIdx].z() - vertices[idx].z()) < 0.5f) {  // 高度差阈值
-                sameContourHeights.append(vertices[nIdx].z());
+            // 收集相邻顶点
+            std::set<int> neighbors;
+            for (int triIdx : triIndices) {
+                auto& tri = triangles[triIdx];
+                neighbors.insert(tri.a);
+                neighbors.insert(tri.b);
+                neighbors.insert(tri.c);
+            }
+            neighbors.erase(vertexIdx);
+
+            // 计算加权平均
+            double sumZ = 0.0;
+            double weightSum = 0.0;
+
+            for (int nIdx : neighbors) {
+                if (nIdx < 0 || nIdx >= static_cast<int>(originalZ.size())) {
+                    continue;
+                }
+
+                // 距离加权
+                double dist = calculateDistance(points[vertexIdx], points[nIdx]);
+                double weight = (dist < 0.001) ? 1.0 : (1.0 / (dist * dist));
+
+                sumZ += originalZ[nIdx] * weight;
+                weightSum += weight;
+            }
+
+            if (weightSum > 0.0) {
+                double avgZ = sumZ / weightSum;
+                double weight = 0.8;  // 更强的平滑强度
+                double newZ = originalZ[vertexIdx] * (1 - weight) + avgZ * weight;
+                double delta = std::abs(newZ - originalZ[vertexIdx]);
+
+                // 放宽限制
+                if (delta < 5.0) {
+                    points[vertexIdx].z = newZ;
+                }
             }
         }
+    }
 
-        // 对收集到的等高线点进行平滑
-        if (sameContourHeights.size() >= 2) {
-            float avg = std::accumulate(sameContourHeights.begin(), sameContourHeights.end(), 0.0f) /
-                        sameContourHeights.size();
-            smoothedZ[idx] = avg;
+    // qDebug() << QString("边界顶点平滑完成，处理了 %1 个顶点，迭代 %2 次")
+    //                 .arg(boundaryVertices.size()).arg(iterations);
+}
+
+void SurfaceProcessor::smoothInnerVerticesEx(
+    std::vector<delaunay::Triangle>& triangles,
+    std::vector<delaunay::Point>& points,
+    const std::vector<double>& originalZ,
+    const std::vector<int>& boundaryVertices)
+{
+    std::unordered_set<int> boundarySet(boundaryVertices.begin(), boundaryVertices.end());
+
+    std::unordered_map<int, std::vector<int>> vertexToTriangles;
+    for (size_t i = 0; i < triangles.size(); ++i) {
+        auto& tri = triangles[i];
+        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) {
+            continue;
+        }
+        vertexToTriangles[tri.a].push_back(i);
+        vertexToTriangles[tri.b].push_back(i);
+        vertexToTriangles[tri.c].push_back(i);
+    }
+
+    for (const auto& pair : vertexToTriangles) {
+        int vertexIdx = pair.first;
+
+        // 跳过边界顶点（已处理）
+        if (boundarySet.count(vertexIdx)) {
+            continue;
+        }
+
+        const auto& triIndices = pair.second;
+        std::set<int> neighbors;
+        for (int triIdx : triIndices) {
+            auto& tri = triangles[triIdx];
+            neighbors.insert(tri.a);
+            neighbors.insert(tri.b);
+            neighbors.insert(tri.c);
+        }
+        neighbors.erase(vertexIdx);
+
+        double sumZ = 0.0;
+        double weightSum = 0.0;
+        for (int nIdx : neighbors) {
+            if (nIdx < 0 || nIdx >= static_cast<int>(originalZ.size())) {
+                continue;
+            }
+            double dist = calculateDistance(points[vertexIdx], points[nIdx]);
+            double weight = (dist < 0.001) ? 1.0 : (1.0 / dist);
+            sumZ += originalZ[nIdx] * weight;
+            weightSum += weight;
+        }
+
+        if (weightSum > 0.0) {
+            double smoothedZ = sumZ / weightSum;
+            double delta = std::abs(smoothedZ - originalZ[vertexIdx]);
+
+            if (delta < 2.0) {
+                points[vertexIdx].z = smoothedZ;
+            }
         }
     }
 }
+
+// 添加边到映射表
+void SurfaceProcessor::addEdgeToMap(std::map<std::pair<int, int>, std::vector<int>>& edgeMap,
+                                         int a, int b, int triIdx)
+{
+    if (a < b) {
+        edgeMap[{a, b}].push_back(triIdx);
+    } else {
+        edgeMap[{b, a}].push_back(triIdx);
+    }
+}
+
+// 处理边上的顶点
+void SurfaceProcessor::smoothEdgeVertices(
+    int v1, int v2,
+    bool isBoundaryEdge,
+    const std::vector<int>& triIndices,
+    std::vector<delaunay::Triangle>& triangles,
+    std::vector<delaunay::Point>& points,
+    const std::vector<double>& originalZ)
+{
+    // 收集这条边相关的所有顶点
+    std::set<int> relatedVertices;
+    relatedVertices.insert(v1);
+    relatedVertices.insert(v2);
+
+    for (int triIdx : triIndices) {
+        auto& tri = triangles[triIdx];
+        relatedVertices.insert(tri.a);
+        relatedVertices.insert(tri.b);
+        relatedVertices.insert(tri.c);
+    }
+
+    // 计算平均高度
+    double sumZ = 0.0;
+    int count = 0;
+
+    for (int idx : relatedVertices) {
+        if (idx >= 0 && idx < static_cast<int>(originalZ.size())) {
+            sumZ += originalZ[idx];
+            count++;
+        }
+    }
+
+    if (count >= 2) {
+        double avgZ = sumZ / count;
+
+        // 根据是否为边界边应用不同的平滑强度
+        double weight = isBoundaryEdge ? 0.7 : 0.4;
+
+        // 平滑两个端点
+        if (v1 >= 0 && v1 < static_cast<int>(points.size())) {
+            double newZ = originalZ[v1] * (1 - weight) + avgZ * weight;
+            double delta = std::abs(newZ - originalZ[v1]);
+
+            // 限制最大变化量
+            if (delta < 2.0) {
+                points[v1].z = newZ;
+            }
+        }
+
+        if (v2 >= 0 && v2 < static_cast<int>(points.size())) {
+            double newZ = originalZ[v2] * (1 - weight) + avgZ * weight;
+            double delta = std::abs(newZ - originalZ[v2]);
+
+            if (delta < 2.0) {
+                points[v2].z = newZ;
+            }
+        }
+    }
+}
+
+// 对内部顶点进行额外平滑
+void SurfaceProcessor::smoothInnerVertices(
+    std::vector<delaunay::Triangle>& triangles,
+    std::vector<delaunay::Point>& points,
+    const std::vector<double>& originalZ)
+{
+    // 创建顶点到三角形的映射
+    std::unordered_map<int, std::vector<int>> vertexToTriangles;
+
+    for (size_t i = 0; i < triangles.size(); ++i) {
+        auto& tri = triangles[i];
+        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) {
+            continue;
+        }
+
+        vertexToTriangles[tri.a].push_back(i);
+        vertexToTriangles[tri.b].push_back(i);
+        vertexToTriangles[tri.c].push_back(i);
+    }
+
+    // 对每个顶点进行平滑
+    for (const auto& pair : vertexToTriangles) {
+        int vertexIdx = pair.first;
+        const auto& triIndices = pair.second;
+
+        // 跳过边界顶点（已经在边处理中处理过）
+        if (isBoundaryVertex(vertexIdx, triIndices, triangles)) {
+            continue;
+        }
+
+        // 内部顶点使用更强的平滑
+        double sumZ = 0.0;
+        double weightSum = 0.0;
+
+        std::set<int> visited;
+        visited.insert(vertexIdx);
+
+        for (int triIdx : triIndices) {
+            auto& tri = triangles[triIdx];
+
+            size_t vertices[3] = {tri.a, tri.b, tri.c};
+            for (int j = 0; j < 3; ++j) {
+                int neighborIdx = vertices[j];
+
+                if (visited.count(neighborIdx)) {
+                    continue;
+                }
+
+                visited.insert(neighborIdx);
+
+                // 距离加权
+                double dist = calculateDistance(points[vertexIdx], points[neighborIdx]);
+                double weight = (dist < 0.001) ? 1.0 : (1.0 / dist);
+
+                sumZ += originalZ[neighborIdx] * weight;
+                weightSum += weight;
+            }
+        }
+
+        if (weightSum > 0.0) {
+            double smoothedZ = sumZ / weightSum;
+            double delta = std::abs(smoothedZ - originalZ[vertexIdx]);
+
+            // 内部顶点可以有更大的变化
+            if (delta < 2.0) {
+                points[vertexIdx].z = smoothedZ;
+            }
+        }
+    }
+}
+
+// 计算两点之间的距离
+double SurfaceProcessor::calculateDistance(const delaunay::Point& p1, const delaunay::Point& p2)
+{
+    double dx = p2.x - p1.x;
+    double dy = p2.y - p1.y;
+    double dz = p2.z - p1.z;
+
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+// 判断顶点是否为边界顶点
+bool SurfaceProcessor::isBoundaryVertex(
+    int vertexIdx,
+    const std::vector<int>& triIndices,
+    std::vector<delaunay::Triangle>& triangles)
+{
+    std::set<std::pair<int, int>> edges;
+
+    for (int triIdx : triIndices) {
+        auto& tri = triangles[triIdx];
+        addEdge(edges, tri.a, tri.b);
+        addEdge(edges, tri.b, tri.c);
+        addEdge(edges, tri.c, tri.a);
+    }
+
+    for (const auto& edge : edges) {
+        int count = countEdgeOccurrences(edge.first, edge.second, triangles);
+        if (count == 1) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// 添加边到集合
+void SurfaceProcessor::addEdge(std::set<std::pair<int, int>>& edges, int a, int b)
+{
+    if (a < b) {
+        edges.insert({a, b});
+    } else {
+        edges.insert({b, a});
+    }
+}
+
+// 统计边出现次数
+int SurfaceProcessor::countEdgeOccurrences(
+    int a, int b,
+    std::vector<delaunay::Triangle>& triangles)
+{
+    int count = 0;
+    int minIdx = std::min(a, b);
+    int maxIdx = std::max(a, b);
+
+    for (auto& tri : triangles) {
+        if (tri.is_bad) continue;
+
+        int t0 = std::min(std::min(tri.a, tri.b), tri.c);
+        int t2 = std::max(std::max(tri.a, tri.b), tri.c);
+
+        if (minIdx < t0 || maxIdx > t2) {
+            continue;
+        }
+
+        bool hasA = (tri.a == a || tri.b == a || tri.c == a);
+        bool hasB = (tri.a == b || tri.b == b || tri.c == b);
+
+        if (hasA && hasB) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+
+
+
+
 
 
 

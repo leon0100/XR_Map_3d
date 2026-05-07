@@ -79,6 +79,7 @@
         <file>XR/location.png</file>
         <file>XR/pushPin.png</file>
         <file>XR/contour.png</file>
+	<file>XR/contour_map.svg</file>
         <file>XR/wordlog.png</file>
         <file>XR/wordlog3232.png</file>
         <file>XR/revokeedit.png</file>
