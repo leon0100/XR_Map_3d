@@ -1249,22 +1249,20 @@ void SurfaceProcessor::extractBoundaryVertices()
 
     qDebug() << QString("extractBoundaryVertices: found %1 boundary vertices").arg(boundaryVertexIndices_.size());
 
-    // 将边界顶点传递给 SurfaceView
-    if (surfaceView_) {
-        const auto& pts = delaunayProc_.getPoints();
-        QVector<QVector3D> boundaryVertices;
 
-        for (int idx : boundaryVertexIndices_) {
-            if (idx >= 4 && idx < static_cast<int>(pts.size())) {
-                boundaryVertices.append(QVector3D(static_cast<float>(pts[idx].x),
-                    static_cast<float>(pts[idx].y), static_cast<float>(pts[idx].z)));
-            }
+    const auto& pts = delaunayProc_.getPoints();
+    QVector<QVector3D> boundaryVertices;
+
+    for (int idx : boundaryVertexIndices_) {
+        if (idx >= 4 && idx < static_cast<int>(pts.size())) {
+            boundaryVertices.append(QVector3D(static_cast<float>(pts[idx].x),
+                static_cast<float>(pts[idx].y), static_cast<float>(pts[idx].z)));
         }
-        qDebug() << "2222222222222222222222";
-        // 通过 DataProcessor 发送
-        QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
-                                  Q_ARG(QVector<QVector3D>, boundaryVertices));
     }
+    qDebug() << "2222222222222222222222";
+    // 通过 DataProcessor 发送
+    QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
+                              Q_ARG(QVector<QVector3D>, boundaryVertices));
 }
 
 

@@ -98,13 +98,7 @@ public:
         return boundaryVertexIndices_;
     }
 
-    // 设置 SurfaceView 指针
-    void setSurfaceView(SurfaceView* view) {
-        surfaceView_ = view;
-    }
-
     std::vector<int> boundaryVertexIndices_;  // 存储边界顶点索引
-    SurfaceView* surfaceView_ = nullptr;       // 指向 SurfaceView 的指针
 
 
     //从三角网提取边界轮廓
