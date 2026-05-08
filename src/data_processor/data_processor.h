@@ -117,7 +117,7 @@ signals:
     void sendSurfaceColorIntervalsSize(int size);
     void sendSurfaceStepSize(float lineStepSize);
     void sendPolygonOulineAuto();
-    void surfaceBoundaryVerticesUpdated(const QVector<QVector3D>& vertices);
+    void surfaceBoundaryVerticesUpdated(const QVector<QVector<QVector3D>>& vertices);
 
     // IsobathsProcessor
     void sendIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);
@@ -139,20 +139,25 @@ private slots:
 
     // All
     void postState(DataProcessorType s);
+
     // BottomTrack
     void postDistCompletedByProcessing(int epIndx, const ChannelId& channelId, float dist);
     void postLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll);
+
     // Surface/Mosaic
     void postSurfaceTiles(const TileMap& tiles, bool useTextures);
+
     // Surface
     void postMinZ(float val);
     void postMaxZ(float val);
     void postSurfaceColorTable(const std::vector<uint8_t>& t);
     void postSurfaceColorIntervalsSize(int size);
     void postSurfaceStepSize(float lineStepSize);
-    void postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices);
+    void postSurfaceBoundaryVertices(const QVector<QVector<QVector3D>>& vertices);
+
     // Mosaic
     void postMosaicColorTable(const std::vector<uint8_t>& t);
+
     // Isobaths
     void postIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);
     void postIsobathsLineSegments(const QVector<QVector3D>& lineSegments);

@@ -25,6 +25,12 @@ static constexpr int   defaultTileHeightMatrixRatio = 16;
 static constexpr float defaultTileResolution        = 1.0f / 10.f;
 
 
+struct BoundaryGroup {
+    QVector<QVector3D> vertices;
+    QVector<QPair<int, int>> indices;  // 在高度矩阵中的坐标
+};
+
+
 class SurfaceTile {
 public:
     /*methods*/
@@ -61,6 +67,12 @@ public:
     const QVector<int>&         getHeightIndicesCRef() const;
     int                         getHeadIndx() const;
     bool                        getInFov() const;
+
+
+    // 在 surface_tile.h 中添加声明
+    QVector<QVector3D> getBoundaryStepVertices() const;
+    bool isValidHeightVertex(const QVector3D& vertex, HeightType mark) const;
+    QVector<QVector<QVector3D>> getBoundaryGroups() const;
 
 private:
     friend class SurfaceView;

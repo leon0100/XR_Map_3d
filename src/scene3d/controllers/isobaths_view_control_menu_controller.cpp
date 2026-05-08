@@ -81,6 +81,16 @@ void IsobathsViewControlMenuController::onContoursVisibilityCheckBoxCheckedChang
     }
 }
 
+void IsobathsViewControlMenuController::onVertexVisibilityCheckBoxCheckedChanged(bool checked)
+{
+    if (graphicsSceneViewPtr_) {
+        graphicsSceneViewPtr_->getSurfaceViewPtr()->setBoundaryVerticesVisible(checked);
+    }
+    else {
+        tryInitPendingLambda();
+    }
+}
+
 void IsobathsViewControlMenuController::onIsobathsVisibilityCheckBoxCheckedChanged(bool checked)
 {
     // qDebug() << "onIsobathsVisibilityCheckBoxCheckedChanged " << checked;

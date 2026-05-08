@@ -5,7 +5,6 @@
 #include <QPair>
 #include <QPointF>
 #include <QReadWriteLock>
-#include <unordered_set>
 #include "delaunay.h"
 #include "isobaths_defs.h"
 #include "surface_tile.h"
@@ -14,6 +13,23 @@
 
 enum class EdgeDirection { Top, Bottom, Left, Right };
 
+// 边界链（一组相邻的边界顶点）
+struct BoundaryChain {
+    QVector<QVector3D> vertices;  // 有序的边界顶点
+    bool isClosed = false;        // 是否是封闭的环
+
+    void addVertex(const QVector3D& v) {
+        vertices.append(v);
+    }
+
+    int size() const {
+        return vertices.size();
+    }
+
+    bool isEmpty() const {
+        return vertices.isEmpty();
+    }
+};
 
 class BottomTrack;
 class DataProcessor;
@@ -85,20 +101,32 @@ private:
 
     std::vector<std::vector<int>> buildBoundaryChains(const std::vector<std::pair<int, int>>& boundaryEdges,
                                      const std::vector<delaunay::Point>& points);
+    void fillBoundaryGaps(const QVector<QVector3D>& boundaryVertices);
+    bool isPointInsideBoundary(const QVector3D& point, const QVector<QVector3D>& boundary);
+    void fillHeightAt(float x, float y);
 
 
     std::vector<delaunay::Point> boundaryVertices_;  // 存储边界顶点
+    QVector<QVector<QVector3D>> boundaryGroups_;  // 每组边界顶点
 public:
     const std::vector<delaunay::Point>& getBoundaryVertices() const {
         return boundaryVertices_;
     }
-    void extractBoundaryVertices();
+
     // 获取边界顶点索引（用于调试）
     const std::vector<int>& getBoundaryVertexIndices() const {
         return boundaryVertexIndices_;
     }
 
     std::vector<int> boundaryVertexIndices_;  // 存储边界顶点索引
+    // 在类中添加成员
+    std::vector<BoundaryChain> boundaryChains_;
+
+
+
+
+
+
 
 
     //从三角网提取边界轮廓

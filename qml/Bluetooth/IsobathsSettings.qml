@@ -32,6 +32,7 @@ Item {
     Component.onCompleted: {
        IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
        IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isShowIsobaths)
+       IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
     }
 
 
@@ -520,7 +521,8 @@ Item {
                     onClicked: {
                         flashAnim4.restart()
                         isShowBoat = !isShowBoat
-                        NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
+                        // NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
+                        IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
                     }
 
                     onEntered: parent.color = "#d6e6ff"

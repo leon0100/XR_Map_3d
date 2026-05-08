@@ -2,7 +2,7 @@
 
 
 #include <cmath>
-
+#include <QQueue>
 
 SurfaceTile::SurfaceTile() :
     id_(QUuid::createUuid()),
@@ -234,3 +234,227 @@ bool SurfaceTile::checkVerticesDepth(int topLeft, int topRight, int bottomLeft, 
     }
     return true;
 }
+
+
+
+QVector<QVector3D> SurfaceTile::getBoundaryStepVertices() const
+{
+    QVector<QVector3D> stepVertices;
+    const int calculatedHvSide = std::sqrt(heightVertices_.size());
+
+    for (int y = 0; y < calculatedHvSide; ++y) {
+        for (int x = 0; x < calculatedHvSide; ++x) {
+            int idx = y * calculatedHvSide + x;
+
+            // 只检查有效的高度顶点
+            if (!isValidHeightVertex(heightVertices_[idx], heightMarkVertices_[idx])) {
+                continue;
+            }
+
+            // 检查是否是锯齿顶点（相邻有无效顶点）
+            bool isStepVertex = false;
+
+            // 检查四个方向的相邻顶点
+            if (x > 0) {
+                int leftIdx = y * calculatedHvSide + (x - 1);
+                if (!isValidHeightVertex(heightVertices_[leftIdx], heightMarkVertices_[leftIdx])) {
+                    isStepVertex = true;
+                }
+            }
+            if (x < calculatedHvSide - 1 && !isStepVertex) {
+                int rightIdx = y * calculatedHvSide + (x + 1);
+                if (!isValidHeightVertex(heightVertices_[rightIdx], heightMarkVertices_[rightIdx])) {
+                    isStepVertex = true;
+                }
+            }
+            if (y > 0 && !isStepVertex) {
+                int topIdx = (y - 1) * calculatedHvSide + x;
+                if (!isValidHeightVertex(heightVertices_[topIdx], heightMarkVertices_[topIdx])) {
+                    isStepVertex = true;
+                }
+            }
+            if (y < calculatedHvSide - 1 && !isStepVertex) {
+                int bottomIdx = (y + 1) * calculatedHvSide + x;
+                if (!isValidHeightVertex(heightVertices_[bottomIdx], heightMarkVertices_[bottomIdx])) {
+                    isStepVertex = true;
+                }
+            }
+
+            if (isStepVertex) {
+                stepVertices.append(heightVertices_[idx]);
+            }
+        }
+    }
+
+    qDebug() << "Found" << stepVertices.size() << "step vertices";
+    return stepVertices;
+}
+// QVector<QVector3D> SurfaceTile::getBoundaryStepVertices() const
+// {
+//     QVector<QVector3D> stepVertices;
+//     const int calculatedHvSide = std::sqrt(heightVertices_.size());
+
+//     // 使用 map 按坐标排序，确保点按顺序排列
+//     std::map<std::pair<float, float>, QVector3D> sortedPoints;
+
+//     for (int y = 0; y < calculatedHvSide; ++y) {
+//         for (int x = 0; x < calculatedHvSide; ++x) {
+//             int idx = y * calculatedHvSide + x;
+
+//             // 只检查有效的高度顶点
+//             if (!isValidHeightVertex(heightVertices_[idx], heightMarkVertices_[idx])) {
+//                 continue;
+//             }
+
+//             // 检查是否是边界顶点（相邻有无效顶点）
+//             bool isBoundaryVertex = false;
+
+//             // 检查四个方向的相邻顶点
+//             if (x == 0 || !isValidHeightVertex(heightVertices_[y * calculatedHvSide + x - 1], heightMarkVertices_[y * calculatedHvSide + x - 1])) {
+//                 isBoundaryVertex = true;
+//             } else if (x == calculatedHvSide - 1 || !isValidHeightVertex(heightVertices_[y * calculatedHvSide + x + 1], heightMarkVertices_[y * calculatedHvSide + x + 1])) {
+//                 isBoundaryVertex = true;
+//             } else if (y == 0 || !isValidHeightVertex(heightVertices_[(y - 1) * calculatedHvSide + x], heightMarkVertices_[(y - 1) * calculatedHvSide + x])) {
+//                 isBoundaryVertex = true;
+//             } else if (y == calculatedHvSide - 1 || !isValidHeightVertex(heightVertices_[(y + 1) * calculatedHvSide + x], heightMarkVertices_[(y + 1) * calculatedHvSide + x])) {
+//                 isBoundaryVertex = true;
+//             }
+
+//             if (isBoundaryVertex) {
+//                 sortedPoints[{heightVertices_[idx].x(), heightVertices_[idx].y()}] = heightVertices_[idx];
+//             }
+//         }
+//     }
+
+//     // 转换为有序的 QVector
+//     for (const auto& pair : sortedPoints) {
+//         stepVertices.append(pair.second);
+//     }
+
+//     qDebug() << "Found" << stepVertices.size() << "boundary vertices";
+//     return stepVertices;
+// }
+
+
+
+// 添加到文件末尾
+inline bool SurfaceTile::isValidHeightVertex(const QVector3D& vertex, HeightType mark) const
+{
+    // 有效的高度顶点需要满足：
+    // 1. mark 不是 kUndefined
+    // 2. 高度值有效（非零）
+    return mark != HeightType::kUndefined;
+}
+
+
+QVector<QVector<QVector3D>> SurfaceTile::getBoundaryGroups() const
+{
+    QVector<QVector<QVector3D>> groups;
+    const int calculatedHvSide = std::sqrt(heightVertices_.size());
+
+    // ========== 第一步：找出所有锯齿顶点 ==========
+    QVector<QVector<bool>> isStepVertex(calculatedHvSide, QVector<bool>(calculatedHvSide, false));
+
+    for (int y = 0; y < calculatedHvSide; ++y) {
+        for (int x = 0; x < calculatedHvSide; ++x) {
+            int idx = y * calculatedHvSide + x;
+
+            // 只检查有效的高度顶点
+            if (!isValidHeightVertex(heightVertices_[idx], heightMarkVertices_[idx])) {
+                continue;
+            }
+
+            // 检查是否是锯齿顶点（相邻有无效顶点）
+            bool isStep = false;
+
+            // 检查左边
+            if (x > 0) {
+                int leftIdx = y * calculatedHvSide + (x - 1);
+                if (!isValidHeightVertex(heightVertices_[leftIdx], heightMarkVertices_[leftIdx])) {
+                    isStep = true;
+                }
+            }
+            // 检查右边
+            if (x < calculatedHvSide - 1 && !isStep) {
+                int rightIdx = y * calculatedHvSide + (x + 1);
+                if (!isValidHeightVertex(heightVertices_[rightIdx], heightMarkVertices_[rightIdx])) {
+                    isStep = true;
+                }
+            }
+            // 检查上边
+            if (y > 0 && !isStep) {
+                int topIdx = (y - 1) * calculatedHvSide + x;
+                if (!isValidHeightVertex(heightVertices_[topIdx], heightMarkVertices_[topIdx])) {
+                    isStep = true;
+                }
+            }
+            // 检查下边
+            if (y < calculatedHvSide - 1 && !isStep) {
+                int bottomIdx = (y + 1) * calculatedHvSide + x;
+                if (!isValidHeightVertex(heightVertices_[bottomIdx], heightMarkVertices_[bottomIdx])) {
+                    isStep = true;
+                }
+            }
+
+            isStepVertex[y][x] = isStep;
+        }
+    }
+
+    // ========== 第二步：使用 BFS 分组锯齿顶点 ==========
+    QVector<QVector<bool>> visited(calculatedHvSide, QVector<bool>(calculatedHvSide, false));
+
+    // 4个方向
+    const int dx[] = {-1, 1, 0, 0};
+    const int dy[] = {0, 0, -1, 1};
+
+    for (int y = 0; y < calculatedHvSide; ++y) {
+        for (int x = 0; x < calculatedHvSide; ++x) {
+            if (visited[y][x]) continue;
+            if (!isStepVertex[y][x]) continue;  // 只处理锯齿顶点
+
+            // 使用 BFS 找到连通的锯齿顶点组
+            QVector<QVector3D> group;
+            QQueue<QPair<int, int>> queue;
+            queue.enqueue({x, y});
+            visited[y][x] = true;
+
+            while (!queue.isEmpty()) {
+                auto pos = queue.dequeue();
+                int cx = pos.first;
+                int cy = pos.second;
+                int cIdx = cy * calculatedHvSide + cx;
+
+                group.append(heightVertices_[cIdx]);
+
+                // 检查四个方向的相邻锯齿顶点
+                for (int d = 0; d < 4; ++d) {
+                    int nx = cx + dx[d];
+                    int ny = cy + dy[d];
+
+                    if (nx < 0 || nx >= calculatedHvSide || ny < 0 || ny >= calculatedHvSide) continue;
+                    if (visited[ny][nx]) continue;
+                    if (!isStepVertex[ny][nx]) continue;  // 只连接锯齿顶点
+
+                    visited[ny][nx] = true;
+                    queue.enqueue({nx, ny});
+                }
+            }
+
+            // 只添加有多个顶点的组
+            if (group.size() >= 2) {
+                // 按 x, y 坐标排序
+                std::sort(group.begin(), group.end(),
+                          [](const QVector3D& a, const QVector3D& b) {
+                              if (a.x() != b.x()) return a.x() < b.x();
+                              return a.y() < b.y();
+                          });
+
+                groups.append(group);
+            }
+        }
+    }
+
+    qDebug() << "Found" << groups.size() << "step vertex groups";
+    return groups;
+}
+

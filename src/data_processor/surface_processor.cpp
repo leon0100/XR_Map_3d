@@ -1,6 +1,7 @@
 #include "surface_processor.h"
 
 #include <cmath>
+#include <unordered_set>
 #include "isobaths_processor.h"
 
 SurfaceProcessor::SurfaceProcessor(DataProcessor* parent) :
@@ -155,7 +156,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     smoothDuringTriangulation();
-    extractBoundaryVertices();  // 新增
 
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {
@@ -200,12 +200,38 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     propagateBorderHeights(changedTiles);
+
+    // 提取锯齿顶点（从 tiles 中提取）
+    QVector<QVector3D> stepVertices;
+    boundaryGroups_.clear();  // 清空之前的组
+
+    // 合并所有瓦片的高度分组
+    std::map<float, QVector<QVector3D>> allHeightGroups;
     for (SurfaceTile* tile : std::as_const(changedTiles)) {
         // smoothTileHeights(tile);  // 对高度场进行平滑处理，减少噪声
         clipHeightFieldToPolygon();
+
+        auto tileGroups = tile->getBoundaryGroups();
+        // 将每组添加到 boundaryGroups_
+        for (auto& group : tileGroups) {
+            if (group.size() >= 2) {
+                boundaryGroups_.append(group);
+            }
+        }
+
         tile->updateHeightIndices();
         tile->setIsUpdated(false);
     }
+
+
+
+
+    QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
+                            Q_ARG(QVector<QVector<QVector3D>>, boundaryGroups_));
+    // QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
+    //                           Q_ARG(QVector<QVector3D>, stepVertices));
+
+
 
     if (beenManualChanged) {
         float currMin = std::numeric_limits<float>::max();
@@ -924,6 +950,120 @@ std::vector<std::vector<int>> SurfaceProcessor::buildBoundaryChains(
     return chains;
 }
 
+void SurfaceProcessor::fillBoundaryGaps(const QVector<QVector3D>& boundaryVertices)
+{
+    if (boundaryVertices.size() < 3) return;
+
+    // 找到边界框
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::lowest();
+
+    for (const auto& v : boundaryVertices) {
+        minX = std::min(minX, v.x());
+        maxX = std::max(maxX, v.x());
+        minY = std::min(minY, v.y());
+        maxY = std::max(maxY, v.y());
+    }
+
+    // 网格化填充区域
+    const float step = surfaceMeshPtr_->getStepSizeHeightMatrix();
+
+    for (float x = minX; x <= maxX; x += step) {
+        for (float y = minY; y <= maxY; y += step) {
+            // 检查点是否在边界内部
+            if (isPointInsideBoundary(QVector3D(x, y, 0), boundaryVertices)) {
+                // 尝试填充高度值
+                fillHeightAt(x, y);
+            }
+        }
+    }
+}
+
+bool SurfaceProcessor::isPointInsideBoundary(const QVector3D& point, const QVector<QVector3D>& boundary)
+{
+    // 使用射线法判断点是否在多边形内部
+    int intersections = 0;
+
+    for (int i = 0; i < boundary.size(); ++i) {
+        const QVector3D& v1 = boundary[i];
+        const QVector3D& v2 = boundary[(i + 1) % boundary.size()];
+
+        // 检查射线与边的交点
+        if (((v1.y() > point.y()) != (v2.y() > point.y())) &&
+            (point.x() < (v2.x() - v1.x()) * (point.y() - v1.y()) / (v2.y() - v1.y()) + v1.x())) {
+            intersections++;
+        }
+    }
+
+    return (intersections % 2) == 1;
+}
+
+void SurfaceProcessor::fillHeightAt(float x, float y)
+{
+    // 查找附近的有效高度点进行插值
+    std::vector<std::pair<QVector3D, float>> nearbyPoints;
+
+    const auto& tilesRef = surfaceMeshPtr_->getTilesCRef();
+    const float searchRadius = 3.0f * surfaceMeshPtr_->getStepSizeHeightMatrix();
+
+    for (auto* tile : tilesRef) {
+        if (!tile || !tile->getIsInited()) continue;
+
+        const auto& vertices = tile->getHeightVerticesCRef();
+        const auto& marks = tile->getHeightMarkVerticesCRef();
+
+        for (int i = 0; i < vertices.size(); ++i) {
+            const QVector3D& v = vertices[i];
+            float dist = QVector2D(v.x() - x, v.y() - y).length();
+
+            if (dist < searchRadius && marks[i] != HeightType::kUndefined) {
+                nearbyPoints.emplace_back(v, dist);
+            }
+        }
+    }
+
+    // 如果找到足够的点，进行加权平均插值
+    if (nearbyPoints.size() >= 3) {
+        std::sort(nearbyPoints.begin(), nearbyPoints.end(),
+                  [](const auto& a, const auto& b) { return a.second < b.second; });
+
+        float totalWeight = 0;
+        float interpolatedZ = 0;
+
+        // 使用距离加权
+        for (const auto& pair : nearbyPoints) {
+            float weight = 1.0f / (pair.second + 0.001f);
+            totalWeight += weight;
+            interpolatedZ += weight * pair.first.z();
+        }
+
+        interpolatedZ /= totalWeight;
+
+        // 设置填充点的高度
+        // ... 需要找到对应的 tile 和位置并设置高度值
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void SurfaceProcessor::smoothInnerVerticesEx(
     std::vector<delaunay::Triangle>& triangles,
@@ -1201,80 +1341,6 @@ int SurfaceProcessor::countEdgeOccurrences(
 
     return count;
 }
-
-
-// 在 surface_processor.cpp 中实现边界顶点提取
-// surface_processor.cpp
-void SurfaceProcessor::extractBoundaryVertices()
-{
-    boundaryVertexIndices_.clear();
-
-    const auto& triangles = delaunayProc_.getTriangles();
-
-    if (triangles.empty()) {
-        qDebug() << "extractBoundaryVertices: triangles empty";
-        return;
-    }
-
-    // 统计每条边出现的次数
-    std::map<std::pair<int, int>, int> edgeCount;
-    for (const auto& tri : triangles) {
-        if (tri.is_bad || tri.a < 4 || tri.b < 4 || tri.c < 4) {
-            continue;
-        }
-
-        int a = std::min(tri.a, tri.b);
-        int b = std::max(tri.a, tri.b);
-        edgeCount[{a, b}]++;
-
-        a = std::min(tri.b, tri.c);
-        b = std::max(tri.b, tri.c);
-        edgeCount[{a, b}]++;
-
-        a = std::min(tri.c, tri.a);
-        b = std::max(tri.c, tri.a);
-        edgeCount[{a, b}]++;
-    }
-
-    // 找出边界顶点索引
-    std::unordered_set<int> boundaryVertexSet;
-    for (const auto& pair : edgeCount) {
-        if (pair.second == 1) {  // 只出现一次的边是边界边
-            boundaryVertexSet.insert(pair.first.first);
-            boundaryVertexSet.insert(pair.first.second);
-        }
-    }
-
-    boundaryVertexIndices_.assign(boundaryVertexSet.begin(), boundaryVertexSet.end());
-
-    qDebug() << QString("extractBoundaryVertices: found %1 boundary vertices").arg(boundaryVertexIndices_.size());
-
-
-    const auto& pts = delaunayProc_.getPoints();
-    QVector<QVector3D> boundaryVertices;
-
-    for (int idx : boundaryVertexIndices_) {
-        if (idx >= 4 && idx < static_cast<int>(pts.size())) {
-            boundaryVertices.append(QVector3D(static_cast<float>(pts[idx].x),
-                static_cast<float>(pts[idx].y), static_cast<float>(pts[idx].z)));
-        }
-    }
-    qDebug() << "2222222222222222222222";
-    // 通过 DataProcessor 发送
-    QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
-                              Q_ARG(QVector<QVector3D>, boundaryVertices));
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
