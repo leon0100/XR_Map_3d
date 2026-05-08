@@ -639,7 +639,7 @@ void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(
 
         shaderProgram->disableAttributeArray(posLoc);
 
-        qDebug() << "Group" << i << "已连线，顶点数:" << group.size();
+        // qDebug() << "Group" << i << "已连线，顶点数:" << group.size();
     }
 
     shaderProgram->release();

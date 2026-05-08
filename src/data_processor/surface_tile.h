@@ -72,7 +72,9 @@ public:
     // 在 surface_tile.h 中添加声明
     QVector<QVector3D> getBoundaryStepVertices() const;
     bool isValidHeightVertex(const QVector3D& vertex, HeightType mark) const;
-    QVector<QVector<QVector3D>> getBoundaryGroups() const;
+    QVector<QVector<QVector3D>> getBoundaryGroups();
+    QVector<float> buildGaussianKernel(int windowSize, float sigma);
+    QVector<QVector3D> gaussianSmooth(QVector<QVector3D>& points, float sigma, int iterations);
 
 private:
     friend class SurfaceView;
