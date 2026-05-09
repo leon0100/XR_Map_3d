@@ -10,10 +10,10 @@ SurfaceView::SurfaceView(QObject* parent)
 
 
 // ===== 新增：设置边界顶点 =====
-void SurfaceView::setBoundaryVertices(const QVector<QVector<QVector3D>>& vertices)
+void SurfaceView::setBoundaryVertices(const QVector<QVector3D>& vertices)
 {
     if (auto* r = RENDER_IMPL(SurfaceView); r) {
-        r->boundaryGroups_ = vertices;
+        r->boundaryVertices_ = vertices;
         Q_EMIT changed();
     }
     qDebug() << "SurfaceView::setBoundaryVertices........";
@@ -518,34 +518,19 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
     }
 
     // ===== 新增：渲染边界顶点 =====
-    renderBoundaryVertices(ctx, mvp,shaderProgramMap);
-
+    // renderBoundaryVertices(ctx, mvp,shaderProgramMap);
 }
 
 
-// ===== 新增：边界顶点渲染函数 =====
-// void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
-// const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
+// void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(QOpenGLFunctions* ctx,
+//     const QMatrix4x4& mvp,const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
 // {
-//     qDebug() << "renderBoundaryVertices called, vertex count:" << boundaryVertices_.size();
-//     if(!boundaryVerticesVisible_) {
+//     if (boundaryGroups_.isEmpty()) {
 //         return;
 //     }
 
-//     if (boundaryVertices_.empty()) {
-//         qDebug() << "renderBoundaryVertices: vertices empty, returning";
-//         return;
-//     }
-
-//     // 获取着色器程序
 //     auto shaderProgram = shaderProgramMap.value("static", nullptr);
-//     if (!shaderProgram) {
-//         qDebug() << "ERROR: shader program 'static' not found!";
-//         return;
-//     }
-
-//     if (!shaderProgram->bind()) {
-//         qDebug() << "ERROR: shader program bind failed!";
+//     if (!shaderProgram || !shaderProgram->bind()) {
 //         return;
 //     }
 
@@ -553,98 +538,98 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
 //     int colorLoc  = shaderProgram->uniformLocation("color");
 //     int matrixLoc = shaderProgram->uniformLocation("matrix");
 
-//     // 设置矩阵
 //     shaderProgram->setUniformValue(matrixLoc, mvp);
-
-//     // 启用顶点属性
-//     shaderProgram->enableAttributeArray(posLoc);
-
-//     // 为每个边界顶点绘制实心圆
-//     const float radius = 1.0f;  // 圆的半径1.0像素
-//     const int segments = 32;     // 圆的分段数，越多越圆滑
-
-//     QVector<QVector3D> circleVertices;
-//     circleVertices.reserve(segments + 2);
-
-//     // 红色
-//     QVector4D circleColor(1.0f, 1.0f, 0.0f, 1.0f);
-//     shaderProgram->setUniformValue(colorLoc, circleColor);
-
-//     // 禁用深度测试，确保圆显示在最前面
 //     ctx->glDisable(GL_DEPTH_TEST);
 
-//     for (int i = 0; i < boundaryVertices_.size(); i++) {
-//         const QVector3D& vertex = boundaryVertices_.at(i);
+//     // 设置线宽和颜色
+//     ctx->glLineWidth(3.0f);
+//     QVector4D lineColor(0.0f, 0.0f, 1.0f, 1.0f);  // 蓝色
+//     shaderProgram->setUniformValue(colorLoc, lineColor);
 
-//         circleVertices.clear();
-//         circleVertices.append(vertex);  // 圆心
+//     // ========== 关键：每个分组独立连接成线段 ==========
+//     for (int i = 0; i < boundaryGroups_.size(); ++i) {
+//         const auto& group = boundaryGroups_[i];  // 第 i 个分组
 
-//         // 添加圆周上的点
-//         for (int j = 0; j <= segments; j++) {
-//             float angle = 2.0f * 3.1415926 * j / segments;
-//             float x = vertex.x() + radius * std::cos(angle);
-//             float y = vertex.y() + radius * std::sin(angle);
-//             circleVertices.append(QVector3D(x, y, vertex.z()));
-//         }
+//         if (group.size() < 2) continue;  // 至少需要2个顶点才能连线
 
-//         shaderProgram->setAttributeArray(posLoc, circleVertices.constData());
-//         ctx->glDrawArrays(GL_TRIANGLE_FAN, 0, circleVertices.size());
+//         shaderProgram->enableAttributeArray(posLoc);
+//         shaderProgram->setAttributeArray(posLoc, group.constData());
+
+//         // 使用 GL_LINE_STRIP 将该分组的顶点连接成线段
+//         ctx->glDrawArrays(GL_LINE_STRIP, 0, group.size());
+
+//         shaderProgram->disableAttributeArray(posLoc);
+
+//         // qDebug() << "Group" << i << "已连线，顶点数:" << group.size();
 //     }
 
-//     // 清理
-//     shaderProgram->disableAttributeArray(posLoc);
 //     shaderProgram->release();
-
 //     ctx->glEnable(GL_DEPTH_TEST);
-
-//     qDebug() << "renderBoundaryVertices finished, drawn" << boundaryVertices_.size() << "circles";
 // }
 void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(
-    QOpenGLFunctions* ctx,
-    const QMatrix4x4& mvp,
-    const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
+    QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
+    const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const
 {
-    if (boundaryGroups_.isEmpty()) {
+    if (boundaryVertices_.isEmpty()) {
+        qDebug() << "renderBoundaryVertices: no boundary vertices";
         return;
     }
 
+    qDebug() << "renderBoundaryVertices: vertex count =" << boundaryVertices_.size();
+
+    // 获取 shader 程序
     auto shaderProgram = shaderProgramMap.value("static", nullptr);
-    if (!shaderProgram || !shaderProgram->bind()) {
+    if (!shaderProgram) {
+        qDebug() << "renderBoundaryVertices: shader program is null";
         return;
     }
 
+    // 绑定 shader
+    if (!shaderProgram->bind()) {
+        qDebug() << "renderBoundaryVertices: failed to bind shader";
+        return;
+    }
+
+    // 获取属性位置
     int posLoc    = shaderProgram->attributeLocation("position");
     int colorLoc  = shaderProgram->uniformLocation("color");
     int matrixLoc = shaderProgram->uniformLocation("matrix");
 
+    qDebug() << "renderBoundaryVertices: posLoc =" << posLoc
+             << ", colorLoc =" << colorLoc
+             << ", matrixLoc =" << matrixLoc;
+
     shaderProgram->setUniformValue(matrixLoc, mvp);
+
+    // 禁用深度测试，启用混合
     ctx->glDisable(GL_DEPTH_TEST);
+    ctx->glEnable(GL_BLEND);
+    ctx->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // 设置线宽和颜色
-    ctx->glLineWidth(3.0f);
-    QVector4D lineColor(0.0f, 0.0f, 1.0f, 1.0f);  // 蓝色
-    shaderProgram->setUniformValue(colorLoc, lineColor);
+    // 使用 setAttributeArray 批量设置顶点
+    glPointSize(15.0f);  // 增大点大小
+    ctx->glEnable(GL_POINT_SMOOTH);  // 启用点平滑（抗锯齿）
 
-    // ========== 关键：每个分组独立连接成线段 ==========
-    for (int i = 0; i < boundaryGroups_.size(); ++i) {
-        const auto& group = boundaryGroups_[i];  // 第 i 个分组
+    // 设置点颜色（红色）
+    QVector4D pointColor(1.0f, 0.0f, 0.0f, 1.0f);
+    shaderProgram->setUniformValue(colorLoc, pointColor);
 
-        if (group.size() < 2) continue;  // 至少需要2个顶点才能连线
+    // 启用顶点属性数组并设置数据
+    shaderProgram->enableAttributeArray(posLoc);
+    shaderProgram->setAttributeArray(posLoc, boundaryVertices_.constData());
 
-        shaderProgram->enableAttributeArray(posLoc);
-        shaderProgram->setAttributeArray(posLoc, group.constData());
+    // 一次性绘制所有点
+    ctx->glDrawArrays(GL_POINTS, 0, boundaryVertices_.size());
 
-        // 使用 GL_LINE_STRIP 将该分组的顶点连接成线段
-        ctx->glDrawArrays(GL_LINE_STRIP, 0, group.size());
+    shaderProgram->disableAttributeArray(posLoc);  // 禁用属性数组
 
-        shaderProgram->disableAttributeArray(posLoc);
-
-        // qDebug() << "Group" << i << "已连线，顶点数:" << group.size();
-    }
+    qDebug() << "renderBoundaryVertices: drawn" << boundaryVertices_.size() << "points";
 
     shaderProgram->release();
+    ctx->glDisable(GL_BLEND);
     ctx->glEnable(GL_DEPTH_TEST);
 }
+
 
 float SurfaceView::SurfaceViewRenderImplementation::getMaxZ()
 {

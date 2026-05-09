@@ -25,12 +25,6 @@ static constexpr int   defaultTileHeightMatrixRatio = 16;
 static constexpr float defaultTileResolution        = 1.0f / 10.f;
 
 
-struct BoundaryGroup {
-    QVector<QVector3D> vertices;
-    QVector<QPair<int, int>> indices;  // 在高度矩阵中的坐标
-};
-
-
 class SurfaceTile {
 public:
     /*methods*/
@@ -59,9 +53,9 @@ public:
     int                         getIsUpdated() const;
     std::vector<uint8_t>&       getMosaicImageDataRef();
     const std::vector<uint8_t>& getMosaicImageDataCRef() const;
-    QVector<QVector3D>&         getHeightVerticesRef();
     QVector<HeightType>&        getHeightMarkVerticesRef();
     const QVector<QVector2D>&   getMosaicTextureVerticesCRef() const;
+    QVector<QVector3D>&         getHeightVerticesRef();
     const QVector<QVector3D>&   getHeightVerticesCRef() const;
     const QVector<HeightType>&  getHeightMarkVerticesCRef() const;
     const QVector<int>&         getHeightIndicesCRef() const;
@@ -69,12 +63,11 @@ public:
     bool                        getInFov() const;
 
 
-    // 在 surface_tile.h 中添加声明
-    QVector<QVector3D> getBoundaryStepVertices() const;
+
+    QVector<QVector3D> getBoundaryStepVertices();
     bool isValidHeightVertex(const QVector3D& vertex, HeightType mark) const;
     QVector<QVector<QVector3D>> getBoundaryGroups();
-    QVector<float> buildGaussianKernel(int windowSize, float sigma);
-    QVector<QVector3D> gaussianSmooth(QVector<QVector3D>& points, float sigma, int iterations);
+    void contractVertex(QVector3D& vertex, int gridX, int gridY, int hvSide) const;
 
 private:
     friend class SurfaceView;

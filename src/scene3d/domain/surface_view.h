@@ -34,7 +34,7 @@ public:
         QRectF getSurfaceBounds() const;
 
         void renderBoundaryVertices(QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
-const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const;
+                const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const;
 
     private:
         friend class SurfaceView;
@@ -43,8 +43,8 @@ const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) co
         GLuint surfaceColorTableTextureId_;
         GLuint mosaicColorTableTextureId_;
         GLenum mosaicColorTableTextureType_;
-        float minZ_; // from dataprocessor
-        float maxZ_; // from dataprocessor
+        float minZ_;  // from dataprocessor
+        float maxZ_;  // from dataprocessor
         float surfaceStep_; // from dataprocessor
         int   colorIntervalsSize_; // from dataprocessor
         bool  iVis_;
@@ -52,8 +52,8 @@ const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) co
 
         // ===== 新增：边界顶点 =====
         QVector<QVector<QVector3D>> boundaryGroups_;  // 存储边界顶点
+        QVector<QVector3D> boundaryVertices_;  // 存储边界顶点
         bool boundaryVerticesVisible_;  // 是否显示边界顶点
-        QVector<QVector3D> boundaryVertices_;
     };    
 
     explicit SurfaceView(QObject* parent = nullptr);
@@ -81,7 +81,7 @@ const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) co
     void saveVerticesToFile(const QString& path);
 
     // ===== 新增：边界顶点相关方法 =====
-    void setBoundaryVertices(const QVector<QVector<QVector3D>>& vertices);
+    void setBoundaryVertices(const QVector<QVector3D>& vertices);
     void setBoundaryVerticesVisible(bool visible);
 
 public slots: // from dataprocessor

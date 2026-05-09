@@ -612,7 +612,7 @@ void DataProcessor::postSurfaceStepSize(float lineStepSize)
 }
 
 // data_processor.cpp
-void DataProcessor::postSurfaceBoundaryVertices(const QVector<QVector<QVector3D>>& vertices)
+void DataProcessor::postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices)
 {
     emit surfaceBoundaryVerticesUpdated(vertices);
 }

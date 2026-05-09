@@ -117,7 +117,7 @@ signals:
     void sendSurfaceColorIntervalsSize(int size);
     void sendSurfaceStepSize(float lineStepSize);
     void sendPolygonOulineAuto();
-    void surfaceBoundaryVerticesUpdated(const QVector<QVector<QVector3D>>& vertices);
+    void surfaceBoundaryVerticesUpdated(const QVector<QVector3D>& vertices);
 
     // IsobathsProcessor
     void sendIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);
@@ -153,7 +153,7 @@ private slots:
     void postSurfaceColorTable(const std::vector<uint8_t>& t);
     void postSurfaceColorIntervalsSize(int size);
     void postSurfaceStepSize(float lineStepSize);
-    void postSurfaceBoundaryVertices(const QVector<QVector<QVector3D>>& vertices);
+    void postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices);
 
     // Mosaic
     void postMosaicColorTable(const std::vector<uint8_t>& t);

@@ -72,63 +72,6 @@ private:
 
 
 
-    void smoothDuringTriangulation();
-    void addEdgeToMap(std::map<std::pair<int, int>, std::vector<int>>& edgeMap, int a, int b, int triIdx);
-    void smoothEdgeVertices(int v1, int v2, bool isBoundaryEdge,const std::vector<int>& triIndices,
-        std::vector<delaunay::Triangle>& triangles,std::vector<delaunay::Point>& points,
-        const std::vector<double>& originalZ);
-    void smoothInnerVertices( std::vector<delaunay::Triangle>& triangles,std::vector<delaunay::Point>& points,
-                        const std::vector<double>& originalZ);
-    double calculateDistance(const delaunay::Point& p1, const delaunay::Point& p2);
-    bool isBoundaryVertex(int vertexIdx, const std::vector<int>& triIndices,
-        std::vector<delaunay::Triangle>& triangles);
-    void addEdge(std::set<std::pair<int, int>>& edges, int a, int b);
-    int countEdgeOccurrences(
-        int a, int b,
-        std::vector<delaunay::Triangle>& triangles);
-    std::vector<int> findBoundaryVertices(std::vector<delaunay::Triangle>& triangles);
-    void smoothBoundaryVerticesEx(
-        std::vector<delaunay::Triangle>& triangles,
-        std::vector<delaunay::Point>& points,
-        const std::vector<double>& originalZ,
-        const std::vector<int>& boundaryVertices);
-    void smoothInnerVerticesEx(
-        std::vector<delaunay::Triangle>& triangles,
-        std::vector<delaunay::Point>& points,
-        const std::vector<double>& originalZ,
-        const std::vector<int>& boundaryVertices);
-
-
-    std::vector<std::vector<int>> buildBoundaryChains(const std::vector<std::pair<int, int>>& boundaryEdges,
-                                     const std::vector<delaunay::Point>& points);
-    void fillBoundaryGaps(const QVector<QVector3D>& boundaryVertices);
-    bool isPointInsideBoundary(const QVector3D& point, const QVector<QVector3D>& boundary);
-    void fillHeightAt(float x, float y);
-
-
-    std::vector<delaunay::Point> boundaryVertices_;  // 存储边界顶点
-    QVector<QVector<QVector3D>> boundaryGroups_;  // 每组边界顶点
-public:
-    const std::vector<delaunay::Point>& getBoundaryVertices() const {
-        return boundaryVertices_;
-    }
-
-    // 获取边界顶点索引（用于调试）
-    const std::vector<int>& getBoundaryVertexIndices() const {
-        return boundaryVertexIndices_;
-    }
-
-    std::vector<int> boundaryVertexIndices_;  // 存储边界顶点索引
-    // 在类中添加成员
-    std::vector<BoundaryChain> boundaryChains_;
-
-
-
-
-
-
-
-
     //从三角网提取边界轮廓
     static double circumradius(const QPointF& A, const QPointF& B, const QPointF& C);
     static double polygonArea(const QPolygonF& poly);
