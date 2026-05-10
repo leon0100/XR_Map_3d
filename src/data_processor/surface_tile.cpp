@@ -1,5 +1,4 @@
 #include "surface_tile.h"
-#include "dataset_defs.h"
 
 #include <cmath>
 #include <QQueue>
@@ -290,74 +289,138 @@ QVector<QVector3D> SurfaceTile::getBoundaryStepVertices()
 }
 
 // 在原地收缩顶点（直接修改传入的顶点）还能继续改进，收缩方向加到8个
+// void SurfaceTile::contractVertex(QVector3D& vertex, int gridX, int gridY, int hvSide) const
+// {
+//     float originalX = vertex.x();
+//     float originalY = vertex.y();
+
+//     QVector2D shrinkDirection(0, 0);
+//     int validDirections = 0;
+
+//     const int dx[] = {-1, 1, 0, 0};
+//     const int dy[] = {0, 0, -1, 1};
+
+//     // 检查四个主方向，向有效区域方向收缩
+//     for (int d = 0; d < 4; ++d) {
+//         int nx = gridX + dx[d];
+//         int ny = gridY + dy[d];
+
+//         if (nx < 0 || nx >= hvSide || ny < 0 || ny >= hvSide) continue;
+
+//         int nIdx = ny * hvSide + nx;
+//         if (isValidHeightVertex(heightVertices_[nIdx], heightMarkVertices_[nIdx])) {
+//             shrinkDirection += QVector2D(dx[d], dy[d]);
+//             validDirections++;
+//         }
+//     }
+
+//     // 如果主方向没有有效顶点，检查对角线方向
+//     if (validDirections == 0) {
+//         const int diagDx[] = {-1, -1, 1, 1};
+//         const int diagDy[] = {-1, 1, -1, 1};
+
+//         for (int d = 0; d < 4; ++d) {
+//             int nx = gridX + diagDx[d];
+//             int ny = gridY + diagDy[d];
+
+//             if (nx < 0 || nx >= hvSide || ny < 0 || ny >= hvSide) continue;
+
+//             int nIdx = ny * hvSide + nx;
+
+//             if (isValidHeightVertex(heightVertices_[nIdx], heightMarkVertices_[nIdx])) {
+//                 shrinkDirection += QVector2D(diagDx[d] * 0.707f, diagDy[d] * 0.707f);
+//                 validDirections++;
+//             }
+//         }
+//     }
+
+//     if (validDirections == 0 || qFuzzyIsNull(shrinkDirection.length())) {
+//         qDebug() << "No shrink direction found at (" << gridX << "," << gridY << ")";
+//         return;
+//     }
+
+//     shrinkDirection.normalize();
+
+//     // ========== 第二步：计算收缩距离（三角剖分最短边长）==========
+//     float stepSize = sidePixelSize_ / heightMatrixRatio_;
+//     float shrinkDistance = stepSize * 1.0f;  // 收缩距离
+
+//     vertex.setX(vertex.x() + shrinkDirection.x() * shrinkDistance);
+//     vertex.setY(vertex.y() + shrinkDirection.y() * shrinkDistance);
+
+//     float actualShrinkX = vertex.x() - originalX;
+//     float actualShrinkY = vertex.y() - originalY;
+
+//     qDebug() << "=========== Shrink Info ============";
+//     qDebug() << "Grid position: (" << gridX << ", " << gridY << ")";
+//     qDebug() << "Original position: (" << originalX << ", " << originalY << ")";
+//     qDebug() << "Shrink direction: (" << shrinkDirection.x() << ", " << shrinkDirection.y() << ")";
+//     qDebug() << "Shrink distance: " << shrinkDistance;
+//     qDebug() << "Actual shrink X,Y: " << actualShrinkX << "  " << actualShrinkY;
+//     qDebug() << "New position: (" << vertex.x() << ", " << vertex.y() << ")";
+// }
 void SurfaceTile::contractVertex(QVector3D& vertex, int gridX, int gridY, int hvSide) const
 {
     float originalX = vertex.x();
     float originalY = vertex.y();
 
+    // ========== 8个方向==========
+    const int dirCount = 8;
+    const int dx[dirCount] = {  0, -1,  0,  1, -1,  1, -1,  1 };  // x方向增量
+    const int dy[dirCount] = { -1,  0,  1,  0, -1, -1,  1,  1 };  // y方向增量
+    const float weight[dirCount] = {
+        1.0f, 0.707f, 1.0f, 0.707f,   // 主方向权重1.0，对角线方向权重√2/2
+        0.707f, 0.707f, 0.707f, 0.707f
+    };
+
     QVector2D shrinkDirection(0, 0);
     int validDirections = 0;
 
-    const int dx[] = {-1, 1, 0, 0};
-    const int dy[] = {0, 0, -1, 1};
-
-    // 检查四个主方向，向有效区域方向收缩
-    for (int d = 0; d < 4; ++d) {
+    for (int d = 0; d < dirCount; ++d) {
         int nx = gridX + dx[d];
         int ny = gridY + dy[d];
 
-        if (nx < 0 || nx >= hvSide || ny < 0 || ny >= hvSide) continue;
+        if (nx < 0 || nx >= hvSide || ny < 0 || ny >= hvSide) {
+            continue;
+        }
 
         int nIdx = ny * hvSide + nx;
         if (isValidHeightVertex(heightVertices_[nIdx], heightMarkVertices_[nIdx])) {
-            shrinkDirection += QVector2D(dx[d], dy[d]);
+            // 使用方向权重，确保主方向比对角线方向更重要
+            shrinkDirection += QVector2D(dx[d], dy[d]) * weight[d];
             validDirections++;
         }
     }
 
-    // 如果主方向没有有效顶点，检查对角线方向
+    // 如果8个方向都没有有效邻居，保持原位置
     if (validDirections == 0) {
-        const int diagDx[] = {-1, -1, 1, 1};
-        const int diagDy[] = {-1, 1, -1, 1};
-
-        for (int d = 0; d < 4; ++d) {
-            int nx = gridX + diagDx[d];
-            int ny = gridY + diagDy[d];
-
-            if (nx < 0 || nx >= hvSide || ny < 0 || ny >= hvSide) continue;
-
-            int nIdx = ny * hvSide + nx;
-
-            if (isValidHeightVertex(heightVertices_[nIdx], heightMarkVertices_[nIdx])) {
-                shrinkDirection += QVector2D(diagDx[d] * 0.707f, diagDy[d] * 0.707f);
-                validDirections++;
-            }
-        }
-    }
-
-    if (validDirections == 0 || qFuzzyIsNull(shrinkDirection.length())) {
         qDebug() << "No shrink direction found at (" << gridX << "," << gridY << ")";
         return;
     }
 
+    // 归一化收缩方向
+    float dirLength = shrinkDirection.length();
+    if (qFuzzyIsNull(dirLength)) {
+        qDebug() << "Shrink direction is zero at (" << gridX << "," << gridY << ")";
+        return;
+    }
     shrinkDirection.normalize();
 
-    // ========== 第二步：计算收缩距离（三角剖分最短边长）==========
+    // ========== 计算收缩距离 ==========
     float stepSize = sidePixelSize_ / heightMatrixRatio_;
-    float shrinkDistance = stepSize * 1.0f;  // 收缩距离
+    float shrinkDistance = stepSize * 1.3f;  // 可调整收缩系数
 
-    vertex.setX(vertex.x() + shrinkDirection.x() * shrinkDistance);
-    vertex.setY(vertex.y() + shrinkDirection.y() * shrinkDistance);
+    // ========== 应用收缩 ==========
+    vertex.setX(originalX + shrinkDirection.x() * shrinkDistance);
+    vertex.setY(originalY + shrinkDirection.y() * shrinkDistance);
 
-    float actualShrinkX = vertex.x() - originalX;
-    float actualShrinkY = vertex.y() - originalY;
-
+    // ========== 调试信息 ==========
     qDebug() << "=========== Shrink Info ============";
     qDebug() << "Grid position: (" << gridX << ", " << gridY << ")";
+    qDebug() << "Valid directions found:" << validDirections;
     qDebug() << "Original position: (" << originalX << ", " << originalY << ")";
     qDebug() << "Shrink direction: (" << shrinkDirection.x() << ", " << shrinkDirection.y() << ")";
-    qDebug() << "Shrink distance: " << shrinkDistance;
-    qDebug() << "Actual shrink X,Y: " << actualShrinkX << "  " << actualShrinkY;
+    qDebug() << "Shrink distance:" << shrinkDistance;
     qDebug() << "New position: (" << vertex.x() << ", " << vertex.y() << ")";
 }
 

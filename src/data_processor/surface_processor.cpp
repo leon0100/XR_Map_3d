@@ -1,7 +1,6 @@
 #include "surface_processor.h"
 
 #include <cmath>
-#include <unordered_set>
 #include "isobaths_processor.h"
 
 SurfaceProcessor::SurfaceProcessor(DataProcessor* parent) :
