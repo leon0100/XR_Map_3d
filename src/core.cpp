@@ -2113,10 +2113,10 @@ void Core::setDataProcessorConnections()
 
     dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::sonarPosCanCalc,  datasetPtr_, &Dataset::onSonarPosCanCalc, connType));
 
-    dataProcessorConnections_.append(QObject::connect(dataProcessor_,     &DataProcessor::distCompletedByProcessing,   datasetPtr_, &Dataset::onDistCompleted, connType));
+    dataProcessorConnections_.append(QObject::connect(dataProcessor_, &DataProcessor::distCompletedByProcessing,   datasetPtr_, &Dataset::onDistCompleted, connType));
     dataProcessorConnections_.append(QObject::connect(dataProcessor_, &DataProcessor::lastBottomTrackEpochChanged, datasetPtr_, &Dataset::onLastBottomTrackEpochChanged, connType));
 
-    dataProcessorConnections_.append(QObject::connect(dataProcessor_,     &DataProcessor::sendState,   this,  &Core::onDataProcesstorStateChanged, connType));
+    dataProcessorConnections_.append(QObject::connect(dataProcessor_, &DataProcessor::sendState,   this,  &Core::onDataProcesstorStateChanged, connType));
 }
 
 void Core::resetDataProcessorConnections()

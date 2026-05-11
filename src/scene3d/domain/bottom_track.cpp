@@ -505,6 +505,10 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
 
     if (redrawAll) {
         clearCache();
+        minX_ = std::numeric_limits<float>::max();
+        maxX_ = std::numeric_limits<float>::lowest();
+        minY_ = std::numeric_limits<float>::max();
+        maxY_ = std::numeric_limits<float>::lowest();
     }
 
     const int toIndx   = redrawAll ? datasetPtr_->getLastBottomTrackEpoch() : rEpIndx;
@@ -536,6 +540,11 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
                     const float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
                     r->m_data[vIndx].setZ(dist);
 
+                    minX_ = std::min(minX_, static_cast<float>(pos.n));
+                    maxX_ = std::max(maxX_, static_cast<float>(pos.n));
+                    minY_ = std::min(minY_, static_cast<float>(pos.e));
+                    maxY_ = std::max(maxY_, static_cast<float>(pos.e));
+
                     epIndxUpdated.push_back(epIndx);
                     vertIndxUpdated.push_back(vIndx);
                 }
@@ -549,6 +558,11 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
                     // qDebug() << "dist22222   ----------" << dist;
                     prepData.push_back(QVector3D(pos.n, pos.e, dist));
 
+                    minX_ = std::min(minX_, static_cast<float>(pos.n));
+                    maxX_ = std::max(maxX_, static_cast<float>(pos.n));
+                    minY_ = std::min(minY_, static_cast<float>(pos.e));
+                    maxY_ = std::max(maxY_, static_cast<float>(pos.e));
+
                     epIndxUpdated.push_back(epIndx);
                     vertIndxUpdated.push_back(rSize);
 
@@ -560,6 +574,11 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
             }
         }
     }
+
+    // 输出调试信息
+    qDebug() << "Bounds updated in updateRenderData:";
+    qDebug() << "minX:" << minX_ << ", maxX:" << maxX_ <<"  minY:" << minY_ << ", maxY:" << maxY_;
+    dataProcessorPtr_->setBoundBoxExtrema(minX_, maxX_, minY_, maxY_);
 
     //这句绘制等高线
     emit updatedPoints(epIndxUpdated, vertIndxUpdated, manually); // for dataHorizon -> dataProcessor

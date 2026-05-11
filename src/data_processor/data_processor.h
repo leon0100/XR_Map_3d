@@ -46,6 +46,7 @@ public:
     void setDatasetPtr(Dataset* datasetPtr);
     inline bool isCancelRequested() const noexcept { return cancelRequested_.load(); }
 
+    void setBoundBoxExtrema(float minX, float maxX, float minY, float maxY);
     void setAutoBounadry(QVector<QVector3D>& autoBoundary);
 
 public slots:
@@ -223,5 +224,5 @@ private:
     bool btBusy_{false};
 
     DataProcessorType currentDataType_;
-
+    float minX_, maxX_, minY_, maxY_;
 };

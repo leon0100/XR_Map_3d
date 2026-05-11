@@ -92,4 +92,11 @@ private:
     DatasetChannel visibleChannel_; // ?!
     Dataset* datasetPtr_;
     DataProcessor* dataProcessorPtr_;
+
+
+    // 边界框成员变量
+    float minX_ = std::numeric_limits<float>::max();
+    float maxX_ = std::numeric_limits<float>::lowest();
+    float minY_ = std::numeric_limits<float>::max();
+    float maxY_ = std::numeric_limits<float>::lowest();
 };

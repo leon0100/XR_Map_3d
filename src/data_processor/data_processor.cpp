@@ -78,9 +78,23 @@ void DataProcessor::setDatasetPtr(Dataset *datasetPtr)
     QMetaObject::invokeMethod(worker_, "setDatasetPtr", Qt::QueuedConnection, Q_ARG(Dataset*, datasetPtr_));
 }
 
+void DataProcessor::setBoundBoxExtrema(float minX, float maxX, float minY, float maxY)
+{
+    minX_ = minX;
+    maxX_ = maxX;
+    minY_ = minY;
+    maxY_ = maxY;
+}
+
 void DataProcessor::setAutoBounadry(QVector<QVector3D>& autoBoundary)
 {
-    datasetPtr_->setAutoBounadry(autoBoundary);
+    QVector<QVector3D> box;
+    box.append(QVector3D(minY_, minX_, 0));
+    box.append(QVector3D(maxY_, minX_, 0));
+    box.append(QVector3D(maxY_, maxX_, 0));
+    box.append(QVector3D(minY_, maxX_, 0));
+    box.append(QVector3D(minY_, minX_, 0));
+    datasetPtr_->setAutoBounadry(box);
 }
 
 void DataProcessor::setBottomTrackPtr(BottomTrack *bottomTrackPtr)
