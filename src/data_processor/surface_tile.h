@@ -7,6 +7,7 @@
 #include <QVector3D>
 #include <QVector2D>
 #include <QOpenGLFunctions>
+#include <unordered_map>
 #include "data_processor_defs.h"
 
 
@@ -63,11 +64,9 @@ public:
     bool                        getInFov() const;
 
 
-
-    QVector<QVector3D> getBoundaryStepVertices();
+    void updateBoundaryStepVertices();
     bool isValidHeightVertex(const QVector3D& vertex, HeightType mark) const;
-    QVector<QVector<QVector3D>> getBoundaryGroups();
-    void contractVertex(QVector3D& vertex, int gridX, int gridY, int hvSide) const;
+    void markConcavePoints(int hvSide, QVector<QVector<bool>>& isConcavePoint) const;
 
 private:
     friend class SurfaceView;
@@ -81,12 +80,13 @@ private:
     QVector3D origin_;
     std::vector<uint8_t> imageData_;        // 纹理
     QVector<QVector3D> heightVertices_;     // 高度矩阵/高程矩阵
+    std::unordered_map<int, QVector3D> originHeightVertices_; // 原始高度矩阵/高程矩阵
     QVector<HeightType> heightMarkVertices_;// 在高度矩阵里处理什么
     QVector<int> heightIndices_;            // 在高度矩阵里绘制什么
     QVector<QVector2D> textureVertices_;    // 纹理坐标
     GLuint textureId_;
     bool isUpdated_;
-    bool isInited_; //
+    bool isInited_;
     // tile size
     int   sidePixelSize_;
     int   heightMatrixRatio_;

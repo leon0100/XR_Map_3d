@@ -5,6 +5,7 @@
 #include <QPair>
 #include <QPointF>
 #include <QReadWriteLock>
+#include <QMutex>
 #include "delaunay.h"
 #include "isobaths_defs.h"
 #include "surface_tile.h"
@@ -111,7 +112,5 @@ private:
     float maxX_ = std::numeric_limits<float>::lowest();
     float minY_ = std::numeric_limits<float>::max();
     float maxY_ = std::numeric_limits<float>::lowest();
-
-
 
 };

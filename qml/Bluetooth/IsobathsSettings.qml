@@ -65,7 +65,7 @@ Item {
     Rectangle {
         id: content
         width: isobathSize
-        height: isobathSize
+        height: isobathSize * 1.10
         anchors.top: parent.top
         anchors.right: toggleButton.left
         anchors.rightMargin: drawerOpen ? 0 : -(width + toggleButton.width)
@@ -521,8 +521,8 @@ Item {
                     onClicked: {
                         flashAnim4.restart()
                         isShowBoat = !isShowBoat
-                        // NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
-                        IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
+                        NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
+                        // IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
                     }
 
                     onEntered: parent.color = "#d6e6ff"
@@ -602,7 +602,8 @@ Item {
                             if(renderSpanControl.isOn) {
                                 renderSpanControl.isOn = false;
                                 core.setAutoRenderSpan(false);
-                            } else {
+                            }
+                            else {
                                 renderSpanControl.isOn = true
                                 core.setAutoRenderSpan(true);
                             }
@@ -615,7 +616,6 @@ Item {
                         ColorAnimation { duration: 200 }
                     }
                 }
-
 
 
                 SpinBoxCustom {
@@ -652,7 +652,7 @@ Item {
             }
 
 
-            // ================= Contour Interval =================
+            // ------------------- Contour Interval -------------------
             RowLayout {
                 Text {
                     text: qsTr("Contour Interval")

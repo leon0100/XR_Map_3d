@@ -148,6 +148,7 @@ private slots:
     void postSurfaceTiles(const TileMap& tiles, bool useTextures);
 
     // Surface
+    void setCurrentDataType(DataProcessorType currentDataType);
     void postMinZ(float val);
     void postMaxZ(float val);
     void postSurfaceColorTable(const std::vector<uint8_t>& t);
@@ -220,5 +221,7 @@ private:
     std::atomic_bool nextRunPending_{false};
     std::atomic<uint32_t> requestedMask_{0};
     bool btBusy_{false};
+
+    DataProcessorType currentDataType_;
 
 };

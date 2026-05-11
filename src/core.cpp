@@ -1644,6 +1644,8 @@ void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double max
     datasetPtr_->vec_CSV_  = depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
+    QMetaObject::invokeMethod(dataProcessor_, "setCurrentDataType", Qt::QueuedConnection,
+                              Q_ARG(DataProcessorType, DataProcessorType::staticTrack));
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
 
@@ -1972,11 +1974,14 @@ void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, doubl
     if(isAutoRenderSpan_) {
         if(vecSize == 200) {
             isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-        } else if(vecSize == 400) {
+        }
+        else if(vecSize == 400) {
             isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-        } else if(vecSize == 600) {
+        }
+        else if(vecSize == 600) {
             isobathsViewControlMenuController_->setEdgeLimitChanged(50);
-        } else if(vecSize == 800) {
+        }
+        else if(vecSize == 800) {
             isobathsViewControlMenuController_->setEdgeLimitChanged(40);
         }
     }

@@ -883,6 +883,11 @@ void Dataset::resetPolygonOutline()
     polygonOutlineNED_.clear();
 }
 
+void Dataset::clearBoundary()
+{
+    autoBoundary_.clear();
+}
+
 void Dataset::resetDistProcessing() {
 //     int pool_size = size();
 //     for(int i = 0; i < pool_size; i++) {

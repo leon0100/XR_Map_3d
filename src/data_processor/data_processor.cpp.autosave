@@ -572,7 +572,6 @@ void DataProcessor::postSurfaceTiles(const TileMap& tiles, bool useTextures)
 
 void DataProcessor::setCurrentDataType(DataProcessorType currentDataType)
 {
-    qDebug() << "DataProcessor::setCurrentDataType.....";
     currentDataType_ = currentDataType;
 }
 

@@ -282,7 +282,6 @@ public slots:
     void addPositionRTK(Position position);
 
     void addDepth(float depth);
-    // void addDepth_realTime(float depth);
 
     void addGnssVelocity(double h_speed, double course);
 
@@ -293,6 +292,7 @@ public slots:
     void resetDataset();
     void resetRenderBuffers();
     void resetPolygonOutline();
+    void clearBoundary();
     void resetDistProcessing();
 
     void setChannelOffset(const ChannelId& channelId, float x, float y, float z);

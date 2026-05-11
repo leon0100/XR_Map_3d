@@ -76,12 +76,12 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     maxX_ = std::max(maxX_, lastPt.x());
     minY_ = std::min(minY_, lastPt.y());
     maxY_ = std::max(maxY_, lastPt.y());
-    QVector<QVector3D> boundary;
-    boundary.append(QVector3D(minY_, minX_, 0));
-    boundary.append(QVector3D(maxY_, minX_, 0));
-    boundary.append(QVector3D(maxY_, maxX_, 0));
-    boundary.append(QVector3D(minY_, maxX_, 0));
-    boundary.append(QVector3D(minY_, minX_, 0));
+    QVector<QVector3D> box;
+    box.append(QVector3D(minY_, minX_, 0));
+    box.append(QVector3D(maxY_, minX_, 0));
+    box.append(QVector3D(maxY_, maxX_, 0));
+    box.append(QVector3D(minY_, maxX_, 0));
+    box.append(QVector3D(minY_, minX_, 0));
 
 
     //头一次都是初始化时的数据
@@ -154,8 +154,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         processOneCenter(point);
     }
 
-    // smoothDuringTriangulation();
-
     const int triCount = static_cast<int>(tr.size());
     if (!triCount) {
         return;
@@ -199,17 +197,16 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     propagateBorderHeights(changedTiles);
-    QVector<QVector3D> stepVertices;
     for (SurfaceTile* tile : std::as_const(changedTiles)) {
         smoothTileHeights(tile);  // 对高度场进行平滑处理，减少噪声
-        clipHeightFieldToPolygon();
-        stepVertices += tile->getBoundaryStepVertices();
+        // clipHeightFieldToPolygon();
+        tile->updateBoundaryStepVertices();
 
         tile->updateHeightIndices();
         tile->setIsUpdated(false);
     }
-    QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
-                                                    Q_ARG(QVector<QVector3D>, stepVertices));
+    // QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
+    //                                                 Q_ARG(QVector<QVector3D>, stepVertices));
 
     if (beenManualChanged) {
         float currMin = std::numeric_limits<float>::max();
@@ -242,7 +239,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         res.insert((*it)->getUuid(), (*(*it)));
     }
     // QVector<QVector3D> boundary = extractAlphaShapeBoundary();
-    // dataProcessor_->setAutoBounadry(boundary); //获取自动边界
+    dataProcessor_->setAutoBounadry(box); //获取自动边界
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
 }
 

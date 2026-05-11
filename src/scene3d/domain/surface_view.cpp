@@ -1,5 +1,6 @@
 #include "surface_view.h"
 
+
 #include <QFile>
 
 
@@ -9,17 +10,14 @@ SurfaceView::SurfaceView(QObject* parent)
 {}
 
 
-// ===== 新增：设置边界顶点 =====
 void SurfaceView::setBoundaryVertices(const QVector<QVector3D>& vertices)
 {
     if (auto* r = RENDER_IMPL(SurfaceView); r) {
         r->boundaryVertices_ = vertices;
         Q_EMIT changed();
     }
-    qDebug() << "SurfaceView::setBoundaryVertices........";
 }
 
-// ===== 新增：设置边界顶点可见性 =====
 void SurfaceView::setBoundaryVerticesVisible(bool visible)
 {
     if (auto* r = RENDER_IMPL(SurfaceView); r) {
@@ -416,7 +414,6 @@ void SurfaceView::updateMosaicTileTextureTask(const QHash<QUuid, SurfaceTile>& n
 }
 
 
-// SurfaceViewRenderImplementation
 SurfaceView::SurfaceViewRenderImplementation::SurfaceViewRenderImplementation() : surfaceColorTableTextureId_(0),
     mosaicColorTableTextureId_(0),
     minZ_(std::numeric_limits<float>::max()),
@@ -438,8 +435,6 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
                         const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
 {
     if (!iVis_ && !mVis_) {
-        // 即使没有显示高度场，如果边界顶点可见也需要渲染
-        renderBoundaryVertices(ctx, mvp,shaderProgramMap);
         return;
     }
 
@@ -521,51 +516,6 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
     // renderBoundaryVertices(ctx, mvp,shaderProgramMap);
 }
 
-
-// void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(QOpenGLFunctions* ctx,
-//     const QMatrix4x4& mvp,const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
-// {
-//     if (boundaryGroups_.isEmpty()) {
-//         return;
-//     }
-
-//     auto shaderProgram = shaderProgramMap.value("static", nullptr);
-//     if (!shaderProgram || !shaderProgram->bind()) {
-//         return;
-//     }
-
-//     int posLoc    = shaderProgram->attributeLocation("position");
-//     int colorLoc  = shaderProgram->uniformLocation("color");
-//     int matrixLoc = shaderProgram->uniformLocation("matrix");
-
-//     shaderProgram->setUniformValue(matrixLoc, mvp);
-//     ctx->glDisable(GL_DEPTH_TEST);
-
-//     // 设置线宽和颜色
-//     ctx->glLineWidth(3.0f);
-//     QVector4D lineColor(0.0f, 0.0f, 1.0f, 1.0f);  // 蓝色
-//     shaderProgram->setUniformValue(colorLoc, lineColor);
-
-//     // ========== 关键：每个分组独立连接成线段 ==========
-//     for (int i = 0; i < boundaryGroups_.size(); ++i) {
-//         const auto& group = boundaryGroups_[i];  // 第 i 个分组
-
-//         if (group.size() < 2) continue;  // 至少需要2个顶点才能连线
-
-//         shaderProgram->enableAttributeArray(posLoc);
-//         shaderProgram->setAttributeArray(posLoc, group.constData());
-
-//         // 使用 GL_LINE_STRIP 将该分组的顶点连接成线段
-//         ctx->glDrawArrays(GL_LINE_STRIP, 0, group.size());
-
-//         shaderProgram->disableAttributeArray(posLoc);
-
-//         // qDebug() << "Group" << i << "已连线，顶点数:" << group.size();
-//     }
-
-//     shaderProgram->release();
-//     ctx->glEnable(GL_DEPTH_TEST);
-// }
 void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(
     QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
     const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const
@@ -607,8 +557,7 @@ void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(
     ctx->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // 使用 setAttributeArray 批量设置顶点
-    glPointSize(15.0f);  // 增大点大小
-    ctx->glEnable(GL_POINT_SMOOTH);  // 启用点平滑（抗锯齿）
+    // glPointSize(15.0f);  // 增大点大小
 
     // 设置点颜色（红色）
     QVector4D pointColor(1.0f, 0.0f, 0.0f, 1.0f);

@@ -950,7 +950,8 @@ void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
         } else {
             polygonOutline_->setOutlineMode(true);
         }
-    } else {
+    }
+    else {
         polygonOutline_->setOutlineMode(false);
         datasetPtr_->resetPolygonOutline();
         polygonOutline_->clearData();
