@@ -29,7 +29,7 @@ void BottomTrackProcessor::setDatasetPtr(Dataset *datasetPtr)
 
 void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1, const DatasetChannel &channel2, const BottomTrackParam& btP, bool manual, bool redrawAll)
 {
-    qDebug() << "BottomTrackProcessor::bottomTrackProcessing...........";
+    // qDebug() << "BottomTrackProcessor::bottomTrackProcessing...........";
     auto size = btP.indexTo + btP.windowSize / 2;
 
     if (!datasetPtr_) {
@@ -303,8 +303,8 @@ void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1,
 
     epoch_start_index = 0;
     epoch_stop_index = epoch_max_index;
-    qDebug() << "222size:" << size << "  epoch_min_index:"<< epoch_min_index << "  epoch_max_index:" << epoch_max_index;
-    qDebug() << "epoch_start_index:" << epoch_start_index << "  " << epoch_stop_index;
+    qDebug() << "size:" << size << "  epoch_min_index:"<< epoch_min_index << "  epoch_max_index:" << epoch_max_index;
+    qDebug() << "epoch_start_index:" << epoch_start_index << "   " << epoch_stop_index;
     for(int iepoch = epoch_start_index; iepoch < epoch_stop_index; iepoch++) {
         Epoch epPtr = datasetPtr_->fromIndexCopy(iepoch);
 
@@ -334,10 +334,11 @@ void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1,
                                 Q_ARG(BottomTrackParam, btP),Q_ARG(bool, manual), Q_ARG(bool, redrawAll));
 }
 
-void BottomTrackProcessor::bottomTrackProcessing_CSV(const DatasetChannel &channel1,
+void BottomTrackProcessor::bottomTrackProcessing_file(const DatasetChannel &channel1,
                                 const BottomTrackParam& btP, bool manual, bool redrawAll)
 {
-    // qDebug() << "bottomTrackProcessing_CSV::bottomTrackProcessing...........";
+    // qDebug() << "bottomTrackProcessing_file......channel1.channelId_" <<
+        // channel1.channelId_.address << "   " << btP.indexTo;
     QMetaObject::invokeMethod(dataProcessor_, "postLastBottomTrackEpochChanged", Qt::QueuedConnection,
                               Q_ARG(ChannelId, channel1.channelId_), Q_ARG(int, btP.indexTo),
                               Q_ARG(BottomTrackParam, btP),Q_ARG(bool, manual), Q_ARG(bool, redrawAll));

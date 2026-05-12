@@ -1644,8 +1644,6 @@ void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double max
     datasetPtr_->vec_CSV_  = depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
-    QMetaObject::invokeMethod(dataProcessor_, "setCurrentDataType", Qt::QueuedConnection,
-                              Q_ARG(DataProcessorType, DataProcessorType::staticTrack));
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
 
@@ -1947,7 +1945,7 @@ void Core::createMapTileManagerConnections()
 void Core::onDataProcesstorStateChanged(const DataProcessorType& state)
 {
     dataProcessorState_ = state;
-    emit dataProcessorStateChanged();
+    dataProcessor_->setDataProcessType(state);
 }
 
 void Core::onSendFrameInputToLogger(QUuid uuid, Link *link, const Parsers::FrameParser& frame)
@@ -1969,6 +1967,7 @@ void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, doubl
 {
     int vecSize = depthVec.size();
     if(vecSize > 0 && vecSize < 3) {
+        qDebug() << "vecSize..........." << vecSize;
         onDataProcesstorStateChanged(DataProcessorType::bletoothTrack);
     }
     if(isAutoRenderSpan_) {
@@ -2085,7 +2084,7 @@ void Core::createScene3dConnections()
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceStepSize,           scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setSurfaceStep,                 connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceColorIntervalsSize, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setColorIntervalsSize,          connType);
     QObject::connect(dataProcessor_, &DataProcessor::surfaceBoundaryVerticesUpdated, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setBoundaryVertices,          connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendPolygonOulineAuto,         scene3dViewPtr_->polygonOutline().get(),        &PolygonOutline::autoGenerateFromAlphaShape,  connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendPolygonOulineAuto,         scene3dViewPtr_->polygonOutline().get(),        &PolygonOutline::autoGenerateBoundary,  connType);
     // IsobathsView
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLabels,            scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLabels,                     connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineSegments,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineSegments,               connType);
@@ -2110,13 +2109,10 @@ void Core::setDataProcessorConnections()
     dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::chartAdded,  dataProcessor_, &DataProcessor::onChartsAdded, connType));
     dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::bottomTrack3DAdded, dataProcessor_, &DataProcessor::onBottomTrack3DAdded, connType));
     dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::mosaicCanCalc, dataProcessor_, &DataProcessor::onMosaicCanCalc, connType));
-
     dataProcessorConnections_.append(QObject::connect(dataHorizon_.get(), &DataHorizon::sonarPosCanCalc,  datasetPtr_, &Dataset::onSonarPosCanCalc, connType));
 
     dataProcessorConnections_.append(QObject::connect(dataProcessor_, &DataProcessor::distCompletedByProcessing,   datasetPtr_, &Dataset::onDistCompleted, connType));
     dataProcessorConnections_.append(QObject::connect(dataProcessor_, &DataProcessor::lastBottomTrackEpochChanged, datasetPtr_, &Dataset::onLastBottomTrackEpochChanged, connType));
-
-    dataProcessorConnections_.append(QObject::connect(dataProcessor_, &DataProcessor::sendState,   this,  &Core::onDataProcesstorStateChanged, connType));
 }
 
 void Core::resetDataProcessorConnections()

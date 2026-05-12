@@ -18,7 +18,7 @@ public:
     void setDatasetPtr(Dataset* datasetPtr);
 
     void bottomTrackProcessing(const DatasetChannel& channel1, const DatasetChannel& channel2, const BottomTrackParam& bottomTrackParam_, bool manual, bool redrawAll); // external calling not realtime
-    void bottomTrackProcessing_CSV(const DatasetChannel& channel1, const BottomTrackParam& bottomTrackParam_, bool manual, bool redrawAll); // external calling not realtime
+    void bottomTrackProcessing_file(const DatasetChannel& channel1, const BottomTrackParam& bottomTrackParam_, bool manual, bool redrawAll); // external calling not realtime
 
 
 private:

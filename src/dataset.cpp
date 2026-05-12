@@ -25,6 +25,16 @@ void Dataset::setState(DatasetState state)
     state_ = state;
 }
 
+void Dataset::setDataProcessorState(DataProcessorType dataProcessorState)
+{
+    dataProcessorState_ = dataProcessorState;
+}
+
+DataProcessorType Dataset::getDataProcessorState()
+{
+    return dataProcessorState_;
+}
+
 #if defined(FAKE_COORDS)
 void Dataset::setActiveZeroing(bool state)
 {

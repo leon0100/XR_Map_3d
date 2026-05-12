@@ -16,7 +16,6 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     : QObject(parent),
     datasetPtr_(datasetPtr),
     worker_(nullptr),
-    state_(DataProcessorType::kUndefined),
     chartsCounter_(0),
     bottomTrackCounter_(0),
     epochCounter_(0),
@@ -78,25 +77,6 @@ void DataProcessor::setDatasetPtr(Dataset *datasetPtr)
     QMetaObject::invokeMethod(worker_, "setDatasetPtr", Qt::QueuedConnection, Q_ARG(Dataset*, datasetPtr_));
 }
 
-void DataProcessor::setBoundBoxExtrema(float minX, float maxX, float minY, float maxY)
-{
-    minX_ = minX;
-    maxX_ = maxX;
-    minY_ = minY;
-    maxY_ = maxY;
-}
-
-void DataProcessor::setAutoBounadry(QVector<QVector3D>& autoBoundary)
-{
-    QVector<QVector3D> box;
-    box.append(QVector3D(minY_, minX_, 0));
-    box.append(QVector3D(maxY_, minX_, 0));
-    box.append(QVector3D(maxY_, maxX_, 0));
-    box.append(QVector3D(minY_, maxX_, 0));
-    box.append(QVector3D(minY_, minX_, 0));
-    datasetPtr_->setAutoBounadry(box);
-}
-
 void DataProcessor::setBottomTrackPtr(BottomTrack *bottomTrackPtr)
 {
     // qDebug() << "DataProcessor::setBottomTrackPtr............";
@@ -108,13 +88,13 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     requestCancel();
 
     switch (procType) {
-    case DataProcessorType::kUndefined:   clearAllProcessings();              break;
-    case DataProcessorType::kBottomTrack: clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
-    case DataProcessorType::kIsobaths:    clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
-    case DataProcessorType::kMosaic:      clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
-    case DataProcessorType::kSurface:     clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
-    case DataProcessorType::bletoothTrack:clearAllProcessings();              break;
-    case DataProcessorType::staticTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
+    case DataProcessorType::kUndefined:    clearAllProcessings();                                             break;
+    case DataProcessorType::kBottomTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
+    case DataProcessorType::kIsobaths:     clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
+    case DataProcessorType::kMosaic:       clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
+    case DataProcessorType::kSurface:      clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
+    case DataProcessorType::bletoothTrack: clearAllProcessings();                                             break;
+    case DataProcessorType::staticTrack:   clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
     default: break;
     }
 
@@ -124,6 +104,8 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     positionCounter_ = 0;
     attitudeCounter_ = 0;
     mosaicCounter_ = 0;
+
+    // emit sendPolygonOulineAuto(false);
 }
 
 void DataProcessor::clearProcessing2(bool isClearTrack)
@@ -144,6 +126,8 @@ void DataProcessor::clearProcessing2(bool isClearTrack)
         clearSurfaceProcessing();
         emit surfaceProcessingCleared();
     }
+
+    // emit sendPolygonOulineAuto(false);
 }
 
 void DataProcessor::setUpdateBottomTrack(bool state)
@@ -529,9 +513,15 @@ void DataProcessor::onWorkerFinished()
     }
 }
 
-void DataProcessor::postState(DataProcessorType s)
+void DataProcessor::setDataProcessType(DataProcessorType state)
 {
-    emit sendState(state_ = s);
+    currentDataType_ = state;
+    datasetPtr_->setDataProcessorState(state);
+}
+
+DataProcessorType DataProcessor::getDataProcessType()
+{
+    return currentDataType_;
 }
 
 void DataProcessor::postDistCompletedByProcessing(int epIndx, const ChannelId &channelId, float dist)
@@ -581,14 +571,11 @@ void DataProcessor::postSurfaceTiles(const TileMap& tiles, bool useTextures)
 {
     //qDebug() << "   DataProcessor::postSurfaceTiles" << tiles.size();
     emit sendSurfaceTiles(tiles, useTextures);
-    emit sendPolygonOulineAuto();  //自动绘制多边形轮廓
+    if(datasetPtr_->polygonNEDEmpty()) {
+        emit sendPolygonOulineAuto(true);  //使用绘制自动多边形轮廓
+    }
 }
 
-void DataProcessor::setCurrentDataType(DataProcessorType currentDataType)
-{
-    qDebug() << "DataProcessor::setCurrentDataType.....";
-    currentDataType_ = currentDataType;
-}
 
 void DataProcessor::postMinZ(float val)
 {
@@ -627,15 +614,9 @@ void DataProcessor::postSurfaceStepSize(float lineStepSize)
     emit sendSurfaceStepSize(lineStepSize);
 }
 
-// data_processor.cpp
 void DataProcessor::postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices)
 {
     emit surfaceBoundaryVerticesUpdated(vertices);
-}
-
-void DataProcessor::changeState(const DataProcessorType& state)
-{
-    emit sendState(state_ = state);
 }
 
 void DataProcessor::clearBottomTrackProcessing()

@@ -82,14 +82,16 @@ void BottomTrack::actionEvent(ActionEvent actionEvent)
                 if (auto* btp = datasetPtr_->getBottomTrackParamPtr(); btp) {
                     btp->indexFrom = itm.first;
                     btp->indexTo = itm.second;
-
-                    if (channels.size() >= 2) { // TODO
+                    qDebug() << "55555 btp->indexFrom:..." <<  btp->indexFrom << " " <<btp->indexTo;
+                    if (channels.size() >= 2) {
+                        qDebug() << "channels.size() >= 2.....";
                         QMetaObject::invokeMethod(dataProcessorPtr_, "bottomTrackProcessing", Qt::QueuedConnection,
                                     Q_ARG(DatasetChannel, channels[0]), Q_ARG(DatasetChannel, channels[1]),
                                     Q_ARG(BottomTrackParam, btP), Q_ARG(bool, true),/*manual*/
                                     Q_ARG(bool, false)/*redraw all*/);
                     }
                     else if (channels.size() == 1) {
+                        qDebug() << "channels.size() ==1....";
                         QMetaObject::invokeMethod(dataProcessorPtr_, "bottomTrackProcessing", Qt::QueuedConnection,
                                     Q_ARG(DatasetChannel, channels[0]), Q_ARG(DatasetChannel, DatasetChannel()),
                                     Q_ARG(BottomTrackParam, btP), Q_ARG(bool, true),/*manual*/
@@ -151,89 +153,85 @@ void BottomTrack::actionEvent(ActionEvent actionEvent)
 
 void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redrawAll)
 {
-    if (datasetPtr_ && datasetPtr_->getLastBottomTrackEpoch() != 0) {
-        auto datasetChannels = datasetPtr_->channelsList();
-        if (!datasetChannels.isEmpty()) {
-            visibleChannel_ = datasetChannels.first();
-        }
-        else {
-            visibleChannel_ = DatasetChannel();
-        }
-
-        updateRenderData(lEpoch, rEpoch, redrawAll, manual);
-
-        Q_EMIT epochListChanged();
+    // qDebug() << "BottomTrack::isEpochsChanged lEpoch..." << lEpoch << "  " << rEpoch;
+    if(!datasetPtr_) {
+        return;
     }
-}
 
+    // updateRenderData(lEpoch, rEpoch, redrawAll, manual);
+    auto* r = RENDER_IMPL(BottomTrack);
+    r->selectedVertexIndices_.clear();
+    int rSize = r->cdata().size();
 
-void BottomTrack::drawPolygonOutline(QVector<LLA> polygonVec)
-{
-    qDebug() << " BottomTrack::drawPolygonOutline..........";
-    // 检查多边形顶点数量，至少需要3个点
-    // if (polygonVec.size() < 3) {
-    //     qDebug() << "Polygon requires at least 3 points";
-    //     return;
+    DataProcessorType currDataType = datasetPtr_->getDataProcessorState();
+    if (currDataType == DataProcessorType::bletoothTrack) {
+        lEpoch = rEpoch > 1 ? (rEpoch-1) : 0;
+    }
+
+    // auto datasetChannels = datasetPtr_->channelsList();
+    // if (!datasetChannels.isEmpty()) {
+    //     visibleChannel_ = datasetChannels.first();
+    // }
+    // else {
+    //     visibleChannel_ = DatasetChannel();
     // }
 
-    // // 准备顶点数据
-    // QVector<QVector3D> vertices;
-    // for (const LLA& lla : polygonVec) {
-    //     // 转换 LLA 坐标到 NENorth_East_Down 坐标系（或项目使用的其他坐标系）
-    //     QVector3D nedPos = convertLLAToNED(lla);
-    //     vertices.append(nedPos);
-    // }
 
-    // // 闭合多边形（确保最后一个点连接到第一个点）
-    // if (!vertices.isEmpty()) {
-    //     vertices.append(vertices.first());
-    // }
+    QVector<QVector3D> prepData;
+    // qDebug() << "lEpoch....." << lEpoch << "   rEpoch...." << rEpoch;
+    for (int epIndx = lEpoch; epIndx < rEpoch; ++epIndx) {
+        auto vIt = epoch2Vertex_.find(epIndx);
+        if (vIt != epoch2Vertex_.end()) {
+            // 情况A: 已存在点，更新Z坐标
+            if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
+                if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
+                    auto vIndx = *vIt;
+                    const float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
+                    r->m_data[vIndx].setZ(dist);
 
-    // // 获取渲染器实例（假设项目中有类似的渲染器）
-    // Scene3DRenderer* renderer = getRenderer();
-    // if (!renderer) {
-    //     qDebug() << "Renderer not available";
-    //     return;
-    // }
+                    epIndxUpdated_.push_back(epIndx);
+                    vertIndxUpdated_.push_back(vIndx);
+                }
+            }
+        }
+        else { // 情况B: 新点，创建3D坐标
+            if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
+                if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
+                    // float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
+                    float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
+                    QVector3D new3DData = QVector3D(pos.n, pos.e, dist);
+                    prepData.push_back(new3DData);
+                    minX_ = std::min(minX_, new3DData.x());
+                    maxX_ = std::max(maxX_, new3DData.x());
+                    minY_ = std::min(minY_, new3DData.y());
+                    maxY_ = std::max(maxY_, new3DData.y());
 
-    // // 获取着色器程序
-    // QOpenGLShaderProgram* lineShaderProgram = renderer->getShaderProgram("line");
-    // if (!lineShaderProgram) {
-    //     qDebug() << "Line shader program not available";
-    //     return;
-    // }
+                    epIndxUpdated_.push_back(epIndx);
+                    vertIndxUpdated_.push_back(rSize);
 
-    // // 开始渲染
-    // lineShaderProgram->bind();
+                    vertex2Epoch_.insert(rSize, epIndx);
+                    epoch2Vertex_.insert(epIndx, rSize);
 
-    // // 设置 uniform 变量
-    // QMatrix4x4 modelViewProjection = renderer->getModelViewProjectionMatrix();
-    // lineShaderProgram->setUniformValue("mvp", modelViewProjection);
+                    rSize++;
+                }
+            }
+        }
+    }
 
-    // // 设置颜色（蓝色轮廓）
-    // lineShaderProgram->setUniformValue("color", QVector4D(0.0f, 0.75f, 1.0f, 1.0f)); // #00BFFF
+    QVector<QVector3D> box;
+    box.append(QVector3D(minY_, minX_, 0));
+    box.append(QVector3D(maxY_, minX_, 0));
+    box.append(QVector3D(maxY_, maxX_, 0));
+    box.append(QVector3D(minY_, maxX_, 0));
+    box.append(QVector3D(minY_, minX_, 0));
+    datasetPtr_->setAutoBounadry(box);
 
-    // // 启用顶点属性
-    // int posLoc = lineShaderProgram->attributeLocation("pos");
-    // lineShaderProgram->enableAttributeArray(posLoc);
+    // qDebug() << "epIndxUpdated_.size():" << epIndxUpdated_.size() << "  " << vertIndxUpdated_.size();
+    emit updatedPoints(epIndxUpdated_, vertIndxUpdated_, manual);  //这句绘制等高线
 
-    // // 准备顶点数据数组
-    // QVector<GLfloat> vertexData;
-    // for (const QVector3D& vertex : vertices) {
-    //     vertexData << vertex.x() << vertex.y() << vertex.z();
-    // }
+    SceneObject::appendData(prepData);
 
-    // // 设置顶点数据
-    // lineShaderProgram->setAttributeArray(posLoc, vertexData.constData(), 3);
-
-    // // 绘制线段
-    // glDrawArrays(GL_LINE_STRIP, 0, vertices.size());
-
-    // // 禁用顶点属性
-    // lineShaderProgram->disableAttributeArray(posLoc);
-
-    // // 释放着色器程序
-    // lineShaderProgram->release();
+    Q_EMIT epochListChanged();
 }
 
 QVector3D BottomTrack::convertLLAToNED(const LLA& lla) {
@@ -291,6 +289,13 @@ void BottomTrack::clearData()
     epoch2Vertex_.clear();
     visibleChannel_ = DatasetChannel();
 
+    epIndxUpdated_.clear();
+    vertIndxUpdated_.clear();
+    minX_ = std::numeric_limits<float>::max();
+    maxX_ = std::numeric_limits<float>::lowest();
+    minY_ = std::numeric_limits<float>::max();
+    maxY_ = std::numeric_limits<float>::lowest();
+
     auto r = RENDER_IMPL(BottomTrack);
     r->selectedVertexIndices_.clear();
 
@@ -301,25 +306,6 @@ void BottomTrack::resetVertexSelection()
 {
     RENDER_IMPL(BottomTrack)->selectedVertexIndices_.clear();
 }
-
-//void BottomTrack::setVisibleChannel(const ChannelId& channelId)
-//{
-//    if (!datasetPtr_->channelsList().contains(channelId))
-//        return;
-//
-//    visibleChannel_ = datasetPtr_->channelsList().value(channelId);
-//
-//    updateRenderData();
-//
-//    //Q_EMIT visibleChannelChanged(channelId);
-//    //Q_EMIT visibleChannelChanged(visibleChannel_);
-//    Q_EMIT changed();
-//}
-//
-//void BottomTrack::setVisibleChannel(const DatasetChannel &channel)
-//{
-//    visibleChannel_ = channel;
-//}
 
 void BottomTrack::selectEpoch(int epochIndex, const ChannelId& channelId)
 {
@@ -494,10 +480,6 @@ void BottomTrack::keyPressEvent(Qt::Key key)
 
 void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool manually)
 {
-    if (!datasetPtr_) {
-        return;
-    }
-
     bool redrawAll = redraw;
     if ((!lEpIndx && !rEpIndx) || (lEpIndx == 0 && rEpIndx == datasetPtr_->size())) {
         redrawAll = true;
@@ -505,10 +487,6 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
 
     if (redrawAll) {
         clearCache();
-        minX_ = std::numeric_limits<float>::max();
-        maxX_ = std::numeric_limits<float>::lowest();
-        minY_ = std::numeric_limits<float>::max();
-        maxY_ = std::numeric_limits<float>::lowest();
     }
 
     const int toIndx   = redrawAll ? datasetPtr_->getLastBottomTrackEpoch() : rEpIndx;
@@ -540,11 +518,6 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
                     const float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
                     r->m_data[vIndx].setZ(dist);
 
-                    minX_ = std::min(minX_, static_cast<float>(pos.n));
-                    maxX_ = std::max(maxX_, static_cast<float>(pos.n));
-                    minY_ = std::min(minY_, static_cast<float>(pos.e));
-                    maxY_ = std::max(maxY_, static_cast<float>(pos.e));
-
                     epIndxUpdated.push_back(epIndx);
                     vertIndxUpdated.push_back(vIndx);
                 }
@@ -553,15 +526,8 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
         else { // 情况B: 新点，创建3D坐标
             if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
                 if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
-                    // float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
                     float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
-                    // qDebug() << "dist22222   ----------" << dist;
                     prepData.push_back(QVector3D(pos.n, pos.e, dist));
-
-                    minX_ = std::min(minX_, static_cast<float>(pos.n));
-                    maxX_ = std::max(maxX_, static_cast<float>(pos.n));
-                    minY_ = std::min(minY_, static_cast<float>(pos.e));
-                    maxY_ = std::max(maxY_, static_cast<float>(pos.e));
 
                     epIndxUpdated.push_back(epIndx);
                     vertIndxUpdated.push_back(rSize);
@@ -575,12 +541,6 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
         }
     }
 
-    // 输出调试信息
-    qDebug() << "Bounds updated in updateRenderData:";
-    qDebug() << "minX:" << minX_ << ", maxX:" << maxX_ <<"  minY:" << minY_ << ", maxY:" << maxY_;
-    dataProcessorPtr_->setBoundBoxExtrema(minX_, maxX_, minY_, maxY_);
-
-    //这句绘制等高线
     emit updatedPoints(epIndxUpdated, vertIndxUpdated, manually); // for dataHorizon -> dataProcessor
 
     SceneObject::appendData(prepData);

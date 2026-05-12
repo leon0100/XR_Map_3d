@@ -59,7 +59,6 @@ public:
     Q_PROPERTY(bool      isSeparateReading            READ getIsSeparateReading            CONSTANT)
     Q_PROPERTY(QString   ch1Name                      READ getChannel1Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
-    Q_PROPERTY(int       dataProcessorState           READ getDataProcessorState           NOTIFY dataProcessorStateChanged)
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
     Q_PROPERTY(QObject*  progress       READ progress     WRITE setProgress     NOTIFY  progressChanged)
 
@@ -147,7 +146,6 @@ signals:
     void filePathChanged();
     void sendIsFileOpening();
     void channelListUpdated();
-    void dataProcessorStateChanged();
     void isGPSAliveChanged();
     void loggingKlfChanged();
 

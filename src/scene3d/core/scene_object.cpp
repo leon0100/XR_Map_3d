@@ -140,7 +140,7 @@ void SceneObject::appendData(const QVector<QVector3D> &data)
 
 void SceneObject::appendData(const QVector3D &data)
 {
-    qDebug() << "SceneObject::appendData22222222222222222................";
+    // qDebug() << "SceneObject::appendData22222222222222222................";
     m_renderImpl->appendData(data);
 
     Q_EMIT changed();
@@ -269,7 +269,7 @@ void SceneObject::RenderImplementation::setData(const QVector<QVector3D> &data, 
 
 void SceneObject::RenderImplementation::appendData(const QVector<QVector3D>& data)
 {
-    // qDebug() << "RenderImplementation::appendData111111..............";
+    // qDebug() << "RenderImplementation::appendData111.." << m_data.size();
     for (const auto& itm : data) {
         m_data.append(itm);
     }
@@ -279,7 +279,7 @@ void SceneObject::RenderImplementation::appendData(const QVector<QVector3D>& dat
 
 void SceneObject::RenderImplementation::appendData(const QVector3D& data)
 {
-    // qDebug() << "RenderImplementation::appendData222222...................";
+    // qDebug() << "RenderImplementation::appendData222.." << m_data.size();
     m_data.append(data);
 
     updateBounds();

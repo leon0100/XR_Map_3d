@@ -45,9 +45,8 @@ public:
 
     void setDatasetPtr(Dataset* datasetPtr);
     inline bool isCancelRequested() const noexcept { return cancelRequested_.load(); }
-
-    void setBoundBoxExtrema(float minX, float maxX, float minY, float maxY);
-    void setAutoBounadry(QVector<QVector3D>& autoBoundary);
+    void setDataProcessType(DataProcessorType s);
+    DataProcessorType getDataProcessType();
 
 public slots:
     // this
@@ -101,7 +100,6 @@ public slots:
     void requestCancel() noexcept;
 
 signals:
-    void sendState(DataProcessorType state);
     void bottomTrackProcessingCleared();
     void isobathsProcessingCleared();
     void mosaicProcessingCleared();
@@ -117,7 +115,7 @@ signals:
     void sendSurfaceTextureTask(const std::vector<uint8_t>& textureTask);
     void sendSurfaceColorIntervalsSize(int size);
     void sendSurfaceStepSize(float lineStepSize);
-    void sendPolygonOulineAuto();
+    void sendPolygonOulineAuto(bool generate);
     void surfaceBoundaryVerticesUpdated(const QVector<QVector3D>& vertices);
 
     // IsobathsProcessor
@@ -136,10 +134,7 @@ signals:
 private slots:
     void runCoalescedWork();
     void startTimerIfNeeded();
-    void onWorkerFinished(); // слот на сигнал ComputeWorker::jobFinished
-
-    // All
-    void postState(DataProcessorType s);
+    void onWorkerFinished();
 
     // BottomTrack
     void postDistCompletedByProcessing(int epIndx, const ChannelId& channelId, float dist);
@@ -149,7 +144,6 @@ private slots:
     void postSurfaceTiles(const TileMap& tiles, bool useTextures);
 
     // Surface
-    void setCurrentDataType(DataProcessorType currentDataType);
     void postMinZ(float val);
     void postMaxZ(float val);
     void postSurfaceColorTable(const std::vector<uint8_t>& t);
@@ -169,8 +163,6 @@ private slots:
     void onBottomTrackFinished();
 
 private:
-    // this
-    void changeState(const DataProcessorType& state);
     void clearBottomTrackProcessing();
     void clearIsobathsProcessing();
     void clearMosaicProcessing();
@@ -194,7 +186,7 @@ private:
     QThread computeThread_;
     ComputeWorker* worker_;
 
-    DataProcessorType state_;
+    DataProcessorType currentDataType_;
     uint64_t chartsCounter_;
     uint64_t bottomTrackCounter_;
     uint64_t epochCounter_;
@@ -222,7 +214,4 @@ private:
     std::atomic_bool nextRunPending_{false};
     std::atomic<uint32_t> requestedMask_{0};
     bool btBusy_{false};
-
-    DataProcessorType currentDataType_;
-    float minX_, maxX_, minY_, maxY_;
 };

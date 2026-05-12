@@ -10,7 +10,6 @@ import "../"
 
 Item {
     id: isobathsSettings
-    objectName: "isobathsSettings"
 
     width: drawerOpen ? content.width : toggleButton.width
     height: Math.max(content.height, toggleButton.height)

@@ -702,7 +702,6 @@ void Link::aboutToClose()
 {
     QIODevice *dev = device();
     if (dev != nullptr) {
-        //emit changeState(); //
         emit connectionStatusChanged(uuid_);
         emit closed(uuid_, this);
     }

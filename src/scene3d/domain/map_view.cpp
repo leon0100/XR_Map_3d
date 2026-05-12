@@ -505,6 +505,14 @@ void MapView::MapViewRenderImplementation::render(QOpenGLFunctions *ctx,
                     for(const auto& ned : polygonOutlineNed) {
                         polygonOutline.append(QVector3D(ned.n, ned.e, 0.0f));
                     }
+
+                    if(polygonOutlineNed.isEmpty()) {
+                       QVector<QVector3D> autoPolygon = dataset->getAutoBounadry();
+                        for(const auto& boun : autoPolygon) {
+                           polygonOutline.append(boun);
+                        }
+                    }
+
                     hasPolygon = !polygonOutline.isEmpty();
                 }
             }

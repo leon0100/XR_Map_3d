@@ -14,6 +14,7 @@
 #include "epoch.h"
 #include "id_binnary.h"
 #include "usbl_view.h"
+#include "data_processor_defs.h"
 
 
 class Dataset : public QObject
@@ -50,6 +51,8 @@ public:
     ~Dataset();
 
     void setState(DatasetState state);
+    void setDataProcessorState(DataProcessorType dataProcessorState);
+    DataProcessorType getDataProcessorState();
 
 #if defined(FAKE_COORDS)
     void setActiveZeroing(bool state);
@@ -236,10 +239,13 @@ public:
     QVector<North_East_Down>& getPolygonOutlineNED() {
         return polygonOutlineNED_;
     }
+    bool polygonNEDEmpty() {
+        return polygonOutlineNED_.isEmpty();
+    }
     void setAutoBounadry(QVector<QVector3D>& autoBoundary) {
         autoBoundary_ = autoBoundary;
     }
-    QVector<QVector3D> getAutoBounadry() {
+    QVector<QVector3D>& getAutoBounadry() {
         return autoBoundary_;
     }
 
@@ -438,4 +444,5 @@ public:
     }
     double minDepth_, maxDepth_;
     QVector<QVector3D> autoBoundary_;
+    DataProcessorType dataProcessorState_;
 };

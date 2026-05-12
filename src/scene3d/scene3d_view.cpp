@@ -211,6 +211,7 @@ void GraphicsScene3dView::setCursorShape(Qt::CursorShape shape)
 
 void GraphicsScene3dView::clear(bool isClearTrack, bool cleanMap)
 {
+    qDebug() << "bool isClearTrack..." << isClearTrack;
     if(isClearTrack) {
         boatTrack_->clearData();
         m_bottomTrack->clearData();
@@ -981,12 +982,18 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
         this,  [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll) -> void {
-            auto chList = datasetPtr_->channelsList();
             //暂时注释
+            // auto chList = datasetPtr_->channelsList();
             // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
             //     return;
             // }
             // clearComboSelectionRect();
+            if(datasetPtr_->polygonNEDEmpty() && qmlRootObject_) {
+                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSettings")) {
+                    isobathsSet->setProperty("outlineMode", true);
+                }
+            }
+
             m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
         }, Qt::DirectConnection);
 

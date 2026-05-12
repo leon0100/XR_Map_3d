@@ -64,7 +64,7 @@ public Q_SLOTS:
     virtual void clearData() override final;
 
 public slots:
-    void autoGenerateFromAlphaShape();
+    void autoGenerateBoundary(bool generate);
 
 
 protected:

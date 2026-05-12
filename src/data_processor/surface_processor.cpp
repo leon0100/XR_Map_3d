@@ -37,10 +37,6 @@ void SurfaceProcessor::clear()
     minZ_ = std::numeric_limits<float>::max();
     maxZ_ = std::numeric_limits<float>::lowest();
     originSet_ = false;
-    minX_ = std::numeric_limits<float>::max();
-    maxX_ = std::numeric_limits<float>::lowest();
-    minY_ = std::numeric_limits<float>::max();
-    maxY_ = std::numeric_limits<float>::lowest();
 }
 
 void SurfaceProcessor::setBottomTrackPtr(BottomTrack *bottomTrackPtr)
@@ -68,21 +64,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     if (bTrData.empty()) {
         return;
     }
-
-
-    // 添加边界框的四个顶点（顺时针方向）
-    // QVector3D lastPt = bTrData.last();
-    // minX_ = std::min(minX_, lastPt.x());
-    // maxX_ = std::max(maxX_, lastPt.x());
-    // minY_ = std::min(minY_, lastPt.y());
-    // maxY_ = std::max(maxY_, lastPt.y());
-    QVector<QVector3D> box;
-    // box.append(QVector3D(minY_, minX_, 0));
-    // box.append(QVector3D(maxY_, minX_, 0));
-    // box.append(QVector3D(maxY_, maxX_, 0));
-    // box.append(QVector3D(minY_, maxX_, 0));
-    // box.append(QVector3D(minY_, minX_, 0));
-
 
     //头一次都是初始化时的数据
     auto& tr = delaunayProc_.getTriangles();
@@ -239,7 +220,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         res.insert((*it)->getUuid(), (*(*it)));
     }
     // QVector<QVector3D> boundary = extractAlphaShapeBoundary();
-    dataProcessor_->setAutoBounadry(box); //获取自动边界
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
 }
 
@@ -755,12 +735,6 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
 
 
 
-
-
-
-
-
-/*--------------------自动绘制多边形--------------------------*/
 // // Edge（无向边，自动排序）
 struct Edge2 {
     int a, b;

@@ -106,11 +106,4 @@ private:
     bool originSet_;
     QSet<TileKey> visibleTileKeys_;
 
-
-    // 边界框成员变量
-    float minX_ = std::numeric_limits<float>::max();
-    float maxX_ = std::numeric_limits<float>::lowest();
-    float minY_ = std::numeric_limits<float>::max();
-    float maxY_ = std::numeric_limits<float>::lowest();
-
 };

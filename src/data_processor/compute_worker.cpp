@@ -175,7 +175,7 @@ void ComputeWorker::bottomTrackProcessing(const DatasetChannel& ch1, const Datas
     emit bottomTrackStarted();
 
     // bottom_.bottomTrackProcessing(ch1, ch2, p, manual, redrawAll);
-    bottom_.bottomTrackProcessing_CSV(ch1, p, manual, redrawAll);
+    bottom_.bottomTrackProcessing_file(ch1, p, manual, redrawAll);
 
     emit bottomTrackFinished();
 }

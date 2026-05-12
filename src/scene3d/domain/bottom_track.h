@@ -21,7 +21,6 @@ public:
     };
     Q_ENUM(ActionEvent)
 
-    void drawPolygonOutline(QVector<LLA> polygonVec);
 
     class BottomTrackRenderImplementation : public SceneObject::RenderImplementation
     {
@@ -94,6 +93,8 @@ private:
     DataProcessor* dataProcessorPtr_;
 
 
+    QVector<int>       epIndxUpdated_;
+    QVector<int>       vertIndxUpdated_;
     // 边界框成员变量
     float minX_ = std::numeric_limits<float>::max();
     float maxX_ = std::numeric_limits<float>::lowest();

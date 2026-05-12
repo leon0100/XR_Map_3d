@@ -194,30 +194,24 @@ bool PolygonOutline::getFatherVisible()
     return isVisible_;
 }
 
-void PolygonOutline::autoGenerateFromAlphaShape()
+void PolygonOutline::autoGenerateBoundary(bool generate)
 {
     if (!datasetPtr_) return;
-    // auto polygon = datasetPtr_->getPolygonOutline();
-    // if(!polygon.isEmpty()) {
-    //     return;
-    // }
     datasetPtr_->resetPolygonOutline();
     clearData();
 
-    auto boundary = datasetPtr_->getAutoBounadry();
-    // qDebug() << "boundary size() .... " << boundary.size();
+    if(generate) {
+        auto boundary = datasetPtr_->getAutoBounadry();
+        for (const auto& pt : boundary) {
+            QVector<QVector3D> prepData;
+            North_East_Down posNed = North_East_Down(pt.y(), pt.x(), 0);
+            prepData.push_back(QVector3D(posNed.n, posNed.e, 0));
+            SceneObject::appendData(prepData);
+        }
 
-    for (const auto& pt : boundary) {
-        QVector<QVector3D> prepData;
-        North_East_Down posNed = North_East_Down(pt.y(), pt.x(), 0);
-        prepData.push_back(QVector3D(posNed.n, posNed.e, 0));
-        datasetPtr_->addPolygonOutlineNED(posNed);
-        SceneObject::appendData(prepData);
+        Q_EMIT changed();
     }
-
-    Q_EMIT changed();
 }
-
 
 // RenderImplementation 实现
 PolygonOutline::PolygonOutlineRenderImplementation::PolygonOutlineRenderImplementation()
@@ -255,17 +249,15 @@ void PolygonOutline::PolygonOutlineRenderImplementation::render(QOpenGLFunctions
     ctx->glLineWidth(1.0f);
 
     // 为每个顶点绘制实心圆
-    const float radius = 2.0f; // 圆的半径
+    const float radius = 1.6f; // 圆的半径
     const int segments = 16; // 圆的分段数
     // 生成圆的顶点数据
     QVector<QVector3D> circleVertices;
     circleVertices.reserve(segments + 2);
 
-    qDebug() << "data().size()..." << data().size();
     // 绘制每个顶点的圆
     for (int i = 0; i < data().size(); i++) {
         const QVector3D& vertex = data().at(i);
-        qDebug() << "vertex ......" << vertex.x() << " " << vertex.y();
 
         QVector4D vertexColor;
         if (i == draggingPtIndex_) {
