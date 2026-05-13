@@ -9,7 +9,7 @@
 #include "map_defs.h"
 
 
-/*--------------------------------------GraphicsScene3dView---------------------------------------*/
+/*---------------------------------------GraphicsScene3dView---------------------------------------*/
 GraphicsScene3dView::GraphicsScene3dView() :
     QQuickFramebufferObject(),
     m_camera(std::make_shared<Camera>(this)),
@@ -1341,7 +1341,8 @@ void GraphicsScene3dView::slotScreetGraphics()
     LLARef viewLlaRef;
     if (datasetPtr_) {
         viewLlaRef = datasetPtr_->getLlaRef();
-    } else {
+    }
+    else {
         viewLlaRef = m_camera->yerevanLla;
     }
 
@@ -1355,46 +1356,63 @@ void GraphicsScene3dView::slotScreetGraphics()
     // qmlScreenProgress_->show();
     // qmlScreenProgress_->raise();
     screenshotQueue_.clear();
-    for (int row = 0; row < rows; ++row) {
-        for (int col = 0; col < cols; ++col) {
-            // if(screenUserCancel_){
-                // generatedRectCount_ = kmzCount;
-                // break;
-            // }
-            QPointF topLeft(targetRect_.x()+col * pixel300m_, targetRect_.y()+row * pixel300m_);
-            QPointF bottomRight(targetRect_.x()+(col+1) * pixel300m_, targetRect_.y()+(row+1) * pixel300m_);
-            QRectF square(topLeft, bottomRight);
-            qDebug() << col << "  " << row << "Square:" << square.topLeft() << "->" << square.bottomRight();
-            double topLeftLon,topLeftLati,btmRightLon,btmRightLati, topRightLon,topRightLati;
-            screetShot_.pixelXYToLatLong(square.topLeft().toPoint(),mapLevel_,topLeftLon,topLeftLati);
-            screetShot_.pixelXYToLatLong(square.bottomRight().toPoint(),mapLevel_,btmRightLon,btmRightLati);
-            screetShot_.pixelXYToLatLong(square.topRight(), mapLevel_, topRightLon, topRightLati);
-            // screetShot_.pixelXYToLatLong(square.bottomLeft(), mapLevel_, bottomLeftLon, bottomLeftLon);
-            QString baseDir = QCoreApplication::applicationDirPath() + "/screetTest/";
-            rowStr_ = QString::number(row + 1);
-            colStr_ = QString::number(col + 1);
-            QString imagPathName = baseDir + rowStr_ + "_" + colStr_ + ".png";
-            QString fileName = baseDir + rowStr_ + "_" + colStr_ +".kml";
-            QString imageName = rowStr_ + "_" + colStr_ + ".png";
-            bool createKMl = screetShot_.createKmlFile(fileName,imageName,topLeftLati, btmRightLati,btmRightLon, topLeftLon);
-            if(!createKMl) {
-                qDebug() << "createKMl failed";
-                return;
-            }
 
-            // 创建一个LLA矩形区域来定义请求的范围
-            double minLat = std::min({topLeftLati, topRightLati, btmRightLati});
-            double maxLat = std::max({topLeftLati, topRightLati, btmRightLati});
-            double minLon = std::min({topLeftLon,  topRightLon,  btmRightLon});
-            double maxLon = std::max({topLeftLon,  topRightLon,  btmRightLon});
-
-            ScreenshotTask task(row, col, mapLevel_, minLat, maxLat, minLon, maxLon, baseDir); // 添加截图任务到队列
-            screenshotQueue_.enqueue(task);
-        }
+    QDir dir;
+    QString folderPath = "./screetShot";
+    if (!dir.exists(folderPath)) {
+        dir.mkpath(folderPath);
     }
+
+    QString savePath   = folderPath + "/1_1";
+    QString fileName   = savePath + ".kml";
+    QString imageName  = savePath + ".png";
+    bool createKMl = screetShot_.createKmlFile(fileName, imageName, maxLat, minLat, minLon, maxLon);
+    if(!createKMl) {
+        qDebug() << "createKMl failed";
+        // return;
+    }
+
+    // 创建一个LLA矩形区域来定义请求的范围
+    ScreenshotTask task(1, 1, mapLevel_, minLat, maxLat, minLon, maxLon, savePath); // 添加截图任务到队列
+    screenshotQueue_.enqueue(task);
+    // for (int row = 0; row < rows; ++row) {
+    //     for (int col = 0; col < cols; ++col) {
+    //         // if(screenUserCancel_){
+    //             // generatedRectCount_ = kmzCount;
+    //             // break;
+    //         // }
+    //         QPointF topLeft(targetRect_.x()+col * pixel300m_, targetRect_.y()+row * pixel300m_);
+    //         QPointF bottomRight(targetRect_.x()+(col+1) * pixel300m_, targetRect_.y()+(row+1) * pixel300m_);
+    //         QRectF square(topLeft, bottomRight);
+    //         qDebug() << col << "  " << row << "Square:" << square.topLeft() << "->" << square.bottomRight();
+    //         double topLeftLon,topLeftLati,btmRightLon,btmRightLati, topRightLon,topRightLati;
+    //         screetShot_.pixelXYToLatLong(square.topLeft().toPoint(),mapLevel_,topLeftLon,topLeftLati);
+    //         screetShot_.pixelXYToLatLong(square.bottomRight().toPoint(),mapLevel_,btmRightLon,btmRightLati);
+    //         screetShot_.pixelXYToLatLong(square.topRight(), mapLevel_, topRightLon, topRightLati);
+    //         // screetShot_.pixelXYToLatLong(square.bottomLeft(), mapLevel_, bottomLeftLon, bottomLeftLon);
+    //         QString savePath = folderPath + "/" + QString::number(row + 1) + "_" + QString::number(col + 1);
+    //         QString fileName   = savePath + ".kml";
+    //         QString imageName  = savePath + ".png";
+    //         bool createKMl = screetShot_.createKmlFile(fileName, imageName, topLeftLati, btmRightLati, btmRightLon, topLeftLon);
+    //         if(!createKMl) {
+    //             qDebug() << "createKMl failed";
+    //             // return;
+    //         }
+
+    //         // 创建一个LLA矩形区域来定义请求的范围
+    //         double minLat = std::min({topLeftLati, topRightLati, btmRightLati});
+    //         double maxLat = std::max({topLeftLati, topRightLati, btmRightLati});
+    //         double minLon = std::min({topLeftLon,  topRightLon,  btmRightLon});
+    //         double maxLon = std::max({topLeftLon,  topRightLon,  btmRightLon});
+
+    //         ScreenshotTask task(row, col, mapLevel_, minLat, maxLat, minLon, maxLon, savePath); // 添加截图任务到队列
+    //         screenshotQueue_.enqueue(task);
+    //     }
+    // }
 
     // 如果当前没有在处理任务，开始处理
     if (!isProcessingScreenshot_) {
+        qDebug() << "isProcessingScreenshot_....";
         processNextScreenshotTask();
     }
 
@@ -1423,8 +1441,7 @@ void GraphicsScene3dView::processNextScreenshotTask()
 
 void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
 {
-    rowStr_ = QString::number(task.row + 1);
-    colStr_ = QString::number(task.col + 1);
+    savePath_ = task.outputPath;
 
     double widthLen  = GIF->getDistance_Haversine(task.minLon,task.maxLat,task.maxLon,task.minLat);
     double heightLen = GIF->getDistance_Haversine(task.maxLon,task.maxLat,task.maxLon,task.minLat);
@@ -1442,7 +1459,6 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     constexpr double GOOGLE_TILE_CONSTANT = 126543000.03392;
     int targetLevel = mapLevel_;
     double targetHeight = GOOGLE_TILE_CONSTANT / std::pow(2.0, targetLevel);
-
 
     //的确是垂直距离问题导致的截图和实际不贴合，后面再调试修改！！！
     targetHeight = std::max(widthLen, heightLen) / 2.0;
@@ -1472,11 +1488,12 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     LLARef viewLlaRef = m_camera->viewLlaRef_;
 
     mapView_->update();   // 强制刷新所有渲染组件
-
     QQuickFramebufferObject::update();  // 等待一帧确保状态同步
 
     screenshotRetryCount_ = 0;
     emit sendRectRequest(request, false, viewLlaRef, false, map::CameraTilt::Up);
+
+
     QTimer::singleShot(2000, this, [this]() {
         QMutexLocker locker(&screenshotMutex_);
         screenshotPending_ = true;
@@ -1485,11 +1502,9 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
 
 }
 
-
 //---------------------------------------Renderer--------------------------------------//
 GraphicsScene3dView::InFboRenderer::InFboRenderer() :
-    QQuickFramebufferObject::Renderer(),
-    m_renderer(new GraphicsScene3dRenderer)
+    QQuickFramebufferObject::Renderer(), m_renderer(new GraphicsScene3dRenderer)
 {
     m_renderer->initialize();
 }
@@ -1497,81 +1512,400 @@ GraphicsScene3dView::InFboRenderer::InFboRenderer() :
 GraphicsScene3dView::InFboRenderer::~InFboRenderer()
 { }
 
+
+// bool GraphicsScene3dView::InFboRenderer::prepareOffscreenFbo(int width, int height) {
+//     qDebug() << "\n=== prepareOffscreenFbo START ===";
+//     qDebug() << "width =" << width << ", height=" << height;
+
+//     QOpenGLContext* ctx = QOpenGLContext::currentContext();
+//     QOpenGLFunctions* f = ctx ? ctx->functions() : nullptr;
+
+//     qDebug() << "currentContext =" << (ctx ? "valid" : "nullptr");
+//     qDebug() << "currentThread =" << QThread::currentThread();
+
+//     // 检查 OpenGL 错误（创建前）
+//     if (f) {
+//         GLenum err = f->glGetError();
+//         if (err != GL_NO_ERROR) {
+//             switch (err) {
+//             case GL_NO_ERROR: return "GL_NO_ERROR";
+//             case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+//             case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+//             case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+//             case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+//             default: return "45555555";
+//             }
+//         }
+//     }
+
+//     // 检查 MSAA 支持
+//     if (f) {
+//         GLint maxSamples = 0;
+//         f->glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+//         qDebug() << "Max MSAA samples:" << maxSamples;
+//     }
+
+//     // 尝试创建 FBO
+//     if (!offscreenFbo_) {
+//         qDebug() << "Creating FBO...";
+
+//         // 先尝试简单格式
+//         QOpenGLFramebufferObjectFormat format;
+//         format.setAttachment(QOpenGLFramebufferObject::Depth);
+//         format.setSamples(0);  // 禁用 MSAA
+
+//         offscreenFbo_ = new QOpenGLFramebufferObject(width, height, format);
+//         qDebug() << "FBO ptr =" << offscreenFbo_;
+
+//         // 检查创建后的错误
+//         if (f) {
+//             GLenum err = f->glGetError();
+//             if (err != GL_NO_ERROR) {
+//                 switch (err) {
+//                     case GL_NO_ERROR: return "GL_NO_ERROR";
+//                     case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+//                     case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+//                     case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+//                     case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+//                     default: return "45555555";
+//                 }
+//             }
+//         }
+//     }
+
+//     if (!offscreenFbo_) {
+//         qCritical() << "[FAIL] FBO is nullptr";
+//         return false;
+//     }
+
+//     qDebug() << "Checking FBO validity...";
+//     bool valid = false;
+
+//     // 安全调用 isValid()
+//     try {
+//         valid = offscreenFbo_->isValid();
+//     } catch (const std::exception& e) {
+//         qCritical() << "EXCEPTION:" << e.what();
+//         return false;
+//     } catch (...) {
+//         qCritical() << "UNKNOWN EXCEPTION in isValid()";
+//         return false;
+//     }
+
+//     qDebug() << "FBO valid =" << valid;
+
+//     if (!valid) {
+//         qCritical() << "[FAIL] FBO is not valid!";
+
+//         // 清理并返回
+//         delete offscreenFbo_;
+//         offscreenFbo_ = nullptr;
+//         return false;
+//     }
+
+//     qDebug() << "[SUCCESS] FBO created: size=" << offscreenFbo_->size()
+//              << ", texture=" << offscreenFbo_->texture();
+//     qDebug() << "=== prepareOffscreenFbo END ===\n";
+
+//     return true;
+// }
+QString getGlErrorString(GLenum error) {
+    switch (error) {
+    case GL_NO_ERROR: return "GL_NO_ERROR";
+    case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+    case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+    case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+    case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+    default: return QString("0x%1").arg(error, 0, 16);
+    }
+}
+bool GraphicsScene3dView::InFboRenderer::prepareOffscreenFbo(int width, int height) {
+
+    if(!offscreenFbo_) {
+        offscreenFbo_ = createFramebufferObject(QSize(width, height));
+        qDebug() << "offscreenFbo_.....";
+        return true;
+    }else {
+        return true;
+    }
+
+
+    qDebug() << "\n=== prepareOffscreenFbo START ===";
+    qDebug() << "width =" << width << ", height=" << height;
+
+    QOpenGLContext* ctx = QOpenGLContext::currentContext();
+    QOpenGLFunctions* f = ctx ? ctx->functions() : nullptr;
+
+    qDebug() << "currentContext =" << (ctx ? "valid" : "nullptr");
+    qDebug() << "currentThread =" << QThread::currentThread();
+
+    qDebug() << "offscreenFbo_ BEFORE check:" << offscreenFbo_;
+
+    if (offscreenFbo_) {
+        qDebug() << "WARNING: offscreenFbo_ already exists!";
+        qDebug() << "  Current size:" << offscreenFbo_->size();
+
+        // 检查是否需要重新创建
+        if (offscreenFbo_->size() != QSize(width, height)) {
+            qDebug() << "Size mismatch! Deleting old FBO";
+            delete offscreenFbo_;
+            offscreenFbo_ = nullptr;
+        }
+    }
+
+    // ========== 创建新 FBO ==========
+    if (!offscreenFbo_) {
+        qDebug() << "Creating NEW FBO...";
+
+        QOpenGLFramebufferObjectFormat format;
+        format.setAttachment(QOpenGLFramebufferObject::Depth);
+        format.setSamples(0);
+
+        qDebug() << "FBO format: samples=" << format.samples()
+                 << ", attachment=" << static_cast<int>(format.attachment());
+
+        // 检查 OpenGL 错误（创建前）
+        if (f) {
+            GLenum err = f->glGetError();
+            qDebug() << "GL error before create:" << getGlErrorString(err);
+        }
+
+        offscreenFbo_ = new QOpenGLFramebufferObject(width, height, format);
+        qDebug() << "FBO created, ptr=" << offscreenFbo_;
+
+        // 检查 OpenGL 错误（创建后）
+        if (f) {
+            GLenum err = f->glGetError();
+            qDebug() << "GL error after create:" << getGlErrorString(err);
+        }
+    }
+
+    // ========== 检查 FBO 是否为空 ==========
+    qDebug() << "offscreenFbo_ AFTER create:" << offscreenFbo_;
+
+    if (!offscreenFbo_) {
+        qCritical() << "[FAIL] FBO is nullptr after creation!";
+        return false;
+    }
+
+    // ========== 安全检查 isValid() ==========
+    qDebug() << "Checking FBO validity...";
+
+    bool valid = false;
+
+    // 尝试直接检查 FBO 的内部状态
+    qDebug() << "FBO internal texture ID:" << offscreenFbo_->texture();
+    qDebug() << "FBO size:" << offscreenFbo_->size();
+
+    // 安全调用 isValid()
+    try {
+        qDebug() << "About to call isValid()...";
+        valid = offscreenFbo_->isValid();
+        qDebug() << "isValid() returned:" << valid;
+    } catch (const std::exception& e) {
+        qCritical() << "EXCEPTION in isValid():" << e.what();
+        return false;
+    } catch (...) {
+        qCritical() << "UNKNOWN EXCEPTION in isValid()";
+        return false;
+    }
+
+    if (!valid) {
+        qCritical() << "[FAIL] FBO is NOT valid!";
+
+        // 尝试重新创建
+        qDebug() << "Attempting to recreate FBO...";
+        delete offscreenFbo_;
+        offscreenFbo_ = nullptr;
+
+        QOpenGLFramebufferObjectFormat simpleFormat;
+        simpleFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
+        simpleFormat.setSamples(0);
+
+        offscreenFbo_ = new QOpenGLFramebufferObject(width, height, simpleFormat);
+
+        if (offscreenFbo_ && offscreenFbo_->isValid()) {
+            qDebug() << "Recreated FBO is valid!";
+        } else {
+            qCritical() << "Failed to recreate FBO!";
+            delete offscreenFbo_;
+            offscreenFbo_ = nullptr;
+            return false;
+        }
+    }
+
+    qDebug() << "[SUCCESS] FBO is ready";
+    qDebug() << "=== prepareOffscreenFbo END ===\n";
+
+    return true;
+}
+
+
+
+
+void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask& task) {
+    double centerLat = (task.minLat + task.maxLat) / 2.0;
+    double centerLon = (task.minLon + task.maxLon) / 2.0;
+
+    LLA targetCenterLla(centerLat, centerLon, 0.0);
+    North_East_Down targetCenterNed(&targetCenterLla, &graphicsView_->m_camera->viewLlaRef_, false);
+
+    // 临时保存原相机状态
+    QVector3D originalLookAt = graphicsView_->m_camera->m_lookAt;
+    float originalDistance = graphicsView_->m_camera->m_distToFocusPoint;
+
+    // 设置新相机位置
+    graphicsView_->m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
+
+    double widthLen = GIF->getDistance_Haversine(task.minLon, task.maxLat, task.maxLon, task.maxLat);
+    double heightLen = GIF->getDistance_Haversine(task.maxLon, task.maxLat, task.maxLon, task.minLat);
+    double targetHeight = std::max(widthLen, heightLen) / 2.0;
+    graphicsView_->m_camera->m_distToFocusPoint = static_cast<float>(targetHeight);
+
+    graphicsView_->m_camera->updateCameraParams();
+    graphicsView_->m_camera->updateViewMatrix();
+
+    // 保存原状态以便恢复
+    originalCameraState_ = {originalLookAt, originalDistance};
+}
+
+QImage GraphicsScene3dView::InFboRenderer::readFramebuffer(int width, int height)
+{
+    QImage img(width, height, QImage::Format_ARGB32);
+    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
+    f->glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, img.bits());
+    return img.mirrored(false, true);
+}
+bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask& task, QImage& result) {
+    // 1. 计算目标尺寸
+    double widthLen = GIF->getDistance_Haversine(task.minLon, task.maxLat, task.maxLon, task.maxLat);
+    double heightLen = GIF->getDistance_Haversine(task.maxLon, task.maxLat, task.maxLon, task.minLat);
+
+    constexpr double GOOGLE_TILE_CONSTANT = 126543000.03392;
+    double metersPerPixel = GOOGLE_TILE_CONSTANT / std::pow(2.0, task.mapLevel) / 256.0;
+
+    int targetWidth = static_cast<int>(widthLen / metersPerPixel);
+    int targetHeight = static_cast<int>(heightLen / metersPerPixel);
+
+    targetWidth = std::max(targetWidth, 512);
+    targetHeight = std::max(targetHeight, 512);
+
+    qDebug() << "Offscreen render size:" << targetWidth << "x" << targetHeight;
+
+    // 2. 创建/调整 FBO
+    if (!prepareOffscreenFbo(targetWidth, targetHeight)) {
+        qWarning() << "Failed to prepare offscreen FBO";
+        return false;
+    }
+    qDebug() << "0000000000000000";
+    // 3. 保存当前状态
+    GLint prevFbo;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFbo);
+
+    GLint prevViewport[4];
+    glGetIntegerv(GL_VIEWPORT, prevViewport);
+
+    // 4. 绑定 FBO
+    offscreenFbo_->bind();
+
+    // 5. 设置视口
+    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
+    f->glViewport(0, 0, targetWidth, targetHeight);
+
+    // 6. 清除缓冲区
+    f->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // 7. 设置相机到目标区域
+    setupCameraForTask(task);
+
+    // 8. 渲染场景（使用现有的 m_renderer）
+    m_renderer->render();
+    qDebug() << "22222222222222222";
+    // 9. 读取像素
+    result = readFramebuffer(targetWidth, targetHeight);
+    qDebug() << "3333333333333333333";
+    // 10. 恢复状态
+    offscreenFbo_->release();
+    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+    f->glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+    qDebug() << "444444444444444444";
+    return true;
+}
 void GraphicsScene3dView::InFboRenderer::render()
 {
     m_renderer->render();
 
-    // if (view_->screenshotPending_)
-    // {
-    //     auto& r = m_renderer->mapViewRenderImpl_;
+    if (graphicsView_->screenshotPending_)
+    {
+        auto task = graphicsView_->currentScreenshotTask_;
+        QImage result;
+        renderToOffscreen(task, result);
+            if (result.save("test202600.png", "PNG")) {
+                qDebug() << "Screenshot saved successfully:";
+            }
+        // auto& r = m_renderer->mapViewRenderImpl_;
 
-    //     bool initEmpty = r.pendingInit_.isEmpty();
-    //     bool updateEmpty = r.pendingUpdate_.isEmpty();
-    //     bool allTexturesValid = true;
-    //     int  validCount = 0;
-    //     int  totalCount = r.tilesHash_.size();
+        // bool initEmpty   = r.pendingInit_.isEmpty();
+        // bool updateEmpty = r.pendingUpdate_.isEmpty();
+        // bool allTexturesValid = true;
+        // int  validCount = 0;
+        // int  totalCount = r.tilesHash_.size();
 
-    //     for (const auto& [tileIndx, tile] : r.tilesHash_) {
-    //         if (tile.getTextureId() != 0) {
-    //             qDebug() <<"tile ..............." << tile.getIndex().z_;
-    //             validCount++;
-    //         } else {
-    //             allTexturesValid = false;
-    //         }
-    //     }
+        // for (const auto& [tileIndx, tile] : r.tilesHash_) {
+        //     if (tile.getTextureId() != 0) {
+        //         qDebug() <<"tile ..............." << tile.getIndex().z_;
+        //         validCount++;
+        //     } else {
+        //         allTexturesValid = false;
+        //     }
+        // }
 
-    //     bool isComplete = initEmpty && updateEmpty && allTexturesValid && (totalCount > 0);
-    //     qDebug() << "Tile status: pendingInit=" << r.pendingInit_.size() << "pendingUpdate=" << r.pendingUpdate_.size()
-    //              << "validTiles=" << validCount << "totalTiles=" << totalCount << "isComplete=" << isComplete;
+        // bool isComplete = initEmpty && updateEmpty && allTexturesValid && (totalCount > 0);
+        // qDebug() << "Tile status: pendingInit=" << r.pendingInit_.size() << "pendingUpdate=" << r.pendingUpdate_.size()
+        //          << "validTiles=" << validCount << "totalTiles=" << totalCount << "isComplete=" << isComplete;
+        // if (isComplete)
+        // {
+        //     qDebug() << "Tiles render complete, saving screenshot for row=" << graphicsView_->currentScreenshotTask_.row
+        //              << "col=" << graphicsView_->currentScreenshotTask_.col;
+        //     QImage img = framebufferObject()->toImage();
+        //     QString imagPathName =  graphicsView_->savePath_ + ".png";
+        //     QString fileName     =  graphicsView_->savePath_ + ".kml";
+        //     if (img.save(imagPathName, "PNG")) {
+        //         qDebug() << "Screenshot saved successfully:" << imagPathName;
+        //         QString tmpFileName = fileName;
+        //         QString fileNameXmap = tmpFileName.replace("kml", "xmap");
+        //         // graphicsView_->screetShot_.createXMAPFile(fileName, imagPathName, fileNameXmap);
+        //     } else {
+        //         qDebug() << "Failed to save screenshot:" << imagPathName;
+        //     }
 
-    //     if (isComplete)
-    //     {
+        //     graphicsView_->screenshotPending_ = false;
+        //     graphicsView_->screenshotRetryCount_ = 0;
 
-    //         qDebug() << "Tiles render complete, saving screenshot for row=" << view_->currentScreenshotTask_.row
-    //                  << "col=" << view_->currentScreenshotTask_.col;
+        //     QMetaObject::invokeMethod(graphicsView_, "processNextScreenshotTask", Qt::QueuedConnection);
+        // }
+        // else
+        // {
+        //     graphicsView_->screenshotRetryCount_++;
 
-    //         QImage img = framebufferObject()->toImage();
+        //     if (graphicsView_->screenshotRetryCount_ <= graphicsView_->MAX_RETRY_COUNT)
+        //     {
+        //         qDebug() << "Tiles not ready, retry count:" << graphicsView_->screenshotRetryCount_;
+        //         QMetaObject::invokeMethod(graphicsView_, "update", Qt::QueuedConnection);
+        //     }
+        //     else
+        //     {
+        //         qWarning() << "Max retry count reached, skipping screenshot for row="
+        //                    << graphicsView_->currentScreenshotTask_.row << "col=" << graphicsView_->currentScreenshotTask_.col;
 
-    //         QString baseDir = QCoreApplication::applicationDirPath();
-    //         QString kmzDir = baseDir + "/screetTest/";
-    //         QString imagPathName = kmzDir + view_->rowStr_ + "_" + view_->colStr_ + ".png";
-    //         QString fileName = kmzDir + view_->rowStr_ + "_" + view_->colStr_ + ".kml";
+        //         graphicsView_->screenshotPending_ = false;
+        //         graphicsView_->screenshotRetryCount_ = 0;
 
-    //         if (img.save(imagPathName, "PNG")) {
-    //             qDebug() << "Screenshot saved successfully:" << imagPathName;
-    //             QString tmpFileName = fileName;
-    //             QString fileNameXmap = tmpFileName.replace("kml", "xmap");
-    //             view_->screetShot_.createXMAPFile(fileName, imagPathName, fileNameXmap);
-    //         } else {
-    //             qDebug() << "Failed to save screenshot:" << imagPathName;
-    //         }
-
-    //         view_->screenshotPending_ = false;
-    //         view_->screenshotRetryCount_ = 0;
-
-    //         QMetaObject::invokeMethod(view_, "processNextScreenshotTask", Qt::QueuedConnection);
-    //     }
-    //     else
-    //     {
-    //         view_->screenshotRetryCount_++;
-
-    //         if (view_->screenshotRetryCount_ <= view_->MAX_RETRY_COUNT)
-    //         {
-    //             qDebug() << "Tiles not ready, retry count:" << view_->screenshotRetryCount_;
-    //             QMetaObject::invokeMethod(view_, "update", Qt::QueuedConnection);
-    //         }
-    //         else
-    //         {
-    //             qWarning() << "Max retry count reached, skipping screenshot for row="
-    //                        << view_->currentScreenshotTask_.row << "col=" << view_->currentScreenshotTask_.col;
-
-    //             view_->screenshotPending_ = false;
-    //             view_->screenshotRetryCount_ = 0;
-
-    //             QMetaObject::invokeMethod(view_, "processNextScreenshotTask", Qt::QueuedConnection);
-    //         }
-    //     }
-    // }
+        //         QMetaObject::invokeMethod(graphicsView_, "processNextScreenshotTask", Qt::QueuedConnection);
+        //     }
+        // }
+    }
 
 }
 
@@ -1582,6 +1916,8 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fb
     if (!view) {
         return;
     }
+
+    graphicsView_ = view;
 
     // process textures
     processMapTextures(view);
@@ -1856,11 +2192,7 @@ GraphicsScene3dView::Camera::Camera(GraphicsScene3dView* viewPtr) :
     // }
 }
 
-GraphicsScene3dView::Camera::Camera(qreal pitch,
-                                    qreal yaw,
-                                    qreal distToFocusPoint,
-                                    qreal fov,
-                                    qreal sensivity)
+GraphicsScene3dView::Camera::Camera(qreal pitch, qreal yaw, qreal distToFocusPoint, qreal fov, qreal sensivity)
     :m_pitch(std::move(pitch))
     ,m_yaw(std::move(yaw))
     ,m_fov(std::move(fov))

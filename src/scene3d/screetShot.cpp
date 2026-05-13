@@ -381,7 +381,6 @@ void ScreetShot::saveScreetShot()
 
     return;
     /*-暂时弃用XR-Map中的截图方式-*/
-
 //     auto mapView = mapView_.lock();
 //     if (!mapView) {
 //         return;
@@ -704,44 +703,44 @@ QString ScreetShot::getLengthChEn(double distance,int decimalPlaces)
 
 bool ScreetShot::createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west)
 {
-    // QFile file(kmlPath);
-    // if (!file.open(QFile::WriteOnly | QFile::Text)) {
-    //     qDebug() << QString("Cannot write file %1.").arg(file.errorString());
-    //     return false;
-    // }
+    QFile file(kmlPath);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        qDebug() << QString("Cannot write file %1.").arg(file.errorString());
+        return false;
+    }
 
-    // QXmlStreamWriter writer(&file);
-    // writer.setCodec("UTF-8");
-    // writer.setAutoFormatting(true);
-    // writer.writeStartDocument("1.0", true);
+    QXmlStreamWriter writer(&file);
+    writer.setCodec("UTF-8");
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument("1.0", true);
 
-    // writer.writeStartElement("kml");
-    // writer.writeAttribute("xmlns", "http://www.opengis.net/kml/2.2");
+    writer.writeStartElement("kml");
+    writer.writeAttribute("xmlns", "http://www.opengis.net/kml/2.2");
 
-    // writer.writeStartElement("Document");
-    // writer.writeAttribute("id", "root_doc");
+    writer.writeStartElement("Document");
+    writer.writeAttribute("id", "root_doc");
 
-    // writer.writeStartElement("GroundOverlay");
-    // writer.writeTextElement("name", "Shaded Relief");
+    writer.writeStartElement("GroundOverlay");
+    writer.writeTextElement("name", "Shaded Relief");
 
-    // writer.writeStartElement("Icon");
-    // writer.writeTextElement("href", imageName);
-    // writer.writeEndElement(); // Icon
+    writer.writeStartElement("Icon");
+    writer.writeTextElement("href", imageName);
+    writer.writeEndElement(); // Icon
 
-    // writer.writeStartElement("LatLonBox");
-    // writer.writeTextElement("north", QString::number(north, 'f', 14));
-    // writer.writeTextElement("south", QString::number(south, 'f', 14));
-    // writer.writeTextElement("east", QString::number(east, 'f', 14));
-    // writer.writeTextElement("west", QString::number(west, 'f', 14));
-    // writer.writeEndElement(); // LatLonBox
+    writer.writeStartElement("LatLonBox");
+    writer.writeTextElement("north", QString::number(north, 'f', 14));
+    writer.writeTextElement("south", QString::number(south, 'f', 14));
+    writer.writeTextElement("east", QString::number(east, 'f', 14));
+    writer.writeTextElement("west", QString::number(west, 'f', 14));
+    writer.writeEndElement(); // LatLonBox
 
-    // writer.writeEndElement(); // GroundOverlay
+    writer.writeEndElement(); // GroundOverlay
 
-    // writer.writeEndElement(); // Document
-    // writer.writeEndElement(); // kml
+    writer.writeEndElement(); // Document
+    writer.writeEndElement(); // kml
 
-    // writer.writeEndDocument();
-    // file.close();
+    writer.writeEndDocument();
+    file.close();
 
     return true;
 }

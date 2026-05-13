@@ -148,6 +148,10 @@ public:
 
     protected:
         virtual void render() override;
+        bool renderToOffscreen(const ScreenshotTask& task, QImage& result);
+        bool prepareOffscreenFbo(int width, int height);
+        void setupCameraForTask(const ScreenshotTask& task);
+        QImage readFramebuffer(int width, int height);
 
         /*
          * 渲染将在专用线程上进行，因此需要避免在渲染线程和GUI线程之间共享变量，使用synchronize()进行通信。
@@ -173,6 +177,14 @@ public:
         QString checkOpenGLError() const;
 
         std::unique_ptr<GraphicsScene3dRenderer> m_renderer;
+
+        GraphicsScene3dView* graphicsView_ = nullptr;
+        QOpenGLFramebufferObject* offscreenFbo_;
+        // 用于保存相机状态
+        struct {
+            QVector3D lookAt;
+            float distance;
+        } originalCameraState_;
     };
 
     enum ActiveMode{
@@ -379,7 +391,7 @@ public:
     int mapLevel_;
     QRect targetRect_;
     int pixel300m_;
-    QString rowStr_,colStr_;
+    QString savePath_;
 
 
 signals:
@@ -391,7 +403,7 @@ public slots:
     // 截图任务处理方法
     void processNextScreenshotTask();
 
-private:
+public:
     // 截图任务队列
     QQueue<ScreenshotTask> screenshotQueue_;
     QMutex screenshotQueueMutex_;//要定义为成员变量，而不是局部变量（会导致每个线程都有自己的mutex，没有互斥效果）
@@ -410,23 +422,7 @@ private:
 public:
     Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
 
-private:
-    QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
-    GLuint offscreenVboPos_ = 0;
-    GLuint offscreenVboUV_ = 0;
-    int offscreenFboWidth_ = 0;
-    int offscreenFboHeight_ = 0;
 
-    bool initOffscreenFbo(int width, int height);
-    void cleanupOffscreenFbo();
-    QImage renderTilesToOffscreenFbo(const QVector<map::TileIndex>& tileIndices,
-        const std::unordered_map<map::TileIndex, QImage>& tileImages,
-        float pixelMinX, float pixelMinY,float pixelMaxX, float pixelMaxY);
-
-    QTimer* updateTimer_ = nullptr;   // 定时器用于定期触发updateMapView
-
-public:
-    float minZ_, maxZ_;
 
 };
 
