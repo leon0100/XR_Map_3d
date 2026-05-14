@@ -147,11 +147,8 @@ public:
         virtual ~InFboRenderer();
 
     protected:
-        virtual void render() override;
-        bool renderToOffscreen(const ScreenshotTask& task, QImage& result);
-        bool prepareOffscreenFbo(int width, int height);
+        bool renderToOffscreen(const ScreenshotTask& task);
         void setupCameraForTask(const ScreenshotTask& task);
-        QImage readFramebuffer(int width, int height);
 
         /*
          * 渲染将在专用线程上进行，因此需要避免在渲染线程和GUI线程之间共享变量，使用synchronize()进行通信。
@@ -159,8 +156,10 @@ public:
          *QQuickFramebufferObject::update() -----> 触发synchronize() ------> 然后触发render()
         */
         virtual void synchronize(QQuickFramebufferObject * fbo) override;
+        virtual void render() override;
 
         virtual QOpenGLFramebufferObject *createFramebufferObject(const QSize &size) override;
+
 
     private:
         friend class GraphicsScene3dView;
@@ -176,15 +175,18 @@ public:
 
         QString checkOpenGLError() const;
 
+
         std::unique_ptr<GraphicsScene3dRenderer> m_renderer;
 
         GraphicsScene3dView* graphicsView_ = nullptr;
-        QOpenGLFramebufferObject* offscreenFbo_;
+        QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
+        std::mutex screenshotMutex_;
         // 用于保存相机状态
         struct {
             QVector3D lookAt;
             float distance;
         } originalCameraState_;
+
     };
 
     enum ActiveMode{
@@ -396,6 +398,7 @@ public:
 
 signals:
     void requestRenderUpdate();
+    void requestOffsetScreen(const ScreenshotTask& task);
 
 
 public slots:
@@ -417,7 +420,6 @@ public:
 
     int screenshotRetryCount_ = 0;
     static const int MAX_RETRY_COUNT = 100;  // 最大重试次数
-
 
 public:
     Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)

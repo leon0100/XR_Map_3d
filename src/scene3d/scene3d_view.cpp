@@ -1439,6 +1439,10 @@ void GraphicsScene3dView::processNextScreenshotTask()
     startScreenshotTask(currentScreenshotTask_);
 }
 
+
+// #include <QPainter>
+// #include <QOpenGLPaintDevice>
+
 void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
 {
     savePath_ = task.outputPath;
@@ -1493,16 +1497,17 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     screenshotRetryCount_ = 0;
     emit sendRectRequest(request, false, viewLlaRef, false, map::CameraTilt::Up);
 
-
     QTimer::singleShot(2000, this, [this]() {
         QMutexLocker locker(&screenshotMutex_);
         screenshotPending_ = true;
         QQuickFramebufferObject::update(); // 触发重绘
     });
 
+    emit requestOffsetScreen(task);
+
 }
 
-//---------------------------------------Renderer--------------------------------------//
+/* ---------------------------------------Renderer--------------------------------------*/
 GraphicsScene3dView::InFboRenderer::InFboRenderer() :
     QQuickFramebufferObject::Renderer(), m_renderer(new GraphicsScene3dRenderer)
 {
@@ -1513,246 +1518,21 @@ GraphicsScene3dView::InFboRenderer::~InFboRenderer()
 { }
 
 
-// bool GraphicsScene3dView::InFboRenderer::prepareOffscreenFbo(int width, int height) {
-//     qDebug() << "\n=== prepareOffscreenFbo START ===";
-//     qDebug() << "width =" << width << ", height=" << height;
-
-//     QOpenGLContext* ctx = QOpenGLContext::currentContext();
-//     QOpenGLFunctions* f = ctx ? ctx->functions() : nullptr;
-
-//     qDebug() << "currentContext =" << (ctx ? "valid" : "nullptr");
-//     qDebug() << "currentThread =" << QThread::currentThread();
-
-//     // 检查 OpenGL 错误（创建前）
-//     if (f) {
-//         GLenum err = f->glGetError();
-//         if (err != GL_NO_ERROR) {
-//             switch (err) {
-//             case GL_NO_ERROR: return "GL_NO_ERROR";
-//             case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
-//             case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
-//             case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
-//             case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
-//             default: return "45555555";
-//             }
-//         }
-//     }
-
-//     // 检查 MSAA 支持
-//     if (f) {
-//         GLint maxSamples = 0;
-//         f->glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-//         qDebug() << "Max MSAA samples:" << maxSamples;
-//     }
-
-//     // 尝试创建 FBO
-//     if (!offscreenFbo_) {
-//         qDebug() << "Creating FBO...";
-
-//         // 先尝试简单格式
-//         QOpenGLFramebufferObjectFormat format;
-//         format.setAttachment(QOpenGLFramebufferObject::Depth);
-//         format.setSamples(0);  // 禁用 MSAA
-
-//         offscreenFbo_ = new QOpenGLFramebufferObject(width, height, format);
-//         qDebug() << "FBO ptr =" << offscreenFbo_;
-
-//         // 检查创建后的错误
-//         if (f) {
-//             GLenum err = f->glGetError();
-//             if (err != GL_NO_ERROR) {
-//                 switch (err) {
-//                     case GL_NO_ERROR: return "GL_NO_ERROR";
-//                     case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
-//                     case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
-//                     case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
-//                     case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
-//                     default: return "45555555";
-//                 }
-//             }
-//         }
-//     }
-
-//     if (!offscreenFbo_) {
-//         qCritical() << "[FAIL] FBO is nullptr";
-//         return false;
-//     }
-
-//     qDebug() << "Checking FBO validity...";
-//     bool valid = false;
-
-//     // 安全调用 isValid()
-//     try {
-//         valid = offscreenFbo_->isValid();
-//     } catch (const std::exception& e) {
-//         qCritical() << "EXCEPTION:" << e.what();
-//         return false;
-//     } catch (...) {
-//         qCritical() << "UNKNOWN EXCEPTION in isValid()";
-//         return false;
-//     }
-
-//     qDebug() << "FBO valid =" << valid;
-
-//     if (!valid) {
-//         qCritical() << "[FAIL] FBO is not valid!";
-
-//         // 清理并返回
-//         delete offscreenFbo_;
-//         offscreenFbo_ = nullptr;
-//         return false;
-//     }
-
-//     qDebug() << "[SUCCESS] FBO created: size=" << offscreenFbo_->size()
-//              << ", texture=" << offscreenFbo_->texture();
-//     qDebug() << "=== prepareOffscreenFbo END ===\n";
-
-//     return true;
-// }
-QString getGlErrorString(GLenum error) {
-    switch (error) {
-    case GL_NO_ERROR: return "GL_NO_ERROR";
-    case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
-    case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
-    case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
-    case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
-    default: return QString("0x%1").arg(error, 0, 16);
-    }
-}
-bool GraphicsScene3dView::InFboRenderer::prepareOffscreenFbo(int width, int height) {
-
-    if(!offscreenFbo_) {
-        offscreenFbo_ = createFramebufferObject(QSize(width, height));
-        qDebug() << "offscreenFbo_.....";
-        return true;
-    }else {
-        return true;
-    }
-
-
-    qDebug() << "\n=== prepareOffscreenFbo START ===";
-    qDebug() << "width =" << width << ", height=" << height;
-
-    QOpenGLContext* ctx = QOpenGLContext::currentContext();
-    QOpenGLFunctions* f = ctx ? ctx->functions() : nullptr;
-
-    qDebug() << "currentContext =" << (ctx ? "valid" : "nullptr");
-    qDebug() << "currentThread =" << QThread::currentThread();
-
-    qDebug() << "offscreenFbo_ BEFORE check:" << offscreenFbo_;
-
-    if (offscreenFbo_) {
-        qDebug() << "WARNING: offscreenFbo_ already exists!";
-        qDebug() << "  Current size:" << offscreenFbo_->size();
-
-        // 检查是否需要重新创建
-        if (offscreenFbo_->size() != QSize(width, height)) {
-            qDebug() << "Size mismatch! Deleting old FBO";
-            delete offscreenFbo_;
-            offscreenFbo_ = nullptr;
-        }
-    }
-
-    // ========== 创建新 FBO ==========
-    if (!offscreenFbo_) {
-        qDebug() << "Creating NEW FBO...";
-
-        QOpenGLFramebufferObjectFormat format;
-        format.setAttachment(QOpenGLFramebufferObject::Depth);
-        format.setSamples(0);
-
-        qDebug() << "FBO format: samples=" << format.samples()
-                 << ", attachment=" << static_cast<int>(format.attachment());
-
-        // 检查 OpenGL 错误（创建前）
-        if (f) {
-            GLenum err = f->glGetError();
-            qDebug() << "GL error before create:" << getGlErrorString(err);
-        }
-
-        offscreenFbo_ = new QOpenGLFramebufferObject(width, height, format);
-        qDebug() << "FBO created, ptr=" << offscreenFbo_;
-
-        // 检查 OpenGL 错误（创建后）
-        if (f) {
-            GLenum err = f->glGetError();
-            qDebug() << "GL error after create:" << getGlErrorString(err);
-        }
-    }
-
-    // ========== 检查 FBO 是否为空 ==========
-    qDebug() << "offscreenFbo_ AFTER create:" << offscreenFbo_;
-
-    if (!offscreenFbo_) {
-        qCritical() << "[FAIL] FBO is nullptr after creation!";
-        return false;
-    }
-
-    // ========== 安全检查 isValid() ==========
-    qDebug() << "Checking FBO validity...";
-
-    bool valid = false;
-
-    // 尝试直接检查 FBO 的内部状态
-    qDebug() << "FBO internal texture ID:" << offscreenFbo_->texture();
-    qDebug() << "FBO size:" << offscreenFbo_->size();
-
-    // 安全调用 isValid()
-    try {
-        qDebug() << "About to call isValid()...";
-        valid = offscreenFbo_->isValid();
-        qDebug() << "isValid() returned:" << valid;
-    } catch (const std::exception& e) {
-        qCritical() << "EXCEPTION in isValid():" << e.what();
-        return false;
-    } catch (...) {
-        qCritical() << "UNKNOWN EXCEPTION in isValid()";
-        return false;
-    }
-
-    if (!valid) {
-        qCritical() << "[FAIL] FBO is NOT valid!";
-
-        // 尝试重新创建
-        qDebug() << "Attempting to recreate FBO...";
-        delete offscreenFbo_;
-        offscreenFbo_ = nullptr;
-
-        QOpenGLFramebufferObjectFormat simpleFormat;
-        simpleFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
-        simpleFormat.setSamples(0);
-
-        offscreenFbo_ = new QOpenGLFramebufferObject(width, height, simpleFormat);
-
-        if (offscreenFbo_ && offscreenFbo_->isValid()) {
-            qDebug() << "Recreated FBO is valid!";
-        } else {
-            qCritical() << "Failed to recreate FBO!";
-            delete offscreenFbo_;
-            offscreenFbo_ = nullptr;
-            return false;
-        }
-    }
-
-    qDebug() << "[SUCCESS] FBO is ready";
-    qDebug() << "=== prepareOffscreenFbo END ===\n";
-
-    return true;
-}
-
-
-
-
-void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask& task) {
+void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask& task)
+{
     double centerLat = (task.minLat + task.maxLat) / 2.0;
     double centerLon = (task.minLon + task.maxLon) / 2.0;
-
+    qDebug() << "Center: lat=" << centerLat << ", lon=" << centerLon;
     LLA targetCenterLla(centerLat, centerLon, 0.0);
     North_East_Down targetCenterNed(&targetCenterLla, &graphicsView_->m_camera->viewLlaRef_, false);
 
+    qDebug() << "Target NED: n=" << targetCenterNed.n << ", e=" << targetCenterNed.e << ", d=" << targetCenterNed.d;
+
     // 临时保存原相机状态
     QVector3D originalLookAt = graphicsView_->m_camera->m_lookAt;
-    float originalDistance = graphicsView_->m_camera->m_distToFocusPoint;
+    float originalDistance   = graphicsView_->m_camera->m_distToFocusPoint;
+    qDebug() << "Original lookAt:" << originalCameraState_.lookAt;
+    qDebug() << "Original distance:" << originalCameraState_.distance;
 
     // 设置新相机位置
     graphicsView_->m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
@@ -1762,76 +1542,161 @@ void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask
     double targetHeight = std::max(widthLen, heightLen) / 2.0;
     graphicsView_->m_camera->m_distToFocusPoint = static_cast<float>(targetHeight);
 
+
     graphicsView_->m_camera->updateCameraParams();
     graphicsView_->m_camera->updateViewMatrix();
 
     // 保存原状态以便恢复
     originalCameraState_ = {originalLookAt, originalDistance};
+
+    qDebug() << "New lookAt:" << graphicsView_->m_camera->m_lookAt;
+    qDebug() << "New distance:" << graphicsView_->m_camera->m_distToFocusPoint;
+    qDebug() << "=== setupCameraForTask END ===\n";
 }
 
-QImage GraphicsScene3dView::InFboRenderer::readFramebuffer(int width, int height)
+
+bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask& task)
 {
-    QImage img(width, height, QImage::Format_ARGB32);
-    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-    f->glReadPixels(0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, img.bits());
-    return img.mirrored(false, true);
-}
-bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask& task, QImage& result) {
+    qDebug() << "\n=== renderAndSaveTiles START ===";
+
     // 1. 计算目标尺寸
-    double widthLen = GIF->getDistance_Haversine(task.minLon, task.maxLat, task.maxLon, task.maxLat);
+    double widthLen  = GIF->getDistance_Haversine(task.minLon, task.maxLat, task.maxLon, task.maxLat);
     double heightLen = GIF->getDistance_Haversine(task.maxLon, task.maxLat, task.maxLon, task.minLat);
 
     constexpr double GOOGLE_TILE_CONSTANT = 126543000.03392;
     double metersPerPixel = GOOGLE_TILE_CONSTANT / std::pow(2.0, task.mapLevel) / 256.0;
 
-    int targetWidth = static_cast<int>(widthLen / metersPerPixel);
+    int targetWidth  = static_cast<int>(widthLen  / metersPerPixel);
     int targetHeight = static_cast<int>(heightLen / metersPerPixel);
 
-    targetWidth = std::max(targetWidth, 512);
-    targetHeight = std::max(targetHeight, 512);
+    qDebug() << "Target size:" << targetWidth << "x" << targetHeight;
+    qDebug() << "Map level:" << task.mapLevel;
 
-    qDebug() << "Offscreen render size:" << targetWidth << "x" << targetHeight;
+    // 2. 检查 OpenGL 上下文
+    QOpenGLContext* ctx = QOpenGLContext::currentContext();
+    QOpenGLFunctions* func = ctx ? ctx->functions() : nullptr;
 
-    // 2. 创建/调整 FBO
-    if (!prepareOffscreenFbo(targetWidth, targetHeight)) {
-        qWarning() << "Failed to prepare offscreen FBO";
+    if (!ctx || !func) {
+        qCritical() << "[FAIL] No OpenGL context!";
         return false;
     }
-    qDebug() << "0000000000000000";
-    // 3. 保存当前状态
+
+    // 3. 创建/检查 FBO
+    if (!offscreenFbo_ ) {
+        offscreenFbo_ = createFramebufferObject(QSize(targetWidth, targetHeight));
+    }
+
+    // 4. 保存当前状态
     GLint prevFbo;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFbo);
-
+    func->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFbo);
     GLint prevViewport[4];
-    glGetIntegerv(GL_VIEWPORT, prevViewport);
+    func->glGetIntegerv(GL_VIEWPORT, prevViewport);
 
-    // 4. 绑定 FBO
+    // 5. 绑定 FBO
     offscreenFbo_->bind();
+    func->glViewport(0, 0, targetWidth, targetHeight);
 
-    // 5. 设置视口
-    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-    f->glViewport(0, 0, targetWidth, targetHeight);
+    // 两者应该相等，证明绑定成功
+    if (prevFbo != offscreenFbo_->handle()) {
+        qWarning() << "FBO binding failed!";
+        return false;
+    }
+
 
     // 6. 清除缓冲区
-    f->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    func->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    func->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // 7. 设置相机到目标区域
     setupCameraForTask(task);
 
-    // 8. 渲染场景（使用现有的 m_renderer）
-    m_renderer->render();
-    qDebug() << "22222222222222222";
+    // 8. 使用现有渲染器渲染瓦片
+    if (m_renderer) {
+        qDebug() << "Rendering tiles with m_renderer...";
+        m_renderer->render();
+    } else {
+        qDebug() << "[FAIL] m_renderer is nullptr!";
+        offscreenFbo_->release();
+        return false;
+    }
+
     // 9. 读取像素
-    result = readFramebuffer(targetWidth, targetHeight);
-    qDebug() << "3333333333333333333";
+    QImage result = QImage(targetWidth, targetHeight, QImage::Format_ARGB32);
+    func->glReadPixels(0, 0, targetWidth, targetHeight, GL_BGRA, GL_UNSIGNED_BYTE, result.bits());
+    result = result.mirrored(false, true);
+
     // 10. 恢复状态
     offscreenFbo_->release();
-    f->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
-    f->glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
-    qDebug() << "444444444444444444";
+    func->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
+    func->glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
+
+    // 11. 恢复相机状态
+    // restoreCameraState();
+
+    qDebug() << "task.outputPath...." << task.outputPath;
+    if (result.save(task.outputPath + ".png", "PNG")) {
+        qDebug() << "Tiles saved successfully to:" << task.outputPath;
+    }
+    else {
+        qDebug() << "Failed to save tiles to:" << task.outputPath;
+        return false;
+    }
+
+    qDebug() << "=== renderAndSaveTiles END ===\n";
     return true;
 }
+
+
+void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fbo)
+{
+    //仅在 synchronize()中，将 Item 的属性复制到 Renderer 的成员变量中
+    GraphicsScene3dView* view = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
+    if (!view) {
+        return;
+    }
+
+    graphicsView_ = view;
+
+    // process textures
+    processMapTextures(view);
+    processMosaicColorTableTexture(view);
+    processMosaicTileTexture(view);
+    processImageTexture(view);
+    processSurfaceTexture(view);
+
+    //read from renderer
+    view->m_model = m_renderer->m_model;
+    view->m_projection = m_renderer->m_projection;
+    view->contacts_->contactBounds_ = std::move(m_renderer->contactsRenderImpl_.contactBounds_);
+
+    // write to renderer
+    m_renderer->m_coordAxesRenderImpl       = *(dynamic_cast<CoordinateAxes::CoordinateAxesRenderImplementation*>(view->m_coordAxes->m_renderImpl));
+    m_renderer->m_planeGridRenderImpl       = *(dynamic_cast<PlaneGrid::PlaneGridRenderImplementation*>(view->m_planeGrid->m_renderImpl));
+    m_renderer->m_boatTrackRenderImpl       = *(dynamic_cast<BoatTrack::BoatTrackRenderImplementation*>(view->boatTrack_->m_renderImpl));
+    m_renderer->m_bottomTrackRenderImpl     = *(dynamic_cast<BottomTrack::BottomTrackRenderImplementation*>(view->m_bottomTrack->m_renderImpl));
+    m_renderer->m_polygonOutlineRenderImpl    = *(dynamic_cast<PolygonOutline::PolygonOutlineRenderImplementation*>(view->polygonOutline_->m_renderImpl));
+
+    m_renderer->isobathsViewRenderImpl_     = *(dynamic_cast<IsobathsView::IsobathsViewRenderImplementation*>(view->isobathsView_->m_renderImpl));
+    m_renderer->surfaceViewRenderImpl_      = *(dynamic_cast<SurfaceView::SurfaceViewRenderImplementation*>(view->surfaceView_->m_renderImpl));
+    m_renderer->imageViewRenderImpl_        = *(dynamic_cast<ImageView::ImageViewRenderImplementation*>(view->imageView_->m_renderImpl));
+    m_renderer->contactsRenderImpl_         = *(dynamic_cast<Contacts::ContactsRenderImplementation*>(view->contacts_->m_renderImpl));
+    m_renderer->m_polygonGroupRenderImpl    = *(dynamic_cast<PolygonGroup::PolygonGroupRenderImplementation*>(view->m_polygonGroup->m_renderImpl));
+    m_renderer->m_pointGroupRenderImpl      = *(dynamic_cast<PointGroup::PointGroupRenderImplementation*>(view->m_pointGroup->m_renderImpl));
+    m_renderer->navigationArrowRenderImpl_  = *(dynamic_cast<NavigationArrow::NavigationArrowRenderImplementation*>(view->navigationArrow_->m_renderImpl));
+    m_renderer->usblViewRenderImpl_         = *(dynamic_cast<UsblView::UsblViewRenderImplementation*>(view->usblView_->m_renderImpl));
+    m_renderer->m_viewSize                  = view->size();
+    m_renderer->m_camera                    = *view->m_camera;
+    m_renderer->m_axesThumbnailCamera       = *view->m_axesThumbnailCamera;
+    m_renderer->m_comboSelectionRect        = view->m_comboSelectionRect;
+    m_renderer->m_verticalScale             = view->m_verticalScale;
+    m_renderer->m_boundingBox               = view->m_bounds;
+    m_renderer->m_isSceneBoundingBoxVisible = view->m_isSceneBoundingBoxVisible;
+    m_renderer->gridVisibility_             = view->gridVisibility_;
+
+    //随后触发void GraphicsScene3dView::InFboRenderer::render()................
+}
+
+
 void GraphicsScene3dView::InFboRenderer::render()
 {
     m_renderer->render();
@@ -1839,11 +1704,8 @@ void GraphicsScene3dView::InFboRenderer::render()
     if (graphicsView_->screenshotPending_)
     {
         auto task = graphicsView_->currentScreenshotTask_;
-        QImage result;
-        renderToOffscreen(task, result);
-            if (result.save("test202600.png", "PNG")) {
-                qDebug() << "Screenshot saved successfully:";
-            }
+        renderToOffscreen(task);
+        graphicsView_->screenshotPending_ = false;
         // auto& r = m_renderer->mapViewRenderImpl_;
 
         // bool initEmpty   = r.pendingInit_.isEmpty();
@@ -1909,54 +1771,6 @@ void GraphicsScene3dView::InFboRenderer::render()
 
 }
 
-void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fbo)
-{
-    //仅在 synchronize()中，将 Item 的属性复制到 Renderer 的成员变量中
-    GraphicsScene3dView* view = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
-    if (!view) {
-        return;
-    }
-
-    graphicsView_ = view;
-
-    // process textures
-    processMapTextures(view);
-    processMosaicColorTableTexture(view);
-    processMosaicTileTexture(view);
-    processImageTexture(view);
-    processSurfaceTexture(view);
-
-    //read from renderer
-    view->m_model = m_renderer->m_model;
-    view->m_projection = m_renderer->m_projection;
-    view->contacts_->contactBounds_ = std::move(m_renderer->contactsRenderImpl_.contactBounds_);
-
-    // write to renderer
-    m_renderer->m_coordAxesRenderImpl       = *(dynamic_cast<CoordinateAxes::CoordinateAxesRenderImplementation*>(view->m_coordAxes->m_renderImpl));
-    m_renderer->m_planeGridRenderImpl       = *(dynamic_cast<PlaneGrid::PlaneGridRenderImplementation*>(view->m_planeGrid->m_renderImpl));
-    m_renderer->m_boatTrackRenderImpl       = *(dynamic_cast<BoatTrack::BoatTrackRenderImplementation*>(view->boatTrack_->m_renderImpl));
-    m_renderer->m_bottomTrackRenderImpl     = *(dynamic_cast<BottomTrack::BottomTrackRenderImplementation*>(view->m_bottomTrack->m_renderImpl));
-    m_renderer->m_polygonOutlineRenderImpl    = *(dynamic_cast<PolygonOutline::PolygonOutlineRenderImplementation*>(view->polygonOutline_->m_renderImpl));
-
-    m_renderer->isobathsViewRenderImpl_     = *(dynamic_cast<IsobathsView::IsobathsViewRenderImplementation*>(view->isobathsView_->m_renderImpl));
-    m_renderer->surfaceViewRenderImpl_      = *(dynamic_cast<SurfaceView::SurfaceViewRenderImplementation*>(view->surfaceView_->m_renderImpl));
-    m_renderer->imageViewRenderImpl_        = *(dynamic_cast<ImageView::ImageViewRenderImplementation*>(view->imageView_->m_renderImpl));
-    m_renderer->contactsRenderImpl_         = *(dynamic_cast<Contacts::ContactsRenderImplementation*>(view->contacts_->m_renderImpl));
-    m_renderer->m_polygonGroupRenderImpl    = *(dynamic_cast<PolygonGroup::PolygonGroupRenderImplementation*>(view->m_polygonGroup->m_renderImpl));
-    m_renderer->m_pointGroupRenderImpl      = *(dynamic_cast<PointGroup::PointGroupRenderImplementation*>(view->m_pointGroup->m_renderImpl));
-    m_renderer->navigationArrowRenderImpl_  = *(dynamic_cast<NavigationArrow::NavigationArrowRenderImplementation*>(view->navigationArrow_->m_renderImpl));
-    m_renderer->usblViewRenderImpl_         = *(dynamic_cast<UsblView::UsblViewRenderImplementation*>(view->usblView_->m_renderImpl));
-    m_renderer->m_viewSize                  = view->size();
-    m_renderer->m_camera                    = *view->m_camera;
-    m_renderer->m_axesThumbnailCamera       = *view->m_axesThumbnailCamera;
-    m_renderer->m_comboSelectionRect        = view->m_comboSelectionRect;
-    m_renderer->m_verticalScale             = view->m_verticalScale;
-    m_renderer->m_boundingBox               = view->m_bounds;
-    m_renderer->m_isSceneBoundingBoxVisible = view->m_isSceneBoundingBoxVisible;
-    m_renderer->gridVisibility_             = view->gridVisibility_;
-
-    //随后触发void GraphicsScene3dView::InFboRenderer::render()................
-}
 
 QOpenGLFramebufferObject *GraphicsScene3dView::InFboRenderer::createFramebufferObject(const QSize &size)
 {
@@ -1965,13 +1779,12 @@ QOpenGLFramebufferObject *GraphicsScene3dView::InFboRenderer::createFramebufferO
 
 #if defined(Q_OS_ANDROID) || defined(LINUX_ES)
     format.setSamples(0);
-    constexpr float scale = 1.0f;
 #else
-    format.setSamples(4);
-    constexpr float scale = 1.0f;
+    // format.setSamples(4);
+    format.setSamples(0); //nie:test
 #endif
 
-    QSize scaledSize = (scale == 1.0f) ? size : (size * scale);
+    QSize scaledSize = size;
     scaledSize.setWidth(std::max(1, scaledSize.width()));
     scaledSize.setHeight(std::max(1, scaledSize.height()));
 
