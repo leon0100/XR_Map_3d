@@ -148,7 +148,7 @@ public:
 
     protected:
         bool renderToOffscreen(const ScreenshotTask& task);
-        void setupCameraForTask(const ScreenshotTask& task);
+        void setupCameraForTask(const ScreenshotTask& task, int targetWidth, int targetHeight);
 
         /*
          * 渲染将在专用线程上进行，因此需要避免在渲染线程和GUI线程之间共享变量，使用synchronize()进行通信。
@@ -174,7 +174,6 @@ public:
         void processSurfaceTexture(GraphicsScene3dView* viewPtr) const; // surface
 
         QString checkOpenGLError() const;
-
 
         std::unique_ptr<GraphicsScene3dRenderer> m_renderer;
 

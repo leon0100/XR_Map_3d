@@ -201,9 +201,6 @@ public:
     QMutex screenshotMutex_;
 
 
-    //现在采用FBO分块离屏渲染的方式截图
-
-
 
 
 };

@@ -749,41 +749,41 @@ bool ScreetShot::createKmlFile(QString kmlPath,QString imageName,double north,do
 
 bool ScreetShot::createXMAPFile(const QString kmlFilePath, const QString imageFilePath, QString &outputXMAPPath)
 {
-    // QFile kmlFile(kmlFilePath);
-    // if (!kmlFile.exists()) {
-    //     qDebug() << "KML file does not exist.";
-    //     return false;
-    // }
-    // QFile imageFile(imageFilePath);
-    // if (!imageFile.exists()) {
-    //     qDebug() << "Image file does not exist.";
+    QFile kmlFile(kmlFilePath);
+    if (!kmlFile.exists()) {
+        qDebug() << "KML file does not exist.";
+        return false;
+    }
+    QFile imageFile(imageFilePath);
+    if (!imageFile.exists()) {
+        qDebug() << "Image file does not exist.";
+        return false;
+    }
+
+    // 1、打开KML文件并读取内容
+    if (!kmlFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open KML file.";
+        return false;
+    }
+    QByteArray kmlData = kmlFile.readAll();
+    if(!kmlFile.remove()) {
+        qDebug() << "kmlFile remove failed";
+        return false;
+    }
+
+    // 2、打开图片文件并读取内容
+    if (!imageFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open image file.";
+        return false;
+    }
+    QByteArray imageData = imageFile.readAll();
+    //nie:test
+    // if(!imageFile.remove()) {
+    //     qDebug() << "Failed to delete image file.";
     //     return false;
     // }
 
-    // // 1、打开KML文件并读取内容
-    // if (!kmlFile.open(QIODevice::ReadOnly)) {
-    //     qDebug() << "Failed to open KML file.";
-    //     return false;
-    // }
-    // QByteArray kmlData = kmlFile.readAll();
-    // if(!kmlFile.remove()) {
-    //     qDebug() << "kmlFile remove failed";
-    //     return false;
-    // }
-
-    // // 2、打开图片文件并读取内容
-    // if (!imageFile.open(QIODevice::ReadOnly)) {
-    //     qDebug() << "Failed to open image file.";
-    //     return false;
-    // }
-    // QByteArray imageData = imageFile.readAll();
-    // //nie:test
-    // // if(!imageFile.remove()) {
-    // //     qDebug() << "Failed to delete image file.";
-    // //     return false;
-    // // }
-
-    // //3、创建KMZ文件
+    //3、创建KMZ文件
     // outputXMAPPath.replace(".xmap",".kmz");
     // QZipWriter kmzWriter(outputXMAPPath);
     // kmzWriter.addFile("doc.kml", kmlData);
