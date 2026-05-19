@@ -1449,9 +1449,10 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     LLA topLeftLla(task.maxLat, task.minLon, 0.0);
     LLA topRightLla(task.maxLat, task.maxLon, 0.0);
     LLA bottomRightLla(task.minLat, task.maxLon, 0.0);
-
+    LLA bottomLeftLla(task.minLat, task.minLon, 0.0);
     qDebug() << "Task bounds: minLat=" << task.minLat << "maxLat=" << task.maxLat
              << "minLon=" << task.minLon << "maxLon=" << task.maxLon;
+
     qDebug() << "viewLlaRef_ initialized:" << m_camera->viewLlaRef_.isInit;
     qDebug() << "viewLlaRef_ lat=" << m_camera->viewLlaRef_.refLla.latitude
              << "lon=" << m_camera->viewLlaRef_.refLla.longitude;
@@ -1459,6 +1460,7 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, false);
     North_East_Down topRightNed(&topRightLla, &m_camera->viewLlaRef_, false);
     North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, false);
+    North_East_Down bottomLeftNed(&bottomLeftLla, &m_camera->viewLlaRef_, false);
 
     // 在 NED 坐标系中计算宽度和高度（使用平面距离）
     double widthLen = std::sqrt(std::pow(topRightNed.e - topLeftNed.e, 2) +
@@ -1518,7 +1520,96 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
 
 }
 
-/* ---------------------------------------Renderer--------------------------------------*/
+
+bool GraphicsScene3dView::renderTilesToFbo(double minLat, double maxLat, double minLon, double maxLon,
+                                           int mapLevel, const QString& outputPath)
+{
+    qDebug() << "========== Direct Tile Rendering ==========";
+    qDebug() << "Target area:" << minLat << "," << minLon << "to" << maxLat << "," << maxLon;
+    qDebug() << "Map level:" << mapLevel;
+
+    // 1. 计算目标区域的像素尺寸
+    QPoint topLeft = screetShot_.latLongToPixelXY(minLon, maxLat, mapLevel);
+    QPoint bottomRight = screetShot_.latLongToPixelXY(maxLon, minLat, mapLevel);
+
+    int width = bottomRight.x() - topLeft.x();
+    int height = bottomRight.y() - topLeft.y();
+
+    qDebug() << "Target pixel size:" << width << "x" << height;
+
+    if (width <= 0 || height <= 0) {
+        qWarning() << "Invalid target size";
+        return false;
+    }
+
+    // 2. 创建/调整离屏FBO
+    if (!offscreenFbo_ || offscreenFbo_->size() != QSize(width, height)) {
+        if (offscreenFbo_) {
+            delete offscreenFbo_;
+        }
+
+        QOpenGLFramebufferObjectFormat format;
+        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        format.setInternalTextureFormat(GL_RGBA8);
+        offscreenFbo_ = new QOpenGLFramebufferObject(width, height, format);
+
+        qDebug() << "Created offscreen FBO:" << width << "x" << height;
+    }
+
+    // 3. 绑定FBO进行渲染
+    offscreenFbo_->bind();
+
+    // 4. 设置正交投影（不需要相机！）
+    QMatrix4x4 projection;
+    projection.ortho(0, width, height, 0, -1, 1);  // 像素坐标
+
+    // 5. 获取需要渲染的瓦片范围
+    QRect tileRect = screetShot_.getTileRange(minLat, maxLat, minLon, maxLon, mapLevel);
+    qDebug() << "Tile range:" << tileRect;
+
+    // 6. 渲染所有瓦片到FBO
+    renderTilesToFboInternal(tileRect, mapLevel, topLeft, projection);
+
+    // 7. 解绑FBO
+    offscreenFbo_->release();
+
+    // 8. 保存FBO内容到文件
+    QImage image = offscreenFbo_->toImage();
+    bool saved = image.save(outputPath);
+
+    qDebug() << "Saved to:" << outputPath << (saved ? "success" : "failed");
+    qDebug() << "===========================================";
+
+    return saved;
+}
+
+void GraphicsScene3dView::renderTilesToFboInternal(const QRect& tileRect, int mapLevel,
+                                                   const QPoint& offset, const QMatrix4x4& projection)
+{
+    // 清空缓冲区
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // 遍历瓦片
+    for (int tileX = tileRect.left(); tileX <= tileRect.right(); tileX++) {
+        for (int tileY = tileRect.top(); tileY <= tileRect.bottom(); tileY++) {
+            // 获取瓦片数据
+            auto tile = getTile(mapLevel, tileX, tileY);
+            if (!tile) continue;
+
+            // 计算瓦片在FBO中的位置
+            int tilePixelX = tileX * 256 - offset.x();
+            int tilePixelY = tileY * 256 - offset.y();
+
+            // 渲染瓦片
+            renderTile(tile, tilePixelX, tilePixelY, projection);
+        }
+    }
+}
+
+
+
+/*-----------Renderer--------------------------------------*/
 GraphicsScene3dView::InFboRenderer::InFboRenderer() :
     QQuickFramebufferObject::Renderer(), m_renderer(new GraphicsScene3dRenderer)
 {

@@ -420,6 +420,28 @@ public:
     int screenshotRetryCount_ = 0;
     static const int MAX_RETRY_COUNT = 100;  // 最大重试次数
 
+
+private:
+    // 离屏渲染相关
+    QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
+    QSize offscreenSize_;
+    bool offscreenRendering_ = false;
+
+    // 瓦片渲染参数
+    int targetMapLevel_ = 18;
+    double targetMinLat_ = 0.0;
+    double targetMaxLat_ = 0.0;
+    double targetMinLon_ = 0.0;
+    double targetMaxLon_ = 0.0;
+
+    // 直接渲染瓦片到FBO
+    bool renderTilesToFbo(double minLat, double maxLat, double minLon, double maxLon,
+                          int mapLevel, const QString& outputPath);
+    void renderTilesToFboInternal(const QRect& tileRect, int mapLevel,
+                                  const QPoint& offset, const QMatrix4x4& projection);
+    void renderTile(Tile* tile, int x, int y, const QMatrix4x4& projection);
+
+
 public:
     Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
 
