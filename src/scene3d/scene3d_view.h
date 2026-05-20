@@ -177,6 +177,8 @@ public:
 
         std::unique_ptr<GraphicsScene3dRenderer> m_renderer;
 
+        bool createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west);
+        bool createXMAPFile(const QString kmlFilePath, const QString imageFilePath, QString outputXMAPPath);
         GraphicsScene3dView* graphicsView_ = nullptr;
         QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
         std::mutex screenshotMutex_;
@@ -352,7 +354,7 @@ private:
     static constexpr double mouseThreshold_{ 10.0 };
 #endif
 
-    static constexpr float perspectiveEdge_{ 5000.0f };
+     float perspectiveEdge_{ 5000.0f };
     static constexpr float nearPlanePersp_{ 1.0f };
     static constexpr float farPlanePersp_{ 20000.0f };
     static constexpr float nearPlaneOrthoCoeff_{ 0.05f };
@@ -401,7 +403,6 @@ signals:
 
 
 public slots:
-
     // 截图任务处理方法
     void processNextScreenshotTask();
 
@@ -419,27 +420,6 @@ public:
 
     int screenshotRetryCount_ = 0;
     static const int MAX_RETRY_COUNT = 100;  // 最大重试次数
-
-
-private:
-    // 离屏渲染相关
-    QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
-    QSize offscreenSize_;
-    bool offscreenRendering_ = false;
-
-    // 瓦片渲染参数
-    int targetMapLevel_ = 18;
-    double targetMinLat_ = 0.0;
-    double targetMaxLat_ = 0.0;
-    double targetMinLon_ = 0.0;
-    double targetMaxLon_ = 0.0;
-
-    // 直接渲染瓦片到FBO
-    bool renderTilesToFbo(double minLat, double maxLat, double minLon, double maxLon,
-                          int mapLevel, const QString& outputPath);
-    void renderTilesToFboInternal(const QRect& tileRect, int mapLevel,
-                                  const QPoint& offset, const QMatrix4x4& projection);
-    void renderTile(Tile* tile, int x, int y, const QMatrix4x4& projection);
 
 
 public:
