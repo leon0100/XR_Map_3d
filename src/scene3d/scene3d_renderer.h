@@ -53,6 +53,9 @@ public:
     virtual ~GraphicsScene3dRenderer();
     void render();
 
+    void setCustomOrtho(float left, float right, float bottom, float top);
+    void clearCustomOrtho();
+
 private:
     void initialize();
     void drawObjects();
@@ -106,4 +109,7 @@ private:
     bool m_isBoxSelecting = false;
     QPoint m_boxSelectStart;
     QPoint m_boxSelectEnd;
+    //截图功能的投影矩阵
+    bool useCustomOrtho_ = false;
+    float orthoLeft_ = 0.0f, orthoRight_ = 0.0f, orthoBottom_ = 0.0f, orthoTop_ = 0.0f;
 };

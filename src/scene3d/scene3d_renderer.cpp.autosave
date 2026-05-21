@@ -190,9 +190,6 @@ void GraphicsScene3dRenderer::drawObjects()
     // 先渲染瓦片地图作为背景层
     mapViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);
     if(useCustomOrtho_) {
-        // surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
-        // isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
-
         // 保存当前深度测试状态
         GLboolean depthTestEnabled;
         glGetBooleanv(GL_DEPTH_TEST, &depthTestEnabled);
@@ -203,9 +200,6 @@ void GraphicsScene3dRenderer::drawObjects()
 
         // 渲染高度场
         surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
-
-        // 渲染等值线（禁用深度测试以确保等值线在高度场上方）
-        glDisable(GL_DEPTH_TEST);
         isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
 
         // 恢复深度测试状态

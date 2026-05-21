@@ -58,9 +58,7 @@ public:
         qreal yaw() const;
         QMatrix4x4 viewMatrix() const;
 
-        void setCameraListener(Camera* cameraListener) {
-            cameraListener_ = cameraListener;
-        };
+        void setCameraListener(Camera* cameraListener);
 
         //void rotate(qreal yaw, qreal pitch); //TODO! Process this method later
         void rotate(const QVector2D& lastMouse, const QVector2D& mousePos);
@@ -137,6 +135,7 @@ public:
         float navYawDeadbandRad_        = qDegreesToRadians(2.0f);
         float navYawMaxRateRadPerSec_   = qDegreesToRadians(90.0f);
         float navYawSnapRad_            = qDegreesToRadians(120.0f);
+
     };
 
     //Renderer
@@ -148,7 +147,7 @@ public:
 
     protected:
         bool renderToOffscreen(const ScreenshotTask& task);
-        void setupCameraForTask(const ScreenshotTask& task, int targetWidth, int targetHeight);
+        void setupCameraForTask(const ScreenshotTask& task, double geoWidth, double geoHeight);
 
         /*
          * 渲染将在专用线程上进行，因此需要避免在渲染线程和GUI线程之间共享变量，使用synchronize()进行通信。
@@ -180,7 +179,7 @@ public:
         bool createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west);
         bool createXMAPFile(const QString kmlFilePath, const QString imageFilePath, QString outputXMAPPath);
         GraphicsScene3dView* graphicsView_ = nullptr;
-        QOpenGLFramebufferObject* offscreenFbo_ = nullptr;
+        QOpenGLFramebufferObject* offScreenFbo_ = nullptr;
         std::mutex screenshotMutex_;
         // 用于保存相机状态
         struct {
