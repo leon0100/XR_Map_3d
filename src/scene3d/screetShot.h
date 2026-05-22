@@ -197,7 +197,6 @@ public:
 
 
     bool screenshotPending_ = false;
-    QString screenshotPath_;
     QMutex screenshotMutex_;
 
 

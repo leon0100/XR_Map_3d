@@ -48,6 +48,32 @@ TileManager::TileManager(QObject *parent) :
     QObject::connect(dbThread, &QThread::finished, dbThread,      &QThread::deleteLater, dbConnType);
 
     dbThread->start();
+
+
+
+    // 2. 连接数据库和网络的瓦片加载信号
+    QObject::connect(tileDB_.get(),       &TileDB::tileLoaded,       this, &TileManager::onTileProcessed);
+    // QObject::connect(tileDB_.get(),       &TileDB::tileLoadFailed,   this, &TileManager::onTileProcessed);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  this, &TileManager::onTileProcessed);
+    // QObject::connect(tileDownloader_.get(), &TileDownloader::downloadFailed,  this, &TileManager::onTileProcessed);
+}
+
+
+void TileManager::onTileProcessed()
+{
+    qDebug() << "trackingTargetTiles_...." << trackingTargetTiles_ << " " << pendingTargetTiles_;
+    // if (trackingTargetTiles_ && pendingTargetTiles_ > 0) {
+        pendingTargetTiles_--;
+    //     // 检查是否所有目标瓦片都已处理完毕
+    //     if (pendingTargetTiles_ == 0) {
+            // 额外检查请求队列是否为空
+        qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
+            if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
+                trackingTargetTiles_ = false;
+                emit targetTilesLoaded();
+            }
+        // }
+    // }
 }
 
 TileManager::~TileManager()
@@ -181,6 +207,10 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
         }
 
     }
+
+    // 记录需要加载的瓦片数量
+    trackingTargetTiles_ = true;
+    pendingTargetTiles_ = indxRequest.size();
 
     if (!indxRequest.isEmpty()) {
         tileSet_->onNewRequest(indxRequest, zoomState, viewLlaRef, isPerspective, minLon, maxLon, moveUp);

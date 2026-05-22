@@ -172,7 +172,7 @@ void TileDownloader::onTileDownloaded(QNetworkReply *reply)
         QImage image;
 
         if (image.loadFromData(imageData)) {
-                emit tileDownloaded(index, image);
+            emit tileDownloaded(index, image);
         }
         else {
             emit downloadFailed(index, "Failed to load image from data");

@@ -27,6 +27,11 @@ public:
     void onNewLlaRef(LLARef viewLlaRef);
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
 
+    bool dbReqIsEmpty();
+    bool dwReqIsEmpty();
+    int dbReq_size();
+    int dwReq_size();
+
 signals:
     // TileDB
     void dbLoadTiles(const QSet<map::TileIndex>& tileIndices);

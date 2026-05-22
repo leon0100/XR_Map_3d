@@ -1926,6 +1926,7 @@ void Core::createMapTileManagerConnections()
     tileManager_ = std::make_unique<map::TileManager>(this);
     QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendRectRequest, tileManager_.get(), &map::TileManager::getRectRequest, Qt::DirectConnection);
     QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendLlaRef, tileManager_.get(), &map::TileManager::getLlaRef, Qt::DirectConnection);
+    QObject::connect(tileManager_.get(), &map::TileManager::targetTilesLoaded, scene3dViewPtr_, &GraphicsScene3dView::onTargetTilesLoaded, Qt::DirectConnection);
 
     auto connType = Qt::DirectConnection;
     QObject::connect(tileManager_->getTileSetPtr().get(),    &map::TileSet::mvAppendTile,         scene3dViewPtr_->getMapViewPtr().get(), &MapView::onTileAppend,             connType);

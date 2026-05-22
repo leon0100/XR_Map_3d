@@ -119,6 +119,26 @@ void TileSet::setTextureIdByTileIndx(const TileIndex &tileIndx, GLuint textureId
     }
 }
 
+bool TileSet::dbReqIsEmpty()
+{
+    return dbReq_.isEmpty();
+}
+
+bool TileSet::dwReqIsEmpty()
+{
+    return dwReq_.isEmpty();
+}
+
+int TileSet::dbReq_size()
+{
+    return dbReq_.size();
+}
+
+int TileSet::dwReq_size()
+{
+    return dwReq_.size();
+}
+
 void TileSet::onTileLoaded(const map::TileIndex &tileIndx, const QImage &image)
 {
     dbReq_.remove(tileIndx);

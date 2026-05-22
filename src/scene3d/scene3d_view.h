@@ -293,6 +293,7 @@ public Q_SLOTS:
     void setIsNorth(bool state);
 
     void slotScreetGraphics();
+    void onTargetTilesLoaded();
 
 signals:
     void sendRectRequest(QVector<LLA> rect, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam);
@@ -388,17 +389,8 @@ public:
 
     ScreetShot screetShot_;
     bool screenshotPending_ = false;
-    QString screenshotPath_ = ".20260211.png";
     QMutex screenshotMutex_;
     int mapLevel_;
-    QRect targetRect_;
-    int pixel300m_;
-    QString savePath_;
-
-
-signals:
-    void requestRenderUpdate();
-    void requestOffsetScreen(const ScreenshotTask& task);
 
 
 public slots:
@@ -416,9 +408,6 @@ public:
 
     void startScreenshotTask(const ScreenshotTask& task);
     bool tilesRenderComplete_ = false; //当前瓦片渲染完成标志
-
-    int screenshotRetryCount_ = 0;
-    static const int MAX_RETRY_COUNT = 100;  // 最大重试次数
 
 
 public:

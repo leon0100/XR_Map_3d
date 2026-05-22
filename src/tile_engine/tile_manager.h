@@ -28,11 +28,14 @@ public:
 signals:
     void zoomLevelChanged(int level);
     void tileSetChanged(std::shared_ptr<TileSet> tileSet);
+    void targetTilesLoaded();
 
 public slots:
     void getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam);
     void getLlaRef(LLARef viewLlaRef);
     void switchMapSource(MapSourceType sourceType);
+
+    void onTileProcessed();
 
 
 private:
@@ -46,6 +49,9 @@ private:
     static constexpr int maxTilesCapacity_{ 800 };
     static constexpr int minTilesCapacity_{ 400 };
     static constexpr int maxConcurrentDownloads_{ 10 };
+
+    bool trackingTargetTiles_ = false;
+    int pendingTargetTiles_ = 0;
 
 };
 
