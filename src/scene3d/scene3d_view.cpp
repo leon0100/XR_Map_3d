@@ -1324,7 +1324,7 @@ void GraphicsScene3dView::slotScreetGraphics()
     double minLon = std::min({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
     double maxLon = std::max({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
 
-    mapLevel_ = 18;
+    mapLevel_ = 20;
 
     screenshotQueue_.clear();
 
@@ -1354,15 +1354,13 @@ void GraphicsScene3dView::slotScreetGraphics()
 
 void GraphicsScene3dView::onTargetTilesLoaded()
 {
+    screenshotPending_ = true;
+    QQuickFramebufferObject::update(); // 触发重绘
     qDebug() << "GraphicsScene3dView::onTargetTilesLoaded......";
     QTimer::singleShot(2000, this, [this]() {
-        QMutexLocker locker(&screenshotMutex_);
-        screenshotPending_ = true;
-        QQuickFramebufferObject::update(); // 触发重绘
-    });
+        // QMutexLocker locker(&screenshotMutex_);
 
-    // screenshotPending_ = true;
-    // QQuickFramebufferObject::update();
+    });
 }
 
 void GraphicsScene3dView::processNextScreenshotTask()
@@ -1416,11 +1414,15 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
 
     double targetHeight = std::max(widthLen, heightLen) / 2.0;
     qDebug() << "Target level:" << mapLevel_ << "Target height:" << targetHeight;
+
     m_camera->m_distToFocusPoint = static_cast<float>(targetHeight);
     m_camera->distForMapView_    = static_cast<float>(targetHeight);
     m_camera->distToGround_      = static_cast<float>(targetHeight);
     m_camera->updateCameraParams();
     m_camera->updateViewMatrix();
+
+    // constexpr double TILE_CONSTANT = 126543000.03392;
+    // targetHeight =  TILE_CONSTANT / std::pow(2.0, task.mapLevel);
 
     // ========= 然后发送瓦片请求 ========
     QVector<LLA> request;

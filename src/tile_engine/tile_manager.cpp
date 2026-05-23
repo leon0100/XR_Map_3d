@@ -61,19 +61,11 @@ TileManager::TileManager(QObject *parent) :
 
 void TileManager::onTileProcessed()
 {
-    qDebug() << "trackingTargetTiles_...." << trackingTargetTiles_ << " " << pendingTargetTiles_;
-    // if (trackingTargetTiles_ && pendingTargetTiles_ > 0) {
-        pendingTargetTiles_--;
-    //     // 检查是否所有目标瓦片都已处理完毕
-    //     if (pendingTargetTiles_ == 0) {
-            // 额外检查请求队列是否为空
-        qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
-            if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
-                trackingTargetTiles_ = false;
-                emit targetTilesLoaded();
-            }
-        // }
-    // }
+
+    qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
+    if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
+        emit targetTilesLoaded();
+    }
 }
 
 TileManager::~TileManager()
@@ -207,10 +199,6 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
         }
 
     }
-
-    // 记录需要加载的瓦片数量
-    trackingTargetTiles_ = true;
-    pendingTargetTiles_ = indxRequest.size();
 
     if (!indxRequest.isEmpty()) {
         tileSet_->onNewRequest(indxRequest, zoomState, viewLlaRef, isPerspective, minLon, maxLon, moveUp);

@@ -50,9 +50,6 @@ private:
     static constexpr int minTilesCapacity_{ 400 };
     static constexpr int maxConcurrentDownloads_{ 10 };
 
-    bool trackingTargetTiles_ = false;
-    int pendingTargetTiles_ = 0;
-
 };
 
 
