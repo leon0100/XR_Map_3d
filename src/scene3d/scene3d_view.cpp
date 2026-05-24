@@ -1514,10 +1514,10 @@ bool GraphicsScene3dView::InFboRenderer::createXMAPFile(const QString kmlFilePat
         return false;
     }
     QByteArray kmlData = kmlFile.readAll();
-    // if(!kmlFile.remove()) {
-    //     qDebug() << "kmlFile remove failed";
-    //     return false;
-    // }
+    if(!kmlFile.remove()) {
+        qDebug() << "kmlFile remove failed";
+        return false;
+    }
 
     // 2、打开图片文件并读取内容
     if (!imageFile.open(QIODevice::ReadOnly)) {
@@ -1605,6 +1605,20 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     int pixelWidth = static_cast<int>(geoWidth / metersPerPixel);
     int pixelHeight = static_cast<int>(geoHeight / metersPerPixel);
 
+    // 划分300m×300m的小正方形
+    constexpr double CHUNK_SIZE_METERS = 300.0;
+    int rows = static_cast<int>(std::ceil(geoWidth / CHUNK_SIZE_METERS));   // 经度方向（东西）
+    int cols = static_cast<int>(std::ceil(geoHeight / CHUNK_SIZE_METERS));  // 纬度方向（南北）
+    // 每个小正方形的像素尺寸
+    int chunkPixelWidth = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
+    int chunkPixelHeight = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
+
+    qDebug() << "=== Chunk Splitting Info ===";
+    qDebug() << "Geo area:" << geoWidth << "m x" << geoHeight << "m";
+    qDebug() << "Chunk size:" << CHUNK_SIZE_METERS << "m x" << CHUNK_SIZE_METERS << "m";
+    qDebug() << "Chunk pixels:" << chunkPixelWidth << "x" << chunkPixelHeight;
+    qDebug() << "Grid:" << rows << "cols (lon) x" << cols << "rows (lat)";
+
     qDebug() << "Map level:" << task.mapLevel;
     qDebug() << "Geo dimensions:" << geoWidth << "x" << geoHeight << "meters";
     qDebug() << "Pixel dimensions:" << pixelWidth << "x" << pixelHeight;
@@ -1651,6 +1665,76 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     QImage result = QImage(pixelWidth, pixelHeight, QImage::Format_ARGB32);
     func->glReadPixels(0, 0, pixelWidth, pixelHeight, GL_BGRA, GL_UNSIGNED_BYTE, result.bits());
     result = result.mirrored(false, true);
+
+    // 5. 逐个小正方形处理
+    int chunkIndex = 0;
+    for (int row = 0; row < rows; ++row) {
+        for (int col = 0; col < cols; ++col) {
+            // ========== 计算像素区域 ==========
+            // 左上角为原点，x向右，y向下
+            int pixelX = row * chunkPixelWidth;
+            int pixelY = col * chunkPixelHeight;
+
+            // 确保不超出边界
+            int actualChunkWidth = std::min(chunkPixelWidth, pixelWidth - pixelX);
+            int actualChunkHeight = std::min(chunkPixelHeight, pixelHeight - pixelY);
+
+            if (actualChunkWidth <= 0 || actualChunkHeight <= 0) {
+                continue;
+            }
+
+            // ========== 计算地理经纬度 ==========
+            // 根据像素位置计算在原区域中的比例
+            double lonRatioLeft = static_cast<double>(pixelX) / pixelWidth;
+            double lonRatioRight = static_cast<double>(pixelX + actualChunkWidth) / pixelWidth;
+            double latRatioTop = static_cast<double>(pixelY) / pixelHeight;
+            double latRatioBottom = static_cast<double>(pixelY + actualChunkHeight) / pixelHeight;
+
+            // 计算四个顶点的经纬度
+            double westLon = task.minLon + lonRatioLeft * (task.maxLon - task.minLon);
+            double eastLon = task.minLon + lonRatioRight * (task.maxLon - task.minLon);
+            // 注意纬度方向：纬度增加向北，但像素Y增加向南
+            double northLat = task.maxLat - latRatioTop * (task.maxLat - task.minLat);
+            double southLat = task.maxLat - latRatioBottom * (task.maxLat - task.minLat);
+
+            // ========== 裁剪小正方形图片 ==========
+            QImage chunkImage = result.copy(pixelX, pixelY, actualChunkWidth, actualChunkHeight);
+
+            // ========== 生成文件名 ==========
+            QString chunkBasePath = QString("%1_chunk_%2_%3")
+                                        .arg(task.outputPath)
+                                        .arg(col)  // latitude index
+                                        .arg(row); // longitude index
+            QString chunkImageName = QString("chunk_%1_%2.png").arg(col).arg(row);
+
+            // ========== 保存图片 ==========
+            if (chunkImage.save(chunkBasePath + ".png", "PNG")) {
+                qDebug() << QString("Chunk[%1,%2] saved: %3%4%5")
+                .arg(col).arg(row)
+                    .arg(chunkBasePath)
+                    .arg(".png")
+                    .arg(QString(" | Pixels:(%1,%2) %3x%4 | Lat:[%5,%6] Lon:[%7,%8]")
+                             .arg(pixelX).arg(pixelY)
+                             .arg(actualChunkWidth).arg(actualChunkHeight)
+                             .arg(northLat, 8, 'f', 6)
+                             .arg(southLat, 8, 'f', 6)
+                             .arg(westLon, 8, 'f', 6)
+                             .arg(eastLon, 8, 'f', 6));
+            }
+
+            // ========== 创建KML ==========
+            createKmlFile(chunkBasePath + ".kml", chunkImageName, northLat, southLat, eastLon, westLon);
+
+            // ========== 创建XMAP ==========
+            createXMAPFile(chunkBasePath + ".kml", chunkBasePath + ".png", chunkBasePath);
+
+            chunkIndex++;
+        }
+    }
+
+
+
+
     if (result.save(task.outputPath + ".png", "PNG")) {
         qDebug() << "Tiles saved successfully to:" << task.outputPath;
     }
