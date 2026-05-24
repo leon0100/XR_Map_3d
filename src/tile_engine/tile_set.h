@@ -23,7 +23,7 @@ public:
     void switchMapType(std::weak_ptr<TileProvider> provider, std::weak_ptr<TileDB> db,
                        std::weak_ptr<TileDownloader> downloader, size_t maxCapacity, size_t minCapacity);
 
-    void onNewRequest(const QSet<TileIndex>& request, ZoomState zoomState, LLARef viewLlaRef, bool isPerspective, double minLon, double maxLon, bool moveUp);
+    void onNewRequest(const QSet<TileIndex>& request, ZoomState zoomState, LLARef viewLlaRef, bool isPerspective, double minLon, double maxLon);
     void onNewLlaRef(LLARef viewLlaRef);
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
 
@@ -93,7 +93,7 @@ private:
     QSet<TileIndex> dbReq_;
     QSet<TileIndex> dwReq_;
     QSet<TileIndex> dbSvd_;
-    bool moveUp_;
+    // bool moveUp_;
     QSize defaultSize_;
     QImage::Format defaultImageFormat_;
 

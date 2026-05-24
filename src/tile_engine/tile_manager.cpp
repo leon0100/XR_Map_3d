@@ -61,11 +61,14 @@ TileManager::TileManager(QObject *parent) :
 
 void TileManager::onTileProcessed()
 {
-
-    qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
-    if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
-        emit targetTilesLoaded();
+    if(isScreenMode_) {
+        qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
+        if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
+            isScreenMode_ = false;
+            emit targetTilesLoaded();
+        }
     }
+
 }
 
 TileManager::~TileManager()
@@ -83,9 +86,9 @@ MapSourceType TileManager::getCurrentMapType() const
     return currentMap_;
 }
 
-void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam)
+void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool screenMode)
 {
-    Q_UNUSED(tiltCam);
+    isScreenMode_ = screenMode;
     int minX = std::numeric_limits<int>::max();
     int maxX = std::numeric_limits<int>::min();
     int minY = std::numeric_limits<int>::max();
@@ -201,7 +204,7 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
     }
 
     if (!indxRequest.isEmpty()) {
-        tileSet_->onNewRequest(indxRequest, zoomState, viewLlaRef, isPerspective, minLon, maxLon, moveUp);
+        tileSet_->onNewRequest(indxRequest, zoomState, viewLlaRef, isPerspective, minLon, maxLon);
     }
 }
 

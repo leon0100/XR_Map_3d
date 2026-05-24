@@ -18,7 +18,7 @@ TileSet::TileSet(std::weak_ptr<TileProvider> provider, std::weak_ptr<TileDB> db,
     maxLon_(0.0),
     currZoom_(-1),
     diffLevels_(std::numeric_limits<int32_t>::max()),
-    moveUp_(false),
+    // moveUp_(false),
     defaultSize_(256, 256),
     defaultImageFormat_(QImage::Format_RGB32)
 {
@@ -40,13 +40,12 @@ void TileSet::switchMapType(std::weak_ptr<TileProvider> provider, std::weak_ptr<
     maxLon_ = 0.0;
     currZoom_ = -1;
     diffLevels_ = std::numeric_limits<int32_t>::max();
-    moveUp_ = false;
     defaultSize_ = QSize(256, 256);
     defaultImageFormat_ = QImage::Format_RGB32;
 }
 
 void TileSet::onNewRequest(const QSet<TileIndex>& request, ZoomState zoomState, LLARef viewLlaRef,
-                           bool isPerspective, double minLon, double maxLon, bool moveUp)
+                           bool isPerspective, double minLon, double maxLon)
 {
     if (request.isEmpty()) {
         return;
@@ -56,7 +55,6 @@ void TileSet::onNewRequest(const QSet<TileIndex>& request, ZoomState zoomState, 
     isPerspective_ = isPerspective;
     minLon_        = minLon;
     maxLon_        = maxLon;
-    moveUp_        = moveUp;
     request_       = request;
     zoomState_     = zoomState;
     diffLevels_    = std::abs(request.begin()->z_ - currZoom_);

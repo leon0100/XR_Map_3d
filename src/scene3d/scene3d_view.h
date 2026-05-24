@@ -296,7 +296,7 @@ public Q_SLOTS:
     void onTargetTilesLoaded();
 
 signals:
-    void sendRectRequest(QVector<LLA> rect, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam);
+    void sendRectRequest(QVector<LLA> rect, bool isPerspective, LLARef viewLlaRef, bool screenMode);
     void sendLlaRef(LLARef viewLlaRef);
     void cameraIsMoved();
     void sendMapTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);

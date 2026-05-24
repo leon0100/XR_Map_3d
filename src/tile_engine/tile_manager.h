@@ -31,7 +31,7 @@ signals:
     void targetTilesLoaded();
 
 public slots:
-    void getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool moveUp, map::CameraTilt tiltCam);
+    void getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool screenMode);
     void getLlaRef(LLARef viewLlaRef);
     void switchMapSource(MapSourceType sourceType);
 
@@ -49,6 +49,8 @@ private:
     static constexpr int maxTilesCapacity_{ 800 };
     static constexpr int minTilesCapacity_{ 400 };
     static constexpr int maxConcurrentDownloads_{ 10 };
+
+    bool isScreenMode_ = false;
 
 };
 

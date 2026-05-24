@@ -80,6 +80,28 @@ void ScreetShot::setScreetToolBar(bool screetToolBarShow)
     emit screetToolBarShowChanged();
 }
 
+float ScreetShot::mapLevelToDistance(int level) const
+{
+    switch (level)
+    {
+        case 10:  return 72558.6f;
+        case 11:  return 36074.4f;
+        case 12:  return 17935.4f;
+        case 13:  return 10254.6f;
+        case 14:  return 5098.35f;
+        case 15:  return 2534.78f;
+        case 16:  return 1260.24f;
+        case 17:  return 626.56f;
+        case 18:  return 311.51f;
+        case 19:  return 178.11f;
+        case 20:  return 88.55f;
+        case 21:  return 58.22f;
+        default:  break;
+    }
+
+    return 1000.0f;
+}
+
 void ScreetShot::setMapView(const std::shared_ptr<MapView>& mapView)
 {
     // mapView_ = mapView;

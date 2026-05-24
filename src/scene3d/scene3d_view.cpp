@@ -1206,7 +1206,7 @@ void GraphicsScene3dView::updateMapView()
         QVector<LLA> llaVerts;
 
         float dist = m_camera->distForMapView();
-        bool moveUp = dist > lastCameraDist_;
+        qDebug() << "dist ....." << dist;
         lastCameraDist_ = dist;
 
         North_East_Down ltNed(minX, minY, 0.0);
@@ -1239,7 +1239,7 @@ void GraphicsScene3dView::updateMapView()
         llaVerts.append(LLA(rtLla.latitude, rtLla.longitude, dist));
 
         if (canRequest) {
-            emit sendRectRequest(llaVerts, m_camera->getIsPerspective(), m_camera->viewLlaRef_, moveUp, m_camera->getCameraTilt());
+            emit sendRectRequest(llaVerts, m_camera->getIsPerspective(), m_camera->viewLlaRef_, false);
         }
         else {
             emit sendLlaRef(m_camera->viewLlaRef_);
@@ -1415,14 +1415,13 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     double targetHeight = std::max(widthLen, heightLen) / 2.0;
     qDebug() << "Target level:" << mapLevel_ << "Target height:" << targetHeight;
 
+    // targetHeight = screetShot_.mapLevelToDistance(task.mapLevel);
     m_camera->m_distToFocusPoint = static_cast<float>(targetHeight);
     m_camera->distForMapView_    = static_cast<float>(targetHeight);
     m_camera->distToGround_      = static_cast<float>(targetHeight);
-    m_camera->updateCameraParams();
+    // m_camera->updateCameraParams();
     m_camera->updateViewMatrix();
 
-    // constexpr double TILE_CONSTANT = 126543000.03392;
-    // targetHeight =  TILE_CONSTANT / std::pow(2.0, task.mapLevel);
 
     // ========= 然后发送瓦片请求 ========
     QVector<LLA> request;
@@ -1430,7 +1429,7 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     request.append(LLA(task.maxLat, task.maxLon, targetHeight));
     request.append(LLA(task.minLat, task.maxLon, targetHeight));
     request.append(LLA(task.minLat, task.minLon, targetHeight));
-    emit sendRectRequest(request, false, m_camera->viewLlaRef_, false, map::CameraTilt::Up);
+    emit sendRectRequest(request, false, m_camera->viewLlaRef_, true);
 
     // QTimer::singleShot(4000, this, [this]() {
     //     QMutexLocker locker(&screenshotMutex_);

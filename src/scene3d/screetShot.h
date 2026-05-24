@@ -98,6 +98,8 @@ public:
     bool getScreetToolBar() const;
     void setScreetToolBar(bool screetToolBarShow);
 
+    float mapLevelToDistance(int level) const;
+
 
 public:
     QRectF shotRect_;
