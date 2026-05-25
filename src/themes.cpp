@@ -247,13 +247,7 @@ void Themes::loadSoftwareParameters()
 
 void Themes::saveSoftwareParameters()
 {
-    // QPoint centeScenePt = mapGraphicsView_->getViewMiddlePos();
-    // Bing::pixelXYToLatLong(centeScenePt,mapGraphicsView_->getCurrentLevel(),
-    //                        softwareParameters_.currentLon,softwareParameters_.currentLati);
-    // softwareParameters_.currentLevel = 16;
-    // softwareParameters_.existGoogle = 0;
-
-qDebug() << "saveSoftwareParameters............";
+    qDebug() << "saveSoftwareParameters............";
 
     //异或校验
     u8 crc = XorCheckSum((u8*)&softwareParameters_,(sizeof(softwareParameters_)-1));

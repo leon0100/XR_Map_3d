@@ -4,7 +4,7 @@
 #include <math.h>
 #include <QOpenGLFramebufferObject>
 #include <QVector3D>
-#include <private/qzipwriter_p.h>
+
 
 
 #include "scene3d_renderer.h"
@@ -52,8 +52,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     m_camera->setCameraListener(m_axesThumbnailCamera.get());
 
     imageView_->setView(this);
-
-    screetShot_.setMapView(mapView_);
 
     QObject::connect(isobathsView_.get(), &IsobathsView::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(surfaceView_.get(),  &SurfaceView::changed,  this, &QQuickFramebufferObject::update);
@@ -368,15 +366,15 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
                 QPointF currentPos(x, y);
                 qreal width  = currentPos.x() - screetShot_.startPos_.x();
                 qreal height = currentPos.y() - screetShot_.startPos_.y();
-                screetShot_.shotRect_ = QRectF(std::min(screetShot_.startPos_.x(), currentPos.x()),
+                QRectF shotRect = QRectF(std::min(screetShot_.startPos_.x(), currentPos.x()),
                         std::min(screetShot_.startPos_.y(), currentPos.y()), std::abs(width), std::abs(height));
-                calculateLatLong(screetShot_.shotRect_.topLeft().x(), screetShot_.shotRect_.topLeft().y(),
-                        screetShot_.topLeftLati_,screetShot_.topLeftLong_);
-                calculateLatLong(screetShot_.shotRect_.topRight().x(), screetShot_.shotRect_.topRight().y(),
-                        screetShot_.topRightLati_, screetShot_.topRightLong_);
-                calculateLatLong(screetShot_.shotRect_.bottomRight().x(), screetShot_.shotRect_.bottomRight().y(),
-                        screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
-                screetShot_.setSelectionRect(screetShot_.shotRect_);
+                calculateLatLong(shotRect.topLeft().x(), shotRect.topLeft().y(),
+                                screetShot_.topLeftLati_,screetShot_.topLeftLong_);
+                calculateLatLong(shotRect.topRight().x(), shotRect.topRight().y(),
+                                screetShot_.topRightLati_, screetShot_.topRightLong_);
+                calculateLatLong(shotRect.bottomRight().x(), shotRect.bottomRight().y(),
+                                screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
+                screetShot_.setSelectionRect(shotRect);
                 // qDebug() << "Screen capture rect:" << screetShot_.shotRect_;
             }
         }
@@ -385,12 +383,15 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
             if(mouseButton == Qt::LeftButton) {
                 screetShot_.resizeMode(screetShot_.shotRect_, pos);
                 calculateLatLong(screetShot_.shotRect_.topLeft().x(), screetShot_.shotRect_.topLeft().y(),
-                        screetShot_.topLeftLati_, screetShot_.topLeftLong_);
+                                screetShot_.topLeftLati_, screetShot_.topLeftLong_);
                 calculateLatLong(screetShot_.shotRect_.topRight().x(), screetShot_.shotRect_.topRight().y(),
-                        screetShot_.topRightLati_, screetShot_.topRightLong_);
+                                screetShot_.topRightLati_, screetShot_.topRightLong_);
                 calculateLatLong(screetShot_.shotRect_.bottomRight().x(), screetShot_.shotRect_.bottomRight().y(),
-                        screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
+                                screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
                 screetShot_.setSelectionRect(screetShot_.shotRect_);
+
+                qDebug() << "screetShot_" << screetShot_.shotRect_.topLeft() << "  "
+                         << screetShot_.shotRect_.bottomRight();
             }
         }
 
@@ -619,8 +620,8 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
 
     if(isScreen) {
         screetShot_.firstScreenDown_ = false;
-
         screetCurrentMapLevel_ = currentMapLevel_;
+        screetShot_.setLLARef(m_camera->viewLlaRef_);
 
     } else {
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
@@ -1206,7 +1207,6 @@ void GraphicsScene3dView::updateMapView()
         QVector<LLA> llaVerts;
 
         float dist = m_camera->distForMapView();
-        qDebug() << "dist ....." << dist;
         lastCameraDist_ = dist;
 
         North_East_Down ltNed(minX, minY, 0.0);
@@ -1318,7 +1318,6 @@ void GraphicsScene3dView::setIsNorth(bool state)
 
 void GraphicsScene3dView::slotScreetGraphics()
 {
-    // 创建一个LLA矩形区域来定义请求的范围
     double minLat = std::min({screetShot_.topLeftLati_, screetShot_.topRightLati_, screetShot_.bottomRightLati_});
     double maxLat = std::max({screetShot_.topLeftLati_, screetShot_.topRightLati_, screetShot_.bottomRightLati_});
     double minLon = std::min({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
@@ -1326,29 +1325,14 @@ void GraphicsScene3dView::slotScreetGraphics()
 
     mapLevel_ = 20;
 
-    screenshotQueue_.clear();
-
     QDir dir;
     QString folderPath = "./screetShot";
     if (!dir.exists(folderPath)) {
         dir.mkpath(folderPath);
     }
 
-    QString savePath = folderPath + "/1_1";
-    QString fileName = savePath + ".kml";
-
-    // 创建一个LLA矩形区域来定义请求的范围
-    ScreenshotTask task(1, 1, mapLevel_, minLat, maxLat, minLon, maxLon, savePath); // 添加截图任务到队列
-    // screenshotQueue_.enqueue(task);
-
-    currentScreenshotTask_ = task;
-    startScreenshotTask(task);
-
-    // // 如果当前没有在处理任务，开始处理
-    // if (!isProcessingScreenshot_) {
-    //     qDebug() << "isProcessingScreenshot_....";
-    //     processNextScreenshotTask();
-    // }
+    screenshotTask_ = ScreenshotTask(mapLevel_, minLat, maxLat, minLon, maxLon, folderPath);
+    startScreenshotTask(screenshotTask_);
 
 }
 
@@ -1356,32 +1340,8 @@ void GraphicsScene3dView::onTargetTilesLoaded()
 {
     screenshotPending_ = true;
     QQuickFramebufferObject::update(); // 触发重绘
-    qDebug() << "GraphicsScene3dView::onTargetTilesLoaded......";
-    QTimer::singleShot(2000, this, [this]() {
-        // QMutexLocker locker(&screenshotMutex_);
-
+    QTimer::singleShot(2500, this, []() {
     });
-}
-
-void GraphicsScene3dView::processNextScreenshotTask()
-{
-    QMutexLocker locker(&screenshotQueueMutex_);
-
-    if (screenshotQueue_.isEmpty()) {
-        isProcessingScreenshot_ = false;
-        qDebug() << "Screenshot queue is empty, processing complete.";
-        // emit screenshotQueueFinished();
-        return;
-    }
-
-    isProcessingScreenshot_ = true;
-    currentScreenshotTask_ = screenshotQueue_.dequeue();
-
-    locker.unlock();
-
-    // 开始处理当前任务
-    startScreenshotTask(currentScreenshotTask_);
-    isProcessingScreenshot_ = false;
 }
 
 void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
@@ -1432,7 +1392,6 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     emit sendRectRequest(request, false, m_camera->viewLlaRef_, true);
 
     // QTimer::singleShot(4000, this, [this]() {
-    //     QMutexLocker locker(&screenshotMutex_);
     //     screenshotPending_ = true;
     //     QQuickFramebufferObject::update(); // 触发重绘
     // });
@@ -1450,102 +1409,6 @@ GraphicsScene3dView::InFboRenderer::InFboRenderer() :
 GraphicsScene3dView::InFboRenderer::~InFboRenderer()
 {}
 
-
-bool GraphicsScene3dView::InFboRenderer::createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west)
-{
-    QFile file(kmlPath);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        qDebug() << QString("Cannot write file %1.").arg(file.errorString());
-        return false;
-    }
-
-    QXmlStreamWriter writer(&file);
-    writer.setCodec("UTF-8");
-    writer.setAutoFormatting(true);
-    writer.writeStartDocument("1.0", true);
-
-    writer.writeStartElement("kml");
-    writer.writeAttribute("xmlns", "http://www.opengis.net/kml/2.2");
-
-    writer.writeStartElement("Document");
-    writer.writeAttribute("id", "root_doc");
-
-    writer.writeStartElement("GroundOverlay");
-    writer.writeTextElement("name", "Shaded Relief");
-
-    writer.writeStartElement("Icon");
-    writer.writeTextElement("href", imageName);
-    writer.writeEndElement(); // Icon
-
-    writer.writeStartElement("LatLonBox");
-    writer.writeTextElement("north", QString::number(north, 'f', 14));
-    writer.writeTextElement("south", QString::number(south, 'f', 14));
-    writer.writeTextElement("east", QString::number(east, 'f', 14));
-    writer.writeTextElement("west", QString::number(west, 'f', 14));
-    writer.writeEndElement(); // LatLonBox
-
-    writer.writeEndElement(); // GroundOverlay
-
-    writer.writeEndElement(); // Document
-    writer.writeEndElement(); // kml
-
-    writer.writeEndDocument();
-    file.close();
-
-    return true;
-}
-
-bool GraphicsScene3dView::InFboRenderer::createXMAPFile(const QString kmlFilePath, const QString imageFilePath, QString outputXMAPPath)
-{
-    QFile kmlFile(kmlFilePath);
-    if (!kmlFile.exists()) {
-        qDebug() << "KML file does not exist.";
-        return false;
-    }
-    QFile imageFile(imageFilePath);
-    if (!imageFile.exists()) {
-        qDebug() << "Image file does not exist.";
-        return false;
-    }
-
-    // 1、打开KML文件并读取内容
-    if (!kmlFile.open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open KML file.";
-        return false;
-    }
-    QByteArray kmlData = kmlFile.readAll();
-    if(!kmlFile.remove()) {
-        qDebug() << "kmlFile remove failed";
-        return false;
-    }
-
-    // 2、打开图片文件并读取内容
-    if (!imageFile.open(QIODevice::ReadOnly)) {
-        qDebug() << "Failed to open image file.";
-        return false;
-    }
-    QByteArray imageData = imageFile.readAll();
-    // if(!imageFile.remove()) {
-    //     qDebug() << "Failed to delete image file.";
-    //     return false;
-    // }
-
-    // 3、创建KMZ文件
-    QString imageFileName1 = QFileInfo(imageFilePath).fileName();
-    QString kmzPath = outputXMAPPath + ".kmz";
-    QZipWriter kmzWriter(kmzPath);
-    kmzWriter.addFile("doc.kml", kmlData);
-    kmzWriter.addFile(imageFileName1, imageData);
-    kmzWriter.close();
-    if (kmzWriter.status() != QZipWriter::NoError) {
-        qDebug() << "[ERROR] Failed to create KMZ file.";
-        return false;
-    }
-
-    return true;
-}
-
-
 void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask& task, double geoWidth, double geoHeight)
 {
     // 临时保存原相机状态
@@ -1561,9 +1424,7 @@ void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask
     m_renderer->m_camera.isPerspective_ = false;
 
 
-    // ========== 使用自定义正交投影边界（不依赖相机距离）==========
-    // 直接设置正交投影边界，确保目标区域正好填满视口
-    // 设置自定义正交投影边界（以目标区域中心为原点）
+    // 直接设置正交投影边界，确保目标区域正好填满视口（以目标区域中心为原点）
     float orthoLeft   = static_cast<float>(-geoWidth  / 2.0);
     float orthoRight  = static_cast<float>( geoWidth  / 2.0);
     float orthoBottom = static_cast<float>(-geoHeight / 2.0);
@@ -1613,13 +1474,11 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     int chunkPixelWidth = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
     int chunkPixelHeight = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
 
-    qDebug() << "=== Chunk Splitting Info ===";
     qDebug() << "Geo area:" << geoWidth << "m x" << geoHeight << "m";
     qDebug() << "Chunk size:" << CHUNK_SIZE_METERS << "m x" << CHUNK_SIZE_METERS << "m";
     qDebug() << "Chunk pixels:" << chunkPixelWidth << "x" << chunkPixelHeight;
     qDebug() << "Grid:" << rows << "cols (lon) x" << cols << "rows (lat)";
 
-    qDebug() << "Map level:" << task.mapLevel;
     qDebug() << "Geo dimensions:" << geoWidth << "x" << geoHeight << "meters";
     qDebug() << "Pixel dimensions:" << pixelWidth << "x" << pixelHeight;
     qDebug() << "Meters per pixel:" << metersPerPixel;
@@ -1661,29 +1520,23 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     m_renderer->m_viewSize = QSizeF(pixelWidth, pixelHeight);
     m_renderer->render();
 
-    // 9.读取像素
-    QImage result = QImage(pixelWidth, pixelHeight, QImage::Format_ARGB32);
-    func->glReadPixels(0, 0, pixelWidth, pixelHeight, GL_BGRA, GL_UNSIGNED_BYTE, result.bits());
-    result = result.mirrored(false, true);
+    QImage fullResult = QImage(pixelWidth, pixelHeight, QImage::Format_ARGB32);
+    func->glReadPixels(0, 0, pixelWidth, pixelHeight, GL_RGBA, GL_UNSIGNED_BYTE, fullResult.bits());
+    fullResult = fullResult.mirrored(false, true);
 
-    // 5. 逐个小正方形处理
     int chunkIndex = 0;
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
-            // ========== 计算像素区域 ==========
             // 左上角为原点，x向右，y向下
             int pixelX = row * chunkPixelWidth;
             int pixelY = col * chunkPixelHeight;
 
-            // 确保不超出边界
             int actualChunkWidth = std::min(chunkPixelWidth, pixelWidth - pixelX);
             int actualChunkHeight = std::min(chunkPixelHeight, pixelHeight - pixelY);
-
             if (actualChunkWidth <= 0 || actualChunkHeight <= 0) {
                 continue;
             }
 
-            // ========== 计算地理经纬度 ==========
             // 根据像素位置计算在原区域中的比例
             double lonRatioLeft = static_cast<double>(pixelX) / pixelWidth;
             double lonRatioRight = static_cast<double>(pixelX + actualChunkWidth) / pixelWidth;
@@ -1697,49 +1550,51 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
             double northLat = task.maxLat - latRatioTop * (task.maxLat - task.minLat);
             double southLat = task.maxLat - latRatioBottom * (task.maxLat - task.minLat);
 
-            // ========== 裁剪小正方形图片 ==========
-            QImage chunkImage = result.copy(pixelX, pixelY, actualChunkWidth, actualChunkHeight);
+            QImage chunkImage = fullResult.copy(pixelX, pixelY, actualChunkWidth, actualChunkHeight);
 
-            // ========== 生成文件名 ==========
-            QString chunkBasePath = QString("%1_chunk_%2_%3")
-                                        .arg(task.outputPath)
-                                        .arg(col)  // latitude index
-                                        .arg(row); // longitude index
-            QString chunkImageName = QString("chunk_%1_%2.png").arg(col).arg(row);
+            QString rowStr = QString::number(row + 1);
+            QString colStr = QString::number(col + 1);
+            QString chunkBasePath = task.outputPath + "/" + rowStr + "_" + colStr;
+            QString chunkImageName = rowStr + "_" + colStr + ".png";
 
-            // ========== 保存图片 ==========
-            if (chunkImage.save(chunkBasePath + ".png", "PNG")) {
-                qDebug() << QString("Chunk[%1,%2] saved: %3%4%5")
-                .arg(col).arg(row)
-                    .arg(chunkBasePath)
-                    .arg(".png")
-                    .arg(QString(" | Pixels:(%1,%2) %3x%4 | Lat:[%5,%6] Lon:[%7,%8]")
-                             .arg(pixelX).arg(pixelY)
-                             .arg(actualChunkWidth).arg(actualChunkHeight)
-                             .arg(northLat, 8, 'f', 6)
-                             .arg(southLat, 8, 'f', 6)
-                             .arg(westLon, 8, 'f', 6)
-                             .arg(eastLon, 8, 'f', 6));
+            if (!chunkImage.save(chunkBasePath + ".png", "PNG")) {
+                qDebug() << "Tiles saved failed to:" << chunkImage;
             }
 
-            // ========== 创建KML ==========
-            createKmlFile(chunkBasePath + ".kml", chunkImageName, northLat, southLat, eastLon, westLon);
+            // qDebug() << "chunkBasePath...." << chunkBasePath << "   chunkImageName...." << chunkImageName;
+            ScreetShot::createKmlFile(chunkBasePath + ".kml", chunkImageName, northLat, southLat, eastLon, westLon);
+            ScreetShot::createXMAPFile(chunkBasePath + ".kml", chunkBasePath + ".png", chunkBasePath);
 
-            // ========== 创建XMAP ==========
-            createXMAPFile(chunkBasePath + ".kml", chunkBasePath + ".png", chunkBasePath);
+#if defined(Q_OS_ANDROID)
+            QFile xmapFile(chunkBasePath + ".kmz");
+            if (xmapFile.open(QIODevice::ReadOnly)) {
+                QByteArray fileData = xmapFile.readAll();
+                xmapFile.close();
+
+                //把 QByteArray 直接转成 jbyteArray
+                QAndroidJniEnvironment env;
+                jbyteArray byteArray = env->NewByteArray(fileData.size());
+                env->SetByteArrayRegion(byteArray, 0, fileData.size(), reinterpret_cast<const jbyte*>(fileData.constData()));
+                QAndroidJniObject fileName2 = QAndroidJniObject::fromString(rowStr + "_" + colStr + ".xmap");
+                QAndroidJniObject mimeType = QAndroidJniObject::fromString("application/vnd.google-earth.xmap+xml");
+
+                //调用 Java 端方法
+                QAndroidJniObject::callStaticMethod<void>( "com/nqc/FileQtActivity", "saveBinaryFile",
+                                                          "(Ljava/lang/String;[BLjava/lang/String;)V",fileName2.object<jstring>(),byteArray,mimeType.object<jstring>());
+                env->DeleteLocalRef(byteArray);
+            }
+#endif
 
             chunkIndex++;
         }
     }
 
 
-
-
-    if (result.save(task.outputPath + ".png", "PNG")) {
-        qDebug() << "Tiles saved successfully to:" << task.outputPath;
-    }
-    createKmlFile(task.outputPath + ".kml", "1_1.png", task.maxLat, task.minLat, task.maxLon, task.minLon);
-    createXMAPFile(task.outputPath + ".kml", task.outputPath + ".png", task.outputPath);
+    // if (result.save(task.outputPath + ".png", "PNG")) {
+    //     qDebug() << "Tiles saved successfully to:" << task.outputPath;
+    // }
+    // createKmlFile(task.outputPath + ".kml", "1_1.png", task.maxLat, task.minLat, task.maxLon, task.minLon);
+    // createXMAPFile(task.outputPath + ".kml", task.outputPath + ".png", task.outputPath);
 
     // 10.恢复状态
     offScreenFbo_->release();
@@ -1814,7 +1669,7 @@ void GraphicsScene3dView::InFboRenderer::render()
 
     if (graphicsView_->screenshotPending_)
     {
-        renderToOffscreen(graphicsView_->currentScreenshotTask_);
+        renderToOffscreen(graphicsView_->screenshotTask_);
         graphicsView_->screenshotPending_ = false;
     }
 
@@ -2208,6 +2063,8 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
     m_distToFocusPoint = delta > 0.f ? m_distToFocusPoint / 1.15f : m_distToFocusPoint * 1.15f;
     distForMapView_ = m_distToFocusPoint;
 #endif
+    // qDebug() << "distForMapView_........" << distForMapView_;
+
 
     const float minFocusDist = 2.0f;
     const float maxFocusDist = 100000.0f * 100.0f;

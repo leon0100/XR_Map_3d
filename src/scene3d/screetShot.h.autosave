@@ -138,8 +138,6 @@ private:
     void doSaveMapLevelProcess();
 
 
-
-
 public:
     bool isScreenMode_ = false;      // 截图模式
     bool m_moveView = false;         // 鼠标移动地图

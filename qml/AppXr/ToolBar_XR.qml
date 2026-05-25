@@ -154,26 +154,26 @@ Rectangle {
             }
         }
 
-        MenuButton {  // 历史截图
-            id: historyScreenBtn
-            icon.source: "qrc:/XR/historyScreen.png"
-            icon.width:  toolBar_XR.iconSize
-            icon.height: toolBar_XR.iconSize
-            width:       toolBar_XR.iconSize
-            height:      toolBar_XR.iconSize
+        // MenuButton {  // 历史截图
+        //     id: historyScreenBtn
+        //     icon.source: "qrc:/XR/historyScreen.png"
+        //     icon.width:  toolBar_XR.iconSize
+        //     icon.height: toolBar_XR.iconSize
+        //     width:       toolBar_XR.iconSize
+        //     height:      toolBar_XR.iconSize
 
 
-            property bool historyScreenMode: false
-            Rectangle {
-                anchors.fill: parent
-                radius: 2
-                color: historyScreenBtn.historyScreenMode ? backColor : "transparent"
-            }
+        //     property bool historyScreenMode: false
+        //     Rectangle {
+        //         anchors.fill: parent
+        //         radius: 2
+        //         color: historyScreenBtn.historyScreenMode ? backColor : "transparent"
+        //     }
 
-            onPressed: {
-                historyScreenMode = !historyScreenMode
-            }
-        }
+        //     onPressed: {
+        //         historyScreenMode = !historyScreenMode
+        //     }
+        // }
 
         MenuButton {  // 测距
             id: measureBtn

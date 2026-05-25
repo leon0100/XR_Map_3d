@@ -62,7 +62,7 @@ TileManager::TileManager(QObject *parent) :
 void TileManager::onTileProcessed()
 {
     if(isScreenMode_) {
-        qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
+        // qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
         if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
             isScreenMode_ = false;
             emit targetTilesLoaded();

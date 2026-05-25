@@ -15,8 +15,12 @@ Rectangle {
     height: renderer.screetShot.selectionRect.height
 
 
+
+    property int iconSize: theme.iconSize
+
+
     color: "transparent"
-    border.width: 2
+    border.width: 3
     border.color: Qt.rgba(0, 1, 1, 1.0)
     z: 1000
 
@@ -25,13 +29,12 @@ Rectangle {
        id: topLabel
        text: renderer.screetShot.screetWidth
        color: "yellow"
-       font.pixelSize: 15
+       font.pixelSize: iconSize
        font.bold: true
 
        anchors.horizontalCenter: parent.horizontalCenter
        anchors.bottom: parent.top
        anchors.bottomMargin: 6
-
     }
 
 
@@ -39,7 +42,7 @@ Rectangle {
        id: rightLabel
        text: renderer.screetShot.screetHeight
        color: "yellow"
-       font.pixelSize: 15
+       font.pixelSize: iconSize
        font.bold: true
 
        anchors.verticalCenter: parent.verticalCenter
@@ -50,8 +53,8 @@ Rectangle {
 
 
 
-
-    property int handleSize: 8
+    property int handleSize: iconSize * 0.4
+    property int toolSize: iconSize * 1.4
 
        // 左上角
        Rectangle {
@@ -99,14 +102,14 @@ Rectangle {
 
 
 
+
        /*--- 右下角截图工具栏 ----*/
        Rectangle {
            id: screenToolBar
            visible: renderer.screetShot.screetToolBar
 
-           width: 170
-           height: 32
-           radius: 2
+           width: toolSize * 6
+           height: toolSize
 
            color: "#f0f8ff"
            border.color: "#4f4f4f"
@@ -122,15 +125,15 @@ Rectangle {
                spacing: 8
 
                Rectangle {
-                   width: 26
-                   height: 26
+                   width:  toolSize
+                   height: toolSize
                    radius: 4
                    color: penMouse.containsMouse ? "#d6e6ff" : "transparent"
 
                    Image {
                       anchors.centerIn: parent
-                      width: 18
-                      height: 18
+                      width:  toolSize * 0.9
+                      height: toolSize * 0.9
                       source: "qrc:/XR/wordlog3232.png"
                    }
 
@@ -143,15 +146,15 @@ Rectangle {
                }
 
                Rectangle {
-                   width: 26
-                   height: 26
+                   width:  toolSize
+                   height: toolSize
                    radius: 4
                    color: textMouse.containsMouse ? "#d6e6ff" : "transparent"
 
                    Image {
                       anchors.centerIn: parent
-                      width: 18
-                      height: 18
+                      width:  toolSize * 0.9
+                      height: toolSize * 0.9
                       source: "qrc:/XR/revokeedit.png"
                    }
 
@@ -163,15 +166,15 @@ Rectangle {
                }
 
                Rectangle {
-                   width: 26
-                   height: 26
+                   width:  toolSize
+                   height: toolSize
                    radius: 4
                    color: okMouse.containsMouse ? "#d6e6ff" : "transparent"
 
                    Image {
                       anchors.centerIn: parent
-                      width: 18
-                      height: 18
+                      width:  toolSize * 0.9
+                      height: toolSize * 0.9
                       source: "qrc:/XR/wirelessTrans3232.png"
                    }
 
@@ -183,15 +186,15 @@ Rectangle {
                }
 
                Rectangle {
-                   width: 26
-                   height: 26
+                   width:  toolSize
+                   height: toolSize
                    radius: 4
                    color: cancelMouse.containsMouse ? "#d6e6ff" : "transparent"
 
                    Image {
                       anchors.centerIn: parent
-                      width: 18
-                      height: 18
+                      width:  toolSize * 0.9
+                      height: toolSize * 0.9
                       source: "qrc:/XR/cancelshot.png"
                    }
 
@@ -200,7 +203,6 @@ Rectangle {
                       onEntered: renderer.screetShot.setToArrowCursor()
                       toolTipText: qsTr("Cancel Shot")
                       onClicked: {
-
                           renderer.screetShot.setCancelShot()
                       }
                    }
@@ -208,15 +210,15 @@ Rectangle {
 
 
                Rectangle {
-                   width: 26
-                   height: 26
+                   width:  toolSize
+                   height: toolSize
                    radius: 4
                    color: save.containsMouse ? "#d6e6ff" : "transparent"
 
                    Image {
                       anchors.centerIn: parent
-                      width: 18
-                      height: 18
+                      width:  toolSize * 0.9
+                      height: toolSize * 0.9
                       source: "qrc:/XR/save.png"
                    }
 

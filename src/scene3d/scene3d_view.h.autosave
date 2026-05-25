@@ -308,7 +308,6 @@ private:
     void clearComboSelectionRect();
     void initAutoDistTimer();
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
-    void latLongToScreen(double latitude, double longitude, qreal& screenX, qreal& screenY);
 
 private:
     friend class BottomTrack;
