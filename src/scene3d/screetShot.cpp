@@ -292,9 +292,9 @@ void ScreetShot::setCancelShot()
 
 void ScreetShot::saveScreetShot()
 {
-    screetToolBarShow_ = false;
-    setSelectionRectVisible(false);
-    emit cancelScreetShot();
+    setCancelShot();
+    isScreenMode_ = false;
+    isScreenSaveMode_ = true;
 
     const double MIN_SIZE = 900.0;
     if (topWidth_ < MIN_SIZE || rightHeight_ < MIN_SIZE) {

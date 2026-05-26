@@ -173,6 +173,7 @@ private:
 
 public:
     bool isScreenMode_ = false;      // 截图模式
+    bool isScreenSaveMode_ = false;  //截图后的保存模式
     bool m_moveView = false;         // 鼠标移动地图
     bool showHistoryScreen_ = false; // 显示历史截图
     bool firstScreenDown_ = false;

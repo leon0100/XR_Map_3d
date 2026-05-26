@@ -1392,11 +1392,6 @@ void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
     request.append(LLA(task.minLat, task.minLon, targetHeight));
     emit sendRectRequest(request, false, m_camera->viewLlaRef_, true);
 
-    // QTimer::singleShot(4000, this, [this]() {
-    //     screenshotPending_ = true;
-    //     QQuickFramebufferObject::update(); // 触发重绘
-    // });
-
 }
 
 

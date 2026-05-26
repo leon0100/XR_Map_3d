@@ -20,8 +20,14 @@ Rectangle {
     property int  iconSize:     theme.iconSize * 0.9
     property int  currentLevel: -1
 
+    Rectangle {
+        anchors.fill: parent
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#f5f7fa" }
+            GradientStop { position: 1.0; color: "#c3cfe2" }
+        }
+    }
 
-    signal chooseMapLevel(int level)
 
     ListModel {
         id: tableModel
@@ -31,9 +37,9 @@ Rectangle {
         initData()
     }
 
+
     function initData() {
         tableModel.clear()
-
         for (var i = 0; i < 6; ++i) {
             tableModel.append({
                 level: 13 + i,
@@ -43,6 +49,8 @@ Rectangle {
                 enabled: true
             })
         }
+
+        currentLevel = -1;
     }
     Connections {
         target: renderer.screetShot
@@ -94,7 +102,7 @@ Rectangle {
                 anchors.fill: parent
 
                 Label {
-                    Layout.preferredWidth: 140
+                    Layout.preferredWidth: mapLevelSize * 0.25
                     text: qsTr("Map Level")
                     font.bold: true
                     font.pixelSize: iconSize
@@ -102,7 +110,7 @@ Rectangle {
                 }
 
                 Label {
-                    Layout.preferredWidth: 150
+                    Layout.preferredWidth: mapLevelSize * 0.3
                     text: qsTr("Size")
                     font.bold: true
                     font.pixelSize: iconSize
@@ -110,7 +118,7 @@ Rectangle {
                 }
 
                 Label {
-                    Layout.preferredWidth: 150
+                    Layout.preferredWidth: mapLevelSize * 0.3
                     text: qsTr("Theoretical Size")
                     font.bold: true
                     font.pixelSize: iconSize
@@ -143,11 +151,11 @@ Rectangle {
 
                 delegate: Rectangle {
                     width: listView.width
-                    height: 42
+                    height: iconSize * 2.5
 
                     color: enabled ? "white" : "#d0d0d0"
 
-                    border.width: 1
+                    border.width: 2
                     border.color: "#eeeeee"
 
                     required property int index
@@ -161,7 +169,7 @@ Rectangle {
                         anchors.fill: parent
 
                         Item {
-                            Layout.preferredWidth: 140
+                            Layout.preferredWidth: mapLevelSize * 0.25
                             Layout.fillHeight: true
 
                             RadioButton {
@@ -178,7 +186,7 @@ Rectangle {
                         }
 
                         Label {
-                            Layout.preferredWidth: 150
+                            Layout.preferredWidth: mapLevelSize * 0.3
                             text: size
                             font.pixelSize: iconSize
                             horizontalAlignment: Text.AlignHCenter
@@ -186,7 +194,7 @@ Rectangle {
                         }
 
                         Label {
-                            Layout.preferredWidth: 150
+                            Layout.preferredWidth: mapLevelSize * 0.3
                             text: theoreticalSize
                             font.pixelSize: iconSize
                             horizontalAlignment: Text.AlignHCenter
@@ -205,44 +213,84 @@ Rectangle {
             }
         }
 
-        RowLayout {
+
+        Item {
             Layout.fillWidth: true
-            Layout.topMargin: 10
+            Layout.preferredHeight: iconSize * 2
 
-            Item {
-                Layout.fillWidth: true
-            }
+            Row {
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter:  parent.horizontalCenter
+                spacing: iconSize * 3
 
-            Button {
-                text: qsTr("OK")
-                width: 100
-                height: 36
-                onClicked: {
-                    renderer.screetShot.setTargetMapLevel(root.currentLevel)
-                    renderer.screetShot.isMapLevelChooseVisible = false
-                    initData()
+                Rectangle {
+                    width: iconSize * 4
+                    height: iconSize * 1.2
+                    radius: 10
+                    border.color: "#6b8fd6"
+                    border.width: 1
+                    color: okBtn.hovered ? "#a0c4ff" : "#d6e6ff"
+
+                    Button {
+                        id: okBtn
+                        anchors.fill: parent
+                        background: null
+                        hoverEnabled: true
+                        contentItem: Text {
+                            text: qsTr("OK")
+                            font.pixelSize: iconSize
+                            color: "black"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            renderer.screetShot.setTargetMapLevel(root.currentLevel)
+                            renderer.screetShot.isMapLevelChooseVisible = false
+                            initData()
+                        }
+                    }
                 }
-            }
 
-            Item {
-                width: 60
-            }
+                Rectangle {
+                    width: iconSize * 4
+                    height: iconSize * 1.2
+                    radius: 10
+                    border.color: "#6b8fd6"
+                    border.width: 1
+                    color: noBtn.hovered ? "#a0c4ff" : "#d6e6ff"
 
-            Button {
-                text: qsTr("Cancel")
-                width: 100
-                height: 36
+                    Button {
+                        id: noBtn
+                        anchors.fill: parent
+                        background: null
+                        hoverEnabled: true
+                        contentItem: Text {
+                            text: qsTr("No")
+                            font.pixelSize: iconSize
+                            color: "black"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
 
-                onClicked: {
-                    renderer.screetShot.isMapLevelChooseVisible = false
-                    initData()
+                        onClicked: {
+                            renderer.screetShot.isMapLevelChooseVisible = false
+                            initData()
+                        }
+                    }
                 }
-            }
-
-            Item {
-                Layout.fillWidth: true
             }
         }
+
+        Item {
+            Layout.fillHeight: true
+            Layout.maximumHeight: 1
+        }
+
+
+
+
+
     }
 
 }

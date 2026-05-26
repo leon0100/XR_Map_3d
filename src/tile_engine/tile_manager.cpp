@@ -61,10 +61,10 @@ TileManager::TileManager(QObject *parent) :
 
 void TileManager::onTileProcessed()
 {
-    if(isScreenMode_) {
+    if(isScreenSaveMode_) {
         // qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
         if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
-            isScreenMode_ = false;
+            isScreenSaveMode_ = false;
             emit targetTilesLoaded();
         }
     }
@@ -86,9 +86,9 @@ MapSourceType TileManager::getCurrentMapType() const
     return currentMap_;
 }
 
-void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool screenMode)
+void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool screenSaveMode)
 {
-    isScreenMode_ = screenMode;
+    isScreenSaveMode_ = screenSaveMode;
     int minX = std::numeric_limits<int>::max();
     int maxX = std::numeric_limits<int>::min();
     int minY = std::numeric_limits<int>::max();

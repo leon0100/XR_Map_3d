@@ -144,7 +144,7 @@ Rectangle {
                     spacing: iconSize * 0.6
 
                     Rectangle {
-                        width: iconSize * 1.1
+                        width:  iconSize * 1.1
                         height: iconSize * 1.1
                         radius: 5
                         border.color: "#b0b3b8"
@@ -153,7 +153,7 @@ Rectangle {
 
                         Rectangle {
                             anchors.centerIn: parent
-                            width: parent.width * 0.8
+                            width:  parent.width * 0.8
                             height: parent.height * 0.8
                             radius: parent.height * 0.4
                             color: "#66E07A"
@@ -179,46 +179,45 @@ Rectangle {
             }
 
 
-            Item {
+            RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: iconSize * 1.5
+                Layout.rightMargin: iconSize * 2
 
-                Row {
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: iconSize
-                    anchors.rightMargin: iconSize
+                Item {
+                    Layout.fillWidth: true
+                }
 
-                    Rectangle {
-                        width: dialogWidth * 0.2
-                        height: dialogHeight * 0.2
-                        radius: 10
-                        border.color: "#6b8fd6"
-                        border.width: 1
-                        color: okBtn.hovered ? "#a0c4ff" : "#d6e6ff"
+                Rectangle {
+                    Layout.preferredWidth: dialogWidth * 0.2
+                    Layout.preferredHeight: iconSize * 1.5
+                    radius: 10
+                    border.color: "#6b8fd6"
+                    border.width: 1
+                    color: okBtn.hovered ? "#a0c4ff" : "#d6e6ff"
 
-                        Button {
-                            id: okBtn
-                            anchors.fill: parent
-                            background: null
-                            hoverEnabled: true
-                            contentItem: Text {
-                                text: qsTr("Ok")
-                                font.pixelSize: iconSize
-                                color: "black"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                    Button {
+                        id: okBtn
+                        anchors.fill: parent
+                        background: null
+                        hoverEnabled: true
 
-                            onClicked: {
-                                root.visible = false
-                                GetInterface.checkDialogBtn(true, isDialogCheckBox)
-                            }
+                        contentItem: Text {
+                            text: qsTr("OK")
+                            font.pixelSize: iconSize
+                            color: "black"
+
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            root.visible = false
+                            GetInterface.checkDialogBtn(true, isDialogCheckBox)
                         }
                     }
-
                 }
             }
+
 
             Item {
                 Layout.fillHeight: true
