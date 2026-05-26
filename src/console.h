@@ -9,7 +9,8 @@
 enum DialogType {
     Dialog_OK   = 0,
     Dialog_YesNo,
-    Dialog_Check
+    Dialog_Check,
+    Dialog_Check2
 };
 
 struct ImageInfo
@@ -111,6 +112,12 @@ public:
         emit showDialogInfo(Dialog_Check, msg);
         emit setCheckBoxText(checkBoxText);
     }
+    void dialogCheck2(const QString &msg, std::function<void(bool, bool)> cb, const QString &checkBoxText = QString()) {
+        checkDialogCallback_ = cb;
+        emit showDialogInfo(Dialog_Check2, msg);
+        emit setCheckBoxText(checkBoxText);
+    }
+
 
 
 signals:

@@ -1558,6 +1558,9 @@ void Core::switchMapType(int sourceType)
     if (tileManager_) {
         tileManager_->switchMapSource(type);
     }
+    if(scene3dViewPtr_){
+        scene3dViewPtr_->screetShot_.switchMapSource(type);
+    }
 }
 
 void Core::onTileSetChanged(std::shared_ptr<map::TileSet> tileSet)

@@ -256,6 +256,10 @@ ApplicationWindow  {
         id: checkDialog
     }
 
+    KDialogCheck2 {
+        id: checkDialog2
+    }
+
     Connections
     {
         target: GetInterface
@@ -274,6 +278,10 @@ ApplicationWindow  {
                 case 2:
                     checkDialog.show(msg)
                     break
+
+                case 3:
+                    checkDialog2.show(msg)
+                    break
             }
         }
 
@@ -290,6 +298,10 @@ ApplicationWindow  {
 
                 case 2:
                     checkDialog.flash()
+                    break
+
+                case 3:
+                    checkDialog2.flash()
                     break
             }
         }
@@ -674,6 +686,9 @@ ApplicationWindow  {
 
                 }
 
+                MapLevelChoose {
+
+                }
 
                 // 多边形工具
                 PolygonTool {

@@ -194,6 +194,7 @@ double GraphicsScene3dView::getCurrLat() const
 {
     return currentLat_;
 }
+
 double GraphicsScene3dView::getCurrLon() const
 {
     return currentLon_;
@@ -1323,10 +1324,10 @@ void GraphicsScene3dView::slotScreetGraphics()
     double minLon = std::min({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
     double maxLon = std::max({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
 
-    mapLevel_ = 20;
+    mapLevel_ = screetShot_.getTargetMapLevel();
 
     QDir dir;
-    QString folderPath = "./screetShot";
+    QString folderPath = screetShot_.getTargetDirPath();
     if (!dir.exists(folderPath)) {
         dir.mkpath(folderPath);
     }

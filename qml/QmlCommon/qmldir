@@ -9,6 +9,7 @@ KParamGroup       1.0   KParamGroup.qml
 KParamSetup       1.0   KParamSetup.qml
 KProgress         1.0   KProgress.qml
 KDialogCheck      1.0   KDialogCheck.qml
+KDialogCheck2     1.0   KDialogCheck2.qml
 KDialogOK         1.0   KDialogOK.qml
 KDialogYesNo      1.0   KDialogYesNo.qml
 KProgressButton   1.0   KProgressButton.qml

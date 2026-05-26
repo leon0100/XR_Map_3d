@@ -3,17 +3,16 @@
 
 #include <QObject>
 #include <QPoint>
-#include <QWidget>
 #include <QGuiApplication>
 #include <QRectF>
 #include <QVector3D>
 #include <QCursor>
-#include <memory>
 #include <QtConcurrent>
 #include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QGraphicsScene>
+#include <QQuickView>
 
 #include "dataset_defs.h"
 #include "console.h"
@@ -24,24 +23,38 @@
 
 enum class ResizeMode { None, Move, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight };
 
-// #define _180_PI (57.2957795131f)
-// #define _PI_180 (0.01745329252f)
-// #define EARTH_RADIUS 6378137   // 赤道半径
-// #define POINT_REPEATITIVE 361.0f
+//KB
+typedef enum
+{
+    theorSize_13 = 5,
+    theorSize_14 = 9,
+    theorSize_15 = 20,
+    theorSize_16 = 80,
+    theorSize_17 = 308,
+    theorSize_18 = 700,
+    theorSize_19 = 1100,
+    theorSize_20 = 2600
+}theoreticalSize;
+
+//ms
+typedef enum
+{
+    downTime_13 = 56,
+    downTime_14 = 160,
+    downTime_15 = 185,
+    downTime_16 = 235,
+    downTime_17 = 410,
+    downTime_18 = 1200,
+    downTime_19 = 1900,
+    downTime_20 = 2900
+}downloadTime;
 
 
-// #ifndef PI
-// #define PI (3.1415926535898)
-// #endif
-
-
-// #define  MAP_TIlE_SIZE   (256)
-
-
-
-
-
-
+struct RowData {
+    QString size;
+    QString theoreticalSize;
+    QString downloadTime;
+};
 
 
 // 截图任务结构体
@@ -70,12 +83,13 @@ struct ScreenshotTask
 
 
 /*------------------------------------------ScreetShot---------------------------------------------*/
+
 class MapView;
-class ScreetShot : public QWidget
+class ScreetShot : public QObject
 {
     Q_OBJECT
 public:
-    explicit ScreetShot(QWidget *parent = nullptr);
+    explicit ScreetShot(QObject *parent = nullptr);
 
     // 添加矩形属性
     Q_PROPERTY(QRectF selectionRect READ getSelectionRect WRITE setSelectionRect NOTIFY selectionRectChanged)
@@ -83,6 +97,8 @@ public:
     Q_PROPERTY(QString screetWidth  READ getScreetWidth   WRITE setScreetWidth NOTIFY screetWidthChanged)
     Q_PROPERTY(QString screetHeight READ getScreetHeight  WRITE  setScreetHeight NOTIFY screetHeightChanged)
     Q_PROPERTY(bool screetToolBar   READ getScreetToolBar WRITE setScreetToolBar NOTIFY screetToolBarShowChanged)
+    Q_PROPERTY(bool isMapLevelChooseVisible READ isMapLevelChooseVisible WRITE setMapLevelChooseVisible NOTIFY mapLevelChooseVisibleChanged)
+
 
     QRectF getSelectionRect() const;
     void setSelectionRect(const QRectF rect);
@@ -102,6 +118,9 @@ public:
 
     void setLLARef(LLARef viewLlaRef);
 
+    bool isMapLevelChooseVisible() const;
+    void setMapLevelChooseVisible(bool visible);
+
     static bool createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west);
     static bool createXMAPFile(const QString kmlFilePath, const QString imageFilePath, QString outputXMAPPath);
 
@@ -110,6 +129,7 @@ public:
     QRectF shotRect_;
     bool isSelectionRectVisible_ = false;
     QString screetWidth_, screetHeight_;
+    bool isMapLevelChooseVisible_ = false;
 
 
 signals:
@@ -119,58 +139,68 @@ signals:
     void screetHeightChanged();
     void screetToolBarShowChanged();
     void cancelScreetShot();
-
     void signalScreetGraphics();
+    void mapLevelChooseVisibleChanged();
+    void updateTableRowData(int row, const QString& size, const QString& theoreticalSize, const QString& downloadTime);
 
 
 public:
     void judgeResizeMode(const QRectF rect,const QPoint pos);
     void resizeMode(QRectF& rect,const QPoint pos);
-
     double getDistance_Haversine(double current_longi, double current_lati, double goal_longi, double goal_lati);
+    void switchMapSource(MapSourceType sourceType);
+    int getTargetMapLevel();
+    QString getTargetDirPath();
 
     Q_INVOKABLE void setToArrowCursor();
     Q_INVOKABLE void setCancelShot();
     Q_INVOKABLE void saveScreetShot();
+    Q_INVOKABLE void setTargetMapLevel(int level);
+
 
 private:
     QString getLengthChEn(double distance,int decimalPlaces = 2);
     void doSaveMapLevelProcess();
-
-
+    void judgeCurrentLevelExist(double longitude,double latitude,int level);
+    QPoint latLongToTileXY(qreal lon, qreal lat, int level);   // 经纬度转瓦片编号
+    qreal clip(qreal n, qreal min, qreal max);
+    qreal clipLon(qreal lon);   // 裁剪经度范围
+    qreal clipLat(qreal lat);   // 裁剪纬度范围
+    void slot_judgeLevelExist();
+    void setDataStatistics(double widthLen,double heightLen);
+    RowData getTheorSizeDownloadTime(quint64 theorSize,quint64 downTime,quint64 totalSmallSquare);
 
 
 public:
     bool isScreenMode_ = false;      // 截图模式
     bool m_moveView = false;         // 鼠标移动地图
-
     bool showHistoryScreen_ = false; // 显示历史截图
-
     bool firstScreenDown_ = false;
     QPointF startPos_,endPos_;       // 矩形场景坐标
-
     ResizeMode resizeMode_;
-
     int currMapLevel_ = 0;
     bool dragging_ = false;
-
     double topLeftLong_, topLeftLati_, topRightLong_, topRightLati_, bottomRightLong_, bottomRightLati_;
     bool screetToolBarShow_ = false;
 
+
+private:
     double topWidth_,rightHeight_;
     LLARef viewLlaRef_;
     bool isReminderChecked_ = false;
     QString targetDirPath_;
     bool openMapLevelList_ = false;
-    QDialog* openloadQia_;
+    QQuickView* loadingQuickView_;
     u8 judgeLevelCount_ = 13;
-
 
     bool screenshotPending_ = false;
     QMutex screenshotMutex_;
 
-
-
+    MapSourceType currentMap_ = googleMapSource;
+    QString googleMap = "http://mt2.google.com/vt/lyrs=y&hl=en&x=%1&y=%2&z=%3";
+    QString amapMap = "http://wprd04.is.autonavi.com/appmaptile?style=6&x=%1&y=%2&z=%3";
+    QVector<ImageInfo> jude_infos;
+    int targetMapLevel_;
 
 };
 

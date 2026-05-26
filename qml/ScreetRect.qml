@@ -15,7 +15,6 @@ Rectangle {
     height: renderer.screetShot.selectionRect.height
 
 
-
     property int iconSize: theme.iconSize
 
 
@@ -48,7 +47,6 @@ Rectangle {
        anchors.verticalCenter: parent.verticalCenter
        anchors.left: parent.right
        anchors.leftMargin: 6
-
     }
 
 
@@ -80,7 +78,7 @@ Rectangle {
 
        // 左下角
        Rectangle {
-           width: handleSize
+           width:  handleSize
            height: handleSize
            color: "#ff3030"
            border.color: "#ff3030"
@@ -101,15 +99,13 @@ Rectangle {
        }
 
 
-
-
-       /*--- 右下角截图工具栏 ----*/
+       /*---- 右下角截图工具栏 ----*/
        Rectangle {
            id: screenToolBar
            visible: renderer.screetShot.screetToolBar
 
            width: toolSize * 6
-           height: toolSize
+           height: toolSize * 1.1
 
            color: "#f0f8ff"
            border.color: "#4f4f4f"

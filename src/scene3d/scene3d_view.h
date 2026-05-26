@@ -308,7 +308,6 @@ private:
     void clearComboSelectionRect();
     void initAutoDistTimer();
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
-    void latLongToScreen(double latitude, double longitude, qreal& screenX, qreal& screenY);
 
 private:
     friend class BottomTrack;
@@ -381,9 +380,8 @@ private:
 public:
     Q_INVOKABLE void setScreenMode(bool isScreen);
     void setCurrentMapLevel(int mapLevel);
-    Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
-    QWidget* screetShot() { return &screetShot_; }
-
+    Q_PROPERTY(QObject* screetShot READ screetShot CONSTANT)
+    QObject* screetShot() { return &screetShot_; }
 
     ScreetShot screetShot_;
     bool screenshotPending_ = false;
@@ -400,10 +398,6 @@ public:
 
     void startScreenshotTask(const ScreenshotTask& task);
     bool tilesRenderComplete_ = false; //当前瓦片渲染完成标志
-
-
-public:
-    Q_PROPERTY(QWidget* screetShot READ screetShot CONSTANT)
 
 
 
