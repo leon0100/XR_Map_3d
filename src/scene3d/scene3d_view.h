@@ -176,13 +176,8 @@ public:
 
         std::unique_ptr<GraphicsScene3dRenderer> m_renderer;
 
-
         GraphicsScene3dView* graphicsView_ = nullptr;
         QOpenGLFramebufferObject* offScreenFbo_ = nullptr;
-        struct {
-            QVector3D lookAt;
-            float distance;
-        } originalCameraState_;
 
     };
 
@@ -382,6 +377,7 @@ public:
     void setCurrentMapLevel(int mapLevel);
     Q_PROPERTY(QObject* screetShot READ screetShot CONSTANT)
     QObject* screetShot() { return &screetShot_; }
+    void setProgressDialog(QObject* dialog);
 
     ScreetShot screetShot_;
     bool screenshotPending_ = false;
@@ -398,6 +394,7 @@ public:
 
     void startScreenshotTask(const ScreenshotTask& task);
     bool tilesRenderComplete_ = false; //当前瓦片渲染完成标志
+    QObject* progressDialog_ = nullptr;
 
 
 

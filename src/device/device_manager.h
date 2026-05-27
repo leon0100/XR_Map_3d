@@ -83,7 +83,6 @@ public slots:
 signals:
     void sendFrameInputToLogger(QUuid uuid, Link* link, Parsers::FrameParser frame);
 
-    //
     void sendChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
     void sendTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
     void sendSoundSpeeed(const ChannelId& channelId, uint32_t soundSpeed);

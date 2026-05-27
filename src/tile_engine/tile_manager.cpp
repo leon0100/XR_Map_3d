@@ -22,40 +22,32 @@ TileManager::TileManager(QObject *parent) :
     tileSet_(std::make_shared<TileSet>(tileProvider_, tileDB_, tileDownloader_, maxTilesCapacity_, minTilesCapacity_)),
     lastZoomLevel_(-1)
 {
-    auto downloaderConnType = Qt::AutoConnection;
+    auto connType = Qt::AutoConnection;
     // tileDownloader_ -> tileSet_
-    QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  tileSet_.get(), &TileSet::onTileDownloaded,      downloaderConnType);
-    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadStopped, tileSet_.get(), &TileSet::onTileDownloadStopped, downloaderConnType);
-    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadFailed,  tileSet_.get(), &TileSet::onTileDownloadFailed,  downloaderConnType);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  tileSet_.get(), &TileSet::onTileDownloaded,      connType);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadStopped, tileSet_.get(), &TileSet::onTileDownloadStopped, connType);
+    QObject::connect(tileDownloader_.get(), &TileDownloader::downloadFailed,  tileSet_.get(), &TileSet::onTileDownloadFailed,  connType);
 
     QThread* dbThread = new QThread();
     tileDB_->moveToThread(dbThread);
     dbThread->setObjectName("MapDBThread" + QString::number(currentMap_));
 
-    auto dbConnType = Qt::AutoConnection;
-    // tileDB_ <-> tileSet_
-    QObject::connect(tileDB_.get(),  &TileDB::tileLoaded,           tileSet_.get(), &TileSet::onTileLoaded,        dbConnType);
-    QObject::connect(tileDB_.get(),  &TileDB::tileLoadFailed,       tileSet_.get(), &TileSet::onTileLoadFailed,    dbConnType);
-    QObject::connect(tileDB_.get(),  &TileDB::tileLoadStopped,      tileSet_.get(), &TileSet::onTileLoadStopped,   dbConnType);
-    QObject::connect(tileSet_.get(), &TileSet::dbLoadTiles,         tileDB_.get(),  &TileDB::loadTiles,            dbConnType);
-    QObject::connect(tileSet_.get(), &TileSet::dbStopAndClearTasks, tileDB_.get(),  &TileDB::stopAndClearRequests, dbConnType);
-    QObject::connect(tileSet_.get(), &TileSet::dbStopLoadingTile,   tileDB_.get(),  &TileDB::stopLoading,          dbConnType);
-    QObject::connect(tileSet_.get(), &TileSet::dbSaveTile,          tileDB_.get(),  &TileDB::saveTile,             dbConnType);
-    QObject::connect(tileDB_.get(),  &TileDB::tileSaved,            tileSet_.get(), &TileSet::onTileSaved,         dbConnType);
 
-    QObject::connect(dbThread, &QThread::started,  tileDB_.get(), &TileDB::init,         dbConnType);
-    QObject::connect(dbThread, &QThread::finished, tileDB_.get(), &QObject::deleteLater, dbConnType);
-    QObject::connect(dbThread, &QThread::finished, dbThread,      &QThread::deleteLater, dbConnType);
+    // tileDB_ <-> tileSet_
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoaded,           tileSet_.get(), &TileSet::onTileLoaded,        connType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoadFailed,       tileSet_.get(), &TileSet::onTileLoadFailed,    connType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileLoadStopped,      tileSet_.get(), &TileSet::onTileLoadStopped,   connType);
+    QObject::connect(tileSet_.get(), &TileSet::dbLoadTiles,         tileDB_.get(),  &TileDB::loadTiles,            connType);
+    QObject::connect(tileSet_.get(), &TileSet::dbStopAndClearTasks, tileDB_.get(),  &TileDB::stopAndClearRequests, connType);
+    QObject::connect(tileSet_.get(), &TileSet::dbStopLoadingTile,   tileDB_.get(),  &TileDB::stopLoading,          connType);
+    QObject::connect(tileSet_.get(), &TileSet::dbSaveTile,          tileDB_.get(),  &TileDB::saveTile,             connType);
+    QObject::connect(tileDB_.get(),  &TileDB::tileSaved,            tileSet_.get(), &TileSet::onTileSaved,         connType);
+
+    QObject::connect(dbThread, &QThread::started,  tileDB_.get(), &TileDB::init,         connType);
+    QObject::connect(dbThread, &QThread::finished, tileDB_.get(), &QObject::deleteLater, connType);
+    QObject::connect(dbThread, &QThread::finished, dbThread,      &QThread::deleteLater, connType);
 
     dbThread->start();
-
-
-
-    // 2. 连接数据库和网络的瓦片加载信号
-    QObject::connect(tileDB_.get(),       &TileDB::tileLoaded,       this, &TileManager::onTileProcessed);
-    // QObject::connect(tileDB_.get(),       &TileDB::tileLoadFailed,   this, &TileManager::onTileProcessed);
-    QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  this, &TileManager::onTileProcessed);
-    // QObject::connect(tileDownloader_.get(), &TileDownloader::downloadFailed,  this, &TileManager::onTileProcessed);
 }
 
 
@@ -89,6 +81,11 @@ MapSourceType TileManager::getCurrentMapType() const
 void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool screenSaveMode)
 {
     isScreenSaveMode_ = screenSaveMode;
+    if(screenSaveMode){
+       QObject::connect(tileDB_.get(), &TileDB::tileLoaded, this, &TileManager::onTileProcessed);
+       QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  this, &TileManager::onTileProcessed);
+    }
+
     int minX = std::numeric_limits<int>::max();
     int maxX = std::numeric_limits<int>::min();
     int minY = std::numeric_limits<int>::max();
@@ -200,7 +197,6 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
                 }
             }
         }
-
     }
 
     if (!indxRequest.isEmpty()) {

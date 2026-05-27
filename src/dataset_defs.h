@@ -94,6 +94,17 @@ typedef struct
 #define M_DEG_TO_RAD 0.01745329251994329576f
 
 
+#pragma pack(push, 1)  // 1字节对齐
+struct BoundaryData {
+    qint32 north;
+    qint32 south;
+    qint32 east;
+    qint32 west;
+    quint8 level;
+};
+#pragma pack(pop)
+
+
 
 enum PositionSource {
     PositionSourceNone,

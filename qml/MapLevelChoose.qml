@@ -221,12 +221,12 @@ Rectangle {
             Row {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter:  parent.horizontalCenter
-                spacing: iconSize * 3
+                spacing: iconSize * 4
 
                 Rectangle {
-                    width: iconSize * 4
-                    height: iconSize * 1.2
-                    radius: 10
+                    width: iconSize * 5
+                    height: iconSize * 2
+                    radius: 8
                     border.color: "#6b8fd6"
                     border.width: 1
                     color: okBtn.hovered ? "#a0c4ff" : "#d6e6ff"
@@ -253,9 +253,9 @@ Rectangle {
                 }
 
                 Rectangle {
-                    width: iconSize * 4
-                    height: iconSize * 1.2
-                    radius: 10
+                    width: iconSize * 5
+                    height: iconSize * 2
+                    radius: 8
                     border.color: "#6b8fd6"
                     border.width: 1
                     color: noBtn.hovered ? "#a0c4ff" : "#d6e6ff"
@@ -266,7 +266,7 @@ Rectangle {
                         background: null
                         hoverEnabled: true
                         contentItem: Text {
-                            text: qsTr("No")
+                            text: qsTr("Cancel")
                             font.pixelSize: iconSize
                             color: "black"
                             horizontalAlignment: Text.AlignHCenter

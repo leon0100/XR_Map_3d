@@ -104,7 +104,7 @@ Rectangle {
            id: screenToolBar
            visible: renderer.screetShot.screetToolBar
 
-           width: toolSize * 6
+           width: toolSize * 6.5
            height: toolSize * 1.1
 
            color: "#f0f8ff"

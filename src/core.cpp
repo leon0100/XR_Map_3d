@@ -1090,6 +1090,7 @@ void Core::UILoad(QObject* object, const QUrl& url)
     scene3dViewPtr_->setDataset(datasetPtr_);
     scene3dViewPtr_->setDataProcessorPtr(dataProcessor_);
     datasetPtr_->setScene3D(scene3dViewPtr_);
+    scene3dViewPtr_->setProgressDialog(progress_);
 
     for (int i = 0; i < plot2dList_.size(); i++) {
         if (plot2dList_.at(i) != NULL) {
@@ -2023,7 +2024,6 @@ void Core::initStreamList()
 {
     deviceManagerWrapperPtr_->initStreamList();
 }
-
 
 QObject* Core::progress() const
 {

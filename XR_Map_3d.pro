@@ -8,6 +8,16 @@ CONFIG += debug
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
+INCLUDEPATH += $$PWD/quazip
+LIBS += -L$$PWD/lib -lquazipd
+
+win32:CONFIG(release, debug|release):    LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazip
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazipd
+
+INCLUDEPATH += $$PWD/quazip-msvc2019/include
+DEPENDPATH  += $$PWD/quazip-msvc2019/include
+
+
 DEFINES += QT_DEPRECATED_WARNINGS
 
 HEADERS += \
@@ -71,8 +81,6 @@ FLASHER {
 TRANSLATIONS += \
     translations/translation_ch.ts \
     translations/translation_en.ts
-    # translations/translation_ru.ts \
-    # translations/translation_pl.ts
 
 RESOURCES += \
     qml/qml.qrc \
@@ -131,7 +139,6 @@ DISTFILES += \
 
 
 INCLUDEPATH += $$PWD/src
-# DEPENDPATH += $$PWD/third_party/freetype/include
 
 # Module includes
 include($$PWD/src/data_processor/data_processor.pri)
@@ -163,4 +170,40 @@ android {
 
     message("Building for Android (ARM) with OpenGL ES")
     RESOURCES += shaders/android/shaders.qrc
+
+SOURCES += \
+    $$PWD/quazip-master/quazip/JlCompress.cpp \
+    $$PWD/quazip-master/quazip/qioapi.cpp \
+    $$PWD/quazip-master/quazip/quachecksum32.cpp \
+    $$PWD/quazip-master/quazip/quaadler32.cpp \
+    $$PWD/quazip-master/quazip/quacrc32.cpp \
+    $$PWD/quazip-master/quazip/quagzipfile.cpp \
+    $$PWD/quazip-master/quazip/quaziodevice.cpp \
+    $$PWD/quazip-master/quazip/quazip.cpp \
+    # $$PWD/quazip-master/quazip/quazip_textcodec.cpp \
+    $$PWD/quazip-master/quazip/quazipdir.cpp \
+    $$PWD/quazip-master/quazip/quazipfile.cpp \
+    $$PWD/quazip-master/quazip/quazipfileinfo.cpp \
+    $$PWD/quazip-master/quazip/quazipnewinfo.cpp\
+    $$PWD/quazip-master/quazip/unzip.c \
+    $$PWD/quazip-master/quazip/zip.c \
+
+HEADERS += \
+    $$PWD/quazip-master/quazip/ioapi.h \
+    $$PWD/quazip-master/quazip/minizip_crypt.h \
+    $$PWD/quazip-master/quazip/JlCompress.h \
+    $$PWD/quazip-master/quazip/quaadler32.h \
+    $$PWD/quazip-master/quazip/quachecksum32.h \
+    $$PWD/quazip-master/quazip/quacrc32.h \
+    $$PWD/quazip-master/quazip/quagzipfile.h \
+    $$PWD/quazip-master/quazip/quaziodevice.h \
+    $$PWD/quazip-master/quazip/quazip.h \
+    $$PWD/quazip-master/quazip/quazip_global.h \
+    $$PWD/quazip-master/quazip/quazip_qt_compat.h \
+    # $$PWD/quazip-master/quazip/quazip_textcodec.h \
+    $$PWD/quazip-master/quazip/quazipfile.h \
+    $$PWD/quazip-master/quazip/quazipfileinfo.h \
+    $$PWD/quazip-master/quazip/quazipnewinfo.h \
+    $$PWD/quazip-master/quazip/unzip.h \
+    $$PWD/quazip-master/quazip/zip.h \
 }

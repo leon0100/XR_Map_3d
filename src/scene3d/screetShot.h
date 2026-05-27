@@ -21,6 +21,10 @@
 
 
 
+#define FILE_PASSWORD "$Toslon&85359189@Yt"
+
+
+
 enum class ResizeMode { None, Move, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight };
 
 //KB
@@ -29,24 +33,24 @@ typedef enum
     theorSize_13 = 5,
     theorSize_14 = 9,
     theorSize_15 = 20,
-    theorSize_16 = 80,
-    theorSize_17 = 308,
-    theorSize_18 = 700,
-    theorSize_19 = 1100,
-    theorSize_20 = 2600
+    theorSize_16 = 40,
+    theorSize_17 = 150,
+    theorSize_18 = 400,
+    theorSize_19 = 750,
+    theorSize_20 = 1300
 }theoreticalSize;
 
 //ms
 typedef enum
 {
     downTime_13 = 56,
-    downTime_14 = 160,
-    downTime_15 = 185,
-    downTime_16 = 235,
-    downTime_17 = 410,
-    downTime_18 = 1200,
-    downTime_19 = 1900,
-    downTime_20 = 2900
+    downTime_14 = 100,
+    downTime_15 = 120,
+    downTime_16 = 140,
+    downTime_17 = 160,
+    downTime_18 = 240,
+    downTime_19 = 500,
+    downTime_20 = 600
 }downloadTime;
 
 
@@ -123,13 +127,8 @@ public:
 
     static bool createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west);
     static bool createXMAPFile(const QString kmlFilePath, const QString imageFilePath, QString outputXMAPPath);
-
-
-public:
-    QRectF shotRect_;
-    bool isSelectionRectVisible_ = false;
-    QString screetWidth_, screetHeight_;
-    bool isMapLevelChooseVisible_ = false;
+    static void writeBoundaryFile(const QString& folderPath, double north, double south, double east, double west, quint8 level);
+    static void menu_renewMap(QString savePath);
 
 
 signals:
@@ -170,6 +169,8 @@ private:
     void setDataStatistics(double widthLen,double heightLen);
     RowData getTheorSizeDownloadTime(quint64 theorSize,quint64 downTime,quint64 totalSmallSquare);
 
+    static QByteArray readKmlFromKmz(const QString& kmzPath);
+
 
 public:
     bool isScreenMode_ = false;      // 截图模式
@@ -183,6 +184,11 @@ public:
     bool dragging_ = false;
     double topLeftLong_, topLeftLati_, topRightLong_, topRightLati_, bottomRightLong_, bottomRightLati_;
     bool screetToolBarShow_ = false;
+    QRectF shotRect_;
+    bool isSelectionRectVisible_ = false;
+    QString screetWidth_, screetHeight_;
+    bool isMapLevelChooseVisible_ = false;
+
 
 
 private:

@@ -89,7 +89,6 @@ int DeviceManager::calcAverageChartLosses()
     return retVal;
 }
 
-
 void DeviceManager::setProgressDialog(QObject* dialog)
 {
     if (progressDialog_ != dialog) {

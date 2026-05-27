@@ -10,9 +10,14 @@
 #include <QStandardPaths>
 #include <private/qzipwriter_p.h>
 #include <QFileDialog>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
 
+#include <quazip/quazip.h>
+#include <quazip/quazipfile.h>
+#include <quazip/quazipdir.h>
 
-// #include "map_view.h"
 
 
 /*----------------------------------------------ScreetShot---------------------------------------------*/
@@ -131,13 +136,13 @@ float ScreetShot::mapLevelToDistance(int level) const
 
 bool ScreetShot::createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west)
 {
+#ifdef Q_OS_WIN
     QFile file(kmlPath);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         qDebug() << QString("Cannot write file %1.").arg(file.errorString());
         return false;
     }
     QXmlStreamWriter writer(&file);
-
     writer.setCodec("UTF-8");
     writer.setAutoFormatting(true);
     writer.writeStartDocument("1.0", true);
@@ -158,8 +163,8 @@ bool ScreetShot::createKmlFile(QString kmlPath,QString imageName,double north,do
     writer.writeStartElement("LatLonBox");
     writer.writeTextElement("north", QString::number(north, 'f', 14));
     writer.writeTextElement("south", QString::number(south, 'f', 14));
-    writer.writeTextElement("east", QString::number(east, 'f', 14));
-    writer.writeTextElement("west", QString::number(west, 'f', 14));
+    writer.writeTextElement("east",  QString::number(east, 'f', 14));
+    writer.writeTextElement("west",  QString::number(west, 'f', 14));
     writer.writeEndElement(); // LatLonBox
 
     writer.writeEndElement(); // GroundOverlay
@@ -169,6 +174,41 @@ bool ScreetShot::createKmlFile(QString kmlPath,QString imageName,double north,do
 
     writer.writeEndDocument();
     file.close();
+
+#elif defined(Q_OS_ANDROID)
+    QString kmlContent;
+    QXmlStreamWriter writer(&kmlContent);
+    writer.setCodec("UTF-8");
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument("1.0", true);
+
+    writer.writeStartElement("kml");
+    writer.writeAttribute("xmlns", "http://www.opengis.net/kml/2.2");
+
+    writer.writeStartElement("Document");
+    writer.writeAttribute("id", "root_doc");
+
+    writer.writeStartElement("GroundOverlay");
+    writer.writeTextElement("name", "Shaded Relief");
+
+    writer.writeStartElement("Icon");
+    writer.writeTextElement("href", imageName);
+    writer.writeEndElement(); // Icon
+
+    writer.writeStartElement("LatLonBox");
+    writer.writeTextElement("north", QString::number(north, 'f', 14));
+    writer.writeTextElement("south", QString::number(south, 'f', 14));
+    writer.writeTextElement("east",  QString::number(east, 'f', 14));
+    writer.writeTextElement("west",  QString::number(west, 'f', 14));
+    writer.writeEndElement(); // LatLonBox
+
+    writer.writeEndElement(); // GroundOverlay
+
+    writer.writeEndElement(); // Document
+    writer.writeEndElement(); // kml
+
+    writer.writeEndDocument();
+#endif
 
     return true;
 }
@@ -208,6 +248,8 @@ bool ScreetShot::createXMAPFile(const QString kmlFilePath, const QString imageFi
         return false;
     }
 
+
+#if 0
     // 3、创建KMZ文件
     QString imageFileName1 = QFileInfo(imageFilePath).fileName();
     QString kmzPath = outputXMAPPath + ".kmz";
@@ -220,8 +262,272 @@ bool ScreetShot::createXMAPFile(const QString kmlFilePath, const QString imageFi
         return false;
     }
 
+#else
+    QString password = FILE_PASSWORD;
+    QuaZip zip(outputXMAPPath + ".xmap");
+    if (!zip.open(QuaZip::mdCreate)) {
+        return false;
+    }
+
+    // 添加KML文件到压缩包并加密
+    QuaZipFile kmlZipFile(&zip);
+    zip.setFileNameCodec("UTF-8");
+    QuaZipNewInfo kmlInfo("doc.kml");
+    if (!kmlZipFile.open(QIODevice::WriteOnly, kmlInfo, password.toUtf8().constData())) {
+        zip.close();
+        return false;
+    }
+    if (kmlZipFile.write(kmlData) == -1) {
+        kmlZipFile.close();
+        zip.close();
+        return false;
+    }
+    kmlZipFile.close();
+
+    // 添加图片文件到压缩包并加密
+    QString imageFileName2 = QFileInfo(imageFilePath).fileName();
+    QuaZipFile imageZipFile(&zip);
+    QuaZipNewInfo imageInfo(imageFileName2);
+    if (!imageZipFile.open(QIODevice::WriteOnly, imageInfo,  password.toUtf8().constData())) {
+        zip.close();
+        return false;
+    }
+    if (imageZipFile.write(imageData) == -1) {
+        imageZipFile.close();
+        zip.close();
+        return false;
+    }
+    imageZipFile.close();
+    zip.close();
+
+#endif
+
     return true;
 }
+
+void ScreetShot::writeBoundaryFile(const QString& folderPath, double north, double south, double east, double west, quint8 level)
+{
+    QFile file(folderPath + "/boundary.xrmap");
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qWarning() << "无法创建文件:" << file.errorString();
+        return;
+    }
+
+    // 写入512字节预留空间（初始化为0）
+    QByteArray header(512, 0);
+    if (file.write(header) != 512)
+    {
+        qWarning() << "预留空间写入失败";
+        file.close();
+        return;
+    }
+
+    QDataStream stream(&file);
+    stream.setVersion(QDataStream::Qt_4_7);
+    stream.setByteOrder(QDataStream::LittleEndian);
+
+    // 转换 double 坐标为 qint32（需注意数据范围）
+    BoundaryData data;
+    data.north = static_cast<qint32>(north * 10000000);
+    data.south = static_cast<qint32>(south * 10000000);
+    data.east  = static_cast<qint32>(east * 10000000);
+    data.west  = static_cast<qint32>(west * 10000000);
+    data.level = level;
+
+    // 写入边界数据（每个坐标占4字节，共16字节）
+    stream << data.north << data.south << data.east << data.west << data.level;
+    file.close();
+}
+
+
+
+void ScreetShot::menu_renewMap(QString savePath)
+{
+    // 扫描指定目录获取所有KMZ文件路径
+    QDir dir(savePath);
+    dir.setNameFilters(QStringList() << "*.xmap" << "*.XMAP");
+    dir.setFilter(QDir::Files);
+    QStringList kmzFiles = dir.entryList();
+
+    // 创建数据库连接
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(QString(savePath)+"/maplist.xrmap");
+    if (!db.open()) {
+        qDebug() << "Error opening database:" << db.lastError().text();
+        return;
+    }
+
+    // 创建表
+    QSqlQuery query;
+    if (!query.exec("CREATE TABLE IF NOT EXISTS regions ("
+                    "name TEXT PRIMARY KEY, "
+                    "north INTEGER, "
+                    "south INTEGER, "
+                    "east INTEGER, "
+                    "west INTEGER)")) {
+        qDebug() << "Create table error:" << query.lastError().text();
+    }
+
+    foreach (QString filename, kmzFiles)
+    {
+        QByteArray kmlContent = readKmlFromKmz(savePath+ "/"+filename);
+        if (kmlContent.isEmpty())
+        {
+            qDebug() << "读取KML失败";
+            continue;
+        }
+
+        QXmlStreamReader reader(kmlContent);
+        bool isInLatLonBox = false;
+        bool hasNorth = false, hasSouth = false, hasEast = false, hasWest = false;
+        qint32 northVal = 0, southVal = 0, eastVal = 0, westVal = 0;
+
+        while (!reader.atEnd())
+        {
+            QXmlStreamReader::TokenType token = reader.readNext();
+
+            if (reader.hasError())
+            {
+                qDebug() << "XML error:" << reader.errorString();
+                break;
+            }
+
+            switch (token)
+            {
+            case QXmlStreamReader::StartElement:
+            {
+                if(reader.name() == QLatin1String("LatLonBox"))
+                {
+                    isInLatLonBox = true;
+                    // 重置状态
+                    hasNorth = hasSouth = hasEast = hasWest = false;
+                    northVal = southVal = eastVal = westVal = 0;
+                }
+                else if(isInLatLonBox)
+                {
+                    QString elementName = reader.name().toString();
+
+                    QString coor = reader.readElementText();
+                    bool ok = false;
+                    double value = coor.toDouble(&ok) *10000000;
+
+                    if(ok){
+                        if (elementName == "north")
+                        {
+                            northVal = value;
+                            hasNorth = true;
+                        }
+                        else if (elementName == "south")
+                        {
+                            southVal = value;
+                            hasSouth = true;
+                        }
+                        else if (elementName == "east")
+                        {
+                            eastVal = value;
+                            hasEast = true;
+                        }
+                        else if (elementName == "west") {
+                            westVal = value;
+                            hasWest = true;
+                        }
+                    }
+                    else
+                    {
+                        qDebug() << "Invalid coordinate value:" << coor;
+                    }
+                }
+                break;
+            }
+
+            case QXmlStreamReader::EndElement:
+            {
+                if (reader.name() == QLatin1String("LatLonBox"))
+                {
+                    isInLatLonBox = false;
+
+                    if (hasNorth && hasSouth && hasEast && hasWest)
+                    {
+                        db.transaction();
+                        query.prepare("INSERT INTO regions VALUES (:name, :north, :south, :east, :west)");
+
+                        QString trimmedName = filename.left(filename.size() - 5);
+                        query.bindValue(":name", trimmedName);
+                        query.bindValue(":north", northVal);
+                        query.bindValue(":south", southVal);
+                        query.bindValue(":east", eastVal);
+                        query.bindValue(":west", westVal);
+
+                        if (!query.exec()) {
+                            qDebug() << "Insert failed:" << query.lastError().text();
+                            db.rollback();
+                            return;
+                        }
+
+                        db.commit();
+
+                        break;
+                    }
+                    else
+                    {
+                        qDebug() << "Incomplete latlonbox data in file:" << filename;
+                    }
+                }
+                break;
+            }
+
+            default:
+                break;
+            }
+        }
+
+    }
+    db.close();
+    //    dialog_hint->showHint("",TR(si_message_d),TR(si_copySuccess_d),true,true,false,true);
+
+}
+
+QByteArray ScreetShot::readKmlFromKmz(const QString& kmzPath)
+{
+    if (!QFile::exists(kmzPath)) {
+        qDebug() <<"File open failed!";
+        return QByteArray();
+    }
+
+    QByteArray kmlContent;
+
+    QString fileExtension = QFileInfo(kmzPath).suffix().toLower();
+    if (fileExtension != "xmap") {
+        qDebug() << "Invalid file type, expected .kmz!";
+        return QByteArray();
+    }
+
+
+    QuaZip zip(kmzPath);
+    if (!zip.open(QuaZip::mdUnzip)) {
+        qDebug() <<"Failed to open the XMAP file!";
+        return QByteArray();
+    }
+
+    zip.setFileNameCodec("UTF-8");
+    QuaZipFile zipFile(kmzPath);
+    if (!zipFile.open(QIODevice::ReadOnly, QString(FILE_PASSWORD).toUtf8().constData())){
+        qDebug() <<"Failed to open the XMAP file!";
+        zip.close();
+        return QByteArray();
+    }
+
+    kmlContent = zipFile.readAll();
+    zipFile.close();
+    zip.close();
+
+    if (kmlContent.isEmpty()) {
+        qDebug() << "No .kml file found in the XMAP!";
+    }
+    return kmlContent;
+}
+
 
 
 void ScreetShot::judgeResizeMode(const QRectF rect,const QPoint pos)
@@ -293,13 +599,11 @@ void ScreetShot::setCancelShot()
 void ScreetShot::saveScreetShot()
 {
     setCancelShot();
-    isScreenMode_ = false;
     isScreenSaveMode_ = true;
 
     const double MIN_SIZE = 900.0;
     if (topWidth_ < MIN_SIZE || rightHeight_ < MIN_SIZE) {
         double screen_1m = shotRect_.width() / topWidth_;
-        qDebug() << "screen_1m.........." << screen_1m;
         shotRect_.setWidth(screen_1m * 900);
         shotRect_.setHeight(screen_1m * 900);
 
@@ -498,7 +802,8 @@ QString ScreetShot::getLengthChEn(double distance,int decimalPlaces)
         double distanceKm = distance / 1000.0;
         distanceStr = isMetres ? (QString::number(distanceKm,'f',decimalPlaces)+" km") :
                           (QString::number(distanceKm*0.621371,'f',decimalPlaces)+" mi");
-    } else {
+    }
+    else {
         double distanceFeet = distance * 3.28084;
         distanceStr = isMetres ? (QString::number(distance,'f',0)+" m") : (QString::number(distanceFeet,'f',0)+" ft");
     }
@@ -525,24 +830,23 @@ void ScreetShot::doSaveMapLevelProcess()
     QAndroidJniObject operationType = QAndroidJniObject::getStaticObjectField(
         "com/nqc/FileQtActivity$OperationType","CREATE_FOLDER", "Lcom/nqc/FileQtActivity$OperationType;");
     QAndroidJniObject::callStaticMethod<void>(
-        "com/nqc/FileQtActivity", "openDirectoryFromQt",
-        "(Ljava/lang/String;Lcom/nqc/FileQtActivity$OperationType;)V",dirName.object<jstring>(), operationType.object());
-
+        "com/nqc/FileQtActivity", "openDirectoryFromQt","(Ljava/lang/String;Lcom/nqc/FileQtActivity$OperationType;)V",
+        dirName.object<jstring>(), operationType.object());
 #endif
-    //    qDebug() << "targetDirPath_ " << targetDirPath_;
+    // qDebug() << "targetDirPath_ " << targetDirPath_;
 
-    openMapLevelList_ = false;
-    QTimer* timeoutTimer = new QTimer(this);
-    timeoutTimer->setSingleShot(true);
-    connect(timeoutTimer, &QTimer::timeout, [this]() {
-        QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
-        if(!openMapLevelList_) {
-            judgeLevelCount_ = 13;
-            GIF->dialogInfo(Dialog_OK,tr("Loading failed, please check your network connection or try again!"));
-        }
-    });
-    timeoutTimer->start(7000);
-    QMetaObject::invokeMethod(loadingQuickView_, [this](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
+    // openMapLevelList_ = false;
+    // QTimer* timeoutTimer = new QTimer(this);
+    // timeoutTimer->setSingleShot(true);
+    // connect(timeoutTimer, &QTimer::timeout, [this]() {
+    //     QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
+    //     if(!openMapLevelList_) {
+    //         judgeLevelCount_ = 13;
+    //         GIF->dialogInfo(Dialog_OK,tr("Loading failed, please check your network connection or try again!"));
+    //     }
+    // });
+    // timeoutTimer->start(7000);
+    // QMetaObject::invokeMethod(loadingQuickView_, [this](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
     judgeLevelCount_ = (currMapLevel_ > 13) ? currMapLevel_ : 13;
 
     judgeCurrentLevelExist(topLeftLong_, topLeftLati_,judgeLevelCount_);

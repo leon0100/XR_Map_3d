@@ -83,14 +83,6 @@ Rectangle {
             Layout.fillWidth: true
         }
 
-        //Progress Bar
-        // ProgressBar {
-        //     id: progressBar
-        //     Layout.fillWidth: true
-        //     value: progressDialog.progress
-        //     indeterminate: indeterminate
-        //     visible: true
-        // }
         ProgressBar {
             id: progressBar
             Layout.fillWidth: true
