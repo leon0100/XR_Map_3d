@@ -451,10 +451,10 @@ Item  {
         CheckButton {
             id: northModeCheckButton
             iconSource: "qrc:/icons/ui/location_pin.svg"
-            backColor: theme.controlBackColor
+            backColor:  theme.controlBackColor
             borderColor: theme.controlBackColor
             checkedBorderColor: theme.controlBorderColor
-            checked: true
+            checked:    true
             implicitHeight: theme.menuWidth
             implicitWidth: theme.menuWidth
 
@@ -491,7 +491,7 @@ Item  {
             backColor:          theme.controlBackColor
             borderColor:        theme.controlBackColor
             checkedBorderColor: theme.controlBorderColor
-            checked: false
+            checked:            true
             implicitHeight:     theme.menuWidth
             implicitWidth:      theme.menuWidth
 
@@ -510,9 +510,6 @@ Item  {
 
             Component.onCompleted: MapViewControlMenuController.onVisibilityChanged(checked)
 
-            Settings {
-                property alias isobathsCheckButton: mapCheckButton.checked
-            }
 
         }
 

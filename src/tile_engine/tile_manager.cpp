@@ -81,7 +81,7 @@ MapSourceType TileManager::getCurrentMapType() const
 void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool screenSaveMode)
 {
     isScreenSaveMode_ = screenSaveMode;
-    if(screenSaveMode){
+    if(screenSaveMode) {
        QObject::connect(tileDB_.get(), &TileDB::tileLoaded, this, &TileManager::onTileProcessed);
        QObject::connect(tileDownloader_.get(), &TileDownloader::tileDownloaded,  this, &TileManager::onTileProcessed);
     }

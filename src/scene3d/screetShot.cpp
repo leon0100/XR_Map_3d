@@ -136,7 +136,6 @@ float ScreetShot::mapLevelToDistance(int level) const
 
 bool ScreetShot::createKmlFile(QString kmlPath,QString imageName,double north,double south,double east,double west)
 {
-#ifdef Q_OS_WIN
     QFile file(kmlPath);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         qDebug() << QString("Cannot write file %1.").arg(file.errorString());
@@ -174,41 +173,6 @@ bool ScreetShot::createKmlFile(QString kmlPath,QString imageName,double north,do
 
     writer.writeEndDocument();
     file.close();
-
-#elif defined(Q_OS_ANDROID)
-    QString kmlContent;
-    QXmlStreamWriter writer(&kmlContent);
-    writer.setCodec("UTF-8");
-    writer.setAutoFormatting(true);
-    writer.writeStartDocument("1.0", true);
-
-    writer.writeStartElement("kml");
-    writer.writeAttribute("xmlns", "http://www.opengis.net/kml/2.2");
-
-    writer.writeStartElement("Document");
-    writer.writeAttribute("id", "root_doc");
-
-    writer.writeStartElement("GroundOverlay");
-    writer.writeTextElement("name", "Shaded Relief");
-
-    writer.writeStartElement("Icon");
-    writer.writeTextElement("href", imageName);
-    writer.writeEndElement(); // Icon
-
-    writer.writeStartElement("LatLonBox");
-    writer.writeTextElement("north", QString::number(north, 'f', 14));
-    writer.writeTextElement("south", QString::number(south, 'f', 14));
-    writer.writeTextElement("east",  QString::number(east, 'f', 14));
-    writer.writeTextElement("west",  QString::number(west, 'f', 14));
-    writer.writeEndElement(); // LatLonBox
-
-    writer.writeEndElement(); // GroundOverlay
-
-    writer.writeEndElement(); // Document
-    writer.writeEndElement(); // kml
-
-    writer.writeEndDocument();
-#endif
 
     return true;
 }
@@ -249,7 +213,7 @@ bool ScreetShot::createXMAPFile(const QString kmlFilePath, const QString imageFi
     }
 
 
-#if 0
+#if 1
     // 3、创建KMZ文件
     QString imageFileName1 = QFileInfo(imageFilePath).fileName();
     QString kmzPath = outputXMAPPath + ".kmz";

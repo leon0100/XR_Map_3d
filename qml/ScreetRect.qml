@@ -104,7 +104,7 @@ Rectangle {
            id: screenToolBar
            visible: renderer.screetShot.screetToolBar
 
-           width: toolSize * 6.5
+           width: toolSize * 6.2
            height: toolSize * 1.1
 
            color: "#f0f8ff"
@@ -114,11 +114,11 @@ Rectangle {
            anchors.left: parent.right
            anchors.top:  parent.bottom
            anchors.leftMargin: -width
-           anchors.topMargin: 6
+           anchors.topMargin: 3
 
            Row {
                anchors.centerIn: parent
-               spacing: 8
+               spacing: toolSize * 0.2
 
                Rectangle {
                    width:  toolSize

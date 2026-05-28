@@ -7,14 +7,12 @@ import QtQuick.Window 2.15
 Rectangle {
     id: root
     visible: renderer.screetShot.isMapLevelChooseVisible
-
     width:  mapLevelSize * 1.25
-    height: mapLevelSize
+    height: mapLevelSize * 0.9
     x: Screen.width * 0.5  - width * 0.5
     y: Screen.height * 0.5 - height * 0.8
     z: 9999
     radius: 5
-
 
     property int  mapLevelSize: theme.screenSize * 0.45
     property int  iconSize:     theme.iconSize * 0.9
@@ -27,7 +25,6 @@ Rectangle {
             GradientStop { position: 1.0; color: "#c3cfe2" }
         }
     }
-
 
     ListModel {
         id: tableModel
@@ -75,7 +72,7 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 12
-        spacing: 10
+        spacing: iconSize
 
         Rectangle {
             Layout.fillWidth: true
@@ -91,15 +88,14 @@ Rectangle {
             }
         }
 
-
         Rectangle {
             Layout.fillWidth: true
-            height: 40
+            height: iconSize * 1.3
             color: "#eaeaea"
-            radius: 4
 
             RowLayout {
                 anchors.fill: parent
+                anchors.verticalCenter: parent.verticalCenter
 
                 Label {
                     Layout.preferredWidth: mapLevelSize * 0.25
@@ -138,13 +134,11 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-
             border.color: "#d0d0d0"
             color: "white"
 
             ListView {
                 id: listView
-
                 anchors.fill: parent
                 clip: true
                 model: tableModel
@@ -152,11 +146,7 @@ Rectangle {
                 delegate: Rectangle {
                     width: listView.width
                     height: iconSize * 2.5
-
-                    color: enabled ? "white" : "#d0d0d0"
-
-                    border.width: 2
-                    border.color: "#eeeeee"
+                    color: "transparent"
 
                     required property int index
                     required property int level
@@ -179,10 +169,37 @@ Rectangle {
                                 text: "Level " + level
                                 font.pixelSize: iconSize
 
-                                onClicked: {
-                                    root.currentLevel = level
+                                indicator: Rectangle {
+                                    width: iconSize
+                                    height: iconSize
+                                    x: 0
+                                    y: (parent.height - height) * 0.5
+                                    radius: width * 0.5
+                                    border.color: "#666666"
+                                    border.width: 2
+                                    color: "white"
+
+                                    Rectangle {
+                                        anchors.centerIn: parent
+                                        width: parent.width * 0.6
+                                        height: width
+                                        radius: width * 0.5
+                                        color: "#66E07A"
+                                        visible: parent.parent.checked
+                                    }
                                 }
+
+                                contentItem: Text {
+                                    text: parent.text
+                                    font.pixelSize: iconSize
+                                    color: "black"
+                                    verticalAlignment: Text.AlignVCenter
+                                    leftPadding: iconSize * 1.5
+                                }
+
+                                onClicked: root.currentLevel = level
                             }
+
                         }
 
                         Label {
@@ -286,8 +303,6 @@ Rectangle {
             Layout.fillHeight: true
             Layout.maximumHeight: 1
         }
-
-
 
 
 
