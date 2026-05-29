@@ -248,7 +248,7 @@ private:
     void searchCharacteristic();
     void SendMsg(QString text);
 
-    QQuickView* loadingQuickView_;
+    // QQuickView* loadingQuickView_;
 
 
 private:

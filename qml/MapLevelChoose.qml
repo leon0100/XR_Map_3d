@@ -71,7 +71,7 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 12
+        anchors.margins: 10
         spacing: iconSize
 
         Rectangle {
@@ -90,7 +90,7 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            height: iconSize * 1.3
+            height: iconSize * 1.4
             color: "#eaeaea"
 
             RowLayout {
@@ -102,6 +102,7 @@ Rectangle {
                     text: qsTr("Map Level")
                     font.bold: true
                     font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                 }
 
@@ -110,6 +111,7 @@ Rectangle {
                     text: qsTr("Size")
                     font.bold: true
                     font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                 }
 
@@ -118,6 +120,7 @@ Rectangle {
                     text: qsTr("Theoretical Size")
                     font.bold: true
                     font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                 }
 
@@ -126,10 +129,12 @@ Rectangle {
                     text: qsTr("Estimated Time")
                     font.bold: true
                     font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                 }
             }
         }
+
 
         Rectangle {
             Layout.fillWidth: true
@@ -166,8 +171,6 @@ Rectangle {
                                 anchors.centerIn: parent
                                 enabled: parent.parent.enabled
                                 checked: root.currentLevel === level
-                                text: "Level " + level
-                                font.pixelSize: iconSize
 
                                 indicator: Rectangle {
                                     width: iconSize
@@ -190,7 +193,7 @@ Rectangle {
                                 }
 
                                 contentItem: Text {
-                                    text: parent.text
+                                    text: "Level " + level
                                     font.pixelSize: iconSize
                                     color: "black"
                                     verticalAlignment: Text.AlignVCenter
@@ -254,7 +257,7 @@ Rectangle {
                         background: null
                         hoverEnabled: true
                         contentItem: Text {
-                            text: qsTr("OK")
+                            text: qsTr("Confirm")
                             font.pixelSize: iconSize
                             color: "black"
                             horizontalAlignment: Text.AlignHCenter

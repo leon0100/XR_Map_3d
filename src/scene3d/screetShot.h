@@ -22,8 +22,7 @@
 
 
 #define FILE_PASSWORD "$Toslon&85359189@Yt"
-
-
+constexpr double TILE_CONSTANT = 126543000.03392;
 
 enum class ResizeMode { None, Move, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight };
 
@@ -61,7 +60,7 @@ struct RowData {
 };
 
 
-// 截图任务结构体
+// 截图任务
 struct ScreenshotTask
 {
     int     mapLevel;
@@ -69,13 +68,17 @@ struct ScreenshotTask
     double  maxLat;
     double  minLon;
     double  maxLon;
+    double  geoWidth;
+    double  geoHeight;
     QString outputPath;
 
-    ScreenshotTask() : mapLevel(0), minLat(0), maxLat(0), minLon(0), maxLon(0)
+    ScreenshotTask() : mapLevel(0), minLat(0), maxLat(0), minLon(0), maxLon(0),geoWidth(0), geoHeight(0)
     {}
 
-    ScreenshotTask(int level, double minL, double maxL, double minLn, double maxLn, const QString& path)
-        : mapLevel(level), minLat(minL), maxLat(maxL), minLon(minLn), maxLon(maxLn), outputPath(path)
+    ScreenshotTask(int level, double minL, double maxL, double minLn, double maxLn,
+                   double geoW, double geoH, const QString& path)
+        : mapLevel(level), minLat(minL), maxLat(maxL), minLon(minLn), maxLon(maxLn),
+            geoWidth(geoW), geoHeight(geoH), outputPath(path)
     {}
 };
 
@@ -173,6 +176,7 @@ private:
 
 
 public:
+    // QQuickView* loadingQuickView_;
     bool isScreenMode_ = false;      // 截图模式
     bool isScreenSaveMode_ = false;  //截图后的保存模式
     bool m_moveView = false;         // 鼠标移动地图
@@ -190,14 +194,13 @@ public:
     bool isMapLevelChooseVisible_ = false;
 
 
-
 private:
     double topWidth_,rightHeight_;
     LLARef viewLlaRef_;
     bool isReminderChecked_ = false;
     QString targetDirPath_;
     bool openMapLevelList_ = false;
-    QQuickView* loadingQuickView_;
+
     u8 judgeLevelCount_ = 13;
 
     bool screenshotPending_ = false;

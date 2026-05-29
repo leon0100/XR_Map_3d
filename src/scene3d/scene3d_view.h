@@ -392,9 +392,10 @@ public:
     // 当前处理的截图任务
     ScreenshotTask screenshotTask_;
 
-    // void startScreenshotTask(const ScreenshotTask& task);
     bool tilesRenderComplete_ = false; //当前瓦片渲染完成标志
     QObject* progressDialog_ = nullptr;
+    float originCameraDist_;
+    QVector3D originCameralookAt_;
 
 
 

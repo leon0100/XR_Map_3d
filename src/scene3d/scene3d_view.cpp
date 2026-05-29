@@ -1321,7 +1321,6 @@ void GraphicsScene3dView::slotScreetGraphics()
     double maxLon = std::max({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
 
     mapLevel_ = screetShot_.getTargetMapLevel();
-    mapLevel_ += 2;
 
     QDir dir;
     QString folderPath = screetShot_.getTargetDirPath();
@@ -1329,43 +1328,49 @@ void GraphicsScene3dView::slotScreetGraphics()
         dir.mkpath(folderPath);
     }
 
-    screenshotTask_ = ScreenshotTask(mapLevel_, minLat, maxLat, minLon, maxLon, folderPath);
-    // startScreenshotTask(screenshotTask_);
-    LLA topLeftLla(screenshotTask_.maxLat, screenshotTask_.minLon, 0.0);
-    LLA topRightLla(screenshotTask_.maxLat, screenshotTask_.maxLon, 0.0);
-    LLA bottomRightLla(screenshotTask_.minLat, screenshotTask_.maxLon, 0.0);
-    LLA bottomLeftLla(screenshotTask_.minLat, screenshotTask_.minLon, 0.0);
-
+    LLA topLeftLla(maxLat, minLon, 0.0);
+    LLA bottomRightLla(minLat, maxLon, 0.0);
     North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, false);
-    North_East_Down topRightNed(&topRightLla, &m_camera->viewLlaRef_, false);
     North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, false);
-    // North_East_Down bottomLeftNed(&bottomLeftLla, &m_camera->viewLlaRef_, false);
 
     // 在 NED 坐标系中计算宽度和高度（使用平面距离）
-    double widthLen  = std::abs(topRightNed.e - topLeftNed.e);
-    double heightLen = std::abs(bottomRightNed.n - topRightNed.n);
-    qDebug() << "NED width:..." << widthLen << "m, height:..." << heightLen << "m";
+    double geoWidth  = std::abs(bottomRightNed.e - topLeftNed.e);
+    double geoHeight = std::abs(bottomRightNed.n - topLeftNed.n);
+    qDebug() << "NED width:..." << geoWidth << "m, height:..." << geoHeight << "m";
+    screenshotTask_ = ScreenshotTask(mapLevel_, minLat, maxLat, minLon, maxLon, geoWidth, geoHeight, folderPath);
+    originCameralookAt_ = m_camera->m_lookAt;
+    originCameraDist_   = m_camera->distForMapView_;
 
-    double centerLat = (screenshotTask_.minLat + screenshotTask_.maxLat) / 2.0;
-    double centerLon = (screenshotTask_.minLon + screenshotTask_.maxLon) / 2.0;
+    double centerLat = (minLat + maxLat) * 0.5;
+    double centerLon = (minLon + maxLon) * 0.5;
     // 不修改 viewLlaRef_，只移动 lookAt
     LLA targetCenterLla(centerLat, centerLon, 0.0);
     North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, false);
     m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
 
-    double targetHeight = std::max(widthLen, heightLen) / 2.0;
+    // double targetHeight = std::max(geoWidth, geoHeight) * 0.5;
+    // 计算对应目标地图级别的高度值
+    double targetHeight = TILE_CONSTANT / std::pow(2.0, 21);
     m_camera->m_distToFocusPoint = static_cast<float>(targetHeight);
     m_camera->distForMapView_    = static_cast<float>(targetHeight);
     m_camera->distToGround_      = static_cast<float>(targetHeight);
     m_camera->updateViewMatrix();
 
+    targetHeight = TILE_CONSTANT / std::pow(2.0, mapLevel_);
     QVector<LLA> request;
-    request.append(LLA(screenshotTask_.maxLat, screenshotTask_.minLon, targetHeight));
-    request.append(LLA(screenshotTask_.maxLat, screenshotTask_.maxLon, targetHeight));
-    request.append(LLA(screenshotTask_.minLat, screenshotTask_.maxLon, targetHeight));
-    request.append(LLA(screenshotTask_.minLat, screenshotTask_.minLon, targetHeight));
+    request.append(LLA(maxLat, minLon, targetHeight));
+    request.append(LLA(maxLat, maxLon, targetHeight));
+    request.append(LLA(minLat, maxLon, targetHeight));
+    request.append(LLA(minLat, minLon, targetHeight));
     emit sendRectRequest(request, false, m_camera->viewLlaRef_, true);
+    // QMetaObject::invokeMethod(screetShot_.loadingQuickView_, [this](){
+    //     screetShot_.loadingQuickView_->show(); }, Qt::QueuedConnection);
+    GIF->dialogInfo(Dialog_Loading, "show");
 
+    // QTimer::singleShot(4000, this, [this]() {
+    //     screenshotPending_ = true;
+    //     QQuickFramebufferObject::update();
+    // });
 }
 
 void GraphicsScene3dView::onTargetTilesLoaded()
@@ -1373,8 +1378,6 @@ void GraphicsScene3dView::onTargetTilesLoaded()
     qDebug() << "onTargetTilesLoaded............";
     screenshotPending_ = true;
     QQuickFramebufferObject::update();
-    QTimer::singleShot(2500, this, []() {
-    });
 }
 
 void GraphicsScene3dView::setProgressDialog(QObject* dialog)
@@ -1383,44 +1386,6 @@ void GraphicsScene3dView::setProgressDialog(QObject* dialog)
         progressDialog_ = dialog;
     }
 }
-
-// void GraphicsScene3dView::startScreenshotTask(const ScreenshotTask& task)
-// {
-    // LLA topLeftLla(task.maxLat, task.minLon, 0.0);
-    // LLA topRightLla(task.maxLat, task.maxLon, 0.0);
-    // LLA bottomRightLla(task.minLat, task.maxLon, 0.0);
-    // LLA bottomLeftLla(task.minLat, task.minLon, 0.0);
-
-    // North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, false);
-    // North_East_Down topRightNed(&topRightLla, &m_camera->viewLlaRef_, false);
-    // North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, false);
-    // North_East_Down bottomLeftNed(&bottomLeftLla, &m_camera->viewLlaRef_, false);
-
-    // // 在 NED 坐标系中计算宽度和高度（使用平面距离）
-    // double widthLen  = std::abs(topRightNed.e - topLeftNed.e);
-    // double heightLen = std::abs(bottomRightNed.n - topRightNed.n);
-    // qDebug() << "NED width:..." << widthLen << "m, height:..." << heightLen << "m";
-
-    // double centerLat = (task.minLat + task.maxLat) / 2.0;
-    // double centerLon = (task.minLon + task.maxLon) / 2.0;
-    // // 不修改 viewLlaRef_，只移动 lookAt
-    // LLA targetCenterLla(centerLat, centerLon, 0.0);
-    // North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, false);
-    // m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
-
-    // double targetHeight = std::max(widthLen, heightLen) / 2.0;
-    // m_camera->m_distToFocusPoint = static_cast<float>(targetHeight);
-    // m_camera->distForMapView_    = static_cast<float>(targetHeight);
-    // m_camera->distToGround_      = static_cast<float>(targetHeight);
-    // m_camera->updateViewMatrix();
-
-    // QVector<LLA> request;
-    // request.append(LLA(task.maxLat, task.minLon, targetHeight));
-    // request.append(LLA(task.maxLat, task.maxLon, targetHeight));
-    // request.append(LLA(task.minLat, task.maxLon, targetHeight));
-    // request.append(LLA(task.minLat, task.minLon, targetHeight));
-    // emit sendRectRequest(request, false, m_camera->viewLlaRef_, true);
-// }
 
 
 /*-----------Renderer--------------------------------------*/
@@ -1455,16 +1420,7 @@ void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask
 
 bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask& task)
 {
-    qDebug() << "============ renderAndSaveTiles START ==================";
-    LLA topLeftLla(task.maxLat, task.minLon, 0.0);
-    LLA bottomRightLla(task.minLat, task.maxLon, 0.0);
-    North_East_Down topLeftNed(&topLeftLla, &graphicsView_->m_camera->viewLlaRef_, false);
-    North_East_Down bottomRightNed(&bottomRightLla, &graphicsView_->m_camera->viewLlaRef_, false);
-
-    // 在 NED 坐标系中计算宽度和高度（平面距离）
-    double geoWidth  = std::abs(bottomRightNed.e - topLeftNed.e);
-    double geoHeight = std::abs(bottomRightNed.n - topLeftNed.n);
-
+    qDebug() << "============ renderAndSaveTiles START ================";
     QOpenGLContext* ctx = QOpenGLContext::currentContext();
     QOpenGLFunctions* func = ctx ? ctx->functions() : nullptr;
     if (!ctx || !func) {
@@ -1472,18 +1428,18 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
         return false;
     }
 
-    constexpr double GOOGLE_TILE_CONSTANT = 126543000.03392;
-    float metersPerPixel = GOOGLE_TILE_CONSTANT / std::pow(2.0, task.mapLevel) / 256.0;
-    int pixelWidth  = static_cast<int>(geoWidth / metersPerPixel);
-    int pixelHeight = static_cast<int>(geoHeight / metersPerPixel);
+    // float metersPerPixel = TILE_CONSTANT / std::pow(2.0, task.mapLevel) / 256.0;
+    float metersPerPixel = TILE_CONSTANT / std::pow(2.0, 21) / 256.0;
+    int pixelWidth  = static_cast<int>(task.geoWidth / metersPerPixel);
+    int pixelHeight = static_cast<int>(task.geoHeight / metersPerPixel);
 
-    // 划分300m×300m的小正方形
+    // 划分300m × 300m的小正方形
     constexpr double CHUNK_SIZE_METERS = 300.0;
-    int rows = static_cast<int>(std::ceil(geoWidth  / CHUNK_SIZE_METERS));  // 经度方向（东西）
-    int cols = static_cast<int>(std::ceil(geoHeight / CHUNK_SIZE_METERS));  // 纬度方向（南北）
+    int rows = static_cast<int>(std::ceil(task.geoWidth  / CHUNK_SIZE_METERS));  // 经度方向（东西）
+    int cols = static_cast<int>(std::ceil(task.geoHeight / CHUNK_SIZE_METERS));  // 纬度方向（南北）
     int chunkPixelWidth  = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
     int chunkPixelHeight = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
-    qDebug() << "Geo area:" << geoWidth << "m x" << geoHeight << "m";
+    qDebug() << "Geo area:" << task.geoWidth << "m x" << task.geoHeight << "m";
     qDebug() << "Chunk pixels:" << chunkPixelWidth << "x" << chunkPixelHeight;
     qDebug() << "Pixel dimensions:" << pixelWidth << "x" << pixelHeight;
 
@@ -1508,10 +1464,21 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     func->glClearStencil(0);
     func->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    setupCameraForTask(task, geoWidth, geoHeight);
+    setupCameraForTask(task, task.geoWidth, task.geoHeight);
 
     m_renderer->m_viewSize = QSizeF(pixelWidth, pixelHeight);
     m_renderer->render();
+
+    func->glFinish();
+    GLenum status = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if(status != GL_FRAMEBUFFER_COMPLETE) {
+        GIF->dialogInfo(Dialog_OK, tr("Loading failed, please try again."));
+        return false;
+    }
+
+    // QMetaObject::invokeMethod(graphicsView_->screetShot_.loadingQuickView_, [this](){
+    //     graphicsView_->screetShot_.loadingQuickView_->hide(); }, Qt::QueuedConnection);
+    GIF->dialogInfo(Dialog_Loading, "hide");
 
 #ifdef Q_OS_WIN
     QImage fullResult = QImage(pixelWidth, pixelHeight, QImage::Format_RGB32);
@@ -1696,6 +1663,11 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     func->glViewport(prevViewport[0], prevViewport[1], prevViewport[2], prevViewport[3]);
     m_renderer->clearCustomOrtho();
     graphicsView_->screenshotPending_ = false;
+    graphicsView_->m_camera->m_lookAt = graphicsView_->originCameralookAt_;
+    graphicsView_->m_camera->m_distToFocusPoint = graphicsView_->originCameraDist_;
+    graphicsView_->m_camera->distForMapView_    = graphicsView_->originCameraDist_;
+    graphicsView_->m_camera->distToGround_      = graphicsView_->originCameraDist_;
+    graphicsView_->m_camera->updateViewMatrix();
     graphicsView_->updateMapView();
 
     qDebug() << "========= renderAndSaveTiles END =================";

@@ -260,6 +260,10 @@ ApplicationWindow  {
         id: checkDialog2
     }
 
+    KDialogLoading {
+        id: dialogLoading
+    }
+
     Connections
     {
         target: GetInterface
@@ -282,6 +286,10 @@ ApplicationWindow  {
                 case 3:
                     checkDialog2.show(msg)
                     break
+
+                case 4:
+                    dialogLoading.show(msg)
+                    break;
             }
         }
 

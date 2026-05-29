@@ -13,6 +13,8 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+// #include <QApplication>
+// #include <QScreen>
 
 #include <quazip/quazip.h>
 #include <quazip/quazipfile.h>
@@ -20,16 +22,21 @@
 
 
 
-/*----------------------------------------------ScreetShot---------------------------------------------*/
+/*---------------------------------------ScreetShot-----------------------------------------*/
 ScreetShot::ScreetShot(QObject *parent) : QObject{parent}
 {
-    loadingQuickView_ = new QQuickView();
-    loadingQuickView_->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    loadingQuickView_->setSource(QUrl("qrc:/Bluetooth/loading.qml"));
-    loadingQuickView_->setResizeMode(QQuickView::SizeRootObjectToView);
-    loadingQuickView_->resize(75, 75);
-    QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
+    // loadingQuickView_ = new QQuickView();
+    // loadingQuickView_->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    // loadingQuickView_->setSource(QUrl("qrc:/Bluetooth/loading.qml"));
+    // loadingQuickView_->setResizeMode(QQuickView::SizeRootObjectToView);
 
+    // QSize screen = QApplication::primaryScreen()->size();
+    // int screenSize   = qMin(screen.width(), screen.height()) * 0.075;
+    // loadingQuickView_->setGeometry((screen.width() - screenSize) / 2,
+    //                                (screen.height() - screenSize) / 2, screenSize, screenSize);
+
+
+    // GIF->dialogInfo(Dialog_Loading, "hide");
 }
 
 QRectF ScreetShot::getSelectionRect() const
@@ -799,18 +806,20 @@ void ScreetShot::doSaveMapLevelProcess()
 #endif
     // qDebug() << "targetDirPath_ " << targetDirPath_;
 
-    // openMapLevelList_ = false;
-    // QTimer* timeoutTimer = new QTimer(this);
-    // timeoutTimer->setSingleShot(true);
-    // connect(timeoutTimer, &QTimer::timeout, [this]() {
-    //     QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
-    //     if(!openMapLevelList_) {
-    //         judgeLevelCount_ = 13;
-    //         GIF->dialogInfo(Dialog_OK,tr("Loading failed, please check your network connection or try again!"));
-    //     }
-    // });
-    // timeoutTimer->start(7000);
-    // QMetaObject::invokeMethod(loadingQuickView_, [this](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
+    openMapLevelList_ = false;
+    QTimer* timeoutTimer = new QTimer(this);
+    timeoutTimer->setSingleShot(true);
+    connect(timeoutTimer, &QTimer::timeout, [this]() {
+        // QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
+        GIF->dialogInfo(Dialog_Loading, "hide");
+        if(!openMapLevelList_) {
+            judgeLevelCount_ = 13;
+            GIF->dialogInfo(Dialog_OK,tr("Loading failed, please check your network connection or try again!"));
+        }
+    });
+    timeoutTimer->start(7000);
+    // QMetaObject::invokeMethod(loadingQuickView_, [](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
+    GIF->dialogInfo(Dialog_Loading, "hide");
     judgeLevelCount_ = (currMapLevel_ > 13) ? currMapLevel_ : 13;
 
     judgeCurrentLevelExist(topLeftLong_, topLeftLati_,judgeLevelCount_);
@@ -892,7 +901,8 @@ void ScreetShot::judgeCurrentLevelExist(double longitude,double latitude,int lev
 void ScreetShot::slot_judgeLevelExist()
 {
     openMapLevelList_ = true;
-    QMetaObject::invokeMethod(loadingQuickView_, [this]() {loadingQuickView_->hide(); }, Qt::QueuedConnection);
+    // QMetaObject::invokeMethod(loadingQuickView_, [this]() {loadingQuickView_->hide(); }, Qt::QueuedConnection);
+    GIF->dialogInfo(Dialog_Loading, "hide");
 
     setDataStatistics(topWidth_,rightHeight_);
 
@@ -901,16 +911,15 @@ void ScreetShot::slot_judgeLevelExist()
 
 void ScreetShot::setDataStatistics(double widthLen,double heightLen)
 {
-    int rows = widthLen/300;
-    int cols = heightLen/300;
-
-    int totalSquareS = rows*cols;
+    int rows = widthLen / 300;
+    int cols = heightLen / 300;
+    int totalSquareS = rows * cols;
 
     QString size;
     if(qMin(widthLen,heightLen) > 1000) {
         size = QString::number(widthLen/1000.0,'f',2) + "km * " + QString::number(heightLen/1000.0,'f',2) + "km";
     } else {
-        size = QString::number(widthLen) + "m x " + QString::number(heightLen) + "m";
+        size = QString::number((int)widthLen) + "m x " + QString::number((int)heightLen) + "m";
     }
 
     RowData theorSizeDownTime_13 = getTheorSizeDownloadTime(theorSize_13,downTime_13,totalSquareS);

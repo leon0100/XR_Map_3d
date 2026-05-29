@@ -10,7 +10,8 @@ enum DialogType {
     Dialog_OK   = 0,
     Dialog_YesNo,
     Dialog_Check,
-    Dialog_Check2
+    Dialog_Check2,
+    Dialog_Loading
 };
 
 struct ImageInfo

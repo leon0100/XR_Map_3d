@@ -281,12 +281,11 @@ BLEManager::BLEManager(QObject *parent) : QObject(parent)
     connect(discoveryAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error),
             this, &BLEManager::onScanError);
 
-    loadingQuickView_ = new QQuickView();
-    loadingQuickView_->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    loadingQuickView_->setSource(QUrl("qrc:/Bluetooth/loading.qml"));
-    loadingQuickView_->setResizeMode(QQuickView::SizeRootObjectToView);
-    loadingQuickView_->resize(75, 75);
-    QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
+    // loadingQuickView_ = new QQuickView();
+    // loadingQuickView_->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    // loadingQuickView_->setSource(QUrl("qrc:/Bluetooth/loading.qml"));
+    // loadingQuickView_->setResizeMode(QQuickView::SizeRootObjectToView);
+    // QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
 
     parser_ = new RealTimeParser();
     parserThread_ = new QThread(this);
@@ -500,7 +499,8 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
 void BLEManager::connectToDevice(int index)
 {
 #ifdef Q_OS_WIN
-    QMetaObject::invokeMethod(loadingQuickView_, [this](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
+    // QMetaObject::invokeMethod(loadingQuickView_, [this](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
+    GIF->dialogInfo(Dialog_Loading, "show");
 #endif
     if(index < 0 || index >= devicesList_.size()) {
         return;
@@ -678,12 +678,13 @@ void BLEManager::onServiceDiscovered(const QBluetoothUuid &uuid)
 
 void BLEManager::onServiceScanDone()
 {
-    QMetaObject::invokeMethod(loadingQuickView_, [this]() {
-        loadingQuickView_->hide();
+    // QMetaObject::invokeMethod(loadingQuickView_, [this]() {
+        // loadingQuickView_->hide();
+    GIF->dialogInfo(Dialog_Loading, "hide");
         m_connected = true;
         readingDrawTrack_ = true;
         emit connectedChanged(true);
-    }, Qt::QueuedConnection);
+    // }, Qt::QueuedConnection);
 
     if(bleServer_) {
         bleServer_->disconnect();

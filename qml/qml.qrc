@@ -113,5 +113,6 @@
         <file>AppXr/HelpDialog.qml</file>
         <file>QmlCommon/KDialogCheck2.qml</file>
         <file>MapLevelChoose.qml</file>
+        <file>QmlCommon/KDialogLoading.qml</file>
     </qresource>
 </RCC>

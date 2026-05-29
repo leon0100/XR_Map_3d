@@ -50,7 +50,6 @@ TileManager::TileManager(QObject *parent) :
     dbThread->start();
 }
 
-
 void TileManager::onTileProcessed()
 {
     if(isScreenSaveMode_) {
