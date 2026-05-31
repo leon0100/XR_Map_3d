@@ -84,6 +84,12 @@ ApplicationWindow  {
     }
 
 
+
+    Locations {
+        visible: toolBarXR.locationMode
+        // targetPlot: toolBarXR.targetPlot
+    }
+
     IsobathsExtraSettings {
         visible: toolBarXR.contourMode
         x: toolBarXR.iconSize * 3.5

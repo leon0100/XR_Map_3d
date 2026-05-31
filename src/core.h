@@ -35,6 +35,7 @@
 #include "tile_manager.h"
 #include "data_horizon.h"
 #include "blemanager.h"
+#include "location.h"
 
 class Core : public QObject
 {
@@ -61,6 +62,10 @@ public:
     Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
     Q_PROPERTY(QObject*  progress       READ progress     WRITE setProgress     NOTIFY  progressChanged)
+    Q_PROPERTY(QObject* locations READ locations CONSTANT)
+
+
+
 
     void setEngine(QQmlApplicationEngine *engine);
     Console* getConsolePtr();
@@ -78,6 +83,9 @@ public:
     void removeLinkManagerConnections();
 
     QHash<QUuid, QString> getLinkNames() const;
+
+    QObject* locations() { return &locations_; }
+
 
 
 public slots:
@@ -275,4 +283,6 @@ signals:
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;
+
+    Locations locations_;
 };

@@ -36,6 +36,7 @@ HEADERS += \
     src/id_binnary.h \
     src/delaunay.h \
     src/delaunay_defs.h \
+    src/location.h \
     src/logger.h \
     src/map_defs.h \
     src/isobaths_defs.h \
@@ -62,6 +63,7 @@ SOURCES += \
     src/epoch.cpp \
     src/hotkeys_manager.cpp \
     src/id_binnary.cpp \
+    src/location.cpp \
     src/logger.cpp \
     src/main.cpp \
     src/map_defs.cpp \

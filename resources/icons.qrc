@@ -79,7 +79,7 @@
         <file>XR/location.png</file>
         <file>XR/pushPin.png</file>
         <file>XR/contour.png</file>
-	<file>XR/contour_map.svg</file>
+        <file>XR/contour_map.svg</file>
         <file>XR/wordlog.png</file>
         <file>XR/wordlog3232.png</file>
         <file>XR/revokeedit.png</file>
@@ -92,11 +92,13 @@
         <file>XR/config.png</file>
         <file>XR/triangle.svg</file>
         <file>XR/check.svg</file>
-	<file>XR/warning.png</file>
-	<file>XR/icon_XR_map.png</file>
-	<file>XR/plus.svg</file>
-	<file>XR/question_mark.svg</file>
-	<file>XR/outline.svg</file>
+       <file>XR/warning.png</file>
+       <file>XR/icon_XR_map.png</file>
+       <file>XR/yeslogo.png</file>
+       <file>XR/openkml.png</file>
+       <file>XR/plus.svg</file>
+       <file>XR/question_mark.svg</file>
+       <file>XR/outline.svg</file>
         <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
         <file>fonts/PTSansCaption-Regular.ttf</file>
     </qresource>

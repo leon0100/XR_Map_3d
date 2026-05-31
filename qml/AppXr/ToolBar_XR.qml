@@ -22,6 +22,7 @@ Rectangle {
 
     property color backColor: "#d6e6ff"
 
+    property bool locationMode: false
     property bool contourMode: false
     property bool bluetoothMode: false
     property bool polygonMode: false
@@ -134,6 +135,10 @@ Rectangle {
             height:      toolBar_XR.iconSize
 
 
+            CMouseOpacityArea {
+                toolTipText: qsTr("Screen Shot")
+            }
+
             property bool screenMode: false
             Rectangle {
                 anchors.fill: parent
@@ -208,11 +213,10 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            // CMouseOpacityArea {
-            //     id: btn4
-            //     toolTipText: qsTr("Location")
-            // }
-            property bool locationMode: false
+            CMouseOpacityArea {
+                toolTipText: qsTr("Location")
+            }
+
             Rectangle {
                 anchors.fill: parent
                 radius: 2
@@ -221,6 +225,13 @@ Rectangle {
 
             onPressed: {
                 locationMode = !locationMode
+            }
+
+            Connections {
+                target: renderer.locations
+                function onCancelScreetShot() {
+                    frameSlectBtn.screenMode = false
+                }
             }
         }
 
@@ -233,7 +244,6 @@ Rectangle {
             height:      toolBar_XR.iconSize
 
             CMouseOpacityArea {
-                id: btn5
                 toolTipText: qsTr("LandMark")
             }
             property bool landMarkMode: false

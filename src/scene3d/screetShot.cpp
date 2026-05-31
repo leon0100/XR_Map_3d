@@ -13,8 +13,6 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
-// #include <QApplication>
-// #include <QScreen>
 
 #include <quazip/quazip.h>
 #include <quazip/quazipfile.h>
