@@ -10,8 +10,8 @@ Rectangle {
     property int  iconSize: distSize * 0.03
     property int  boxSize:  iconSize * 1.2
 
-    property var  startPoint: Qt.point(0, 0)  // 起点坐标
-    property var  endPoint:   Qt.point(0, 0)  // 终点坐标
+    property var  startPoint: renderer.screetShot.distLineP1 // 起点坐标
+    property var  endPoint:   renderer.screetShot.distLineP2 // 终点坐标
     property bool measuring:  false           // 是否正在测量
     property real distance:    0              // 距离值（米）
 
@@ -63,8 +63,8 @@ Rectangle {
             var ctx = getContext("2d")
             ctx.clearRect(0, 0, width, height)
 
-            if (!root.measuring)
-                return
+            // if (!root.measuring)
+            //     return
 
             ctx.beginPath()
             ctx.moveTo(root.startPoint.x, root.startPoint.y)
@@ -76,17 +76,22 @@ Rectangle {
         }
 
         Connections {
-            target: root
+            // target: root
+            target: renderer.screetShot
 
-            function onStartPointChanged() {
-                lineCanvas.requestPaint()
-            }
+            // function onStartPointChanged() {
+            //     lineCanvas.requestPaint()
+            // }
 
-            function onEndPointChanged() {
-                lineCanvas.requestPaint()
-            }
+            // function onEndPointChanged() {
+            //     lineCanvas.requestPaint()
+            // }
 
-            function onMeasuringChanged() {
+            // function onMeasuringChanged() {
+            //     lineCanvas.requestPaint()
+            // }
+
+            function onDistLineChanged() {
                 lineCanvas.requestPaint()
             }
         }
@@ -95,8 +100,8 @@ Rectangle {
     // 起点图标
     Image {
         id: startIcon
-        x: renderer.screetShot.distLine.x1
-        y: renderer.screetShot.distLine.y1
+        x: startPoint.x
+        y: startPoint.y
         width:  boxSize
         height: boxSize
         source: "qrc:/XR/pin.png"
@@ -111,8 +116,8 @@ Rectangle {
     // 终点图标
     Image {
         id: endIcon
-        x: renderer.screetShot.distLine.x2
-        y: renderer.screetShot.distLine.y2
+        x: endPoint.x
+        y: endPoint.y
         width: boxSize
         height: boxSize
         source: "qrc:/XR/target.png"

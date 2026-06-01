@@ -84,6 +84,9 @@ ApplicationWindow  {
     }
 
 
+    DistMeasure {
+
+    }
 
     LocationsQml {
         // visible: toolBarXR.locationMode

@@ -302,7 +302,8 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         if(screetShot_.isDistMeasureMode_) {
             if(screetShot_.isDrawMeasure_ == 0) {
                 screetShot_.isDrawMeasure_ = 1;
-                screetShot_.setDistLineStart(QPointF(x, y));
+                // screetShot_.setDistLineStart(QPointF(x, y));
+                screetShot_.setDistLineP1(QPointF(x, y));
             }
             else if(screetShot_.isDrawMeasure_ == 1) {
                 screetShot_.isDrawMeasure_ = 2;
@@ -410,7 +411,8 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
     /*-- 测距模块 --*/
     if(screetShot_.isDistMeasureMode_) {
         if(screetShot_.isDrawMeasure_ == 1) {
-            screetShot_.setDistLineEnd(QPointF(x, y));
+            // screetShot_.setDistLineEnd(QPointF(x, y));
+            screetShot_.setDistLineP2(QPointF(x, y));
         }
 
     }

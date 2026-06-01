@@ -8,11 +8,11 @@ CONFIG += debug
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 
-INCLUDEPATH += $$PWD/quazip
-LIBS += -L$$PWD/lib -lquazipd
+# INCLUDEPATH += $$PWD/quazip
+# LIBS += -L$$PWD/lib -lquazipd
 
-win32:CONFIG(release, debug|release):    LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazip
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazipd
+# win32:CONFIG(release, debug|release):    LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazip
+# else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazipd
 
 INCLUDEPATH += $$PWD/quazip-msvc2019/include
 DEPENDPATH  += $$PWD/quazip-msvc2019/include

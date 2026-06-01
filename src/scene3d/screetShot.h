@@ -226,6 +226,8 @@ private:
 public:
     Q_PROPERTY(bool isDistMeasureVisible READ getDistMeasureVisible WRITE setDistMeasureVisible NOTIFY distMeasureVisibleChanged)
     Q_PROPERTY(QLineF distLine READ getDistLine WRITE setDistLine NOTIFY distLineChanged)
+    Q_PROPERTY(QPointF distLineP1 READ getDistLineP1 WRITE setDistLineP1 NOTIFY distLineChanged)
+    Q_PROPERTY(QPointF distLineP2 READ getDistLineP2 WRITE setDistLineP2 NOTIFY distLineChanged)
 
 
 
@@ -237,6 +239,14 @@ public:
 
     void setDistLineStart(QPointF start);
     void setDistLineEnd(QPointF end);
+
+    QPointF getDistLineP1() const;
+    void setDistLineP1(const QPointF p1);
+
+    QPointF getDistLineP2() const;
+    void setDistLineP2(const QPointF p2);
+
+
 
 
 
@@ -252,6 +262,7 @@ signals:
 private:
     bool isDistMeasureVisible_ = false;
     QLineF distLine_;
+    QPointF distLineP1_, distLineP2_;
 
 
 

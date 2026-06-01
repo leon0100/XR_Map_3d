@@ -473,27 +473,28 @@ QByteArray ScreetShot::readKmlFromKmz(const QString& kmzPath)
     }
 
 
-    QuaZip zip(kmzPath);
-    if (!zip.open(QuaZip::mdUnzip)) {
-        qDebug() <<"Failed to open the XMAP file!";
-        return QByteArray();
-    }
+    // QuaZip zip(kmzPath);
+    // if (!zip.open(QuaZip::mdUnzip)) {
+    //     qDebug() <<"Failed to open the XMAP file!";
+    //     return QByteArray();
+    // }
 
-    zip.setFileNameCodec("UTF-8");
-    QuaZipFile zipFile(kmzPath);
-    if (!zipFile.open(QIODevice::ReadOnly, QString(FILE_PASSWORD).toUtf8().constData())){
-        qDebug() <<"Failed to open the XMAP file!";
-        zip.close();
-        return QByteArray();
-    }
+    // zip.setFileNameCodec("UTF-8");
+    // QuaZipFile zipFile(kmzPath);
+    // if (!zipFile.open(QIODevice::ReadOnly, QString(FILE_PASSWORD).toUtf8().constData())){
+    //     qDebug() <<"Failed to open the XMAP file!";
+    //     zip.close();
+    //     return QByteArray();
+    // }
 
-    kmlContent = zipFile.readAll();
-    zipFile.close();
-    zip.close();
+    // kmlContent = zipFile.readAll();
+    // zipFile.close();
+    // zip.close();
 
-    if (kmlContent.isEmpty()) {
-        qDebug() << "No .kml file found in the XMAP!";
-    }
+    // if (kmlContent.isEmpty()) {
+    //     qDebug() << "No .kml file found in the XMAP!";
+    // }
+
     return kmlContent;
 }
 
@@ -1058,3 +1059,27 @@ void ScreetShot::setDistLineEnd(QPointF end)
     distLine_.setP2(end);
     emit distLineChanged();
 }
+
+QPointF ScreetShot::getDistLineP1() const
+{
+    return distLineP1_;
+}
+
+void ScreetShot::setDistLineP1(const QPointF p1)
+{
+    distLineP1_ = p1;
+    setDistLineP2(p1);
+    emit distLineChanged();
+}
+
+QPointF ScreetShot::getDistLineP2() const
+{
+    return distLineP2_;
+}
+
+void ScreetShot::setDistLineP2(const QPointF p2)
+{
+    distLineP2_ = p2;
+    emit distLineChanged();
+}
+
