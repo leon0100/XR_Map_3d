@@ -4,14 +4,15 @@ import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
 
 Rectangle {
-    id: locations
-    width:  locationsSize * 0.9
+    id: root
+    width:  locationsSize
     height: locationsSize
     radius: 10
     color: "#e2e8f2"
     x: Screen.width * 0.5 - width * 0.5
     y: Screen.height * 0.5 -  height * 0.75
     z: 999
+    visible: false
 
     property int locationsSize: Math.min(Screen.width, Screen.height) * 0.5
     property int iconSize: locationsSize * 0.03
@@ -19,6 +20,15 @@ Rectangle {
 
     // 0: LatLon  1: PlaceName  2: KML
     property int locationStyle: 0
+
+
+    Connections {
+        target: Locations
+        function onSignalShowLocation(show) {
+            root.visible = show
+        }
+    }
+
 
     ColumnLayout
     {
@@ -74,7 +84,7 @@ Rectangle {
                         padding: 0
                         onClicked: {
                             locationStyle = 0
-                            locations.setLocationStyle(0)
+                            Locations.setLocationStyle(0)
                         }
                         contentItem: Item {
                             anchors.fill: parent
@@ -118,25 +128,25 @@ Rectangle {
 
                         TextField {
                             id: latField
-                            Layout.preferredHeight: boxSize
-                            font.pixelSize: iconSize * 0.85
+                            Layout.preferredHeight: boxSize * 1.2
+                            Layout.preferredWidth:  boxSize * 7
+                            font.pixelSize: iconSize
                             leftPadding: 6
-                            rightPadding: 6
                             topPadding: 3
-                            bottomPadding: 3
+                            bottomPadding: 2
                             placeholderText: qsTr("Latitude")
 
                              //绑定 loc.latitude → QML 自动监听 signalLatitude，信号发射时更新 text
-                            text: locations ? locations.latitude : "" //这种是单向绑定，locations.latitude给text赋值
+                            text: Locations ? Locations.latitude : "" //这种是单向绑定，locations.latitude给text赋值
                             selectByMouse: true
                             Keys.onPressed: function(event) {
                                 if (event.key === Qt.Key_V && event.modifiers & Qt.ControlModifier) {
-                                    Qt.callLater(function() { locations.onLatLonChanged(latField.text) })
+                                    Qt.callLater(function() { Locations.onLatLonChanged(latField.text) })
                                 }
                             }
                             // onTextChanged: locations.latitude = latField.text //如果采用这种方式的话，
                             //则C++端的Q_PROPERTY()需要在里面加个WRITE函数（目前这样会导致Binding loop）
-                            onTextChanged: locations.setLatitude2(latField.text)
+                            onTextChanged: Locations.setLatitude2(latField.text)
 
                             Menu {
                                 id: latiMenu
@@ -147,7 +157,7 @@ Rectangle {
                                     enabled: latField.canPaste
                                     onTriggered: {
                                         latField.paste()
-                                        locations.onLatLonChanged(latField.text)
+                                        Locations.onLatLonChanged(latField.text)
                                     }
                                 }
                             }
@@ -166,21 +176,21 @@ Rectangle {
 
                         TextField {
                             id: lonField
-                            Layout.preferredHeight: boxSize
-                            font.pixelSize: iconSize * 0.85
+                            Layout.preferredHeight: boxSize * 1.2
+                            Layout.preferredWidth:  boxSize * 7
+                            font.pixelSize: iconSize
                             leftPadding: 6
-                            rightPadding: 6
                             topPadding: 3
-                            bottomPadding: 3
+                            bottomPadding: 2
                             placeholderText: qsTr("Longitude")
-                            text: locations ? locations.longitude : ""
+                            text: Locations ? Locations.longitude : ""
                             selectByMouse: true
                             Keys.onPressed: function(event) {
                                 if (event.key === Qt.Key_V && event.modifiers & Qt.ControlModifier) {
-                                    Qt.callLater(function() { locations.onLatLonChanged(lonField.text) })
+                                    Qt.callLater(function() { Locations.onLatLonChanged(lonField.text) })
                                 }
                             }
-                            onTextChanged: locations.setLongitude2(text)
+                            onTextChanged: Locations.setLongitude2(text)
 
                             Menu {
                                 id: lonMenu
@@ -191,7 +201,7 @@ Rectangle {
                                     enabled: lonField.canPaste
                                     onTriggered: {
                                         lonField.paste()
-                                        locations.onLatLonChanged(lonField.text)
+                                        Locations.onLatLonChanged(lonField.text)
                                     }
                                 }
                             }
@@ -211,14 +221,14 @@ Rectangle {
                     }
 
                     ColumnLayout {
-                        Layout.preferredWidth: 2
+                        Layout.preferredWidth: 3
                         Label {
                             font.pixelSize: iconSize * 0.90
                             text: qsTr("Latitude Longitude Format Units")
                         }
                         ComboBox {
-                            Layout.preferredWidth: locationsSize * 0.4
-                            Layout.preferredHeight: iconSize * 1.2
+                            Layout.preferredWidth: parent.width
+                            Layout.preferredHeight: iconSize * 1.5
                             font.pixelSize: iconSize * 0.9
                             model: [
                                 qsTr("Decimal Degrees (DD)"),
@@ -226,7 +236,7 @@ Rectangle {
                                 qsTr("Degrees, Decimal Minutes (DDM)")
                             ]
 
-                            onCurrentIndexChanged: locations.setLatLonFormat(currentIndex)
+                            onCurrentIndexChanged: Locations.setLatLonFormat(currentIndex)
 
                             delegate: ItemDelegate {
                                 width: parent.width
@@ -255,7 +265,7 @@ Rectangle {
 
 
 
-        /* =================================== Place Name =========================================== */
+        /* =================================== Place Name ======================================= */
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -275,7 +285,7 @@ Rectangle {
                         padding: 0
                         onClicked: {
                             locationStyle = 1
-                            locations.setLocationStyle(1)
+                            Locations.setLocationStyle(1)
                         }
                         contentItem: Item {
                             anchors.fill: parent
@@ -310,8 +320,8 @@ Rectangle {
                     color: "#ffffff"
                     border.color: "#c0c0c0"
                     border.width: 1
-                    Layout.leftMargin: locationsSize * 0.3
-                    visible: locations ? locations.fuzzyResults.length > 0 : false
+                    Layout.leftMargin: locationsSize * 0.36
+                    visible: Locations ? Locations.fuzzyResults.length > 0 : false
                     z: 999
 
                     ListView {
@@ -320,7 +330,7 @@ Rectangle {
                         height: Math.min(contentHeight, locationsSize * 0.3)
                         clip: true
 
-                        model: locations ? locations.fuzzyResults : []
+                        model: Locations ? Locations.fuzzyResults : []
 
                         delegate: Item {
                             width: fuzzyList.width
@@ -346,7 +356,7 @@ Rectangle {
                                 hoverEnabled: true
                                 onClicked: {
                                     fuzzyField.text = modelData
-                                    locations.clearFuzzySearch(modelData)
+                                    Locations.clearFuzzySearch(modelData)
                                 }
                             }
                         }
@@ -361,7 +371,7 @@ Rectangle {
                         id: fuzzyField
                         Layout.minimumHeight: iconSize * 2
                         Layout.preferredHeight: iconSize * 2
-                        Layout.preferredWidth: locationsSize * 0.3
+                        Layout.preferredWidth: locationsSize * 0.4
                         Layout.minimumWidth: locationsSize * 0.3
                         font.pixelSize: iconSize
                         leftPadding: 6
@@ -372,10 +382,10 @@ Rectangle {
                         selectByMouse: true
                         Keys.onPressed: function(event) {
                             if (event.key === Qt.Key_V && (event.modifiers & Qt.ControlModifier)) {
-                                Qt.callLater(function() { locations.setFuzzySearch2(fuzzyField.text) })
+                                Qt.callLater(function() { Locations.setFuzzySearch2(fuzzyField.text) })
                             }
                         }
-                        onTextChanged: locations.setFuzzySearch2(fuzzyField.text)
+                        onTextChanged: Locations.setFuzzySearch2(fuzzyField.text)
 
                         Menu {
                             id: fuzzyMenu
@@ -386,7 +396,7 @@ Rectangle {
                                 enabled: fuzzyField.canPaste
                                 onTriggered: {
                                     fuzzyField.paste()
-                                    locations.setFuzzySearch2(fuzzyField.text)
+                                    Locations.setFuzzySearch2(fuzzyField.text)
                                 }
                             }
                         }
@@ -402,13 +412,12 @@ Rectangle {
                         }
 
                         Connections {
-                            target: locations
+                            target: Locations
                             function onSignalFuzzySearch(text) {
-                                fuzzyField.text = locations.fuzzySearch
+                                fuzzyField.text = Locations.fuzzySearch
                             }
                         }
                     }
-
 
                 }
 
@@ -425,8 +434,9 @@ Rectangle {
                     Label { text: qsTr("Street"); font.pixelSize: iconSize }
                     TextField {
                         id: streetField
-                        Layout.preferredHeight: iconSize * 1.8
-                        font.pixelSize: iconSize * 1.1
+                        Layout.preferredHeight: iconSize * 1.5
+                        Layout.preferredWidth:  locationsSize * 0.25
+                        font.pixelSize: iconSize
                         leftPadding: 6
                         rightPadding: 6
                         topPadding: 3
@@ -435,10 +445,10 @@ Rectangle {
                         selectByMouse: true
                         Keys.onPressed: function(event) {
                             if (event.key === Qt.Key_V && event.modifiers & Qt.ControlModifier) {
-                                Qt.callLater(function() { locations.setStreet2(streetField.text) })
+                                Qt.callLater(function() { Locations.setStreet2(streetField.text) })
                             }
                         }
-                        onTextChanged: locations.setStreet2(text)
+                        onTextChanged: Locations.setStreet2(text)
 
                         Menu {
                             id: streetMenu
@@ -449,7 +459,7 @@ Rectangle {
                                 enabled: streetField.canPaste
                                 onTriggered: {
                                     streetField.paste()
-                                    locations.setStreet2(streetField.text)
+                                    Locations.setStreet2(streetField.text)
                                 }
                             }
                         }
@@ -465,23 +475,21 @@ Rectangle {
                         }
 
                         Connections {
-                            target: locations
+                            target: Locations
                             function onSignalStreet(text) {
-                                streetField.text = locations.street
+                                streetField.text = Locations.street
                             }
                         }
 
-
                     }
-
-
 
 
                     Label { text: qsTr("City"); font.pixelSize: iconSize }
                     TextField {
                         id: cityField
-                        Layout.preferredHeight: iconSize * 1.8
-                        font.pixelSize: iconSize * 1.1
+                        Layout.preferredHeight: iconSize * 1.5
+                        Layout.preferredWidth:  locationsSize * 0.25
+                        font.pixelSize: iconSize
                         leftPadding: 6
                         rightPadding: 6
                         topPadding: 3
@@ -490,10 +498,10 @@ Rectangle {
                         selectByMouse: true
                         Keys.onPressed: function(event) {
                             if (event.key === Qt.Key_V && event.modifiers & Qt.ControlModifier) {
-                                Qt.callLater(function() { locations.setCity2(cityField.text) })
+                                Qt.callLater(function() { Locations.setCity2(cityField.text) })
                             }
                         }
-                        onTextChanged: locations.setCity2(text)
+                        onTextChanged: Locations.setCity2(text)
 
                         Menu {
                             id: cityMenu
@@ -504,7 +512,7 @@ Rectangle {
                                 enabled: cityField.canPaste
                                 onTriggered: {
                                     cityField.paste()
-                                    locations.setCity2(cityField.text)
+                                    Locations.setCity2(cityField.text)
                                 }
                             }
                         }
@@ -520,9 +528,9 @@ Rectangle {
                         }
 
                         Connections {
-                            target: locations
+                            target: Locations
                             function onSignalCity(text) {
-                                cityField.text = locations.city
+                                cityField.text = Locations.city
                             }
                         }
                     }
@@ -530,8 +538,9 @@ Rectangle {
                     Label { text: qsTr("State/Province"); font.pixelSize: iconSize }
                     TextField {
                         id: provinceField
-                        Layout.preferredHeight: iconSize * 1.8
-                        font.pixelSize: iconSize * 1.1
+                        Layout.preferredHeight: iconSize * 1.5
+                        Layout.preferredWidth:  locationsSize * 0.25
+                        font.pixelSize: iconSize
                         leftPadding: 6
                         rightPadding: 6
                         topPadding: 3
@@ -540,10 +549,10 @@ Rectangle {
                         selectByMouse: true
                         Keys.onPressed: function(event) {
                             if (event.key === Qt.Key_V && event.modifiers & Qt.ControlModifier) {
-                                Qt.callLater(function() { locations.setProvince2(provinceField.text) })
+                                Qt.callLater(function() { Locations.setProvince2(provinceField.text) })
                             }
                         }
-                        onTextChanged: locations.setProvince2(text)
+                        onTextChanged: Locations.setProvince2(text)
 
                         Menu {
                             id: provinceMenu
@@ -554,7 +563,7 @@ Rectangle {
                                 enabled: provinceField.canPaste
                                 onTriggered: {
                                     provinceField.paste()
-                                    locations.setProvince2(provinceField.text)
+                                    Locations.setProvince2(provinceField.text)
                                 }
                             }
                         }
@@ -570,9 +579,9 @@ Rectangle {
                         }
 
                         Connections {
-                            target: locations
+                            target: Locations
                             function onSignalProvince(text) {
-                                provinceField.text = locations.province
+                                provinceField.text = Locations.province
                             }
                         }
                     }
@@ -580,8 +589,9 @@ Rectangle {
                     Label { text: qsTr("Country"); font.pixelSize: iconSize }
                     TextField {
                         id: countryField
-                        Layout.preferredHeight: iconSize * 1.8
-                        font.pixelSize: iconSize * 1.1
+                        Layout.preferredHeight: iconSize * 1.5
+                        Layout.preferredWidth:  locationsSize * 0.25
+                        font.pixelSize: iconSize
                         leftPadding: 6
                         rightPadding: 6
                         topPadding: 3
@@ -590,10 +600,10 @@ Rectangle {
                         selectByMouse: true
                         Keys.onPressed: function(event) {
                             if (event.key === Qt.Key_V && event.modifiers & Qt.ControlModifier) {
-                                Qt.callLater(function() { locations.setCountry2(countryField.text) })
+                                Qt.callLater(function() { Locations.setCountry2(countryField.text) })
                             }
                         }
-                        onTextChanged: locations.setCountry2(text)
+                        onTextChanged: Locations.setCountry2(text)
 
                         Menu {
                             id: countryMenu
@@ -604,7 +614,7 @@ Rectangle {
                                 enabled: countryField.canPaste
                                 onTriggered: {
                                     countryField.paste()
-                                    locations.setCountry2(countryField.text)
+                                    Locations.setCountry2(countryField.text)
                                 }
                             }
                         }
@@ -620,9 +630,9 @@ Rectangle {
                         }
 
                         Connections {
-                            target: locations
+                            target: Locations
                             function onSignalCountry(text) {
-                                countryField.text = locations.country
+                                countryField.text = Locations.country
                             }
                         }
                     }
@@ -654,7 +664,7 @@ Rectangle {
                         padding: 0
                         onClicked: {
                             locationStyle = 2
-                            locations.setLocationStyle(2)
+                            Locations.setLocationStyle(2)
                         }
                         contentItem: Item {
                             anchors.fill: parent
@@ -695,10 +705,10 @@ Rectangle {
                         selectByMouse: true
                         Keys.onPressed: function(event) {
                             if (event.key === Qt.Key_V && event.modifiers & Qt.ControlModifier) {
-                                Qt.callLater(function() { locations.setImportKml2(textField.text) })
+                                Qt.callLater(function() { Locations.setImportKml2(textField.text) })
                             }
                         }
-                        onTextChanged: locations.setImportKml2(textField.text)
+                        onTextChanged: Locations.setImportKml2(textField.text)
 
                         Menu {
                             id: textMenu
@@ -709,7 +719,7 @@ Rectangle {
                                 enabled: textField.canPaste
                                 onTriggered: {
                                     textField.paste()
-                                    locations.setImportKml2(textField.text)
+                                    Locations.setImportKml2(textField.text)
                                 }
                             }
                         }
@@ -725,9 +735,9 @@ Rectangle {
                         }
 
                         Connections {
-                            target: locations
+                            target: Locations
                             function onSignalImportKml(text) {
-                                textField.text = locations.importKml
+                                textField.text = Locations.importKml
                             }
                         }
                     }
@@ -755,7 +765,7 @@ Rectangle {
                             id: mouseArea2
                             anchors.fill: parent
                             hoverEnabled: true
-                            onClicked: locations.importKmlClicked()
+                            onClicked: Locations.importKmlClicked()
                         }
                     }
 
@@ -786,7 +796,7 @@ Rectangle {
                     border.width: 1
                 }
 
-                onClicked: locations.confirmClicked()
+                onClicked: Locations.confirmClicked()
 
             }
 
@@ -803,7 +813,7 @@ Rectangle {
                     border.width: 1
                 }
 
-                onClicked: locations.cancelClicked()
+                onClicked: Locations.cancelClicked()
             }
 
             Item { Layout.fillWidth: true }

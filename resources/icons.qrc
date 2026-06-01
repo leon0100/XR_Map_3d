@@ -99,6 +99,9 @@
        <file>XR/plus.svg</file>
        <file>XR/question_mark.svg</file>
        <file>XR/outline.svg</file>
+	<file>XR/pin.png</file>
+	<file>XR/target.png</file>
+	<file>XR/pushPin2.png</file>
         <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
         <file>fonts/PTSansCaption-Regular.ttf</file>
     </qresource>

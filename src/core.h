@@ -62,7 +62,7 @@ public:
     Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
     Q_PROPERTY(QObject*  progress       READ progress     WRITE setProgress     NOTIFY  progressChanged)
-    Q_PROPERTY(QObject* locations READ locations CONSTANT)
+    // Q_PROPERTY(QObject* locations READ locations CONSTANT)
 
 
 
@@ -84,7 +84,7 @@ public:
 
     QHash<QUuid, QString> getLinkNames() const;
 
-    QObject* locations() { return &locations_; }
+    // QObject* locations() { return &locations_; }
 
 
 
@@ -224,6 +224,8 @@ private:
     std::unique_ptr<map::TileManager>                  tileManager_;
 
     std::shared_ptr<BLEManager>  bleManager_;
+    std::shared_ptr<Locations> locations_;
+    // Locations locations_;
 
 
     // data processor
@@ -284,5 +286,4 @@ signals:
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;
 
-    Locations locations_;
 };

@@ -68,7 +68,8 @@ void Core::setEngine(QQmlApplicationEngine *engine)
     qmlAppEnginePtr_->rootContext()->setContextProperty("Scene3dToolBarController",             scene3dToolBarController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("UsblViewControlMenuController",        usblViewControlMenuController_.get());
 
-    qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",                           bleManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",      bleManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("Locations",       locations_.get());
 
     // ── 注册 dataProcessor ──
     qmlAppEnginePtr_->rootContext()->setContextProperty("dataProcessor", dataProcessor_);
@@ -1088,9 +1089,11 @@ void Core::UILoad(QObject* object, const QUrl& url)
     scene3dViewPtr_ = object->findChild<GraphicsScene3dView*>();
     plot2dList_ = object->findChildren<qPlot2D*>();
     scene3dViewPtr_->setDataset(datasetPtr_);
+    locations_->setDataset(datasetPtr_);
     scene3dViewPtr_->setDataProcessorPtr(dataProcessor_);
     datasetPtr_->setScene3D(scene3dViewPtr_);
     scene3dViewPtr_->setProgressDialog(progress_);
+
 
     for (int i = 0; i < plot2dList_.size(); i++) {
         if (plot2dList_.at(i) != NULL) {
@@ -1690,6 +1693,7 @@ void Core::createControllers()
     usblViewControlMenuController_        = std::make_shared<UsblViewControlMenuController>();
 
     bleManager_                           = std::make_shared<BLEManager>();
+    locations_                            = std::make_shared<Locations>();
 }
 
 #ifdef SEPARATE_READING

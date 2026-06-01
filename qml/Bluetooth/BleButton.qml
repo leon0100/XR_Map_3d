@@ -34,7 +34,6 @@ Rectangle {
                 anchors.fill: parent
                 background: null
                 hoverEnabled: true
-
                 text: qsTr("Clear")
 
                 contentItem: Text {

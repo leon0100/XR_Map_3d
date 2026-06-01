@@ -9,10 +9,7 @@
 #include <QReadWriteLock>
 
 #include "black_stripes_processor.h"
-#include "dataset_defs.h"
 #include "data_interpolator.h"
-#include "epoch.h"
-#include "id_binnary.h"
 #include "usbl_view.h"
 #include "data_processor_defs.h"
 

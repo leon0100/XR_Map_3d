@@ -298,6 +298,17 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
             return;
         }
 
+        /*--- 测距模块 ---*/
+        if(screetShot_.isDistMeasureMode_) {
+            if(screetShot_.isDrawMeasure_ == 0) {
+                screetShot_.isDrawMeasure_ = 1;
+                screetShot_.setDistLineStart(QPointF(x, y));
+            }
+            else if(screetShot_.isDrawMeasure_ == 1) {
+                screetShot_.isDrawMeasure_ = 2;
+            }
+        }
+
         /*- 绘制多边形轮廓模式 -*/
         if(polygonOutline_->getOutlineMode()) {
             polygonOutline_->polygonAddPoint(currentLat_, currentLon_);
@@ -395,6 +406,15 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 
         return;
     }
+
+    /*-- 测距模块 --*/
+    if(screetShot_.isDistMeasureMode_) {
+        if(screetShot_.isDrawMeasure_ == 1) {
+            screetShot_.setDistLineEnd(QPointF(x, y));
+        }
+
+    }
+
 
     /*- 绘制多边形轮廓模式 -*/
     if(polygonOutline_->getOutlineMode()) {
@@ -628,6 +648,13 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
 
 }
 
+void GraphicsScene3dView::setDistMeasureMode(bool isDist)
+{
+    qDebug() << "GraphicsScene3dView::setDistMeasureMode(bool isDist)..." << isDist;
+    screetShot_.isDistMeasureMode_ = isDist;
+    screetShot_.setDistMeasureVisible(isDist);
+    screetShot_.isDrawMeasure_ = 0;
+}
 
 void GraphicsScene3dView::setTrackLastData(bool state)
 {
@@ -1135,7 +1162,7 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
     latitude  = lla.latitude;
     longitude = lla.longitude;
 
-    // qDebug() << "mousePressTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
+    // qDebug() << "mouseTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
 }
 
 void GraphicsScene3dView::updateMapView()

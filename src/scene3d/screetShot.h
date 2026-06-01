@@ -212,6 +212,49 @@ private:
     QVector<ImageInfo> jude_infos;
     int targetMapLevel_;
 
+
+
+
+
+
+
+
+
+
+
+/*---------------------------------DistMeasure---------------------------------*/
+public:
+    Q_PROPERTY(bool isDistMeasureVisible READ getDistMeasureVisible WRITE setDistMeasureVisible NOTIFY distMeasureVisibleChanged)
+    Q_PROPERTY(QLineF distLine READ getDistLine WRITE setDistLine NOTIFY distLineChanged)
+
+
+
+    bool getDistMeasureVisible() const;
+    void setDistMeasureVisible(bool visible);
+
+    QLineF getDistLine() const;
+    void setDistLine(const QLineF line);
+
+    void setDistLineStart(QPointF start);
+    void setDistLineEnd(QPointF end);
+
+
+
+public:
+    bool isDistMeasureMode_ = false;
+    int isDrawMeasure_ = -1;   //0:开始绘制（起点还没绘）    1：完成起点绘制    2:保持绘制完成的持续状态
+
+signals:
+    void distMeasureVisibleChanged();
+    void distLineChanged();
+
+
+private:
+    bool isDistMeasureVisible_ = false;
+    QLineF distLine_;
+
+
+
 };
 
 #endif // SCREETSHOT_H

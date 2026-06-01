@@ -121,6 +121,7 @@ public:
     Q_PROPERTY(double maxDepthValue READ maxDepthValue WRITE setMaxDepthValue NOTIFY maxDepthValueChanged)
     Q_PROPERTY(float currentDepthValue READ currentDepthValue WRITE resetCurrentDepthValue NOTIFY resetCurrentDepthVal)
 
+
 public:
     explicit BLEManager(QObject *parent = nullptr);
     void translate();
@@ -140,7 +141,7 @@ public:
 
     bool dataReading() const { return readingDrawTrack_; }
     Q_INVOKABLE void setDataReading(bool isReading) { readingDrawTrack_ = isReading;
-                                                        emit dataReadingChanged(isReading);}
+                                     emit dataReadingChanged(isReading);}
 
     double maxDepthValue() const { return maxDepth_;}
     double currentDepthValue() const { return 0.0; };

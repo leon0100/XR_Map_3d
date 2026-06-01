@@ -114,6 +114,7 @@
         <file>QmlCommon/KDialogCheck2.qml</file>
         <file>MapLevelChoose.qml</file>
         <file>QmlCommon/KDialogLoading.qml</file>
-        <file>AppXr/Locations.qml</file>
+        <file>AppXr/LocationsQml.qml</file>
+        <file>DistMeasure.qml</file>
     </qresource>
 </RCC>

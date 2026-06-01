@@ -22,8 +22,10 @@ Rectangle {
 
     property color backColor: "#d6e6ff"
 
+    property bool screenMode: false
     property bool locationMode: false
     property bool contourMode: false
+    property bool measureMode: false
     property bool bluetoothMode: false
     property bool polygonMode: false
 
@@ -97,12 +99,11 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            // property bool configMode: false
-            // Rectangle {
-            //     anchors.fill: parent
-            //     radius: 2
-            //     color: menuBtn.configMode ? backColor : "transparent"
-            // }
+            Rectangle {
+                anchors.fill: parent
+                radius: 2
+                color: contourMode ? backColor : "transparent"
+            }
 
             onPressed: {
                 if(menuPopup) {
@@ -139,11 +140,11 @@ Rectangle {
                 toolTipText: qsTr("Screen Shot")
             }
 
-            property bool screenMode: false
+
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: frameSlectBtn.screenMode ? backColor : "transparent"
+                color: screenMode ? backColor : "transparent"
             }
 
             onPressed: {
@@ -188,21 +189,21 @@ Rectangle {
             width:       toolBar_XR.iconSize
             height:      toolBar_XR.iconSize
 
-            // CMouseOpacityArea {
-            //     id: btn3
-            //     toolTipText: qsTr("Measure")
-            // }
+            CMouseOpacityArea {
+                toolTipText: qsTr("Measure")
+            }
 
-            property bool measureMode: false
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: measureBtn.measureMode ? backColor : "transparent"
+                color: measureMode ? backColor : "transparent"
             }
 
             onPressed: {
                 measureMode = !measureMode
+                renderer.setDistMeasureMode(measureMode)
             }
+
         }
 
         MenuButton { // 定位
@@ -220,17 +221,18 @@ Rectangle {
             Rectangle {
                 anchors.fill: parent
                 radius: 2
-                color: locationBtn.locationMode ? backColor : "transparent"
+                color: locationMode ? backColor : "transparent"
             }
 
             onPressed: {
                 locationMode = !locationMode
+                Locations.signalShowLocation(locationMode)
             }
 
             Connections {
-                target: renderer.locations
-                function onCancelScreetShot() {
-                    frameSlectBtn.screenMode = false
+                target: Locations
+                function onSignalShowLocation(show) {
+                    locationMode = show
                 }
             }
         }

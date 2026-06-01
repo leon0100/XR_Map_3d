@@ -85,9 +85,8 @@ ApplicationWindow  {
 
 
 
-    Locations {
-        visible: toolBarXR.locationMode
-        // targetPlot: toolBarXR.targetPlot
+    LocationsQml {
+        // visible: toolBarXR.locationMode
     }
 
     IsobathsExtraSettings {

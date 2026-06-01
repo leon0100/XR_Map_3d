@@ -20,11 +20,17 @@ Locations::Locations(QObject *parent) : QObject(parent)
     manager_ = new QNetworkAccessManager(this);
     connect(this,&Locations::signalLocationGoogle,this,&Locations::slot_locationGoogle);
     connect(AppController::instance(),&AppController::signalFileSelected,this,&Locations::slot_exportKmlPathSelected);
+    connect(this,&Locations::signalLocationStyle, this, &Locations::slot_locationStyle);
 }
 
 typGpsCooDegree Locations::getCooDegree()
 {
     return gpsCoor_;
+}
+
+void Locations::setDataset(Dataset* dataset)
+{
+    dataset_ = dataset;
 }
 
 void Locations::setLocationStyle(int locationStyle)
@@ -147,7 +153,7 @@ void Locations::clearAllText()
     setProvince2("");
     setCountry2("");
     setImportKml2("");
-    emit signalCloseLocation();
+    emit signalShowLocation(false);
 }
 void Locations::cancelClicked()
 {
@@ -339,6 +345,7 @@ typGpsCooDegree Locations::locationUseLatiLon()
 {
     QString latiStr = latitude_;
     QString lonStr = longitude_;
+    qDebug() << "latiStr....." << latiStr << "   " << lonStr;
 
     QRegularExpression ddRegex(R"(^([-+]?\d{1,3})(?:\.(\d+))?[°]?[NSWEnswe]?$)");
     QRegularExpression dmsRegex(R"(^([-+]?\d{1,3})°([0-5]?[0-9])[\'′]([0-5]?[0-9](?:\.\d+)?)[\"″]?[NSWEnswe]?$)");
@@ -384,8 +391,10 @@ void Locations::parseLatLonFromPaste(QString str)
 {
     QStringList parts = str.split(QRegularExpression("[,，\\s;]+"), Qt::SkipEmptyParts);
     if(parts.size() == 2) {
-        QRegularExpression latiRegex(R"(.*([北南](?:纬)?|N|S|n|s).*)", QRegularExpression::CaseInsensitiveOption);
-        QRegularExpression lonRegex(R"(.*([东西](?:经)?|E|W|e|w).*)", QRegularExpression::CaseInsensitiveOption);
+        // QRegularExpression latiRegex(R"(.*([北南](?:纬)?|N|S|n|s).*)", QRegularExpression::CaseInsensitiveOption);
+        // QRegularExpression lonRegex(R"(.*([东西](?:经)?|E|W|e|w).*)", QRegularExpression::CaseInsensitiveOption);
+        QRegularExpression latiRegex(R"(.*(北|南|N|S|n|s).*)", QRegularExpression::CaseInsensitiveOption);
+        QRegularExpression lonRegex(R"(.*(东|西|E|W|e|w).*)",  QRegularExpression::CaseInsensitiveOption);
         QString part1 = parts[0], part2 = parts[1];
         QString latStr, lonStr;
         QString latSymbol, lonSymbol;
@@ -393,10 +402,12 @@ void Locations::parseLatLonFromPaste(QString str)
         if(latiRegex.match(part1).hasMatch() && lonRegex.match(part2).hasMatch()) {
             latStr = part1;
             lonStr = part2;
-        } else if(latiRegex.match(part2).hasMatch() && lonRegex.match(part1).hasMatch()) {
+        }
+        else if(latiRegex.match(part2).hasMatch() && lonRegex.match(part1).hasMatch()) {
             latStr = part2;
             lonStr = part1;
-        } else {
+        }
+        else {
             QRegularExpression numberRegex(R"(^[-+]?\d+(\.\d+)?$)");
             if (numberRegex.match(part1).hasMatch() && numberRegex.match(part2).hasMatch()) {
                 latStr = part1;
@@ -408,19 +419,22 @@ void Locations::parseLatLonFromPaste(QString str)
 
         if (latStr.contains(QRegularExpression("[北Nn]"))) {
             latSymbol = "N";
-        } else if (latStr.contains(QRegularExpression("[南Ss]"))) {
+        }
+        else if (latStr.contains(QRegularExpression("[南Ss]"))) {
             latSymbol = "S";
         }
 
-
         if (lonStr.contains(QRegularExpression("[东Ee]"))) {
             lonSymbol = "E";
-        } else if (lonStr.contains(QRegularExpression("[西Ww]"))) {
+        }
+        else if (lonStr.contains(QRegularExpression("[西Ww]"))) {
             lonSymbol = "W";
         }
 
-        latStr.remove(QRegularExpression("[北南](?:纬)?|N|S|n|s"));
-        lonStr.remove(QRegularExpression("[东西](?:经)?|E|W|e|w"));
+        // latStr.remove(QRegularExpression("[北南](?:纬)?|N|S|n|s"));
+        // lonStr.remove(QRegularExpression("[东西](?:经)?|E|W|e|w"));
+        latStr.remove(QRegularExpression("北|南|N|S|n|s"));
+        lonStr.remove(QRegularExpression("东|西|E|W|e|w"));
 
         latStr = latStr.trimmed() + latSymbol;
         lonStr = lonStr.trimmed() + lonSymbol;
@@ -433,7 +447,6 @@ void Locations::parseLatLonFromPaste(QString str)
         }
 
         if(latSymbol.isEmpty() && lonSymbol.isEmpty()) {
-            // QMessageBox::warning(this, tr("Invalid Input"), tr("Invalid latitude or longitude for the selected format."));
             GIF->dialogInfo(Dialog_OK, tr("Invalid latitude or longitude for the selected format."));
         }
 
@@ -577,6 +590,18 @@ void Locations::slot_exportKmlPathSelected(QString path)
 {
     setImportKml2(path);
 }
+
+void Locations::slot_locationStyle(int index)
+{
+    qDebug() << "slot_locationsDStyle....." << index;
+    if(index == 0 || index == 1) {
+        dataset_->location(gpsCoor_.latitude, gpsCoor_.longitude);
+    }
+    else if(index == 2) {
+
+    }
+}
+
 
 
 

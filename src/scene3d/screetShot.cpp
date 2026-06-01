@@ -1020,3 +1020,41 @@ qreal ScreetShot::clipLat(qreal lat)
 }
 
 
+
+
+/*------------------------------------------------------------------------------*/
+bool ScreetShot::getDistMeasureVisible() const
+{
+    return isDistMeasureVisible_;
+}
+
+void ScreetShot::setDistMeasureVisible(bool visible)
+{
+    qDebug() << "ScreetShot::setDistMeasureVisible....." << visible;
+    isDistMeasureVisible_ = visible;
+    emit distMeasureVisibleChanged();
+}
+
+QLineF ScreetShot::getDistLine() const
+{
+    return distLine_;
+}
+
+void ScreetShot::setDistLine(const QLineF line)
+{
+    distLine_ = line;
+    emit distLineChanged();
+}
+
+void ScreetShot::setDistLineStart(QPointF start)
+{
+    distLine_.setP1(start);
+    setDistLineEnd(start);
+    emit distLineChanged();
+}
+
+void ScreetShot::setDistLineEnd(QPointF end)
+{
+    distLine_.setP2(end);
+    emit distLineChanged();
+}

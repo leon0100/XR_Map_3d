@@ -372,7 +372,7 @@ private:
     int currentMapLevel_,screetCurrentMapLevel_;
 
 
-public:
+public:  //截图模块
     Q_INVOKABLE void setScreenMode(bool isScreen);
     void setCurrentMapLevel(int mapLevel);
     Q_PROPERTY(QObject* screetShot READ screetShot CONSTANT)
@@ -384,8 +384,6 @@ public:
     QMutex screenshotMutex_;
     int mapLevel_;
 
-
-public:
     QMutex screenshotQueueMutex_;//要定义为成员变量，而不是局部变量（会导致每个线程都有自己的mutex，没有互斥效果）
     bool isProcessingScreenshot_ = false;
 
@@ -396,6 +394,10 @@ public:
     QObject* progressDialog_ = nullptr;
     float originCameraDist_;
     QVector3D originCameralookAt_;
+
+
+public: //测距模块
+    Q_INVOKABLE void setDistMeasureMode(bool isDist);
 
 
 

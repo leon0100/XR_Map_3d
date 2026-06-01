@@ -1,6 +1,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
+
+
 #include <QObject>
 #include <console_list_model.h>
 #include <QLoggingCategory>

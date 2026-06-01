@@ -11,6 +11,7 @@
 
 
 #include "console.h"
+#include "dataset.h"
 
 
 #ifdef Q_OS_ANDROID
@@ -75,6 +76,7 @@ public:
     explicit Locations(QObject *parent = nullptr);
     typGpsCooDegree getCooDegree();
     void getCoordinateOpenstreet();
+    void setDataset(Dataset* dataset);
 
     Q_INVOKABLE void setLocationStyle(int locationStyle);
 
@@ -120,6 +122,7 @@ public slots:
     void slot_locationGoogle();
     void slot_locationResponseGoogle();
     void slot_exportKmlPathSelected(QString path);
+    void slot_locationStyle(int index);
 
 
 signals:
@@ -137,9 +140,10 @@ signals:
 
     void signalLocationStyle(int style_);
 
-    void signalCloseLocation();
+    void signalShowLocation(bool show);
 
 private:
+    Dataset* dataset_;
     int locationStyle_ = 0;      // 0表示输入经纬度   1表示地名   2表示kmz/l导入
     int m_latLonFormat_ = 0;     // DD = 0,  DMS = 1,  DDM = 2
     QString latitude_;
