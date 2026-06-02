@@ -1,115 +1,88 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
+import QtQuick.Shapes 1.15
 
-Rectangle {
+Item {
     id: root
-    visible: renderer.screetShot.isDistMeasureVisible
+    visible: renderer.screetShot.isP1Visible
+    anchors.fill: parent
     z: 999
 
     property int  distSize: Math.min(Screen.width, Screen.height) * 0.5
     property int  iconSize: distSize * 0.03
-    property int  boxSize:  iconSize * 1.2
+    property int  boxSize:  iconSize * 2
 
-    property var  startPoint: renderer.screetShot.distLineP1 // 起点坐标
-    property var  endPoint:   renderer.screetShot.distLineP2 // 终点坐标
-    property bool measuring:  false           // 是否正在测量
-    property real distance:    0              // 距离值（米）
+    property var  startPoint: renderer.screetShot.distLineP1  // 起点坐标
+    property var  endPoint:   renderer.screetShot.distLineP2  // 终点坐标
+    property string  distance: ""
 
 
-    // 更新距离
-    function updateDistance(start, end) {
-        var dx = end.x - start.x
-        var dy = end.y - start.y
-        distance = Math.sqrt(dx * dx + dy * dy)
-        startPoint = start
-        endPoint = end
-        measuring = true
-        visible = true
-    }
+    Connections {
+        target: renderer.screetShot
 
-    // 清除测量
-    function clearMeasure() {
-        measuring = false
-        visible = false
-        distance = 0
-    }
+        function onSignalStartToEndDist(dist) {
+            if (dist >= 1000) {
+                distance =  (dist / 1000).toFixed(2) + " km"
+            }
+            else {
+                distance = dist.toFixed(1) + " m"
+            }
 
-    // 计算线段中点
-    function getMidPoint(start, end) {
-        return Qt.point((start.x + end.x) / 2, (start.y + end.y) / 2)
-    }
-
-    // 计算线段角度（用于文本旋转）
-    function getLineAngle(start, end) {
-        return Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI
-    }
-
-    // 格式化距离显示
-    function formatDistance(meters) {
-        if (meters >= 1000) {
-            return (meters / 1000).toFixed(2) + " km"
-        } else {
-            return meters.toFixed(1) + " m"
         }
     }
 
 
-    // 连接线
-    Canvas {
-        id: lineCanvas
+    // Canvas {
+    //     id: lineCanvas
+    //     anchors.fill: parent
+
+    //     onPaint: {
+    //         var ctx = getContext("2d")
+    //         ctx.clearRect(0, 0, width, height)
+    //         ctx.lineWidth = 3
+    //         ctx.strokeStyle = "#0000ff"
+
+    //         ctx.beginPath()
+    //         ctx.moveTo(root.startPoint.x, root.startPoint.y)
+    //         ctx.lineTo(root.endPoint.x, root.endPoint.y)
+    //         ctx.stroke()
+    //     }
+
+    //     Connections {
+    //         target: renderer.screetShot
+    //         function onDistLineChanged() {
+    //             lineCanvas.requestPaint()
+    //         }
+    //     }
+    // }
+
+    Shape {
         anchors.fill: parent
+        ShapePath {
+            strokeWidth: iconSize * 0.2
+            strokeColor: "#00FFFF"
+            fillColor: "#00FFFF"
+            startX: root.startPoint.x
+            startY: root.startPoint.y
 
-        onPaint: {
-            var ctx = getContext("2d")
-            ctx.clearRect(0, 0, width, height)
-
-            // if (!root.measuring)
-            //     return
-
-            ctx.beginPath()
-            ctx.moveTo(root.startPoint.x, root.startPoint.y)
-            ctx.lineTo(root.endPoint.x, root.endPoint.y)
-
-            ctx.lineWidth = 3
-            ctx.strokeStyle = "#FF6B6B"
-            ctx.stroke()
-        }
-
-        Connections {
-            // target: root
-            target: renderer.screetShot
-
-            // function onStartPointChanged() {
-            //     lineCanvas.requestPaint()
-            // }
-
-            // function onEndPointChanged() {
-            //     lineCanvas.requestPaint()
-            // }
-
-            // function onMeasuringChanged() {
-            //     lineCanvas.requestPaint()
-            // }
-
-            function onDistLineChanged() {
-                lineCanvas.requestPaint()
+            PathLine {
+                x: root.endPoint.x
+                y: root.endPoint.y
             }
         }
     }
 
+
     // 起点图标
     Image {
         id: startIcon
-        x: startPoint.x
-        y: startPoint.y
+        x: startPoint.x - boxSize * 0.5
+        y: startPoint.y - boxSize
         width:  boxSize
         height: boxSize
         source: "qrc:/XR/pin.png"
-        onStatusChanged: {
-            console.log("pin status =", status)
-        }
         fillMode: Image.PreserveAspectFit
-        visible: true
+        visible: renderer.screetShot.isP1Visible
     }
 
 
@@ -117,32 +90,30 @@ Rectangle {
     Image {
         id: endIcon
         x: endPoint.x
-        y: endPoint.y
+        y: endPoint.y - boxSize
         width: boxSize
         height: boxSize
         source: "qrc:/XR/target.png"
         fillMode: Image.PreserveAspectFit
-        visible: true
+        visible: renderer.screetShot.isP2Visible
     }
 
 
     // 距离文本
     Text {
         id: distanceText
-        x: getMidPoint(startPoint, endPoint).x - width / 2
-        y: getMidPoint(startPoint, endPoint).y - height / 2
-        text: formatDistance(distance)
-        color: "#fff"
+        x: endPoint.x + height * 0.2
+        y: endPoint.y - boxSize * 2.4
+        text: distance
+        color: "#ffff00"
         minimumPixelSize: iconSize
         font.bold: true
-        padding: 6
-        opacity: 0.9
-        rotation: getLineAngle(startPoint, endPoint)
+        padding: 5
 
         Rectangle {
             anchors.fill: parent
-            color: "#333"
-            opacity: 0.9
+            color: "#333333"
+            opacity: 0.85
             radius: 4
             z: -1
         }

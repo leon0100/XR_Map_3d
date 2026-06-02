@@ -14,14 +14,16 @@
 #include <QGraphicsScene>
 #include <QQuickView>
 
+
 #include "dataset_defs.h"
 #include "console.h"
+#include "location.h"
 // #include <QtGui/private/qzipreader_p.h>
 // #include <QtGui/private/qzipwriter_p.h>
 
 
 
-#define FILE_PASSWORD "$Toslon&85359189@Yt"
+#define  FILE_PASSWORD  "$Toslon&85359189@Yt"
 constexpr double TILE_CONSTANT = 126543000.03392;
 
 enum class ResizeMode { None, Move, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight };
@@ -81,12 +83,6 @@ struct ScreenshotTask
             geoWidth(geoW), geoHeight(geoH), outputPath(path)
     {}
 };
-
-
-
-
-
-
 
 
 /*------------------------------------------ScreetShot---------------------------------------------*/
@@ -153,6 +149,7 @@ public:
     void switchMapSource(MapSourceType sourceType);
     int getTargetMapLevel();
     QString getTargetDirPath();
+    double calculateDistance(double lat1, double lon1, double lat2, double lon2);
 
     Q_INVOKABLE void setToArrowCursor();
     Q_INVOKABLE void setCancelShot();
@@ -216,29 +213,17 @@ private:
 
 
 
-
-
-
-
-
-
 /*---------------------------------DistMeasure---------------------------------*/
 public:
-    Q_PROPERTY(bool isDistMeasureVisible READ getDistMeasureVisible WRITE setDistMeasureVisible NOTIFY distMeasureVisibleChanged)
-    Q_PROPERTY(QLineF distLine READ getDistLine WRITE setDistLine NOTIFY distLineChanged)
+    Q_PROPERTY(bool isP1Visible READ getP1Visible WRITE setP1Visible NOTIFY p1VisibleChanged)
+    Q_PROPERTY(bool isP2Visible READ getP2Visible WRITE setP2Visible NOTIFY p2VisibleChanged)
     Q_PROPERTY(QPointF distLineP1 READ getDistLineP1 WRITE setDistLineP1 NOTIFY distLineChanged)
     Q_PROPERTY(QPointF distLineP2 READ getDistLineP2 WRITE setDistLineP2 NOTIFY distLineChanged)
 
-
-
-    bool getDistMeasureVisible() const;
-    void setDistMeasureVisible(bool visible);
-
-    QLineF getDistLine() const;
-    void setDistLine(const QLineF line);
-
-    void setDistLineStart(QPointF start);
-    void setDistLineEnd(QPointF end);
+    bool getP1Visible() const;
+    void setP1Visible(bool visible);
+    bool getP2Visible() const;
+    void setP2Visible(bool visible);
 
     QPointF getDistLineP1() const;
     void setDistLineP1(const QPointF p1);
@@ -246,25 +231,103 @@ public:
     QPointF getDistLineP2() const;
     void setDistLineP2(const QPointF p2);
 
-
-
-
-
 public:
     bool isDistMeasureMode_ = false;
     int isDrawMeasure_ = -1;   //0:开始绘制（起点还没绘）    1：完成起点绘制    2:保持绘制完成的持续状态
+    double startLati_, startLon_;
 
 signals:
     void distMeasureVisibleChanged();
+    void p1VisibleChanged();
+    void p2VisibleChanged();
     void distLineChanged();
-
+    void signalStartToEndDist(double dist);
 
 private:
-    bool isDistMeasureVisible_ = false;
+    bool isP1Visible_ = false, isP2Visible_ = false;
     QLineF distLine_;
     QPointF distLineP1_, distLineP2_;
 
 
+
+
+
+/*-----------------------------------LandMarks-----------------------------------*/
+public:
+    Q_PROPERTY(bool landMarkMode READ getLandMarkMode WRITE setLandMarkMode NOTIFY signalLandMarkMode)
+    bool getLandMarkMode() const { return isLandMarkMode_; }
+    void setLandMarkMode(bool landMode) { isLandMarkMode_ = landMode; emit signalLandMarkMode(); }
+
+    /*--------------class传给landMarks.qml--------------*/
+    //name
+    Q_PROPERTY(QString spotName READ getSpotName WRITE setSpotName NOTIFY signalNameEdit)
+    QString getSpotName() const { return spotName_; }
+    void setSpotName(QString name) { spotName_ = name; emit signalNameEdit(); }
+
+    //latitude
+    Q_PROPERTY(QString spotLatitude READ spotLatitude WRITE setSpotLatitude NOTIFY signalLatitude)
+    QString spotLatitude() const { return spotLatitude_; }
+    void setSpotLatitude(QString latitude) { spotLatitude_ = latitude;  emit signalLatitude(); }
+
+    //longitude
+    Q_PROPERTY(QString spotLongitude READ spotLongitude WRITE setSpotLongitude NOTIFY signalLongitude)
+    QString spotLongitude() const { return spotLongitude_; }
+    void setSpotLongitude(QString longitude) { spotLongitude_ = longitude; emit signalLongitude(); }
+
+
+    Q_PROPERTY(int landMarkPtX READ getLandMarkPtX  WRITE setLandMarkPtX NOTIFY signalLandMarkPtX)
+    int getLandMarkPtX() const { return  landMarkX_; }
+    void setLandMarkPtX(int landMarkX) { landMarkX_ = landMarkX; emit signalLandMarkPtX(); }
+
+    Q_PROPERTY(int landMarkPtY READ getLandMarkPtY  WRITE setLandMarkPtY NOTIFY signalLandMarkPtY)
+    int getLandMarkPtY() const { return  landMarkY_; }
+    void setLandMarkPtY(int landMarkY) { landMarkY_ = landMarkY; emit signalLandMarkPtY(); }
+
+
+public:
+    Q_INVOKABLE void setSpotName2(QString spotName) { spotName_ = spotName; }
+    Q_INVOKABLE void setSpotLatitude2(QString latitude);
+    Q_INVOKABLE void setSpotLongitude2(QString longitude);
+
+    /*---landMarks.qml传给class---*/
+    Q_INVOKABLE void saveClicked();
+    Q_INVOKABLE void cancelClicked();
+
+
+    void translate();
+    void setLatiLonData(double lati,double longi);
+
+    void clearLandMarks();
+
+
+public slots:
+    void slot_safResultReceived(const QString& uri,const QString& operationType);
+
+
+private:
+    void createLocationKmlFile(QString savePath);
+    double DDToDecimalDegrees(const QString str);
+
+signals:
+    void signalLandMarkMode();
+    void signalNameEdit();
+    void signalLatitude();
+    void signalLongitude();
+    // void closeLandMark();
+    void signalLandMarkPtX();
+    void signalLandMarkPtY();
+
+public:
+    bool isLandMarkMode_ = false;
+
+private:
+    QString spotName_;
+    QString spotLatitude_, spotLongitude_;
+
+    double lati_,longi_;
+    QString dialogTitle_;
+    int landMarkX_, landMarkY_;
+    int screenCenterX_, screenCenterY_;
 
 };
 

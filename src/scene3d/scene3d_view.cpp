@@ -285,7 +285,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
                 screetShot_.shotRect_ = QRectF(x, y, 0, 0);
                 screetShot_.setSelectionRectVisible(true);
                 screetShot_.setSelectionRect(screetShot_.shotRect_);
-                qDebug() << "Screen capture start position:" << screetShot_.startPos_;
             }
             else {
                 screetShot_.judgeResizeMode(screetShot_.shotRect_,pos); //确认调整模式
@@ -299,14 +298,24 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         }
 
         /*--- 测距模块 ---*/
-        if(screetShot_.isDistMeasureMode_) {
+        if(screetShot_.isDistMeasureMode_)
+        {
             if(screetShot_.isDrawMeasure_ == 0) {
                 screetShot_.isDrawMeasure_ = 1;
-                // screetShot_.setDistLineStart(QPointF(x, y));
+                screetShot_.setP1Visible(true);
                 screetShot_.setDistLineP1(QPointF(x, y));
+                calculateLatLong(x, y, screetShot_.startLati_, screetShot_.startLon_);
+                emit screetShot_.signalStartToEndDist(0);
             }
             else if(screetShot_.isDrawMeasure_ == 1) {
                 screetShot_.isDrawMeasure_ = 2;
+                screetShot_.setP2Visible(true);
+                screetShot_.setDistLineP2(QPointF(x, y));
+                double endLat, endLon;
+                calculateLatLong(x, y, endLat, endLon);
+                double dist = screetShot_.calculateDistance(screetShot_.startLati_, screetShot_.startLon_, endLat, endLon);
+                emit screetShot_.signalStartToEndDist(dist);
+                QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
             }
         }
 
@@ -409,12 +418,29 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
     }
 
     /*-- 测距模块 --*/
-    if(screetShot_.isDistMeasureMode_) {
+    if(screetShot_.isDistMeasureMode_)
+    {
         if(screetShot_.isDrawMeasure_ == 1) {
-            // screetShot_.setDistLineEnd(QPointF(x, y));
             screetShot_.setDistLineP2(QPointF(x, y));
+            double endLat, endLon;
+            calculateLatLong(x, y, endLat, endLon);
+            double dist = screetShot_.calculateDistance(screetShot_.startLati_, screetShot_.startLon_, endLat, endLon);
+            emit screetShot_.signalStartToEndDist(dist);
+        }
+    }
+
+    if(screetShot_.getLandMarkMode())
+    {
+        if(mouseButton == Qt::LeftButton) {
+            screetShot_.setLandMarkPtX(x);
+            screetShot_.setLandMarkPtY(y);
+            double landMarkLat, landMarkLon;
+            calculateLatLong(x, y, landMarkLat, landMarkLon);
+            screetShot_.setSpotLatitude(QString::number(landMarkLat) + "°");
+            screetShot_.setSpotLongitude(QString::number(landMarkLon) + "°");
         }
 
+        return;
     }
 
 
@@ -576,6 +602,18 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
     if (cameraWasMoved) {
         emit cameraIsMoved();
     }
+
+    /*-- 测距模块 --*/
+    if(screetShot_.isDistMeasureMode_) {
+        screetShot_.setLLARef(m_camera->viewLlaRef_);
+        double startLat, startLon,endLat, endLon;
+        QPointF p1 = screetShot_.getDistLineP1();
+        QPointF p2 = screetShot_.getDistLineP2();
+        calculateLatLong(p1.x(), p1.y(), startLat, startLon);
+        calculateLatLong(p2.x(), p2.y(), endLat, endLon);
+        double dist = screetShot_.calculateDistance(startLat, startLon, endLat, endLon);
+        emit screetShot_.signalStartToEndDist(dist);
+    }
 }
 
 void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF& currCenter, qreal scaleDelta, qreal angleDelta)
@@ -594,6 +632,18 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
     QQuickFramebufferObject::update();
 
     emit cameraIsMoved();
+
+    /*-- 测距模块 --*/
+    if(screetShot_.isDistMeasureMode_) {
+        screetShot_.setLLARef(m_camera->viewLlaRef_);
+        double startLat, startLon,endLat, endLon;
+        QPointF p1 = screetShot_.getDistLineP1();
+        QPointF p2 = screetShot_.getDistLineP2();
+        calculateLatLong(p1.x(), p1.y(), startLat, startLon);
+        calculateLatLong(p2.x(), p2.y(), endLat, endLon);
+        double dist = screetShot_.calculateDistance(startLat, startLon, endLat, endLon);
+        emit screetShot_.signalStartToEndDist(dist);
+    }
 }
 
 void GraphicsScene3dView::keyPressTrigger(Qt::Key key)
@@ -652,10 +702,46 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
 
 void GraphicsScene3dView::setDistMeasureMode(bool isDist)
 {
-    qDebug() << "GraphicsScene3dView::setDistMeasureMode(bool isDist)..." << isDist;
     screetShot_.isDistMeasureMode_ = isDist;
-    screetShot_.setDistMeasureVisible(isDist);
+    // setMapView();
+    if (m_camera && m_camera->getIsPerspective()) {
+        m_camera->resetRotationAngle();
+        if (m_axesThumbnailCamera) {
+            m_axesThumbnailCamera->resetRotationAngle();
+        }
+
+        m_camera->resetZAxis();
+        updateProjection();
+    }
+
+    QQuickFramebufferObject::update();
+    emit cameraIsMoved();
+
+    if(isDist) {
+        QGuiApplication::setOverrideCursor(Qt::PointingHandCursor);
+        screetShot_.setLLARef(m_camera->viewLlaRef_);
+    }
+    else {
+        QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
+        screetShot_.setP1Visible(false);
+        screetShot_.setP2Visible(false);
+    }
+
     screetShot_.isDrawMeasure_ = 0;
+}
+
+void GraphicsScene3dView::setLandMarkMode(bool mark)
+{
+    screetShot_.setLandMarkMode(mark);
+    if(mark) {
+        screetShot_.setLandMarkPtX(screetShot_.getLandMarkPtX());
+        screetShot_.setLandMarkPtY(screetShot_.getLandMarkPtY());
+        double landMarkLat, landMarkLon;
+        calculateLatLong(screetShot_.getLandMarkPtX(), screetShot_.getLandMarkPtX(), landMarkLat, landMarkLon);
+        screetShot_.setSpotLatitude(QString::number(landMarkLat) + "°");
+        screetShot_.setSpotLongitude(QString::number(landMarkLon) + "°");
+    }
+
 }
 
 void GraphicsScene3dView::setTrackLastData(bool state)

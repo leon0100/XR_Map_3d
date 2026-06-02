@@ -398,6 +398,7 @@ public:  //截图模块
 
 public: //测距模块
     Q_INVOKABLE void setDistMeasureMode(bool isDist);
+    Q_INVOKABLE void setLandMarkMode(bool mark);
 
 
 

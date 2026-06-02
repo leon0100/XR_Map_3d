@@ -13,6 +13,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QScreen>
 
 #include <quazip/quazip.h>
 #include <quazip/quazipfile.h>
@@ -35,6 +36,24 @@ ScreetShot::ScreetShot(QObject *parent) : QObject{parent}
 
 
     // GIF->dialogInfo(Dialog_Loading, "hide");
+
+    connect(AppController::instance(), &AppController::safResultReceived,this,&ScreetShot::slot_safResultReceived);
+
+    translate();
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (screen) {
+        QSize size = screen->size();
+        screenCenterX_  = size.width() * 0.5;
+        screenCenterY_  = size.height() * 0.5;
+    }
+    else {
+        screenCenterX_  = 100;
+        screenCenterY_  = 100;
+    }
+
+    landMarkX_ = screenCenterX_;
+    landMarkY_ = screenCenterY_ * 0.9;
 }
 
 QRectF ScreetShot::getSelectionRect() const
@@ -472,33 +491,30 @@ QByteArray ScreetShot::readKmlFromKmz(const QString& kmzPath)
         return QByteArray();
     }
 
+    QuaZip zip(kmzPath);
+    if (!zip.open(QuaZip::mdUnzip)) {
+        qDebug() <<"Failed to open the XMAP file!";
+        return QByteArray();
+    }
 
-    // QuaZip zip(kmzPath);
-    // if (!zip.open(QuaZip::mdUnzip)) {
-    //     qDebug() <<"Failed to open the XMAP file!";
-    //     return QByteArray();
-    // }
+    zip.setFileNameCodec("UTF-8");
+    QuaZipFile zipFile(kmzPath);
+    if (!zipFile.open(QIODevice::ReadOnly, QString(FILE_PASSWORD).toUtf8().constData())){
+        qDebug() <<"Failed to open the XMAP file!";
+        zip.close();
+        return QByteArray();
+    }
 
-    // zip.setFileNameCodec("UTF-8");
-    // QuaZipFile zipFile(kmzPath);
-    // if (!zipFile.open(QIODevice::ReadOnly, QString(FILE_PASSWORD).toUtf8().constData())){
-    //     qDebug() <<"Failed to open the XMAP file!";
-    //     zip.close();
-    //     return QByteArray();
-    // }
+    kmlContent = zipFile.readAll();
+    zipFile.close();
+    zip.close();
 
-    // kmlContent = zipFile.readAll();
-    // zipFile.close();
-    // zip.close();
-
-    // if (kmlContent.isEmpty()) {
-    //     qDebug() << "No .kml file found in the XMAP!";
-    // }
+    if (kmlContent.isEmpty()) {
+        qDebug() << "No .kml file found in the XMAP!";
+    }
 
     return kmlContent;
 }
-
-
 
 void ScreetShot::judgeResizeMode(const QRectF rect,const QPoint pos)
 {
@@ -851,6 +867,22 @@ QString ScreetShot::getTargetDirPath()
     return targetDirPath_;
 }
 
+double ScreetShot::calculateDistance(double lat1, double lon1, double lat2, double lon2)
+{
+    LLA lla1(lat1, lon1, 0.0);
+    LLA lla2(lat2, lon2, 0.0);
+
+    North_East_Down ned1(&lla1, &viewLlaRef_, false);
+    North_East_Down ned2(&lla2, &viewLlaRef_, false);
+
+    double dn = ned2.n - ned1.n;
+    double de = ned2.e - ned1.e;
+    double dd = ned2.d - ned1.d;
+
+    return std::sqrt(dn * dn + de * de + dd * dd);
+
+}
+
 void ScreetShot::judgeCurrentLevelExist(double longitude,double latitude,int level)
 {
     QString m_url;
@@ -1024,40 +1056,26 @@ qreal ScreetShot::clipLat(qreal lat)
 
 
 /*------------------------------------------------------------------------------*/
-bool ScreetShot::getDistMeasureVisible() const
+bool ScreetShot::getP1Visible() const
 {
-    return isDistMeasureVisible_;
+    return isP1Visible_;
 }
 
-void ScreetShot::setDistMeasureVisible(bool visible)
+void ScreetShot::setP1Visible(bool visible)
 {
-    qDebug() << "ScreetShot::setDistMeasureVisible....." << visible;
-    isDistMeasureVisible_ = visible;
-    emit distMeasureVisibleChanged();
+    isP1Visible_ = visible;
+    emit p1VisibleChanged();
 }
 
-QLineF ScreetShot::getDistLine() const
+bool ScreetShot::getP2Visible() const
 {
-    return distLine_;
+    return isP2Visible_;
 }
 
-void ScreetShot::setDistLine(const QLineF line)
+void ScreetShot::setP2Visible(bool visible)
 {
-    distLine_ = line;
-    emit distLineChanged();
-}
-
-void ScreetShot::setDistLineStart(QPointF start)
-{
-    distLine_.setP1(start);
-    setDistLineEnd(start);
-    emit distLineChanged();
-}
-
-void ScreetShot::setDistLineEnd(QPointF end)
-{
-    distLine_.setP2(end);
-    emit distLineChanged();
+    isP2Visible_ = visible;
+    emit p2VisibleChanged();
 }
 
 QPointF ScreetShot::getDistLineP1() const
@@ -1083,3 +1101,164 @@ void ScreetShot::setDistLineP2(const QPointF p2)
     emit distLineChanged();
 }
 
+
+
+
+
+
+/*---------------------------------LandMark---------------------------------------*/
+void ScreetShot::translate()
+{
+    spotName_ = tr("Unnamed landmark");
+    dialogTitle_ = tr("Select the save directory");
+}
+
+
+void ScreetShot::setLatiLonData(double lati,double longi)
+{
+    lati_  = lati;
+    longi_ = longi;
+}
+
+void ScreetShot::clearLandMarks()
+{
+    setSpotName(tr("Unnamed landmark"));
+
+    // emit closeLandMark();
+}
+
+void ScreetShot::createLocationKmlFile(QString savePath)
+{
+    if (!savePath.endsWith(".kml", Qt::CaseInsensitive)) {
+        savePath += ".kml";
+    }
+
+    QString kmlName = "Location Kml";
+    QFile file(savePath);
+
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        qDebug() << QString("Cannot write file %1(%2).").arg(kmlName).arg(file.errorString());
+        return;
+    }
+
+    QXmlStreamWriter writer(&file);
+    writer.setCodec("UTF-8");
+    writer.setAutoFormatting(true);
+    writer.writeStartDocument("1.0", true);
+
+    writer.writeStartElement("kml");
+    writer.writeAttribute("xmlns", "http://www.opengis.net/kml/2.2");
+
+    writer.writeStartElement("Document");
+    writer.writeAttribute("id", "root_doc");
+
+    writer.writeStartElement("Placemark");
+    writer.writeTextElement("name", "Target Point");
+
+    writer.writeStartElement("Point");
+    QString coordinates = QString::number(longi_, 'f', 14) + "," + QString::number(lati_, 'f', 14) + ",0";
+    writer.writeTextElement("coordinates", coordinates);
+    writer.writeEndElement(); // Point
+
+    writer.writeEndElement(); // Placemark
+    writer.writeEndElement(); // Document
+    writer.writeEndElement(); // kml
+
+    writer.writeEndDocument();
+    file.close();
+
+}
+
+void ScreetShot::saveClicked()
+{
+    if (!spotName_.endsWith(".kml", Qt::CaseInsensitive)) {
+        spotName_ += ".kml";
+    }
+
+#ifdef Q_OS_WIN
+    QString defaultPath = QDir::homePath() + "/" + spotName_;
+    QString filePath = QFileDialog::getSaveFileName(nullptr,dialogTitle_, defaultPath,tr("KML Files (*.kml)"));
+    if (!filePath.isEmpty()) {
+        createLocationKmlFile(filePath);
+        GIF->dialogInfo(Dialog_OK, tr("Spot saved successfully!"));
+    }
+    clearLandMarks();
+#elif defined(Q_OS_ANDROID)
+    // 调用 Java 方法打开 SAF 文件选择器
+    qDebug() << "ScreetShot::saveClicked() 1111111111111";
+    QAndroidJniObject dirName = QAndroidJniObject::fromString("");
+    QAndroidJniObject operationType = QAndroidJniObject::getStaticObjectField(
+        "com/nqc/FileQtActivity$OperationType","OPEN_DIRECTORY", "Lcom/nqc/FileQtActivity$OperationType;");
+    QAndroidJniObject::callStaticMethod<void>("com/nqc/FileQtActivity", "openDirectoryFromQt",
+       "(Ljava/lang/String;Lcom/nqc/FileQtActivity$OperationType;)V",dirName.object<jstring>(), operationType.object());
+#endif
+
+    qDebug() << "ScreetShot::saveClicked() 22222222222";
+}
+
+void ScreetShot::slot_safResultReceived(const QString& uri,const QString& operationType)
+{
+    qDebug() << "ScreetShot::slot_safResultReceived........";
+    createLocationKmlFile(spotName_);
+
+    QFile kmlFile(spotName_);
+    if (kmlFile.open(QIODevice::ReadOnly)) {
+        QByteArray fileData = kmlFile.readAll();
+        kmlFile.close();
+
+#ifdef Q_OS_ANDROID
+        QAndroidJniEnvironment env;
+        jbyteArray byteArray = env->NewByteArray(fileData.size());
+        env->SetByteArrayRegion(byteArray, 0, fileData.size(), reinterpret_cast<const jbyte*>(fileData.constData()));
+        QAndroidJniObject fileName2 = QAndroidJniObject::fromString(spotName_);
+        QAndroidJniObject mimeType = QAndroidJniObject::fromString("application/vnd.google-earth.kml+xml");
+        QAndroidJniObject::callStaticMethod<void>( "com/nqc/FileQtActivity", "saveBinaryFile",
+        "(Ljava/lang/String;[BLjava/lang/String;)V",fileName2.object<jstring>(),byteArray,mimeType.object<jstring>());
+        env->DeleteLocalRef(byteArray);
+#endif
+        GIF->dialogInfo(Dialog_OK, tr("Spot saved successfully!"));
+
+        clearLandMarks();
+    }
+
+}
+
+void ScreetShot::setSpotLatitude2(QString latitude)
+{
+    spotLatitude_ = latitude;
+    lati_ = DDToDecimalDegrees(latitude);
+}
+
+void ScreetShot::setSpotLongitude2(QString longitude)
+{
+    spotLongitude_ = longitude;
+    longi_ = DDToDecimalDegrees(longitude);
+}
+
+double ScreetShot::DDToDecimalDegrees(const QString str)
+{
+    QRegularExpression ddRegex(R"(^([-+]?\d{1,3})(?:\.(\d+))?[°]?[NSWEnswe]?$)");
+    QString trimmedStr = str.trimmed();
+    QRegularExpressionMatch match = ddRegex.match(trimmedStr);
+    if(!match.hasMatch()) {
+        GIF->dialogInfo(Dialog_OK,  tr("Invalid latitude or longitude for the selected format."));
+        return 0.0;
+    }
+
+    double degrees = match.captured(1).toDouble();
+    double decimal = match.captured(2).isEmpty() ? 0.0 : match.captured(2).toDouble();
+    double decimalDegrees = degrees + decimal/qPow(10, match.captured(2).size());
+    bool isNegative = trimmedStr.startsWith('-') || trimmedStr.endsWith("S") || trimmedStr.endsWith("s")
+                      || trimmedStr.endsWith("W") || trimmedStr.endsWith("w") || trimmedStr.startsWith("S")
+                      || trimmedStr.startsWith("s") || trimmedStr.startsWith("W") || trimmedStr.startsWith("w");
+    if (isNegative) {
+        decimalDegrees = -qAbs(decimalDegrees);
+    }
+    return decimalDegrees;
+
+}
+
+void ScreetShot::cancelClicked()
+{
+    clearLandMarks();
+}

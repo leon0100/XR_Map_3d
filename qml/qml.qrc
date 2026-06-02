@@ -116,5 +116,7 @@
         <file>QmlCommon/KDialogLoading.qml</file>
         <file>AppXr/LocationsQml.qml</file>
         <file>DistMeasure.qml</file>
+        <file>AppXr/LandMarks.qml</file>
+        <file>AppXr/LandMarkPoint.qml</file>
     </qresource>
 </RCC>

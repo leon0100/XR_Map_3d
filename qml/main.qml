@@ -89,7 +89,15 @@ ApplicationWindow  {
     }
 
     LocationsQml {
-        // visible: toolBarXR.locationMode
+
+    }
+
+    LandMarks {
+
+    }
+
+    LandMarkPoint {
+
     }
 
     IsobathsExtraSettings {

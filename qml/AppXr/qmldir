@@ -5,5 +5,7 @@ MenuBar_XR     1.0  MenuBar_XR.qml
 ToolBar_XR     1.0  ToolBar_XR.qml
 MenuButton     1.0  MenuButton.qml
 LocationsQml   1.0  LocationsQml.qml
+LandMarks      1.0  LandMarks.qml
+LandMarkPoint  1.0  LandMarkPoint.qml
 CMouseOpacityArea  1.0  CMouseOpacityArea.qml
 CPopup         1.0  CPopup.qml

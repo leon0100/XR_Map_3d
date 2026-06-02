@@ -24,6 +24,7 @@ Rectangle {
 
     property bool screenMode: false
     property bool locationMode: false
+    property bool landMarkMode: false
     property bool contourMode: false
     property bool measureMode: false
     property bool bluetoothMode: false
@@ -140,7 +141,6 @@ Rectangle {
                 toolTipText: qsTr("Screen Shot")
             }
 
-
             Rectangle {
                 anchors.fill: parent
                 radius: 2
@@ -155,7 +155,7 @@ Rectangle {
             Connections {
                 target: renderer.screetShot
                 function onCancelScreetShot() {
-                    frameSlectBtn.screenMode = false
+                    screenMode = false
                 }
             }
         }
@@ -218,23 +218,23 @@ Rectangle {
                 toolTipText: qsTr("Location")
             }
 
-            Rectangle {
-                anchors.fill: parent
-                radius: 2
-                color: locationMode ? backColor : "transparent"
-            }
+            // Rectangle {
+            //     anchors.fill: parent
+            //     radius: 2
+            //     color: locationMode ? backColor : "transparent"
+            // }
 
             onPressed: {
                 locationMode = !locationMode
                 Locations.signalShowLocation(locationMode)
             }
 
-            Connections {
-                target: Locations
-                function onSignalShowLocation(show) {
-                    locationMode = show
-                }
-            }
+            // Connections {
+            //     target: Locations
+            //     function onSignalShowLocation(show) {
+            //         locationMode = show
+            //     }
+            // }
         }
 
         MenuButton { //兴趣点
@@ -248,16 +248,24 @@ Rectangle {
             CMouseOpacityArea {
                 toolTipText: qsTr("LandMark")
             }
-            property bool landMarkMode: false
-            Rectangle {
-                anchors.fill: parent
-                radius: 2
-                color: landMarkBtn.landMarkMode ? backColor : "transparent"
-            }
+
+            // Rectangle {
+            //     anchors.fill: parent
+            //     radius: 2
+            //     color: landMarkMode ? backColor : "transparent"
+            // }
 
             onPressed: {
                 landMarkMode = !landMarkMode
+                renderer.setLandMarkMode(landMarkMode)
             }
+
+            // Connections {
+            //     target: renderer.screetShot
+            //     function onCloseLandMark() {
+            //         landMarkMode = false;
+            //     }
+            // }
         }
 
         MenuButton { //等值线
@@ -273,11 +281,11 @@ Rectangle {
                 toolTipText: qsTr("Contours")
             }
 
-            Rectangle {
-                anchors.fill: parent
-                radius: 2
-                color: contourMode ? backColor : "transparent"
-            }
+            // Rectangle {
+            //     anchors.fill: parent
+            //     radius: 2
+            //     color: contourMode ? backColor : "transparent"
+            // }
 
             onPressed: {
                 contourMode = !contourMode
