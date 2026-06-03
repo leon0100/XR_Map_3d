@@ -593,7 +593,7 @@ void Locations::slot_exportKmlPathSelected(QString path)
 
 void Locations::slot_locationStyle(int index)
 {
-    qDebug() << "slot_locationsDStyle....." << index;
+    // qDebug() << "slot_locationsDStyle....." << index;
     if(index == 0 || index == 1) {
         dataset_->location(gpsCoor_.latitude, gpsCoor_.longitude);
     }

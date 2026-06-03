@@ -265,8 +265,6 @@ Rectangle {
         }
 
 
-
-
         /* =================================== Place Name ======================================= */
         Rectangle {
             Layout.fillWidth: true

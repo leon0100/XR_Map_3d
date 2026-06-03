@@ -338,6 +338,7 @@ signals:
     void dataUpdate();
     void bottomTrackUpdated(const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll);
     void updatedLlaRef();
+    void locationToDest(LLA targetLla);
     void channelsUpdated();
     void redrawEpochs(const QSet<int>& indxs);
     void lastPositionChanged();

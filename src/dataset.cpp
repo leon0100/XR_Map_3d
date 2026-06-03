@@ -708,7 +708,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
         uint64_t lastIndx = pool_.size() - 1;
         if (!getLlaRef().isInit) {
             LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
-                                       (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
+                        (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
             setLlaRef(LLARef(pos.lla), llaState);
         }
         lastEp->setPositionLLA(pos);
@@ -731,7 +731,7 @@ void Dataset::location(double lat, double lon)
     LLA lla = LLA(lat, lon);
     if (lla.isCoordinatesValid()) {
         _llaRef = LLARef(lla);
-        emit updatedLlaRef();
+        emit locationToDest(lla);
     }
     else {
         GIF->dialogInfo(Dialog_OK, tr("Invalid Coordinates!"));

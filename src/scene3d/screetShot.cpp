@@ -249,7 +249,6 @@ bool ScreetShot::createXMAPFile(const QString kmlFilePath, const QString imageFi
         qDebug() << "[ERROR] Failed to create KMZ file.";
         return false;
     }
-
 #else
     QString password = FILE_PASSWORD;
     QuaZip zip(outputXMAPPath + ".xmap");
@@ -877,10 +876,7 @@ double ScreetShot::calculateDistance(double lat1, double lon1, double lat2, doub
 
     double dn = ned2.n - ned1.n;
     double de = ned2.e - ned1.e;
-    double dd = ned2.d - ned1.d;
-
-    return std::sqrt(dn * dn + de * de + dd * dd);
-
+    return std::sqrt(dn * dn + de * de);
 }
 
 void ScreetShot::judgeCurrentLevelExist(double longitude,double latitude,int level)
@@ -1169,6 +1165,70 @@ void ScreetShot::createLocationKmlFile(QString savePath)
 
 }
 
+
+
+#ifdef Q_OS_ANDROID
+extern "C"
+{
+JNIEXPORT void JNICALL Java_com_nqc_FileQtActivity_onSafResultNative(JNIEnv *env, jobject obj, jstring data, jstring type)
+{
+    const char *uriStr = env->GetStringUTFChars(data, NULL);
+    const char *typeStr = env->GetStringUTFChars(type, NULL);
+
+    QString uri = QString::fromUtf8(uriStr);
+    QString opType = QString::fromUtf8(typeStr);
+
+    env->ReleaseStringUTFChars(data, uriStr);
+    env->ReleaseStringUTFChars(type, typeStr);
+
+    // qDebug() << "onSafResultNative:Received from Java - Type:" << uri << "Data:" << opType;
+
+    // 使用QueuedConnection确保在主线程中执行
+    QMetaObject::invokeMethod(AppController::instance(), [uri, opType]() {
+        emit AppController::instance()->safResultReceived(uri, opType); }, Qt::QueuedConnection);
+}
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_nqc_FileQtActivity_onFileSelected(JNIEnv *env, jobject thiz, jstring filePath)
+{
+    const char *path = env->GetStringUTFChars(filePath, nullptr);
+    QString qtPath = QString::fromUtf8(path);
+    env->ReleaseStringUTFChars(filePath, path);
+
+    // qDebug() << "onFileSelected file path from Java:" << qtPath;
+
+    // 在主线程发信号
+    QMetaObject::invokeMethod(AppController::instance(), [qtPath]() {
+        emit AppController::instance()->signalFileSelected(qtPath);
+    });
+}
+
+
+extern "C"
+{
+JNIEXPORT void JNICALL Java_com_nqc_FileQtActivity_onSaveKmlFile(JNIEnv *env, jobject obj, jstring data, jstring type)
+{
+    const char *uriStr = env->GetStringUTFChars(data, NULL);
+    const char *typeStr = env->GetStringUTFChars(type, NULL);
+
+    QString uri = QString::fromUtf8(uriStr);
+    QString opType = QString::fromUtf8(typeStr);
+
+    env->ReleaseStringUTFChars(data, uriStr);
+    env->ReleaseStringUTFChars(type, typeStr);
+
+    // qDebug() << "onSaveKmlFile: Received from Java - Type:" << uri << "Data:" << opType;
+
+    // 使用QueuedConnection确保在主线程中执行
+    QMetaObject::invokeMethod(AppController::instance(), [uri, opType]() {
+        emit AppController::instance()->signalSaveKmlFile(uri, opType); });
+}
+}
+
+#endif
+
+
 void ScreetShot::saveClicked()
 {
     if (!spotName_.endsWith(".kml", Qt::CaseInsensitive)) {
@@ -1185,20 +1245,16 @@ void ScreetShot::saveClicked()
     clearLandMarks();
 #elif defined(Q_OS_ANDROID)
     // 调用 Java 方法打开 SAF 文件选择器
-    qDebug() << "ScreetShot::saveClicked() 1111111111111";
     QAndroidJniObject dirName = QAndroidJniObject::fromString("");
     QAndroidJniObject operationType = QAndroidJniObject::getStaticObjectField(
         "com/nqc/FileQtActivity$OperationType","OPEN_DIRECTORY", "Lcom/nqc/FileQtActivity$OperationType;");
     QAndroidJniObject::callStaticMethod<void>("com/nqc/FileQtActivity", "openDirectoryFromQt",
        "(Ljava/lang/String;Lcom/nqc/FileQtActivity$OperationType;)V",dirName.object<jstring>(), operationType.object());
 #endif
-
-    qDebug() << "ScreetShot::saveClicked() 22222222222";
 }
 
 void ScreetShot::slot_safResultReceived(const QString& uri,const QString& operationType)
 {
-    qDebug() << "ScreetShot::slot_safResultReceived........";
     createLocationKmlFile(spotName_);
 
     QFile kmlFile(spotName_);

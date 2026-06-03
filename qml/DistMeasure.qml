@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Shapes 1.15
 
+
+
 Item {
     id: root
     visible: renderer.screetShot.isP1Visible
@@ -14,7 +16,7 @@ Item {
 
     property var  startPoint: renderer.screetShot.distLineP1  // 起点坐标
     property var  endPoint:   renderer.screetShot.distLineP2  // 终点坐标
-    property string  distance: ""
+    property string  distance: "0.0m"
 
 
     Connections {
@@ -22,12 +24,11 @@ Item {
 
         function onSignalStartToEndDist(dist) {
             if (dist >= 1000) {
-                distance =  (dist / 1000).toFixed(2) + " km"
+                distance = (dist / 1000).toFixed(2) + " km"
             }
             else {
                 distance = dist.toFixed(1) + " m"
             }
-
         }
     }
 
@@ -58,10 +59,11 @@ Item {
 
     Shape {
         anchors.fill: parent
+
         ShapePath {
             strokeWidth: iconSize * 0.2
             strokeColor: "#00FFFF"
-            fillColor: "#00FFFF"
+            fillColor:   "#00FFFF"
             startX: root.startPoint.x
             startY: root.startPoint.y
 

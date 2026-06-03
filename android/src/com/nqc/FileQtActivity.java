@@ -210,7 +210,6 @@ public class FileQtActivity extends QtActivity
                         if (out != null) {
                             out.write(data);
                             out.flush();
-                            // Log.i("FileQtActivity", "文件写入成功: " + fileName);
                         }
                     }
                 } else {

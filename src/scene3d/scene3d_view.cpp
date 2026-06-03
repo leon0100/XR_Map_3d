@@ -528,7 +528,7 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
 
     clearComboSelectionRect();
 
-    QPoint pos = QPoint(x,y);
+    QPoint pos = QPoint(x, y);
 
     m_lastMousePos = {x, y};
 
@@ -605,7 +605,6 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
 
     /*-- 测距模块 --*/
     if(screetShot_.isDistMeasureMode_) {
-        screetShot_.setLLARef(m_camera->viewLlaRef_);
         double startLat, startLon,endLat, endLon;
         QPointF p1 = screetShot_.getDistLineP1();
         QPointF p2 = screetShot_.getDistLineP2();
@@ -635,7 +634,6 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
 
     /*-- 测距模块 --*/
     if(screetShot_.isDistMeasureMode_) {
-        screetShot_.setLLARef(m_camera->viewLlaRef_);
         double startLat, startLon,endLat, endLon;
         QPointF p1 = screetShot_.getDistLineP1();
         QPointF p2 = screetShot_.getDistLineP2();
@@ -671,7 +669,6 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
     qDebug() << "isScreen:  "<< isScreen;
     screetShot_.isScreenMode_ = isScreen;
 
-    // setMapView();
     if (m_camera && m_camera->getIsPerspective()) {
         m_camera->resetRotationAngle();
         if (m_axesThumbnailCamera) {
@@ -703,7 +700,6 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
 void GraphicsScene3dView::setDistMeasureMode(bool isDist)
 {
     screetShot_.isDistMeasureMode_ = isDist;
-    // setMapView();
     if (m_camera && m_camera->getIsPerspective()) {
         m_camera->resetRotationAngle();
         if (m_axesThumbnailCamera) {
@@ -719,6 +715,12 @@ void GraphicsScene3dView::setDistMeasureMode(bool isDist)
 
     if(isDist) {
         QGuiApplication::setOverrideCursor(Qt::PointingHandCursor);
+        // int x = screetShot_.getLandMarkPtX();
+        // int y = screetShot_.getLandMarkPtY();
+        // double lati, lon;
+        // calculateLatLong(x, y, lati, lon);
+        // LLARef llaRef = LLARef(LLA(lati, lon, 0));
+        // screetShot_.setLLARef(llaRef);
         screetShot_.setLLARef(m_camera->viewLlaRef_);
     }
     else {
@@ -1060,7 +1062,8 @@ void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
                     isobathsSet->setProperty("outlineMode", false);
                 }
             }
-        } else {
+        }
+        else {
             polygonOutline_->setOutlineMode(true);
         }
     }
@@ -1113,7 +1116,21 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
             surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
             forceUpdateDatasetLlaRef();
             fitAllInView();
-        }, Qt::DirectConnection);
+    }, Qt::DirectConnection);
+
+    QObject::connect(datasetPtr_, &Dataset::locationToDest, this, [this](LLA targetLla) ->void {
+        // 将经纬度转换为相对于当前参考点的NED坐标
+        // LLARef llaRef = m_camera->datasetLlaRef_;
+        // m_camera->datasetLlaRef_ = LLARef(targetLla);
+        // North_East_Down targetNed(&targetLla, &m_camera->datasetLlaRef_, false);
+        // 移动相机焦点到目标位置
+        // m_camera->focusOnPosition(QVector3D(targetNed.n, targetNed.e, 0.0f));
+        forceUpdateDatasetLlaRef();
+        m_camera->setDistance(1600.0f);
+
+        emit cameraIsMoved();
+        QQuickFramebufferObject::update();
+    });
 }
 
 void GraphicsScene3dView::setDataProcessorPtr(DataProcessor *dataProcessorPtr)
@@ -1703,17 +1720,17 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
 
             ScreetShot::createKmlFile(chunkBasePath + ".kml", chunkImageName, northLat, southLat, eastLon, westLon);
             ScreetShot::createXMAPFile(chunkBasePath + ".kml", chunkBasePath + ".png", chunkBasePath);
-            QFile xmapFile(chunkBasePath + ".xmap");
+            QFile xmapFile(chunkBasePath + ".kmz");
             if (xmapFile.open(QIODevice::ReadOnly)) {
                 QByteArray fileData = xmapFile.readAll();
                 xmapFile.close();
 
-                //把 QByteArray 直接转成 jbyteArray
+                //把 QByteArray 直接转成 jbyteArray   nie:test测试中，暂时保存为.kmz
                 QAndroidJniEnvironment env;
                 jbyteArray byteArray = env->NewByteArray(fileData.size());
                 env->SetByteArrayRegion(byteArray, 0, fileData.size(), reinterpret_cast<const jbyte*>(fileData.constData()));
-                QAndroidJniObject fileName2 = QAndroidJniObject::fromString(chunkBasePath + ".xmap");
-                QAndroidJniObject mimeType = QAndroidJniObject::fromString("application/vnd.google-earth.xmap+xml");
+                QAndroidJniObject fileName2 = QAndroidJniObject::fromString(chunkBasePath + ".kmz");
+                QAndroidJniObject mimeType = QAndroidJniObject::fromString("application/vnd.google-earth.kmz+xml");
 
                 //调用 Java 端方法
                 QAndroidJniObject::callStaticMethod<void>( "com/nqc/FileQtActivity", "saveBinaryFile",
