@@ -8,6 +8,8 @@
 #include <QLoggingCategory>
 #include <QQuickTextDocument>
 
+
+
 enum DialogType {
     Dialog_OK   = 0,
     Dialog_YesNo,
@@ -64,8 +66,6 @@ public:
     QString getCurrentMap() {
         return currTileUrl_;
     }
-
-    double getDistance_Haversine(double currLon, double currLati, double goalLon, double goalLati);
 
 
 private:

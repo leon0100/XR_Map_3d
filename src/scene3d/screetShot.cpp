@@ -65,17 +65,13 @@ void ScreetShot::setSelectionRect(const QRectF rect)
 {
     shotRect_ = rect;
 
-    // topWidth_    = getDistance_Haversine(topLeftLong_, topLeftLati_, topRightLong_, topRightLati_);
-    // rightHeight_ = getDistance_Haversine(topRightLong_, topRightLati_, bottomRightLong_, bottomRightLati_);
     LLA topLeftLla(topLeftLati_, topLeftLong_, 0.0);
-    North_East_Down topLeftNed(&topLeftLla, &viewLlaRef_, false);
+    North_East_Down topLeftNed(&topLeftLla, &viewLlaRef_, isPerspective_);
     LLA bottomRightLla(bottomRightLati_, bottomRightLong_, 0.0);
-    North_East_Down bottomRightNed(&bottomRightLla, &viewLlaRef_, false);
+    North_East_Down bottomRightNed(&bottomRightLla, &viewLlaRef_, isPerspective_);
     topWidth_    = std::abs(bottomRightNed.e - topLeftNed.e); // 宽度（米）
     rightHeight_ = std::abs(bottomRightNed.n - topLeftNed.n); // 高度（米）
-
     // qDebug() << "topWidth_:" << topWidth_ << "   rightHeight_:" << rightHeight_;
-
 
     QString topWidthStr    = getLengthChEn(topWidth_);
     QString rightHeightStr = getLengthChEn(rightHeight_);
@@ -131,9 +127,10 @@ void ScreetShot::setScreetToolBar(bool screetToolBarShow)
     emit screetToolBarShowChanged();
 }
 
-void ScreetShot::setLLARef(LLARef viewLlaRef)
+void ScreetShot::setLLARef(LLARef viewLlaRef, bool isPerspective)
 {
     viewLlaRef_ = viewLlaRef;
+    isPerspective_ = isPerspective;
 }
 
 float ScreetShot::mapLevelToDistance(int level) const
@@ -763,16 +760,6 @@ void ScreetShot::resizeMode(QRectF& rect, const QPoint pos)
     }
 }
 
-
-double ScreetShot::getDistance_Haversine(double current_longi, double current_lati, double goal_longi, double goal_lati)
-{
-    double dLat = (goal_lati - current_lati) * _PI_180;
-    double dLon = (goal_longi - current_longi) * _PI_180;
-    double a = pow(sin(dLat/2), 2) + cos(current_lati*_PI_180) * cos(goal_lati*_PI_180) * pow(sin(dLon/2), 2);
-    double c = 2 * atan2(sqrt(a), sqrt(1-a));
-    return EARTH_RADIUS * c;
-}
-
 void ScreetShot::switchMapSource(MapSourceType sourceType)
 {
     currentMap_ = sourceType;
@@ -871,8 +858,8 @@ double ScreetShot::calculateDistance(double lat1, double lon1, double lat2, doub
     LLA lla1(lat1, lon1, 0.0);
     LLA lla2(lat2, lon2, 0.0);
 
-    North_East_Down ned1(&lla1, &viewLlaRef_, false);
-    North_East_Down ned2(&lla2, &viewLlaRef_, false);
+    North_East_Down ned1(&lla1, &viewLlaRef_, isPerspective_);
+    North_East_Down ned2(&lla2, &viewLlaRef_, isPerspective_);
 
     double dn = ned2.n - ned1.n;
     double de = ned2.e - ned1.e;

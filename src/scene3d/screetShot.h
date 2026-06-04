@@ -119,7 +119,7 @@ public:
 
     float mapLevelToDistance(int level) const;
 
-    void setLLARef(LLARef viewLlaRef);
+    void setLLARef(LLARef viewLlaRef, bool isPerspective);
 
     bool isMapLevelChooseVisible() const;
     void setMapLevelChooseVisible(bool visible);
@@ -145,7 +145,6 @@ signals:
 public:
     void judgeResizeMode(const QRectF rect,const QPoint pos);
     void resizeMode(QRectF& rect,const QPoint pos);
-    double getDistance_Haversine(double current_longi, double current_lati, double goal_longi, double goal_lati);
     void switchMapSource(MapSourceType sourceType);
     int getTargetMapLevel();
     QString getTargetDirPath();
@@ -183,7 +182,7 @@ public:
     ResizeMode resizeMode_;
     int currMapLevel_ = 0;
     bool dragging_ = false;
-    double topLeftLong_, topLeftLati_, topRightLong_, topRightLati_, bottomRightLong_, bottomRightLati_;
+    double topLeftLong_, topLeftLati_, bottomRightLong_, bottomRightLati_;
     bool screetToolBarShow_ = false;
     QRectF shotRect_;
     bool isSelectionRectVisible_ = false;
@@ -194,6 +193,7 @@ public:
 private:
     double topWidth_,rightHeight_;
     LLARef viewLlaRef_;
+    bool  isPerspective_ = false;
     bool isReminderChecked_ = false;
     QString targetDirPath_;
     bool openMapLevelList_ = false;
@@ -235,6 +235,7 @@ public:
     bool isDistMeasureMode_ = false;
     int isDrawMeasure_ = -1;   //0:开始绘制（起点还没绘）    1：完成起点绘制    2:保持绘制完成的持续状态
     double startLati_, startLon_;
+    QVector3D worldCoorOrigin_;
 
 signals:
     void distMeasureVisibleChanged();
@@ -247,7 +248,6 @@ private:
     bool isP1Visible_ = false, isP2Visible_ = false;
     QLineF distLine_;
     QPointF distLineP1_, distLineP2_;
-
 
 
 

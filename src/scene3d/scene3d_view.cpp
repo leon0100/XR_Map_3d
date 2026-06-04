@@ -304,16 +304,17 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
                 screetShot_.isDrawMeasure_ = 1;
                 screetShot_.setP1Visible(true);
                 screetShot_.setDistLineP1(QPointF(x, y));
-                calculateLatLong(x, y, screetShot_.startLati_, screetShot_.startLon_);
+                screetShot_.worldCoorOrigin_ = calculateToWorldCoor(x, y);
                 emit screetShot_.signalStartToEndDist(0);
             }
             else if(screetShot_.isDrawMeasure_ == 1) {
                 screetShot_.isDrawMeasure_ = 2;
                 screetShot_.setP2Visible(true);
                 screetShot_.setDistLineP2(QPointF(x, y));
-                double endLat, endLon;
-                calculateLatLong(x, y, endLat, endLon);
-                double dist = screetShot_.calculateDistance(screetShot_.startLati_, screetShot_.startLon_, endLat, endLon);
+                QVector3D worldCoorEnd = calculateToWorldCoor(x, y);
+                const float dx = (worldCoorEnd.x() - screetShot_.worldCoorOrigin_.x());
+                const float dy = (worldCoorEnd.y() - screetShot_.worldCoorOrigin_.y());
+                double dist = std::sqrt(dx * dx + dy * dy);
                 emit screetShot_.signalStartToEndDist(dist);
                 QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
             }
@@ -389,11 +390,9 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
                 qreal width  = currentPos.x() - screetShot_.startPos_.x();
                 qreal height = currentPos.y() - screetShot_.startPos_.y();
                 QRectF shotRect = QRectF(std::min(screetShot_.startPos_.x(), currentPos.x()),
-                        std::min(screetShot_.startPos_.y(), currentPos.y()), std::abs(width), std::abs(height));
+                std::min(screetShot_.startPos_.y(), currentPos.y()), std::abs(width), std::abs(height));
                 calculateLatLong(shotRect.topLeft().x(), shotRect.topLeft().y(),
                                 screetShot_.topLeftLati_,screetShot_.topLeftLong_);
-                calculateLatLong(shotRect.topRight().x(), shotRect.topRight().y(),
-                                screetShot_.topRightLati_, screetShot_.topRightLong_);
                 calculateLatLong(shotRect.bottomRight().x(), shotRect.bottomRight().y(),
                                 screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
                 screetShot_.setSelectionRect(shotRect);
@@ -406,8 +405,6 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
                 screetShot_.resizeMode(screetShot_.shotRect_, pos);
                 calculateLatLong(screetShot_.shotRect_.topLeft().x(), screetShot_.shotRect_.topLeft().y(),
                                 screetShot_.topLeftLati_, screetShot_.topLeftLong_);
-                calculateLatLong(screetShot_.shotRect_.topRight().x(), screetShot_.shotRect_.topRight().y(),
-                                screetShot_.topRightLati_, screetShot_.topRightLong_);
                 calculateLatLong(screetShot_.shotRect_.bottomRight().x(), screetShot_.shotRect_.bottomRight().y(),
                                 screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
                 screetShot_.setSelectionRect(screetShot_.shotRect_);
@@ -422,9 +419,10 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
     {
         if(screetShot_.isDrawMeasure_ == 1) {
             screetShot_.setDistLineP2(QPointF(x, y));
-            double endLat, endLon;
-            calculateLatLong(x, y, endLat, endLon);
-            double dist = screetShot_.calculateDistance(screetShot_.startLati_, screetShot_.startLon_, endLat, endLon);
+            QVector3D worldCoorEnd = calculateToWorldCoor(x, y);
+            const float dx = (worldCoorEnd.x() - screetShot_.worldCoorOrigin_.x());
+            const float dy = (worldCoorEnd.y() - screetShot_.worldCoorOrigin_.y());
+            double dist = std::sqrt(dx * dx + dy * dy);
             emit screetShot_.signalStartToEndDist(dist);
         }
     }
@@ -603,14 +601,15 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
         emit cameraIsMoved();
     }
 
-    /*-- 测距模块 --*/
+    /*---- 测距模块 ----*/
     if(screetShot_.isDistMeasureMode_) {
-        double startLat, startLon,endLat, endLon;
         QPointF p1 = screetShot_.getDistLineP1();
         QPointF p2 = screetShot_.getDistLineP2();
-        calculateLatLong(p1.x(), p1.y(), startLat, startLon);
-        calculateLatLong(p2.x(), p2.y(), endLat, endLon);
-        double dist = screetShot_.calculateDistance(startLat, startLon, endLat, endLon);
+        QVector3D worldCoorOrigin = calculateToWorldCoor(p1.x(), p1.y());
+        QVector3D worldCoorEnd    = calculateToWorldCoor(p2.x(), p2.y());
+        const float dx = (worldCoorEnd.x() - worldCoorOrigin.x());
+        const float dy = (worldCoorEnd.y() - worldCoorOrigin.y());
+        double dist = std::sqrt(dx * dx + dy * dy);
         emit screetShot_.signalStartToEndDist(dist);
     }
 }
@@ -632,14 +631,15 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
 
     emit cameraIsMoved();
 
-    /*-- 测距模块 --*/
+    /*---- 测距模块 ----*/
     if(screetShot_.isDistMeasureMode_) {
-        double startLat, startLon,endLat, endLon;
         QPointF p1 = screetShot_.getDistLineP1();
         QPointF p2 = screetShot_.getDistLineP2();
-        calculateLatLong(p1.x(), p1.y(), startLat, startLon);
-        calculateLatLong(p2.x(), p2.y(), endLat, endLon);
-        double dist = screetShot_.calculateDistance(startLat, startLon, endLat, endLon);
+        QVector3D worldCoorOrigin = calculateToWorldCoor(p1.x(), p1.y());
+        QVector3D worldCoorEnd    = calculateToWorldCoor(p2.x(), p2.y());
+        const float dx = (worldCoorEnd.x() - worldCoorOrigin.x());
+        const float dy = (worldCoorEnd.y() - worldCoorOrigin.y());
+        double dist = std::sqrt(dx * dx + dy * dy);
         emit screetShot_.signalStartToEndDist(dist);
     }
 }
@@ -687,7 +687,7 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
     if(isScreen) {
         screetShot_.firstScreenDown_ = false;
         screetCurrentMapLevel_ = currentMapLevel_;
-        screetShot_.setLLARef(m_camera->viewLlaRef_);
+        screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
 
     } else {
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
@@ -721,7 +721,7 @@ void GraphicsScene3dView::setDistMeasureMode(bool isDist)
         // calculateLatLong(x, y, lati, lon);
         // LLARef llaRef = LLARef(LLA(lati, lon, 0));
         // screetShot_.setLLARef(llaRef);
-        screetShot_.setLLARef(m_camera->viewLlaRef_);
+        screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
     }
     else {
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
@@ -1270,6 +1270,18 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
     // qDebug() << "mouseTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
 }
 
+QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
+{
+    QVector3D rayOrigin = QVector3D(x, height() - y, -1.0f) .unproject(m_camera->m_view * m_model,
+                                                                      m_projection,boundingRect().toRect());
+    QVector3D rayEnd = QVector3D(x, height() - y, 1.0f) .unproject(m_camera->m_view * m_model,
+                                                                  m_projection, boundingRect().toRect());
+    QVector3D rayDir = (rayEnd - rayOrigin).normalized();
+
+    float groundZ = 0.0f;
+    return calculateIntersectionPoint(rayOrigin, rayDir, groundZ);
+}
+
 void GraphicsScene3dView::updateMapView()
 {
     if (!m_camera || !mapView_) {
@@ -1447,10 +1459,10 @@ void GraphicsScene3dView::setIsNorth(bool state)
 
 void GraphicsScene3dView::slotScreetGraphics()
 {
-    double minLat = std::min({screetShot_.topLeftLati_, screetShot_.topRightLati_, screetShot_.bottomRightLati_});
-    double maxLat = std::max({screetShot_.topLeftLati_, screetShot_.topRightLati_, screetShot_.bottomRightLati_});
-    double minLon = std::min({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
-    double maxLon = std::max({screetShot_.topLeftLong_, screetShot_.topRightLong_, screetShot_.bottomRightLong_});
+    double minLat = std::min({screetShot_.topLeftLati_, screetShot_.bottomRightLati_});
+    double maxLat = std::max({screetShot_.topLeftLati_, screetShot_.bottomRightLati_});
+    double minLon = std::min({screetShot_.topLeftLong_, screetShot_.bottomRightLong_});
+    double maxLon = std::max({screetShot_.topLeftLong_, screetShot_.bottomRightLong_});
 
     mapLevel_ = screetShot_.getTargetMapLevel();
 
@@ -1462,8 +1474,8 @@ void GraphicsScene3dView::slotScreetGraphics()
 
     LLA topLeftLla(maxLat, minLon, 0.0);
     LLA bottomRightLla(minLat, maxLon, 0.0);
-    North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, false);
-    North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, false);
+    North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
+    North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
 
     // 在 NED 坐标系中计算宽度和高度（使用平面距离）
     double geoWidth  = std::abs(bottomRightNed.e - topLeftNed.e);
@@ -1477,7 +1489,7 @@ void GraphicsScene3dView::slotScreetGraphics()
     double centerLon = (minLon + maxLon) * 0.5;
     // 不修改 viewLlaRef_，只移动 lookAt
     LLA targetCenterLla(centerLat, centerLon, 0.0);
-    North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, false);
+    North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
     m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
 
     // double targetHeight = std::max(geoWidth, geoHeight) * 0.5;
@@ -1494,7 +1506,7 @@ void GraphicsScene3dView::slotScreetGraphics()
     request.append(LLA(maxLat, maxLon, targetHeight));
     request.append(LLA(minLat, maxLon, targetHeight));
     request.append(LLA(minLat, minLon, targetHeight));
-    emit sendRectRequest(request, false, m_camera->viewLlaRef_, true);
+    emit sendRectRequest(request, m_camera->getIsPerspective(), m_camera->viewLlaRef_, true);
     // QMetaObject::invokeMethod(screetShot_.loadingQuickView_, [this](){
     //     screetShot_.loadingQuickView_->show(); }, Qt::QueuedConnection);
     GIF->dialogInfo(Dialog_Loading, "show");
@@ -1650,12 +1662,11 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
             QString rowStr = QString::number(row + 1);
             QString colStr = QString::number(col + 1);
             QString chunkBasePath = task.outputPath + "/" + rowStr + "_" + colStr;
-            QString chunkImageName = rowStr + "_" + colStr + ".png";
-
             if (!chunkImage.save(chunkBasePath + ".png", "PNG")) {
                 qDebug() << "Tiles saved failed to:" << chunkImage;
             }
 
+            QString chunkImageName = rowStr + "_" + colStr + ".png";
             ScreetShot::createKmlFile(chunkBasePath + ".kml", chunkImageName, northLat, southLat, eastLon, westLon);
             ScreetShot::createXMAPFile(chunkBasePath + ".kml", chunkBasePath + ".png", chunkBasePath);
 

@@ -303,6 +303,7 @@ private:
     void clearComboSelectionRect();
     void initAutoDistTimer();
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
+    QVector3D calculateToWorldCoor(qreal x, qreal y);
 
 private:
     friend class BottomTrack;

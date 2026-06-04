@@ -294,6 +294,7 @@ WaterFall {
         id: settingsRow
         anchors.left: parent.left
         anchors.bottom: parent.bottom
+        visible: false
 
         MenuFrame {
             id: leftPanel

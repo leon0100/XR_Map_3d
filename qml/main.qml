@@ -136,8 +136,6 @@ ApplicationWindow  {
     }
 
 
-
-
     footer: Rectangle {
         height: footHeight
         color: "#88363636"
@@ -147,7 +145,7 @@ ApplicationWindow  {
             anchors.margins: 1
 
             Label {
-                text: qsTr(" Lat:%1°   Lon:%2°").arg(renderer.currLat.toFixed(6)).arg(renderer.currLon.toFixed(6))
+                text: qsTr(" Longitude:%1°   Latitude:%2°").arg(renderer.currLon.toFixed(6)).arg(renderer.currLat.toFixed(6))
                 color: "white"
                 font.bold: true
                 font.pixelSize: footHeight * 0.55
@@ -168,7 +166,6 @@ ApplicationWindow  {
             }
         }
     }
-
 
     Component {
         id: stateGroupComp
@@ -240,7 +237,6 @@ ApplicationWindow  {
         waterViewSecond.settingsClicked.connect(onPlotSettingsClicked)
         menuBar.menuBarSettingOpened.connect(onMenuBarSettingsOpened)
         toolBarXR.menuBarSettingOpened.connect(onMenuBarSettingsOpened)
-
 
         if (Qt.platform.os !== "windows") {
             if (appSettings.isFullScreen) {
@@ -424,13 +420,16 @@ ApplicationWindow  {
     }
     // drag-n-drop <-
 
+
+
     SplitView {
         id: splitLayer
         visible: !showBanner
         Layout.fillHeight: true
         Layout.fillWidth:  true
         anchors.fill:      parent
-        orientation:       Qt.Vertical
+        // orientation:       Qt.Vertical
+        orientation:    Qt.Horizontal
 
 
         //添加键盘快捷键映射
@@ -678,26 +677,93 @@ ApplicationWindow  {
             }
         }
 
-        GridLayout {
-            id: visualisationLayout
-            SplitView.fillHeight: true
-            Layout.fillHeight: true
-            Layout.fillWidth:  true
-            rowSpacing: 0
-            columnSpacing: 0
-            rows    : mainview.width > mainview.height ? 1 : 2
-            columns : mainview.width > mainview.height ? 2 : 1
 
-            property int lastKeyPressed: Qt.Key_unknown
 
-            Keys.onPressed: function(event) {
-                visualisationLayout.lastKeyPressed = event.key;
-            }
 
-            Keys.onReleased: {
-                visualisationLayout.lastKeyPressed = Qt.Key_unknown;
-            }
 
+        // GridLayout {
+        //     id: visualisationLayout
+        //     SplitView.fillHeight: true
+        //     Layout.fillHeight: true
+        //     Layout.fillWidth:  true
+        //     rowSpacing: 0
+        //     columnSpacing: 0
+        //     rows    : mainview.width > mainview.height ? 1 : 2
+        //     columns : mainview.width > mainview.height ? 2 : 1
+
+        //     property int lastKeyPressed: Qt.Key_unknown
+
+        //     Keys.onPressed: function(event) {
+        //         visualisationLayout.lastKeyPressed = event.key;
+        //     }
+
+        //     Keys.onReleased: {
+        //         visualisationLayout.lastKeyPressed = Qt.Key_unknown;
+        //     }
+        Item {
+            id: mapWindow
+                        SplitView.fillWidth: true
+                        SplitView.fillHeight: true
+                        SplitView.preferredWidth: parent.width * 0.5
+
+
+            // 布局模式枚举
+            property int layoutMode: 1  // 0: 声呐全屏, 1: 正常分窗, 2: 地图全屏
+            readonly property int modeSonarFullscreen: 0
+            readonly property int modeSplitNormal:    1
+            readonly property int modeMapFullscreen:  2
+
+            // 小窗口尺寸
+            readonly property int smallWindowWidth:  200 * theme.resCoeff
+            readonly property int smallWindowHeight: 150 * theme.resCoeff
+
+            // 滑块位置 (0.0 - 1.0)
+            property real sliderPosition: 0.5
+
+            // 边界阈值
+            readonly property real edgeThreshold: 0.08
+
+            // 动画过渡时间
+            readonly property int animationDuration: 300
+
+            // 滑块宽度
+            readonly property int sliderWidth: 8 * theme.resCoeff
+
+            // ========== 分窗1：地图窗口容器 ==========
+            Item {
+                id: mapWindowContainer
+
+                // 根据布局模式动态设置位置和大小
+                x: layoutMode === modeSonarFullscreen ? 10 : 0
+                y: layoutMode === modeSonarFullscreen ?
+                   mapWindow.height - smallWindowHeight - 10 : 0
+
+                width: layoutMode === modeSonarFullscreen ? smallWindowWidth :
+                       layoutMode === modeMapFullscreen ? mapWindow.width :
+                       mapWindow.width * sliderPosition
+
+                height: layoutMode === modeSonarFullscreen ? smallWindowHeight :
+                        layoutMode === modeMapFullscreen ? mapWindow.height :
+                        splitCmapWindowontainer.height
+
+                visible: true
+                clip: true
+
+                // 平滑动画过渡
+                Behavior on x {
+                    NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                }
+                Behavior on y {
+                    NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                }
+                Behavior on width {
+                    NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                }
+                Behavior on height {
+                    NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                }
+
+            //分窗1---------->
             GraphicsScene3dView {
                 id: renderer
                 visible: (menuBar !== null) ? menuBar.is3DVisible : false
@@ -970,10 +1036,52 @@ ApplicationWindow  {
                 }
             }
 
-            Item {
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                visible: menuBar.is2DVisible
+            }
+            //分窗1 <----------
+
+
+            //分窗2 ---------->
+            // Item {
+            //     Layout.fillHeight: true
+            //     Layout.fillWidth: true
+            //     // visible: menuBar.is2DVisible
+            //     visible: true
+
+               Item {
+                   id: sonarWindowContainer
+
+                   // 根据布局模式动态设置位置和大小
+                   x: layoutMode === modeMapFullscreen ?
+                      mapWindow.width - smallWindowWidth - 10 :
+                      mapWindowContainer.width + sliderWidth
+
+                   y: layoutMode === modeMapFullscreen ?
+                      mapWindow.height - smallWindowHeight - 10 : 0
+
+                   width: layoutMode === modeMapFullscreen ? smallWindowWidth :
+                          layoutMode === modeSonarFullscreen ? mapWindow.width :
+                          mapWindow.width - mapWindowContainer.width - sliderWidth
+
+                   height: layoutMode === modeMapFullscreen ? smallWindowHeight :
+                           layoutMode === modeSonarFullscreen ? mapWindow.height :
+                           mapWindow.height
+
+                   visible: true
+                   clip: true
+
+                   // 平滑动画过渡
+                   Behavior on x {
+                       NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                   }
+                   Behavior on y {
+                       NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                   }
+                   Behavior on width {
+                       NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                   }
+                   Behavior on height {
+                       NumberAnimation { duration: animationDuration; easing.type: Easing.OutCubic }
+                   }
 
                 GridLayout {
                     anchors.fill: parent
@@ -984,8 +1092,8 @@ ApplicationWindow  {
 
                     Plot2D {
                         id: waterViewFirst
-                        Layout.fillHeight: true
                         Layout.fillWidth:  true
+                        Layout.fillHeight: true
                         Layout.rowSpan   : 1
                         Layout.columnSpan: 1
                         focus: true
@@ -1001,39 +1109,64 @@ ApplicationWindow  {
                             waterViewFirst.setIndx(waterViewFirst.indx);
                             toolBarXR.targetPlot = waterViewFirst
                         }
-                    }
 
-                    Plot2D {
-                        id: waterViewSecond
-                        enabled: menuBar.numPlots === 2
-                        visible: menuBar.numPlots === 2
+                        // 双击切换全屏模式
+                        MouseArea {
+                            anchors.fill: parent
+                            acceptedButtons: Qt.LeftButton
+                            propagateComposedEvents: true
 
-                        Layout.fillHeight: true
-                        Layout.fillWidth: true
+                            onDoubleClicked: function(mouse) {
+                                if (layoutMode === modeSonarFullscreen) {
+                                    layoutMode = modeSplitNormal
+                                    sliderPosition = 0.5
+                                } else {
+                                    layoutMode = modeSonarFullscreen
+                                }
+                                mouse.accepted = false
+                            }
 
-                        Layout.rowSpan   : 1
-                        Layout.columnSpan: 1
-                        focus: true
-                        instruments: menuBar.instruments
-                        indx: 2
+                            onPressed: function(mouse) {
+                                mouse.accepted = false
+                            }
 
-                        isEnabled: enabled
-
-                        onVisibleChanged: {
-                            if (visible && menuBar.syncPlots) {
-                                setCursorFromTo(waterViewFirst.cursorFrom(), waterViewFirst.cursorTo())
-                                update()
+                            onReleased: function(mouse) {
+                                mouse.accepted = false
                             }
                         }
-
-                        onTimelinePositionChanged: {
-                            historyScroll.value = timelinePosition
-                        }
-
-                        Component.onCompleted: {
-                            setIndx(waterViewSecond.indx);
-                        }
                     }
+
+                    // Plot2D {
+                    //     id: waterViewSecond
+                    //     enabled: menuBar.numPlots === 2
+                    //     visible: menuBar.numPlots === 2
+
+                    //     Layout.fillHeight: true
+                    //     Layout.fillWidth: true
+
+                    //     Layout.rowSpan   : 1
+                    //     Layout.columnSpan: 1
+                    //     focus: true
+                    //     instruments: menuBar.instruments
+                    //     indx: 2
+
+                    //     isEnabled: enabled
+
+                    //     onVisibleChanged: {
+                    //         if (visible && menuBar.syncPlots) {
+                    //             setCursorFromTo(waterViewFirst.cursorFrom(), waterViewFirst.cursorTo())
+                    //             update()
+                    //         }
+                    //     }
+
+                    //     onTimelinePositionChanged: {
+                    //         historyScroll.value = timelinePosition
+                    //     }
+
+                    //     Component.onCompleted: {
+                    //         setIndx(waterViewSecond.indx);
+                    //     }
+                    // }
 
                     CSlider {
                         id: historyScroll
@@ -1057,8 +1190,12 @@ ApplicationWindow  {
                     }
                 }
             }
+            //分窗2 <----------
+
         }
     }
+
+
 
 
     MenuFrame {
@@ -1198,7 +1335,7 @@ ApplicationWindow  {
         }
     }
 
-    // бровь
+    // 眉
     MenuFrame {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
@@ -1299,8 +1436,8 @@ ApplicationWindow  {
 
 
     MainMenuBar {
-        id:                menuBar
-        objectName:        "menuBar"
+        id:           menuBar
+        objectName:   "menuBar"
         Layout.fillHeight: true
         Keys.forwardTo:    [splitLayer, mousearea3D]
         height: visualisationLayout.height
