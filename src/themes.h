@@ -229,7 +229,6 @@ public:
 
 
 
-
     bool getIsFakeCoords() const { return isFakeCoords_; };
     qreal getResolutionCoeff() const { return resolutionCoeff_; };
     QColor textColor() { return *_textColor; }

@@ -1,7 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
-// import QtCore
 import Qt.labs.settings 1.1
 
 
@@ -14,8 +13,10 @@ Item {
 
     property  var    targetPlot:    null
     property  var    lastItem:      menuSettings
-    property  bool   is3DVisible:   visible3DButton.checked
-    property  bool   is2DVisible:   visible2DButton.checked
+    // property  bool   is3DVisible:   visible3DButton.checked
+    // property  bool   is2DVisible:   visible2DButton.checked
+    property bool is3DVisible:  true
+    property bool is2DVisible:  true
     property  int    numPlots:      appSettings.numPlots
     property  bool   syncPlots:     appSettings.syncPlots
     property  int    instruments:   appSettings.instruments
@@ -103,101 +104,103 @@ Item {
                 mainLayout.opacity = 0.5
             }
 
-            MenuButton {
-                id: menuSettings
-                icon.source: "qrc:/icons/ui/plug.svg"
-                Layout.fillWidth: true
-                isKlfLogging: core.isKlfLogging
-                CMouseOpacityArea {
-                    toolTipText: qsTr("Connections")
-                    onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
-                }
+            // MenuButton {
+            //     id: menuSettings
+            //     icon.source: "qrc:/icons/ui/plug.svg"
+            //     Layout.fillWidth: true
+            //     isKlfLogging: core.isKlfLogging
+            //     CMouseOpacityArea {
+            //         toolTipText: qsTr("Connections")
+            //         onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
+            //     }
 
-                onPressed: itemChangeActive(menuSettings)
-            }
+            //     onPressed: itemChangeActive(menuSettings)
+            // }
 
-            MenuButton {
-                id: menuDisplay
-                Layout.fillWidth: true
-                icon.source: "./settings-outline.svg"
+            // MenuButton {
+            //     id: menuDisplay
+            //     Layout.fillWidth: true
+            //     icon.source: "./settings-outline.svg"
 
-                CMouseOpacityArea {
-                    toolTipText: qsTr("Settings")
-                    onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
-                }
+            //     CMouseOpacityArea {
+            //         toolTipText: qsTr("Settings")
+            //         onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
+            //     }
 
-                onPressed: itemChangeActive(menuDisplay)
-            }
+            //     onPressed: itemChangeActive(menuDisplay)
+            // }
 
-            CheckButton {
-                id: visible3DButton
-                implicitWidth: theme.menuWidth
-                icon.source: "qrc:/icons/ui/map.svg"
-                backColor: theme.controlBackColor
-                borderColor:  theme.controlBackColor
-                checkedBorderColor: "black"
-                checked: true
+        //     CheckButton {
+        //         id: visible3DButton
+        //         implicitWidth: theme.menuWidth
+        //         icon.source: "qrc:/icons/ui/map.svg"
+        //         backColor: theme.controlBackColor
+        //         borderColor:  theme.controlBackColor
+        //         checkedBorderColor: "black"
+        //         checked: true
 
-                CMouseOpacityArea {
-                    toolTipText: qsTr("Display 3D")
-                    onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
-                }
+        //         CMouseOpacityArea {
+        //             toolTipText: qsTr("Display 3D")
+        //             onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
+        //         }
 
-                onClicked: {
-                    if (!visible3DButton.checked && !visible2DButton.checked) {
-                        visible2DButton.checked = true
-                    }
-                }
+        //         onClicked: {
+        //             if (!visible3DButton.checked && !visible2DButton.checked) {
+        //                 visible2DButton.checked = true
+        //             }
+        //         }
 
-                Settings {
-                    id: visible3DSettings
-                    property alias visible3DButtonChecked: visible3DButton.checked
-                }
-            }
+        //         Settings {
+        //             id: visible3DSettings
+        //             property alias visible3DButtonChecked: visible3DButton.checked
+        //         }
+        //     }
 
-            CheckButton {
-                id: visible2DButton
-                implicitWidth: theme.menuWidth
-                icon.source: "qrc:/icons/ui/ripple.svg"
-                backColor: theme.controlBackColor
-                borderColor:  theme.controlBackColor
-                checkedBorderColor: "black"
-                checked: false
+        //     CheckButton {
+        //         id: visible2DButton
+        //         implicitWidth: theme.menuWidth
+        //         icon.source: "qrc:/icons/ui/ripple.svg"
+        //         backColor: theme.controlBackColor
+        //         borderColor:  theme.controlBackColor
+        //         checkedBorderColor: "black"
+        //         checked: false
 
-                CMouseOpacityArea {
-                    toolTipText: qsTr("Display 2D")
-                    onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
-                }
+        //         CMouseOpacityArea {
+        //             toolTipText: qsTr("Display 2D")
+        //             onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
+        //         }
 
-                // onClicked: {
-                //     if (!visible3DButton.checked && !visible2DButton.checked) {
-                //         visible3DButton.checked = true
-                //     }
-                // }
+        //         // onClicked: {
+        //         //     if (!visible3DButton.checked && !visible2DButton.checked) {
+        //         //         visible3DButton.checked = true
+        //         //     }
+        //         // }
 
-                // Settings {
-                //     id: visible2DSettings
-                //     property alias visible2DButtonChecked: visible2DButton.checked
-                // }
-            }
+        //         // Settings {
+        //         //     id: visible2DSettings
+        //         //     property alias visible2DButtonChecked: visible2DButton.checked
+        //         // }
+        //     }
 
         }
 
 
-        //左上角第一个按钮（串口连接、文件导入等）
+        // 左上角第一个按钮（串口连接、文件导入等）
         DeviceSettingsViewer {
             id: devSettings
-            visible: menuSettings.active
+            // visible: menuSettings.active
+            visible: false
             Layout.maximumHeight: menu.height
             menuWidth: settingsWidth
             y:0
         }
 
-        //左上角第二个按钮settings按钮显示出来
+        // 左上角第二个按钮settings按钮显示出来
         DisplaySettingsViewer {
             id: appSettings
             Layout.alignment: Qt.AlignTop
-            visible: menuDisplay.active
+            // visible: menuDisplay.active
+            visible: false
             Layout.maximumHeight: menu.height
             menuWidth: settingsWidth
             y:0

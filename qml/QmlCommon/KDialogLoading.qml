@@ -11,10 +11,17 @@ Rectangle {
     height: loadSize
     color: "#d6e6ff"
     visible: false
+    z: 9999
 
     property int loadSize: Math.min(Screen.width, Screen.height) * 0.075
     property int iconSize: loadSize * 0.3
 
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+        preventStealing: true   // 阻止事件传递到下层
+    }
 
     BusyIndicator {
         anchors.centerIn: parent
