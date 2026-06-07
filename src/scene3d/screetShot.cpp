@@ -481,33 +481,33 @@ QByteArray ScreetShot::readKmlFromKmz(const QString& kmzPath)
 
     QByteArray kmlContent;
 
-    QString fileExtension = QFileInfo(kmzPath).suffix().toLower();
-    if (fileExtension != "xmap") {
-        qDebug() << "Invalid file type, expected .kmz!";
-        return QByteArray();
-    }
+    // QString fileExtension = QFileInfo(kmzPath).suffix().toLower();
+    // if (fileExtension != "xmap") {
+    //     qDebug() << "Invalid file type, expected .kmz!";
+    //     return QByteArray();
+    // }
 
-    QuaZip zip(kmzPath);
-    if (!zip.open(QuaZip::mdUnzip)) {
-        qDebug() <<"Failed to open the XMAP file!";
-        return QByteArray();
-    }
+    // QuaZip zip(kmzPath);
+    // if (!zip.open(QuaZip::mdUnzip)) {
+    //     qDebug() <<"Failed to open the XMAP file!";
+    //     return QByteArray();
+    // }
 
-    zip.setFileNameCodec("UTF-8");
-    QuaZipFile zipFile(kmzPath);
-    if (!zipFile.open(QIODevice::ReadOnly, QString(FILE_PASSWORD).toUtf8().constData())){
-        qDebug() <<"Failed to open the XMAP file!";
-        zip.close();
-        return QByteArray();
-    }
+    // zip.setFileNameCodec("UTF-8");
+    // QuaZipFile zipFile(kmzPath);
+    // if (!zipFile.open(QIODevice::ReadOnly, QString(FILE_PASSWORD).toUtf8().constData())){
+    //     qDebug() <<"Failed to open the XMAP file!";
+    //     zip.close();
+    //     return QByteArray();
+    // }
 
-    kmlContent = zipFile.readAll();
-    zipFile.close();
-    zip.close();
+    // kmlContent = zipFile.readAll();
+    // zipFile.close();
+    // zip.close();
 
-    if (kmlContent.isEmpty()) {
-        qDebug() << "No .kml file found in the XMAP!";
-    }
+    // if (kmlContent.isEmpty()) {
+    //     qDebug() << "No .kml file found in the XMAP!";
+    // }
 
     return kmlContent;
 }

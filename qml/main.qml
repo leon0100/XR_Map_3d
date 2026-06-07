@@ -27,7 +27,7 @@ ApplicationWindow  {
     readonly property int _activeObjectParamsMenuHeight: 500
     readonly property int _sceneObjectsListHeight:       300
     readonly property int screenSize: theme.screenSize
-    readonly property int footHeight: screenSize * 0.03
+    readonly property int footHeight: screenSize * 0.02
     readonly property int iconSize: footHeight * 0.5
 
     Settings {
@@ -126,40 +126,6 @@ ApplicationWindow  {
             menuToolBar.receiveMapCheck(value)
         }
     }
-
-
-
-    footer: Rectangle {
-        height: footHeight
-        color: "#88363636"
-
-        RowLayout {
-            anchors.fill: parent
-            anchors.margins: 1
-
-            Label {
-                text: qsTr(" Longitude:%1°   Latitude:%2°").arg(renderer.currLon.toFixed(6)).arg(renderer.currLat.toFixed(6))
-                color: "white"
-                font.bold: true
-                font.pixelSize: footHeight * 0.55
-            }
-
-            Rectangle {
-                width: 1
-                height: parent.height * 0.8
-                color: "#AAAAAA"
-                Layout.alignment: Qt.AlignVCenter
-            }
-
-            Label {
-                text: qsTr(" Zoom: %1").arg(core.currMapLevel)
-                color: "white"
-                font.bold: true
-                font.pixelSize: footHeight * 0.55
-            }
-        }
-    }
-
 
 
     Component {
@@ -854,79 +820,32 @@ ApplicationWindow  {
             Layout.fillWidth:  true
 
             readonly property bool landscapeMode: mainview.width > mainview.height
-            readonly property int rows: landscapeMode ? 1 : 2
+            readonly property int rows:    landscapeMode ? 1 : 2
             readonly property int columns: landscapeMode ? 2 : 1
 
-            property int lastKeyPressed: Qt.Key_unknown
+            property int  lastKeyPressed: Qt.Key_unknown
             property real splitRatio: 0.5
-            property real dragRatio: 0.5
             property bool splitDragging: false
-            property bool splitRatioSyncFromUi: false
-            readonly property real splitMidRatio: 0.5
-            readonly property var splitSnapRatios: [0.25, 0.375, 0.5, 0.625, 0.75]
 
             // 角落小窗口模式相关属性
-           property int splitMode: 0  // 0: 正常分窗, 1: 声呐全屏(地图小窗), 2: 地图全屏(声呐小窗)
-           readonly property int modeSplitNormal: 0
-           readonly property int modeSonarFullscreen: 1
-           readonly property int modeMapFullscreen: 2
-           readonly property real edgeThreshold: 0.1  // 边缘阈值（10%）
-           readonly property int cornerWindowWidth:  screenSize * 0.3
-           readonly property int cornerWindowHeight: screenSize * 0.2
+            property int splitMode: 0  // 0: 正常分窗,  1: 声呐全屏(地图小窗),  2: 地图全屏(声呐小窗)
+            readonly property int  modeSonarFullscreen: 1
+            readonly property int  modeMapFullscreen: 2
+            readonly property real edgeThreshold: 0.1  // 边缘阈值（10%）
+            readonly property int  cornerWindowWidth:  screenSize * 0.3
+            readonly property int  cornerWindowHeight: screenSize * 0.2
 
             readonly property bool splitActive: true
             readonly property real primaryLength: landscapeMode ? width : height
             readonly property real splitLength: Math.max(0, primaryLength)
-            readonly property real firstPaneLength: splitActive
-                        ? Math.round(splitLength * splitRatio): primaryLength
-            readonly property real handlePaneLength: splitActive
-                         ? Math.round(splitLength * (splitDragging ? dragRatio : splitRatio)) : firstPaneLength
+            readonly property real firstPaneLength:  splitActive ? Math.round(splitLength * splitRatio) : primaryLength
+            readonly property real handlePaneLength: splitActive ? Math.round(splitLength * splitRatio) : firstPaneLength
 
             function clampSplitRatio(ratio) {
                 if (!isFinite(ratio)) {
-                    return splitMidRatio
+                    return 0.5
                 }
                 return Math.max(0.0, Math.min(1.0, ratio))
-            }
-
-
-            onSplitActiveChanged: {
-                splitDragging = false
-
-                dragRatio = splitRatio
-            }
-
-            onLandscapeModeChanged: {
-                splitDragging = false
-                dragRatio     = splitRatio
-            }
-
-            onSplitRatioChanged: {
-                if (!splitDragging) {
-                    splitRatioSyncFromUi        = true
-                    appSettings.sceneSplitRatio = clampSplitRatio(splitRatio)
-                    splitRatioSyncFromUi        = false
-                }
-            }
-
-            function applySceneSplitRatioFromSettings() {
-                if (Math.abs(splitRatio - restoredRatio) > 0.0001) {
-                    splitRatio = restoredRatio
-                }
-                dragRatio = splitRatio
-            }
-
-            Connections {
-                target: appSettings
-                function onSceneSplitRatioChanged() {
-                    if (!visualisationLayout.splitDragging && !visualisationLayout.splitRatioSyncFromUi) {
-                        visualisationLayout.applySceneSplitRatioFromSettings()
-                    }
-                }
-            }
-
-            Component.onCompleted: {
-                applySceneSplitRatioFromSettings()
             }
 
             Behavior on splitRatio {
@@ -946,39 +865,31 @@ ApplicationWindow  {
             }
 
             GraphicsScene3dView {
-                id:      renderer
-                visible: (menuBar !== null) ? menuBar.is3DVisible : false
-                objectName: "GraphicsScene3dView"
-               x: {if (visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen) {
-                       return 10
-                   }
-                   return 0
-               }
-               y: {if (visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen) {
-                       return visualisationLayout.height - visualisationLayout.cornerWindowHeight - 10
-                   }
-                   return 0
-               }
+               id:      renderer
+               visible: (menuBar !== null) ? menuBar.is3DVisible : false
+               objectName: "GraphicsScene3dView"
+               x: visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen ? 10 : 1
+               y: visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen ?
+                    (visualisationLayout.height - visualisationLayout.cornerWindowHeight - 10) : 0
                z: visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen ? 10 : 1
-               width: {if (visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen) {
+               width: {
+                   if (visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen) {
                        // 声呐全屏模式：地图小窗固定宽度
                        return visualisationLayout.cornerWindowWidth
                    }
                    // 正常分窗或地图全屏模式
-                   return visualisationLayout.landscapeMode ? (visualisationLayout.splitActive
-                           ? visualisationLayout.firstPaneLength
-                           : (visualisationLayout.has3DView ? visualisationLayout.width : 0)) : visualisationLayout.width
+                   return visualisationLayout.landscapeMode ? (visualisationLayout.splitActive ? visualisationLayout.firstPaneLength
+                        : (visualisationLayout.has3DView ? visualisationLayout.width : 0)) : visualisationLayout.width
                }
-               height: {if (visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen) {
+               height: {
+                   if (visualisationLayout.splitMode === visualisationLayout.modeSonarFullscreen) {
                        // 声呐全屏模式：地图小窗固定高度
                        return visualisationLayout.cornerWindowHeight
                    }
                    // 正常分窗或地图全屏模式
-                   return visualisationLayout.landscapeMode ? visualisationLayout.height
-                           : (visualisationLayout.splitActive
-                              ? visualisationLayout.firstPaneLength : (visualisationLayout.has3DView ? visualisationLayout.height : 0))
+                   return visualisationLayout.landscapeMode ? visualisationLayout.height : (visualisationLayout.splitActive
+                        ? visualisationLayout.firstPaneLength : (visualisationLayout.has3DView ? visualisationLayout.height : 0))
                }
-
 
                focus:  true
 
@@ -992,25 +903,17 @@ ApplicationWindow  {
                 }
 
                 property bool longPressTriggered: false
-                property int currentZoom: -1
+                property int  currentZoom: -1
                 property bool syncLoupeUiAllowed: (menuBar !== null) ? (menuBar.is3DVisible && !menuBar.is2DVisible) : false
 
                 function resetScenePointerState() {
-                    mousearea3D.startMousePos = Qt.point(-1, -1)
-                    mousearea3D.wasMoved = false
-                    mousearea3D.vertexMode = false
+                    mousearea3D.startMousePos       = Qt.point(-1, -1)
+                    mousearea3D.wasMoved            = false
+                    mousearea3D.vertexMode          = false
                     mousearea3D.lastMouseKeyPressed = Qt.NoButton
                     longPressTimer.stop()
-                    renderer.longPressTriggered = false
+                    renderer.longPressTriggered     = false
                     renderer.cancelPointerInteraction()
-                }
-
-                onSyncLoupeUiAllowedChanged: {
-                    setSyncLoupeUiAllowed(syncLoupeUiAllowed)
-                }
-
-                Component.onCompleted: {
-                    setSyncLoupeUiAllowed(syncLoupeUiAllowed)
                 }
 
                 // onSendDataZoom: function(zoom) {
@@ -1103,16 +1006,16 @@ ApplicationWindow  {
                         }
 
                         onPressed: function(mouse) {
-                            menuBlock.visible = false
-                            geoMenuBlock.visible = false
+                            menuBlock.visible      = false
+                            geoMenuBlock.visible   = false
                             rulerMenuBlock.visible = false
-                            startMousePos = Qt.point(mouse.x, mouse.y)
-                            wasMoved = false
-                            vertexMode = false
+                            startMousePos          = Qt.point(mouse.x, mouse.y)
+                            wasMoved               = false
+                            vertexMode             = false
                             longPressTimer.start()
                             renderer.longPressTriggered = false
 
-                            lastMouseKeyPressed = mouse.buttons
+                            lastMouseKeyPressed    = mouse.buttons
                             renderer.mousePressTrigger(mouse.buttons, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
                         }
 
@@ -1132,15 +1035,16 @@ ApplicationWindow  {
                             if (mouse.button === Qt.RightButton || (Qt.platform.os === "android" && vertexMode)) {
                                 if (renderer.geoJsonEnabled) {
                                     geoMenuBlock.position(mouse.x, mouse.y)
-                                } else if (renderer.rulerEnabled || renderer.rulerSelected) {
+                                }
+                                else if (renderer.rulerEnabled || renderer.rulerSelected) {
                                     rulerMenuBlock.position(mouse.x, mouse.y)
-                                } else {
+                                }
+                                else {
                                     menuBlock.position(mouse.x, mouse.y)
                                 }
                             }
 
                             vertexMode = false
-
                             lastMouseKeyPressed = Qt.NoButton
                         }
 
@@ -1646,17 +1550,51 @@ ApplicationWindow  {
                         }
                     }
                 }
+
+
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+                    height: footHeight
+                    color: "#363636"
+                    opacity: 0.9
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 1
+
+                        Label {
+                            text: qsTr(" Longitude:%1°   Latitude:%2°").arg(renderer.currLon.toFixed(6)).arg(renderer.currLat.toFixed(6))
+                            color: "white"
+                            font.bold: true
+                            font.pixelSize: footHeight * 0.7
+                        }
+
+                        Rectangle {
+                            width: 1
+                            height: parent.height * 0.8
+                            color: "#AAAAAA"
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
+                        Label {
+                            text: qsTr(" Zoom: %1").arg(core.currMapLevel)
+                            color: "white"
+                            font.bold: true
+                            font.pixelSize: footHeight * 0.7
+                        }
+                    }
+                }
+
             }
 
 
             Item {
                 id: sceneSplitHandle
                 visible: visualisationLayout.splitActive
-                x: visualisationLayout.landscapeMode
-                   ? Math.round(visualisationLayout.handlePaneLength - width * 0.5)
+                x: visualisationLayout.landscapeMode ? Math.round(visualisationLayout.handlePaneLength - width * 0.5)
                    : Math.round((visualisationLayout.width - width) * 0.5)
-                y: visualisationLayout.landscapeMode
-                   ? Math.round((visualisationLayout.height - height) * 0.5)
+                y: visualisationLayout.landscapeMode ? Math.round((visualisationLayout.height - height) * 0.5)
                    : Math.round(visualisationLayout.handlePaneLength - height * 0.5)
                 width:  footHeight * 0.75
                 height: footHeight * 3
@@ -1665,10 +1603,8 @@ ApplicationWindow  {
                 Rectangle {
                     anchors.fill: parent
                     radius: width * 0.5
-                    color: (sceneSplitHandleMouse.containsMouse || sceneSplitHandleMouse.pressed)
-                           ? "#8D8D8D" : "#237A7A7A"
-                    border.color: (sceneSplitHandleMouse.containsMouse || sceneSplitHandleMouse.pressed)
-                            ? "#D0D0D0" : "#4A969696"
+                    color: (sceneSplitHandleMouse.containsMouse || sceneSplitHandleMouse.pressed) ? "#8D8D8D" : "#237A7A7A"
+                    border.color: (sceneSplitHandleMouse.containsMouse || sceneSplitHandleMouse.pressed) ? "#D0D0D0" : "#4A969696"
                     border.width: 1
                 }
 
@@ -1681,12 +1617,11 @@ ApplicationWindow  {
                     preventStealing: true
                     cursorShape: visualisationLayout.landscapeMode ? Qt.SplitHCursor : Qt.SplitVCursor
                     property real dragStartGlobalPos: 0
-                    property real dragStartRatio: visualisationLayout.dragRatio
+                    property real dragStartRatio: visualisationLayout.splitRatio
 
                     onPressed: function(mouse) {
                         visualisationLayout.splitDragging = true
-                        visualisationLayout.dragRatio = visualisationLayout.splitRatio
-                        dragStartRatio = visualisationLayout.dragRatio
+                        dragStartRatio = visualisationLayout.splitRatio
                         const mappedPos = sceneSplitHandleMouse.mapToItem(visualisationLayout, mouse.x, mouse.y)
                         dragStartGlobalPos = visualisationLayout.landscapeMode ? mappedPos.x : mappedPos.y
                     }
@@ -1701,14 +1636,11 @@ ApplicationWindow  {
                         const delta = currentGlobalPos - dragStartGlobalPos
                         const startLength = dragStartRatio * visualisationLayout.splitLength
                         const newRatio = (startLength + delta) / visualisationLayout.splitLength
-                        visualisationLayout.dragRatio = visualisationLayout.clampSplitRatio(newRatio)
 
-                        // 实时更新分割比例，实现实时分割效果
-                        visualisationLayout.splitRatio = visualisationLayout.dragRatio
-
+                        visualisationLayout.splitRatio = visualisationLayout.clampSplitRatio(newRatio)
 
                         // 根据拖动位置检测是否触发全屏模式
-                        const ratio = visualisationLayout.dragRatio
+                        const ratio = visualisationLayout.splitRatio
                         if (ratio < visualisationLayout.edgeThreshold) {
                             // 滑块靠近左边缘，触发声呐全屏模式
                             visualisationLayout.splitMode = visualisationLayout.modeSonarFullscreen
@@ -1721,26 +1653,22 @@ ApplicationWindow  {
                         }
                         else {
                             // 正常分窗模式
-                            visualisationLayout.splitMode = visualisationLayout.modeSplitNormal
+                            visualisationLayout.splitMode = 0
                         }
                     }
 
-
                     onReleased: {
                         visualisationLayout.splitDragging = false
-
                     }
 
                     onCanceled: {
                         visualisationLayout.splitDragging = false
-                        visualisationLayout.dragRatio = visualisationLayout.splitRatio
                     }
 
                     onDoubleClicked: {
                         visualisationLayout.splitDragging = false
-                        visualisationLayout.splitMode = visualisationLayout.modeSplitNormal
-                        visualisationLayout.dragRatio = visualisationLayout.splitMidRatio
-                        visualisationLayout.splitRatio = visualisationLayout.splitMidRatio
+                        visualisationLayout.splitMode     = 0
+                        visualisationLayout.splitRatio    = 0.5
                     }
                 }
             }
@@ -1750,7 +1678,8 @@ ApplicationWindow  {
                 visible: menuBar.is2DVisible
 
                 // 根据分割模式计算位置和尺寸
-                 x: { if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
+                 x: {
+                     if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
                          // 地图全屏模式：声呐小窗在右下角
                          return visualisationLayout.width - visualisationLayout.cornerWindowWidth - 10
                      }
@@ -1758,7 +1687,8 @@ ApplicationWindow  {
                      return visualisationLayout.landscapeMode
                             ? (visualisationLayout.splitActive ? visualisationLayout.firstPaneLength : 0) : 0
                  }
-                 y: { if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
+                 y: {
+                     if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
                          // 地图全屏模式：声呐小窗在右下角
                          return visualisationLayout.height - visualisationLayout.cornerWindowHeight - 10
                      }
@@ -1767,28 +1697,24 @@ ApplicationWindow  {
                  }
                  z: visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen ? 10 : 1
                  width: {
-                     if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
-                         // 地图全屏模式：声呐小窗固定宽度
-                         return visualisationLayout.cornerWindowWidth
-                     }
-                     // 正常分窗或声呐全屏模式
-                     return visualisationLayout.landscapeMode
-                            ? (visualisationLayout.splitActive
+                    if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
+                        // 地图全屏模式：声呐小窗固定宽度
+                        return visualisationLayout.cornerWindowWidth
+                    }
+                    // 正常分窗或声呐全屏模式
+                    return visualisationLayout.landscapeMode ? (visualisationLayout.splitActive
                                ? Math.max(0, visualisationLayout.width - visualisationLayout.firstPaneLength)
                                : visualisationLayout.width) : visualisationLayout.width
                  }
                  height: {
-                     if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
-                         // 地图全屏模式：声呐小窗固定高度
-                         return visualisationLayout.cornerWindowHeight
-                     }
-                     // 正常分窗或声呐全屏模式
-                     return visualisationLayout.landscapeMode
-                             ? visualisationLayout.height : (visualisationLayout.splitActive
-                                ? Math.max(0, visualisationLayout.height - visualisationLayout.firstPaneLength)
-                                : visualisationLayout.height)
+                    if (visualisationLayout.splitMode === visualisationLayout.modeMapFullscreen) {
+                        // 地图全屏模式：声呐小窗固定高度
+                        return visualisationLayout.cornerWindowHeight
+                    }
+                    // 正常分窗或声呐全屏模式
+                    return visualisationLayout.landscapeMode ? visualisationLayout.height : (visualisationLayout.splitActive
+                        ? Math.max(0, visualisationLayout.height - visualisationLayout.firstPaneLength) : visualisationLayout.height)
                  }
-
 
                 GridLayout {
                     anchors.fill: parent
@@ -1801,7 +1727,6 @@ ApplicationWindow  {
                         id: waterViewFirst
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-
                         Layout.rowSpan   : 1
                         Layout.columnSpan: 1
                         focus: true
@@ -1809,13 +1734,9 @@ ApplicationWindow  {
                         indx: 1
                         is3dVisible: menuBar.is3DVisible
 
-                        onTimelinePositionChanged: {
-                            historyScroll.value = waterViewFirst.timelinePosition
-                        }
+                        onTimelinePositionChanged: historyScroll.value = waterViewFirst.timelinePosition
 
-                        Component.onCompleted: {
-                            waterViewFirst.setIndx(waterViewFirst.indx);
-                        }
+                        Component.onCompleted: waterViewFirst.setIndx(waterViewFirst.indx);
                     }
 
                     // Plot2D {
@@ -1860,18 +1781,14 @@ ApplicationWindow  {
                         Layout.fillHeight: false
                         Layout.columnSpan: parent.columns
                         implicitHeight: theme.controlHeight
-                        height: theme.controlHeight
+                        height:         theme.controlHeight
                         //value: waterViewFirst.timelinePosition
                         stepSize: 0.0001
                         from: 0
                         to: 1
                         barWidth: 50 * theme.resCoeff
-                        onValueChanged: {
-                            core.setTimelinePosition(value);
-                        }
-                        onMoved: {
-                            core.resetAim();
-                        }
+                        onValueChanged: core.setTimelinePosition(value);
+                        onMoved: core.resetAim();
                     }
                 }
             }
