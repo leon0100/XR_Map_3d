@@ -29,6 +29,7 @@
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QMimeData>
+#include <QTimer>
 
 
 
@@ -227,6 +228,8 @@ public:
     Q_PROPERTY(int mapSourceLoadVisible  READ getMapSourceLoadVisible  WRITE setMapSourceLoadVisible
                    NOTIFY mapSourceLoadVisibleChanged);
 
+    Q_PROPERTY(double batteryValue READ batteryValue  WRITE setBatteryValue NOTIFY batteryValueChanged)
+
 
 
     bool getIsFakeCoords() const { return isFakeCoords_; };
@@ -261,6 +264,9 @@ public:
     void setGoogleExist(bool googleExist);
     bool getMapSourceLoadVisible();
     void setMapSourceLoadVisible(bool visible);
+
+    double batteryValue() const;
+    void setBatteryValue(double batteryValue);
 
 
     void setQmlEngine(QQmlApplicationEngine* engine);
@@ -301,6 +307,9 @@ public:
 private:
     u8 XorCheckSum(u8* input, u8 length);
 
+private slots:
+    void updateBatteryLevel();
+
 
 signals:
     void changed();
@@ -308,7 +317,8 @@ signals:
     void instrumentsGradeChanged();
     void bootConfigChanged();
     void mapSourceLoadVisibleChanged();
-    // void mapLoadConfirm(bool googleMapExists);
+    void batteryValueChanged(double value);
+
 
 protected:
     int _id = 0;
@@ -346,6 +356,8 @@ private:
     SoftwareParametersStru softwareParameters_;
 
     bool mapSourceLoadVisible_ = false;
+    double m_batteryValue;
+    QTimer m_batteryTimer;
 };
 
 inline qreal Themes::checkResolutionCoeff() const

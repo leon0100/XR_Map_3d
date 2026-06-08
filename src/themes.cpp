@@ -86,8 +86,32 @@ void Themes::setTheme(int theme_id)
     }
 
     emit changed();
+
+
+    updateBatteryLevel();
+    m_batteryTimer.setTimerType(Qt::VeryCoarseTimer);
+    connect(&m_batteryTimer, &QTimer::timeout, this, &Themes::updateBatteryLevel);
+    m_batteryTimer.start(256000);
+
+
+
 }
 
+
+void Themes::updateBatteryLevel()
+{
+#ifdef Q_OS_ANDROID
+    // 调用 Java 静态方法
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod(
+        "org/qtproject/qt5/android/QtNative", "activity", "()Landroid/app/Activity;");
+
+    if (activity.isValid()) {
+        jint level = QAndroidJniObject::callStaticMethod<jint>(
+            "com/nqc/Config", "updateBatteryLevel", "(Landroid/content/Context;)I", activity.object<jobject>());
+        setBatteryValue(level);
+    }
+#endif
+}
 
 void Themes::updateResCoeff()
 {
@@ -365,6 +389,17 @@ void Themes::setMapSourceLoadVisible(bool visible)
     mapSourceLoadVisible_ = visible;
 
     emit mapSourceLoadVisibleChanged();
+}
+
+double Themes::batteryValue() const
+{
+    return m_batteryValue;
+}
+
+void Themes::setBatteryValue(double batteryValue)
+{
+    m_batteryValue = batteryValue;
+    emit batteryValueChanged(batteryValue);
 }
 
 void Themes::refreshLanguage()

@@ -4,6 +4,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
+import android.os.Build;
+
+
 public class Config {
 
     private static final String PREF_NAME = "AppSettings";
@@ -75,4 +83,85 @@ public class Config {
         prefs.edit().clear().apply();
         Log.i(TAG, "All settings cleared.");
     }
+
+
+
+    public static int updateBatteryLevel(Context context)
+    {
+        try {
+            IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+            Intent batteryStatus = context.registerReceiver(null, ifilter);
+
+            if (batteryStatus != null) {
+                int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                if (level >= 0 && scale > 0) {
+                    return (int)((level * 100.0f) / scale);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "updateBatteryLevel error: " + e.getMessage());
+        }
+
+        return -1;
+    }
+
+
+    public static int updateNetworkStatus(Context context)
+    {
+        try {
+            ConnectivityManager cm =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            if (cm == null)
+                return 0;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                android.net.Network network = cm.getActiveNetwork();
+                if (network == null)
+                    return 0;
+
+                NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+
+                if (capabilities == null)
+                    return 0;
+
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
+                    return 4;
+
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+                    return 3;
+
+                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
+                    return 4;
+
+            }
+            else {
+                android.net.NetworkInfo info = cm.getActiveNetworkInfo();
+
+                if (info != null && info.isConnected()) {
+
+                    switch (info.getType()) {
+                    case ConnectivityManager.TYPE_WIFI:
+                        return 4;
+
+                    case ConnectivityManager.TYPE_MOBILE:
+                        return 3;
+
+                    default:
+                        return 1;
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "updateNetworkStatus error: " + e.getMessage());
+        }
+
+        return 0;
+    }
+
+
+
 }

@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
+        <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
+        <file>fonts/PTSansCaption-Regular.ttf</file>
         <file>icons/ui/access_point.svg</file>
         <file>icons/ui/access_point_off.svg</file>
         <file>icons/ui/anchor.svg</file>
@@ -92,17 +94,18 @@
         <file>XR/config.png</file>
         <file>XR/triangle.svg</file>
         <file>XR/check.svg</file>
-       <file>XR/warning.png</file>
-       <file>XR/icon_XR_map.png</file>
-       <file>XR/yeslogo.png</file>
-       <file>XR/openkml.png</file>
-       <file>XR/plus.svg</file>
-       <file>XR/question_mark.svg</file>
-       <file>XR/outline.svg</file>
+        <file>XR/warning.png</file>
+        <file>XR/icon_XR_map.png</file>
+        <file>XR/yeslogo.png</file>
+        <file>XR/openkml.png</file>
+        <file>XR/plus.svg</file>
+        <file>XR/question_mark.svg</file>
+        <file>XR/outline.svg</file>
 	<file>XR/pin.png</file>
 	<file>XR/target.png</file>
 	<file>XR/pushPin2.png</file>
-        <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
-        <file>fonts/PTSansCaption-Regular.ttf</file>
+	<file>XR/expandWholeWindow.svg</file>
+	<file>XR/expand_map.svg</file>
+	<file>XR/expand_sonar.svg</file>
     </qresource>
 </RCC>
