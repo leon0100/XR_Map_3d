@@ -16,11 +16,6 @@ Button {
 
     property color baseBackColor: "transparent"
 
-    // function mixWithRed(base, t) {
-    //     return Qt.rgba(base.r * (1-t) + 1.0 * t, base.g * (1-t) + 0.0 * t, base.b * (1-t) + 0.0 * t, base.a);
-    // }
-
-
     background: Rectangle {
         id: backRect
         radius: 2

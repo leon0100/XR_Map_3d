@@ -56,18 +56,19 @@ public class Config {
         float[] values = new float[9];
 
         try {
-             SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-            values[0] = prefs.contains(KEY_MAP_SOURCE_TYPE) ? prefs.getInt(KEY_MAP_SOURCE_TYPE, 0) : 0;
-            values[1] = prefs.contains(KEY_CURRENT_LEVEL) ? prefs.getInt(KEY_CURRENT_LEVEL, 0) : 0;
-            values[2] = prefs.contains(KEY_CURRENT_LON) ? prefs.getFloat(KEY_CURRENT_LON, 0f) : 0f;
-            values[3] = prefs.contains(KEY_CURRENT_LATI) ? prefs.getFloat(KEY_CURRENT_LATI, 0f) : 0f;
-            values[4] = prefs.contains(KEY_EXIST_GOOGLE) ? prefs.getInt(KEY_EXIST_GOOGLE, 0) : 0;
+            SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            values[0] = prefs.contains(KEY_MAP_SOURCE_TYPE)  ? prefs.getInt(KEY_MAP_SOURCE_TYPE, 0)  : 0;
+            values[1] = prefs.contains(KEY_CURRENT_LEVEL)    ? prefs.getInt(KEY_CURRENT_LEVEL, 0)    : 0;
+            values[2] = prefs.contains(KEY_CURRENT_LON)      ? prefs.getFloat(KEY_CURRENT_LON, 0f)   : 0f;
+            values[3] = prefs.contains(KEY_CURRENT_LATI)     ? prefs.getFloat(KEY_CURRENT_LATI, 0f)  : 0f;
+            values[4] = prefs.contains(KEY_EXIST_GOOGLE)     ? prefs.getInt(KEY_EXIST_GOOGLE, 0)     : 0;
             values[5] = prefs.contains(KEY_CURRENT_LANGUAGE) ? prefs.getInt(KEY_CURRENT_LANGUAGE, 0) : 0;
-            values[6] = prefs.contains(KEY_IN_CHINA) ? (prefs.getBoolean(KEY_IN_CHINA, false) ? 1f : 0f) : 0f;
-            values[7] = prefs.contains(KEY_CRC_VALUE) ? prefs.getInt(KEY_CRC_VALUE, 0) : 0;
+            values[6] = prefs.contains(KEY_IN_CHINA)         ? (prefs.getBoolean(KEY_IN_CHINA, false) ? 1f : 0f) : 0f;
+            values[7] = prefs.contains(KEY_CRC_VALUE)        ? prefs.getInt(KEY_CRC_VALUE, 0) : 0;
             if (!prefs.contains(KEY_IS_FIRST_RUN)) {
                 values[8] = 1f;
-            } else {
+            }
+            else {
                 values[8] = prefs.getBoolean(KEY_IS_FIRST_RUN, false) ? 1f : 0f;
             }
 
@@ -83,7 +84,6 @@ public class Config {
         prefs.edit().clear().apply();
         Log.i(TAG, "All settings cleared.");
     }
-
 
 
     public static int updateBatteryLevel(Context context)
@@ -106,13 +106,10 @@ public class Config {
         return -1;
     }
 
-
     public static int updateNetworkStatus(Context context)
     {
         try {
-            ConnectivityManager cm =
-                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
+            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
             if (cm == null)
                 return 0;
 
@@ -141,16 +138,16 @@ public class Config {
                 android.net.NetworkInfo info = cm.getActiveNetworkInfo();
 
                 if (info != null && info.isConnected()) {
+                    switch (info.getType())
+                    {
+                        case ConnectivityManager.TYPE_WIFI:
+                            return 4;
 
-                    switch (info.getType()) {
-                    case ConnectivityManager.TYPE_WIFI:
-                        return 4;
+                        case ConnectivityManager.TYPE_MOBILE:
+                            return 3;
 
-                    case ConnectivityManager.TYPE_MOBILE:
-                        return 3;
-
-                    default:
-                        return 1;
+                        default:
+                            return 1;
                     }
                 }
             }
@@ -161,7 +158,6 @@ public class Config {
 
         return 0;
     }
-
 
 
 }

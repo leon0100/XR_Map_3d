@@ -16,7 +16,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.BATTERY_STATS" />
+    <uses-permission android:name="android.permission.BATTERY_STATS"/>
 
     <!-- Android 6+ 需要定位权限 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
@@ -25,8 +25,20 @@
 
 
     <supports-screens android:largeScreens="true" android:normalScreens="true" android:anyDensity="true" android:smallScreens="true"/>
-<application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="-- %%INSERT_APP_NAME%% --" android:extractNativeLibs="true" android:roundIcon="@mipmap/icon_xr_map">
-        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:name="com.nqc.FileQtActivity" android:label="-- %%INSERT_APP_NAME%% --" android:screenOrientation="unspecified" android:launchMode="singleTop">
+<application android:hardwareAccelerated="true"
+            android:name="org.qtproject.qt5.android.bindings.QtApplication"
+            android:label="-- %%INSERT_APP_NAME%% --"
+            android:extractNativeLibs="true"
+            android:icon="@mipmap/icon_xr_map"
+            android:roundIcon="@mipmap/icon_xr_map">
+        <activity
+        android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
+        android:name="com.nqc.FileQtActivity"
+        android:label="-- %%INSERT_APP_NAME%% --"
+        android:launchMode="singleTop"
+        android:screenOrientation="landscape"
+        >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

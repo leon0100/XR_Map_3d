@@ -450,27 +450,22 @@ Rectangle {
 
                 // 系统时间
                 Text {
-                    id: systemTime
                     font.pixelSize: toolBar_XR.iconSize * 0.9
                     color: "white"
-                    text: Qt.formatDateTime(new Date(), "HH:mm")
+                    text: theme.updateSystemTime
                 }
 
                 // 电量图标和百分比
                 Item {
                     id: batteryStatus
-
                     width: toolBar_XR.iconSize * 2.8
                     height: toolBar_XR.iconSize * 0.8
                     anchors.verticalCenter: parent.verticalCenter
 
-
                     Rectangle {
                         id: batteryBody
-
                         width: parent.width * 0.85
                         height: parent.height
-
                         border.width: 1
                         border.color: "white"
                         color: "transparent"
@@ -481,11 +476,8 @@ Rectangle {
                             anchors.top: parent.top
                             anchors.bottom: parent.bottom
                             anchors.margins: 1
-
                             width: (parent.width - 2) * theme.batteryValue
-
-                            color: theme.batteryValue > 0.2 ? "#4CAF50" : "#F44336"
-
+                            color: theme.batteryValue > 0.2 ? "#00C853" : "#F44336"
                             radius: 1
                         }
                     }
@@ -502,7 +494,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: theme.batteryValue + "%"
+                    text: theme.batteryValue * 100.0 + "%"
                     color: "white"
                     font.pixelSize: toolBar_XR.iconSize * 0.55
                     verticalAlignment: Text.AlignVCenter
@@ -512,13 +504,9 @@ Rectangle {
                 // 网络信号强度
                 Item {
                     id: networkStatus
-
-                    width: toolBar_XR.iconSize * 1.2
+                    width:  toolBar_XR.iconSize * 1.2
                     height: toolBar_XR.iconSize
                     anchors.verticalCenter: parent.verticalCenter
-
-
-                    property int signalLevel: 3   // 0~4
 
                     Row {
                         anchors.bottom: parent.bottom
@@ -528,20 +516,16 @@ Rectangle {
                             model: 4
 
                             Rectangle {
-                                width: toolBar_XR.iconSize * 0.18
-                                height: (index + 1) * toolBar_XR.iconSize * 0.22
-
-                                anchors.bottom: parent.bottom
-
-                                radius: 1
-
-                                color: index < signalLevel
-                                       ? "#4CAF50"
-                                       : "#808080"
+                               width: toolBar_XR.iconSize * 0.18
+                               height: (index + 1) * toolBar_XR.iconSize * 0.2
+                               anchors.bottom: parent.bottom
+                               radius: 1
+                               color: index < theme.systemNetStatus ? "#00C853" : "#808080"
                             }
                         }
                     }
                 }
+
                 Image {
                     id: toslonLogo
                     source: "qrc:/XR/TOSLON2.png"

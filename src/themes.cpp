@@ -58,7 +58,6 @@ void Themes::setTheme(int theme_id)
         _disabledTextColor = new QColor(150, 150, 150);
         _disabledBackColor = new QColor(50, 50, 50);
         _hoveredBackColor = new QColor(70,70,70);
-
     }
     else if(theme_id == 1) {
         _textColor = new QColor(255, 255, 255);
@@ -87,19 +86,17 @@ void Themes::setTheme(int theme_id)
 
     emit changed();
 
-
-    updateBatteryLevel();
+    updateSystemToolBarStatus();
     m_batteryTimer.setTimerType(Qt::VeryCoarseTimer);
-    connect(&m_batteryTimer, &QTimer::timeout, this, &Themes::updateBatteryLevel);
-    m_batteryTimer.start(256000);
-
-
-
+    connect(&m_batteryTimer, &QTimer::timeout, this, &Themes::updateSystemToolBarStatus);
+    m_batteryTimer.start(58000);
 }
 
 
-void Themes::updateBatteryLevel()
+void Themes::updateSystemToolBarStatus()
 {
+    m_currentTime = QDateTime::currentDateTime().toString("HH:mm");
+
 #ifdef Q_OS_ANDROID
     // 调用 Java 静态方法
     QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod(
@@ -108,9 +105,16 @@ void Themes::updateBatteryLevel()
     if (activity.isValid()) {
         jint level = QAndroidJniObject::callStaticMethod<jint>(
             "com/nqc/Config", "updateBatteryLevel", "(Landroid/content/Context;)I", activity.object<jobject>());
-        setBatteryValue(level);
+        double value = level / 100.0;
+        m_batteryValue = qRound(value * 100.0) / 100.0;
+
+        jint levelNet = QAndroidJniObject::callStaticMethod<jint>(
+            "com/nqc/Config", "updateNetworkStatus", "(Landroid/content/Context;)I", activity.object<jobject>());
+        systemNetStatus_ = levelNet;
     }
 #endif
+
+    emit sysytemToolBarChanged();
 }
 
 void Themes::updateResCoeff()
@@ -396,10 +400,14 @@ double Themes::batteryValue() const
     return m_batteryValue;
 }
 
-void Themes::setBatteryValue(double batteryValue)
+QString Themes::updateSysytemTime() const
 {
-    m_batteryValue = batteryValue;
-    emit batteryValueChanged(batteryValue);
+    return m_currentTime;
+}
+
+int Themes::systemNetStatus() const
+{
+    return systemNetStatus_;
 }
 
 void Themes::refreshLanguage()

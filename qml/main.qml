@@ -70,6 +70,10 @@ ApplicationWindow  {
         }
     }
 
+    ExpandToolBar {
+        id: expandToolBar
+    }
+
 
     CollapseRectangle {
         id: collapseBar
@@ -93,14 +97,16 @@ ApplicationWindow  {
     LandMarkPoint { }
 
     IsobathsExtraSettings {
-        visible: toolBarXR.contourMode
+        // visible: toolBarXR.contourMode
+        visible: expandToolBar.contourMode
         x: toolBarXR.iconSize * 3.5
         targetPlot: toolBarXR.targetPlot
     }
 
     BleLivedataScanning {
         id: bleLivedataScaning
-        visible: toolBarXR.bluetoothMode
+        // visible: toolBarXR.bluetoothMode
+        visible: expandToolBar.bluetoothMode
     }
 
     BleDataPanel {
@@ -794,7 +800,6 @@ ApplicationWindow  {
         }
 
         handle: Rectangle {
-            // implicitWidth:  5
             implicitHeight: theme.controlHeight/2
             color:          SplitHandle.pressed ? "#A0A0A0" : "#707070"
 
@@ -1650,9 +1655,10 @@ ApplicationWindow  {
                 Rectangle {
                     anchors.fill: parent
                     radius: width * 0.5
-                    color: (sceneSplitHandleMouse.containsMouse || sceneSplitHandleMouse.pressed) ? "#8D8D8D" : "#237A7A7A"
-                    border.color: (sceneSplitHandleMouse.containsMouse || sceneSplitHandleMouse.pressed) ? "#D0D0D0" : "#4A969696"
+                    color: "#8D8D8D"
+                    border.color: "#D0D0D0"
                     border.width: 1
+                    opacity:  (sceneSplitHandleMouse.containsMouse || sceneSplitHandleMouse.pressed) ? 1.0 : 0.5
                 }
 
                 MouseArea {

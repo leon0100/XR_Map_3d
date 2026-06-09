@@ -118,5 +118,6 @@
         <file>DistMeasure.qml</file>
         <file>AppXr/LandMarks.qml</file>
         <file>AppXr/LandMarkPoint.qml</file>
+        <file>AppXr/ExpandToolBar.qml</file>
     </qresource>
 </RCC>

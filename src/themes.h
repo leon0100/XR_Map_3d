@@ -30,6 +30,7 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <QTimer>
+#include <QDateTime>
 
 
 
@@ -228,7 +229,9 @@ public:
     Q_PROPERTY(int mapSourceLoadVisible  READ getMapSourceLoadVisible  WRITE setMapSourceLoadVisible
                    NOTIFY mapSourceLoadVisibleChanged);
 
-    Q_PROPERTY(double batteryValue READ batteryValue  WRITE setBatteryValue NOTIFY batteryValueChanged)
+    Q_PROPERTY(double batteryValue       READ batteryValue       NOTIFY sysytemToolBarChanged)
+    Q_PROPERTY(QString updateSystemTime  READ updateSysytemTime  NOTIFY sysytemToolBarChanged)
+    Q_PROPERTY(int systemNetStatus       READ systemNetStatus    NOTIFY sysytemToolBarChanged)
 
 
 
@@ -266,7 +269,8 @@ public:
     void setMapSourceLoadVisible(bool visible);
 
     double batteryValue() const;
-    void setBatteryValue(double batteryValue);
+    QString updateSysytemTime() const;
+    int systemNetStatus() const;
 
 
     void setQmlEngine(QQmlApplicationEngine* engine);
@@ -308,7 +312,7 @@ private:
     u8 XorCheckSum(u8* input, u8 length);
 
 private slots:
-    void updateBatteryLevel();
+    void updateSystemToolBarStatus();
 
 
 signals:
@@ -317,7 +321,7 @@ signals:
     void instrumentsGradeChanged();
     void bootConfigChanged();
     void mapSourceLoadVisibleChanged();
-    void batteryValueChanged(double value);
+    void sysytemToolBarChanged();
 
 
 protected:
@@ -356,8 +360,10 @@ private:
     SoftwareParametersStru softwareParameters_;
 
     bool mapSourceLoadVisible_ = false;
-    double m_batteryValue;
     QTimer m_batteryTimer;
+    double m_batteryValue;
+    QString m_currentTime;
+    int systemNetStatus_;
 };
 
 inline qreal Themes::checkResolutionCoeff() const
