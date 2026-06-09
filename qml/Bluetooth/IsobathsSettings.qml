@@ -11,10 +11,9 @@ import "../"
 Item {
     id: isobathsSettings
 
-    // width: (isobathsDrawOpen || bluetoothDrawOpen) ? content.width : toggleButton.width
-    // height: Math.max(content.height, toggleButton.height)
-    width: (isobathsDrawOpen ? isobathsContent.width : 0) + (bluetoothDrawOpen ? bluetoothContent.width : 0) + toggleButton.width
-    height: Math.max(isobathsDrawOpen ? isobathsContent.height : 0, bluetoothDrawOpen ? bluetoothContent.height : 0, toggleButton.height)
+    width: toggleButton.width
+    height: toggleButton.height
+
     z: 9999
 
     property bool isobathsDrawOpen:  false
@@ -42,10 +41,8 @@ Item {
     // ---------------- 侧边按钮 -----------------
     Column {
         id: toggleButton
-        width: iconSize * 1.2
+        width: iconSize * 1.1
         height: width * 2.2
-        anchors.right: parent.right
-        anchors.top: parent.top
         spacing: 2
 
         Rectangle {
@@ -57,12 +54,17 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: isobathsDrawOpen = !isobathsDrawOpen
+                onClicked: {
+                    isobathsDrawOpen = !isobathsDrawOpen
+                    if(isobathsDrawOpen) {
+                       bluetoothDrawOpen = false
+                    }
+                }
             }
 
             Image {
                 anchors.centerIn: parent
-                source: "qrc:/XR/contour_map.svg"
+                source: "qrc:/XR/contour.png"
                 width:  iconSize
                 height: iconSize
                 fillMode: Image.PreserveAspectFit
@@ -70,7 +72,7 @@ Item {
         }
 
         Rectangle {
-           id: bluetoothToggleButton
+           id: bluetoothToggleBtn
            width:  iconSize
            height: iconSize
            color: "#879fc6"
@@ -78,12 +80,17 @@ Item {
 
            MouseArea {
                anchors.fill: parent
-               onClicked: bluetoothDrawOpen = !bluetoothDrawOpen
+               onClicked: {
+                    bluetoothDrawOpen = !bluetoothDrawOpen
+                   if(bluetoothDrawOpen) {
+                      isobathsDrawOpen = false
+                   }
+               }
            }
 
            Image {
                anchors.centerIn: parent
-               source: "qrc:/XR/bluetooth.svg"
+               source: "qrc:/XR/bluetooth.png"
                width: iconSize
                height: iconSize
                fillMode: Image.PreserveAspectFit
@@ -97,12 +104,12 @@ Item {
 
     // ----------------- 抽屉 ------------------
     Rectangle {
-        id: content
+        id: isobathsContent
         width: isobathSize
         height: isobathSize * 1.2
         anchors.top: parent.top
         anchors.right: toggleButton.left
-        anchors.rightMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width)
+        anchors.rightMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width)
 
         color: "#f0f0f0"
         border.color: "#3498db"
@@ -112,7 +119,7 @@ Item {
         // 拦截鼠标事件，防止点击穿透到地图
         MouseArea {
             anchors.fill: parent
-            enabled: bluetoothDrawOpen
+            enabled: isobathsDrawOpen
             preventStealing: true
         }
 
@@ -882,10 +889,11 @@ Item {
         id: bluetoothContent
         width: isobathSize * 0.8
         height: isobathSize * 0.6
-        anchors.top: isobathsContent.bottom
+        anchors.top: toggleButton.top
         anchors.topMargin: 5
-        anchors.right: buttonColumn.left
-        anchors.rightMargin: bluetoothDrawOpen ? 0 : -(width + buttonColumn.width)
+        anchors.right: toggleButton.left
+        anchors.rightMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width)
+
 
         color: "#f0f0f0"
         border.color: "#3498db"
@@ -895,9 +903,15 @@ Item {
         // 拦截鼠标事件，防止点击穿透到地图
         MouseArea {
             anchors.fill: parent
-            enabled: bluetoothDrawerOpen
+            enabled: bluetoothDrawOpen
             preventStealing: true
         }
+
+
+        Behavior on anchors.rightMargin {
+            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+        }
+
 
         ColumnLayout
         {
