@@ -89,9 +89,7 @@ Rectangle {
     Loader {
         anchors.fill: parent
         sourceComponent: Qt.platform.os === "android" ? androidRowComponent : windowsRowComponent
-        // sourceComponent: Qt.platform.os === "android" ? windowsRowComponent : androidRowComponent
     }
-
 
     Component
     {
@@ -104,7 +102,6 @@ Rectangle {
                 anchors.fill: parent
                 anchors.margins: 2
                 spacing: 3
-
 
             MenuButton {  //菜单
                 id: menuBtn

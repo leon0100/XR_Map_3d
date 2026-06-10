@@ -107,5 +107,7 @@
 	<file>XR/expandWholeWindow.svg</file>
 	<file>XR/expand_map.svg</file>
 	<file>XR/expand_sonar.svg</file>
+	<file>XR/zoom_in.png</file>
+	<file>XR/zoom_out.png</file>
     </qresource>
 </RCC>

@@ -601,17 +601,7 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
         emit cameraIsMoved();
     }
 
-    /*---- 测距模块 ----*/
-    if(screetShot_.isDistMeasureMode_) {
-        QPointF p1 = screetShot_.getDistLineP1();
-        QPointF p2 = screetShot_.getDistLineP2();
-        QVector3D worldCoorOrigin = calculateToWorldCoor(p1.x(), p1.y());
-        QVector3D worldCoorEnd    = calculateToWorldCoor(p2.x(), p2.y());
-        const float dx = (worldCoorEnd.x() - worldCoorOrigin.x());
-        const float dy = (worldCoorEnd.y() - worldCoorOrigin.y());
-        double dist = std::sqrt(dx * dx + dy * dy);
-        emit screetShot_.signalStartToEndDist(dist);
-    }
+    updateDistance();
 }
 
 void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF& currCenter, qreal scaleDelta, qreal angleDelta)
@@ -631,17 +621,20 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
 
     emit cameraIsMoved();
 
-    /*---- 测距模块 ----*/
-    if(screetShot_.isDistMeasureMode_) {
-        QPointF p1 = screetShot_.getDistLineP1();
-        QPointF p2 = screetShot_.getDistLineP2();
-        QVector3D worldCoorOrigin = calculateToWorldCoor(p1.x(), p1.y());
-        QVector3D worldCoorEnd    = calculateToWorldCoor(p2.x(), p2.y());
-        const float dx = (worldCoorEnd.x() - worldCoorOrigin.x());
-        const float dy = (worldCoorEnd.y() - worldCoorOrigin.y());
-        double dist = std::sqrt(dx * dx + dy * dy);
-        emit screetShot_.signalStartToEndDist(dist);
-    }
+    updateDistance();
+}
+
+
+void GraphicsScene3dView::zoomInOut(bool zoomIn)
+{
+    qreal delta = zoomIn ? 120.0 : -120.0;
+    m_camera->zoom(delta);
+
+    QQuickFramebufferObject::update();
+
+    emit cameraIsMoved();
+
+    updateDistance();
 }
 
 void GraphicsScene3dView::keyPressTrigger(Qt::Key key)
@@ -1267,7 +1260,7 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
     latitude  = lla.latitude;
     longitude = lla.longitude;
 
-    // qDebug() << "mouseTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
+    qDebug() << "mouseTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
 }
 
 QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
@@ -1281,6 +1274,29 @@ QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
     float groundZ = 0.0f;
     return calculateIntersectionPoint(rayOrigin, rayDir, groundZ);
 }
+
+void GraphicsScene3dView::updateDistance()
+{
+    QVector3D origin = calculateToWorldCoor(16, 16);
+    QVector3D end    = calculateToWorldCoor(116, 16);
+    const float dx = (end.x() - origin.x());
+    const float dy = (end.y() - origin.y());
+    double dist = std::sqrt(dx * dx + dy * dy);
+    emit screetShot_.signalStartToEndDist(dist);
+
+    /*---- 测距模块 ----*/
+    if(screetShot_.isDistMeasureMode_) {
+        QPointF p1 = screetShot_.getDistLineP1();
+        QPointF p2 = screetShot_.getDistLineP2();
+        QVector3D worldCoorOrigin = calculateToWorldCoor(p1.x(), p1.y());
+        QVector3D worldCoorEnd    = calculateToWorldCoor(p2.x(), p2.y());
+        const float dx = (worldCoorEnd.x() - worldCoorOrigin.x());
+        const float dy = (worldCoorEnd.y() - worldCoorOrigin.y());
+        double dist = std::sqrt(dx * dx + dy * dy);
+        emit screetShot_.signalStartToEndDist(dist);
+    }
+}
+
 
 void GraphicsScene3dView::updateMapView()
 {
@@ -1397,6 +1413,8 @@ void GraphicsScene3dView::updateMapView()
     mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     QQuickFramebufferObject::update();
+
+    updateDistance();
 }
 
 void GraphicsScene3dView::updateViews()

@@ -18,7 +18,6 @@ Item {
     property var  endPoint:   renderer.screetShot.distLineP2  // 终点坐标
     property string  distance: "0.0m"
 
-
     Connections {
         target: renderer.screetShot
 

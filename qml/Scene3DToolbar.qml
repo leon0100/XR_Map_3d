@@ -1,452 +1,150 @@
-// import QtQuick 2.12
-// import QtQuick.Controls 2.12
-// import QtQuick.Layouts 1.12
-// import QtQuick.Dialogs 1.3
-// import Qt.labs.settings 1.1
-
-
-// import AppXr 1.0
-
-
-// //左侧的工具栏
-// Item  {
-//     id: toolbarRoot
-//     anchors.left: parent.left
-//     anchors.leftMargin: 8
-
-//     width:  rowButtons.implicitWidth
-//     height: rowButtons.implicitHeight
-
-//     signal updateBottomTrack()
-
-//     // opacity
-//     property bool isFitViewCheckButtonHovered:     false
-//     property bool isBoatTrackCheckButtonHovered:   false
-//     property bool isContourCheckButtonHovered:     false
-
-//     property bool toolbarHovered: Qt.platform.os === "android" ?
-//                 (setCameraIsometricView.down|| boatTrackCheckButton.down) :
-//                 (isBoatTrackCheckButtonHovered || isFitViewCheckButtonHovered || isContourCheckButtonHovered)
-
-//     property bool menuOpened: settings3DSettings.visible
-
-//     opacity: (toolbarHovered || menuOpened) ? 1.0 : 0.5
-//     Behavior on opacity { NumberAnimation { duration: 120 } }
-
-
-//     // buttons
-//     ColumnLayout {
-//         id: rowButtons
-//         spacing: 10
-//         Layout.alignment: Qt.AlignHCenter
-
-//         // CheckButton {
-//         //     id: setCameraIsometricView
-//         //     iconSource: "./fit-in-view.svg"
-//         //     backColor: theme.controlBackColor
-//         //     borderColor: theme.controlBackColor
-//         //     checkedBorderColor: theme.controlBorderColor
-//         //     checkable: false
-//         //     checked: false
-//         //     implicitHeight: theme.menuWidth
-//         //     implicitWidth: theme.menuWidth
-
-//         //     CMouseOpacityArea {
-//         //         toolTipText: qsTr("Reset camera")
-//         //         popupPosition: "topRight"
-//         //     }
-
-//         //     hoverEnabled: true
-//         //     onHoveredChanged: {
-//         //         toolbarRoot.isFitViewCheckButtonHovered = hovered
-//         //     }
-
-//         //     onClicked: {
-//         //         Scene3dToolBarController.onSetCameraMapViewButtonClicked()
-//         //     }
-//         // }
-
-
-//         // Item {
-//         //     //visible: false
-//         //     id:     locationWrapper
-//         //     width : locationCheckButton.implicitWidth
-//         //     height: locationCheckButton.implicitHeight
-
-//         //     CheckButton {
-//         //         id: locationCheckButton
-//         //         iconSource: "qrc:/icons/ui/location.svg"
-//         //         backColor:          theme.controlBackColor
-//         //         borderColor:        theme.controlBackColor
-//         //         checkedBorderColor: theme.controlBorderColor
-//         //         checked:            false
-//         //         implicitHeight:     theme.menuWidth
-//         //         implicitWidth:      theme.menuWidth
-
-//         //         onCheckedChanged: {
-//         //             Scene3dToolBarController.onTrackLastDataCheckButtonCheckedChanged(checked)
-//         //         }
-
-//         //         Component.onCompleted: {
-//         //             Scene3dToolBarController.onTrackLastDataCheckButtonCheckedChanged(checked)
-//         //         }
-
-//         //         property bool locationLongPressTriggered: false
-
-//         //         MouseArea {
-//         //             id: locationTouchArea
-//         //             anchors.fill: parent
-//         //             enabled: Qt.platform.os === "android"
-
-//         //             onPressed: {
-//         //                 if (enabled) {
-//         //                     locationLongPressTimer.start()
-//         //                     locationCheckButton.locationLongPressTriggered = false
-//         //                 }
-//         //             }
-
-//         //             onReleased: {
-//         //                 if (enabled) {
-//         //                     if (!locationCheckButton.locationLongPressTriggered) {
-//         //                         locationCheckButton.checked = !locationCheckButton.checked
-//         //                     }
-//         //                     locationLongPressTimer.stop()
-//         //                 }
-//         //             }
-
-//         //             onCanceled: {
-//         //                 if (enabled) {
-//         //                     locationLongPressTimer.stop()
-//         //                 }
-//         //             }
-//         //         }
-
-//         //         Timer {
-//         //             id: locationLongPressTimer
-//         //             interval: 100 // ms
-//         //             repeat: false
-//         //             running : false
-//         //             onTriggered: {
-//         //                 locationCheckButton.locationLongPressTriggered = true;
-//         //             }
-//         //         }
-
-//         //         Settings {
-//         //             property alias locationCheckButton: locationCheckButton.checked
-//         //         }
-//         //     }
-
-//         //     LocationExtraSettings {
-//         //         id: locationSettings
-//         //         locationCheckButton:      locationCheckButton
-//         //         anchors.bottom:           locationCheckButton.top
-//         //         anchors.horizontalCenter: locationCheckButton.horizontalCenter
-//         //         z: 2
-//         //     }
-//         // }
-
-
-
-//         //Settings3DExtraSettings.qml
-//         Item {
-//             id: settings3DWrapper
-//             width : settings3DCheckButton.implicitWidth
-//             height: settings3DCheckButton.implicitHeight
-
-//             CheckButton {
-//                 id:       settings3DCheckButton
-//                 iconSource: "qrc:/icons/ui/settings.svg"
-//                 backColor:   theme.controlBackColor
-//                 borderColor: theme.controlBackColor
-//                 checkedBorderColor: theme.controlBorderColor
-//                 checkable: false
-//                 implicitWidth:  theme.menuWidth
-//                 implicitHeight: theme.menuWidth
-
-//                 property bool settingsPressTriggered: false
-
-//                 onClicked: settingsPressTriggered  = !settingsPressTriggered
-
-//                 // MouseArea {
-//                 //     id: settings3DTouchArea
-//                 //     anchors.fill: parent
-//                 //     enabled: Qt.platform.os === "android"
-
-//                 //     onPressed: {
-//                 //         if (enabled) {
-//                 //             settingsPressTimer.start()
-//                 //             settings3DCheckButton.settingsPressTriggered = false
-//                 //         }
-//                 //     }
-
-//                 //     onReleased: {
-//                 //         if (enabled) {
-//                 //             settingsPressTimer.stop()
-//                 //         }
-//                 //     }
-
-//                 //     onCanceled: {
-//                 //         if (enabled) {
-//                 //             settingsPressTimer.stop()
-//                 //         }
-//                 //     }
-//                 // }
-
-//                 // Timer {
-//                 //     id: settingsPressTimer
-//                 //     interval: 5
-//                 //     repeat: false
-//                 //     running: false
-
-//                 //     onTriggered: {
-//                 //         settings3DCheckButton.settingsPressTriggered = true;
-//                 //     }
-//                 // }
-//             }
-
-//             Settings3DExtraSettings {
-//                 id: settings3DSettings
-//                 settings3DCheckButton:  settings3DCheckButton
-//                 anchors.left:           settings3DCheckButton.right
-//                 anchors.verticalCenter: settings3DCheckButton.verticalCenter
-//                 z: 2
-//             }
-//         }
-
-
-
-
-//         CheckButton {
-//             id: boatTrackCheckButton
-//             iconSource: "qrc:/icons/ui/route.svg"
-//             backColor: theme.controlBackColor
-//             borderColor: theme.controlBackColor
-//             checkedBorderColor: theme.controlBorderColor
-//             checked: true
-//             implicitHeight: theme.menuWidth
-//             implicitWidth: theme.menuWidth
-
-//             hoverEnabled: true
-//             onHoveredChanged: {
-//                 toolbarRoot.isBoatTrackCheckButtonHovered = hovered
-//             }
-
-//             CMouseOpacityArea {
-//                 toolTipText: qsTr("Boat track")
-//                 popupPosition: "topRight"
-//             }
-
-//             onCheckedChanged: {
-//                 BoatTrackControlMenuController.onVisibilityCheckBoxCheckedChanged(checked)
-//             }
-
-//             Component.onCompleted: {
-//                 BoatTrackControlMenuController.onVisibilityCheckBoxCheckedChanged(checked)
-//             }
-
-//             Settings {
-//                 property alias boatTrackCheckButton: boatTrackCheckButton.checked
-//             }
-//         }
-
-
-//         Item
-//         {
-//             id:     isobathsWrapper
-//             width : isobathsCheckButton.implicitWidth
-//             height: isobathsCheckButton.implicitHeight
-
-//             CheckButton {
-//                 id: isobathsCheckButton
-//                 iconSource: "qrc:/XR/contour.png"
-//                 backColor:          theme.controlBackColor
-//                 borderColor:        theme.controlBackColor
-//                 checkedBorderColor: theme.controlBorderColor
-//                 checked: false
-//                 implicitHeight:     theme.menuWidth
-//                 implicitWidth:      theme.menuWidth
-
-//                 hoverEnabled: true
-//                 onHoveredChanged: {
-//                     toolbarRoot.isContourCheckButtonHovered = hovered
-//                 }
-
-//                 property bool pulse: core.dataProcessorState === 2
-
-//                 onPulseChanged: {
-//                     if (!pulse) {
-//                         isobathsCheckButton.opacity = 1.0;
-//                     }
-//                 }
-
-//                 onCheckedChanged: {
-//                     IsobathsViewControlMenuController.onProcessStateChanged(checked);
-//                     IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(checked)
-//                 }
-
-//                 Component.onCompleted: {
-//                     IsobathsViewControlMenuController.onProcessStateChanged(checked);
-//                     IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(checked)
-//                 }
-
-//                 Settings {
-//                     property alias isobathsCheckButton: isobathsCheckButton.checked
-//                 }
-
-//             }
-
-//         }
-
-
-
-//         // erase route
-//         Item {
-//             id: eraseViewWrapper
-//             width : eraseRouteButton.implicitWidth
-//             height: eraseRouteButton.implicitHeight
-
-//             CheckButton {
-//                 id: eraseRouteButton
-//                 iconSource: "qrc:/icons/ui/erase.svg"
-//                 backColor: theme.controlBackColor
-//                 borderColor: theme.controlBackColor
-//                 checkedBorderColor: theme.controlBorderColor
-//                 checkable: false
-//                 implicitHeight: theme.menuWidth
-//                 implicitWidth: theme.menuWidth
-
-//                 property bool pulse: core.dataProcessorState === 3
-
-//                 SequentialAnimation {
-//                     running: eraseRouteButton.pulse
-//                     loops: Animation.Infinite
-//                     NumberAnimation { target: eraseRouteButton; property: "opacity"; to: 0.2; duration: 500 }
-//                     NumberAnimation { target: eraseRouteButton; property: "opacity"; to: 1.0; duration: 500 }
-//                 }
-
-//                 onPulseChanged: {
-//                     if (!pulse) {
-//                         eraseRouteButton.opacity = 1.0;
-//                     }
-//                 }
-
-//                 onClicked: core.clearRouteData()
-//             }
-
-//         }
-
-
-//         ButtonGroup {
-//             property bool buttonChangeFlag : false
-//             id: buttonGroup
-//             onCheckedButtonChanged: buttonChangeFlag = true
-//             onClicked: {
-//                 if (!buttonChangeFlag) {
-//                     checkedButton = null
-//                 }
-
-//                 buttonChangeFlag = false;
-//             }
-//         }
-
-
-//     }
-
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Dialogs 1.3
 import Qt.labs.settings 1.1
 
-
 import AppXr 1.0
 
 
-//左侧的工具栏
+//地图下侧的工具栏
 Item  {
     id: toolbarRoot
-    anchors.left: parent.left
-    anchors.leftMargin: 8
 
     width:  rowButtons.implicitWidth
     height: rowButtons.implicitHeight
 
-    signal updateBottomTrack()
-
     property bool isNorthModeCheckButtonHovered:   false
-    property bool isMapCheckButtonHovered:         false
-    property bool isEraseCheckButtonHovered:       false
 
     property bool toolbarHovered: Qt.platform.os === "android" ?
-                northModeCheckButton.down :
-                (isNorthModeCheckButtonHovered || isMapCheckButtonHovered || isEraseCheckButtonHovered)
+                northModeCheckButton.down : isNorthModeCheckButtonHovered
 
-    // property bool menuOpened: settings3DSettings.visible
 
-    opacity: toolbarHovered ? 1.0 : 0.5
     Behavior on opacity { NumberAnimation { duration: 120 } }
 
 
-    // buttons
-    ColumnLayout {
+    property string  distance: "0m"
+    Connections {
+        target: renderer.screetShot
+
+        function onSignalStartToEndDist(dist) {
+            if (dist >= 1000) {
+                distance = (dist / 1000).toFixed(2) + " km"
+            }
+            else {
+                distance = dist.toFixed(0) + " m"
+            }
+        }
+    }
+
+
+    RowLayout {
         id: rowButtons
-        spacing: 10
+        spacing: 8
         Layout.alignment: Qt.AlignHCenter
+
+        Item {
+            id: scaleBar
+            Layout.alignment: Qt.AlignVCenter
+            width: 110
+            height: 30
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 2
+
+                Text {
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  text: distance
+                  color: "white"
+                  font.pixelSize: theme.iconSize
+                }
+
+                Canvas {
+                   width: 100
+                   height: 12
+
+                   onPaint: {
+                      var ctx = getContext("2d");
+                      ctx.clearRect(0, 0, width, height);
+                      ctx.strokeStyle = "white";
+                      ctx.lineWidth = 4;
+
+                      ctx.beginPath();
+                      ctx.moveTo(0, height * 0.6);
+                      ctx.lineTo(width, height * 0.6);
+                      ctx.moveTo(0, 0);
+                      ctx.lineTo(0, height * 0.6);
+                      ctx.moveTo(width, 0);
+                      ctx.lineTo(width, height * 0.6);
+                      ctx.stroke();
+                   }
+                }
+            }
+        }
+
+
+        Button {
+            id: zoomInBtn
+            implicitHeight:  theme.menuWidth
+            implicitWidth:   theme.menuWidth
+
+            CMouseOpacityArea {
+                toolTipText: qsTr("Zoom In")
+                popupPosition: "topRight"
+            }
+
+            contentItem: Item {
+                Image {
+                    source: "qrc:/XR/zoom_in.png"
+                    anchors.centerIn: parent
+                    width:  theme.menuWidth * 0.85
+                    height: theme.menuWidth * 0.85
+                }
+            }
+
+            background: Rectangle {
+                radius: 3
+                color: zoomInBtn.down ? "white" : theme.controlBackColor
+            }
+
+            onClicked: {
+                renderer.zoomInOut(true)
+            }
+
+        }
+
+
+        Button {
+            id: zoomOutBtn
+            implicitHeight: theme.menuWidth
+            implicitWidth:  theme.menuWidth
+
+            CMouseOpacityArea {
+                toolTipText: qsTr("Zoom Out")
+                popupPosition: "topRight"
+            }
+
+            contentItem: Item {
+                Image {
+                    source: "qrc:/XR/zoom_out.png"
+                    anchors.centerIn: parent
+                    width:  theme.menuWidth * 0.85
+                    height: theme.menuWidth * 0.85
+                }
+            }
+
+            background: Rectangle {
+                radius: 3
+                color: zoomOutBtn.down ? "white" : theme.controlBackColor
+            }
+
+            onClicked: {
+                renderer.zoomInOut(false)
+            }
+
+        }
+
 
         CheckButton {
             id: northModeCheckButton
@@ -457,12 +155,7 @@ Item  {
             checked:    true
             implicitHeight: theme.menuWidth
             implicitWidth: theme.menuWidth
-
-            hoverEnabled: true
-            onHoveredChanged: {
-                toolbarRoot.isNorthModeCheckButtonHovered = hovered
-                northModeCheckButton.opacity = 1.0
-            }
+            opacity: toolbarHovered ? 1.0 : 0.5
 
             CMouseOpacityArea {
                 toolTipText: qsTr("Lock 2D")
@@ -484,79 +177,35 @@ Item  {
 
 
 
+        // CheckButton {
+        //     id: mapCheckButton
+        //     iconSource: "qrc:/icons/ui/map.svg"
+        //     backColor:          theme.controlBackColor
+        //     borderColor:        theme.controlBackColor
+        //     checkedBorderColor: theme.controlBorderColor
+        //     checked:            true
+        //     implicitHeight:     theme.menuWidth * 0.8
+        //     implicitWidth:      theme.menuWidth * 0.8
 
-        CheckButton {
-            id: mapCheckButton
-            iconSource: "qrc:/icons/ui/map.svg"
-            backColor:          theme.controlBackColor
-            borderColor:        theme.controlBackColor
-            checkedBorderColor: theme.controlBorderColor
-            checked:            true
-            implicitHeight:     theme.menuWidth
-            implicitWidth:      theme.menuWidth
+        //     hoverEnabled: true
+        //     onHoveredChanged: {
+        //         toolbarRoot.isMapCheckButtonHovered = hovered
+        //         mapCheckButton.opacity = 1.0;
+        //     }
 
-            hoverEnabled: true
-            onHoveredChanged: {
-                toolbarRoot.isMapCheckButtonHovered = hovered
-                mapCheckButton.opacity = 1.0;
-            }
+        //     CMouseOpacityArea {
+        //         toolTipText: qsTr("Map Visibility")
+        //         popupPosition: "topRight"
+        //     }
 
-            CMouseOpacityArea {
-                toolTipText: qsTr("Map Visibility")
-                popupPosition: "topRight"
-            }
+        //     onCheckedChanged: MapViewControlMenuController.onVisibilityChanged(checked)
 
-            onCheckedChanged: MapViewControlMenuController.onVisibilityChanged(checked)
+        //     Component.onCompleted: MapViewControlMenuController.onVisibilityChanged(checked)
 
-            Component.onCompleted: MapViewControlMenuController.onVisibilityChanged(checked)
-
-
-        }
-
-
-
-        // erase route
-        CheckButton {
-            id: eraseRouteButton
-            iconSource: "qrc:/icons/ui/erase.svg"
-            backColor: theme.controlBackColor
-            borderColor: theme.controlBackColor
-            checkedBorderColor: theme.controlBorderColor
-            checkable: false
-            hoverEnabled: true
-            implicitHeight: theme.menuWidth
-            implicitWidth: theme.menuWidth
-
-            onHoveredChanged: {
-                toolbarRoot.isEraseCheckButtonHovered = hovered
-                eraseRouteButton.opacity = 1.0;
-            }
-
-            CMouseOpacityArea {
-                toolTipText: qsTr("Erase")
-                popupPosition: "topRight"
-            }
-
-            onClicked: core.clearRouteData()
-        }
+        // }
 
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

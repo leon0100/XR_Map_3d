@@ -243,6 +243,7 @@ public:
     Q_INVOKABLE void pinchTrigger(const QPointF& prevCenter, const QPointF& currCenter, qreal scaleDelta, qreal angleDelta);
     Q_INVOKABLE void keyPressTrigger(Qt::Key key);
     Q_INVOKABLE void bottomTrackActionEvent(BottomTrack::ActionEvent actionEvent);
+    Q_INVOKABLE void zoomInOut(bool zoomIn);
 
 
     void setTrackLastData(bool state);
@@ -304,6 +305,7 @@ private:
     void initAutoDistTimer();
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
     QVector3D calculateToWorldCoor(qreal x, qreal y);
+    void updateDistance();
 
 private:
     friend class BottomTrack;

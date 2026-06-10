@@ -14,7 +14,7 @@ Rectangle {
     color: "transparent"
 
     property int  landSize: Math.min(Screen.width, Screen.height) * 0.3
-    property int  iconSize: landSize * 0.1
+    property int  iconSize: landSize * 0.15
     property bool expanded: false
     property color backColor: "#d6e6ff"
     property color pressColor: "#b0d4ff"
@@ -197,68 +197,95 @@ Rectangle {
                 }
             }
 
-            MenuButton { //等值线
-                id: contourBtn
-                icon.source: "qrc:/XR/contour.png"
-                icon.width:  root.iconSize
-                icon.height: root.iconSize
-                width:       root.iconSize
-                height:      root.iconSize
+            // MenuButton { //等值线
+            //     id: contourBtn
+            //     icon.source: "qrc:/XR/contour.png"
+            //     icon.width:  root.iconSize
+            //     icon.height: root.iconSize
+            //     width:       root.iconSize
+            //     height:      root.iconSize
 
-                CMouseOpacityArea {
-                    id: btn6
-                    toolTipText: qsTr("Contours")
-                }
+            //     CMouseOpacityArea {
+            //         id: btn6
+            //         toolTipText: qsTr("Contours")
+            //     }
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: root.iconSize * 0.5
-                    color: backColor
-                }
+            //     Rectangle {
+            //         anchors.fill: parent
+            //         radius: root.iconSize * 0.5
+            //         color: backColor
+            //     }
 
-                onPressed: {
-                    contourMode = !contourMode
-                    if(contourMode) {
-                        bluetoothMode = false
-                    }
-                }
-            }
+            //     onPressed: {
+            //         contourMode = !contourMode
+            //         if(contourMode) {
+            //             bluetoothMode = false
+            //         }
+            //     }
+            // }
+
+            // MenuButton {
+            //     id: serialPortBtn
+            //     icon.source: "qrc:/XR/serialPort.png"
+            //     icon.width:  root.iconSize
+            //     icon.height: root.iconSize
+            //     width:       root.iconSize
+            //     height:      root.iconSize
+
+            //     CMouseOpacityArea {
+            //         toolTipText: qsTr("SerialPort")
+            //     }
+
+            //     property bool serialPortMode: false
+            //     Rectangle {
+            //         anchors.fill: parent
+            //         radius:  root.iconSize * 0.5
+            //         color: backColor
+            //     }
+
+            //     onPressed: {
+            //         serialPortMode = !serialPortMode
+            //     }
+            // }
+
+            // MenuButton {
+            //     id: blueToothBtn
+            //     icon.source: "qrc:/XR/bluetooth.png"
+            //     icon.width:  root.iconSize
+            //     icon.height: root.iconSize
+            //     width:       root.iconSize
+            //     height:      root.iconSize
+
+
+            //     CMouseOpacityArea {
+            //         toolTipText: qsTr("Bluetooth")
+            //     }
+
+            //     Rectangle {
+            //         anchors.fill: parent
+            //         radius:  root.iconSize * 0.5
+            //         color:  backColor
+            //     }
+
+            //     onPressed: {
+            //         bluetoothMode = !bluetoothMode
+            //         if(bluetoothMode) {
+            //             contourMode = false
+            //         }
+            //     }
+            // }
+
 
             MenuButton {
-                id: serialPortBtn
-                icon.source: "qrc:/XR/serialPort.png"
+                id: eraseRouteBtn
+                icon.source: "qrc:/icons/ui/erase.svg"
                 icon.width:  root.iconSize
                 icon.height: root.iconSize
                 width:       root.iconSize
                 height:      root.iconSize
 
                 CMouseOpacityArea {
-                    toolTipText: qsTr("SerialPort")
-                }
-
-                property bool serialPortMode: false
-                Rectangle {
-                    anchors.fill: parent
-                    radius:  root.iconSize * 0.5
-                    color: backColor
-                }
-
-                onPressed: {
-                    serialPortMode = !serialPortMode
-                }
-            }
-
-            MenuButton {
-                id: blueToothBtn
-                icon.source: "qrc:/XR/bluetooth.png"
-                icon.width:  root.iconSize
-                icon.height: root.iconSize
-                width:       root.iconSize
-                height:      root.iconSize
-
-
-                CMouseOpacityArea {
-                    toolTipText: qsTr("Bluetooth")
+                    toolTipText: qsTr("Erase")
                 }
 
                 Rectangle {
@@ -267,12 +294,7 @@ Rectangle {
                     color:  backColor
                 }
 
-                onPressed: {
-                    bluetoothMode = !bluetoothMode
-                    if(bluetoothMode) {
-                        contourMode = false
-                    }
-                }
+                onPressed: core.clearRouteData()
             }
         }
     }

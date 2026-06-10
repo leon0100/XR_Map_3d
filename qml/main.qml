@@ -121,7 +121,7 @@ ApplicationWindow  {
         id: isobathsSettings
         visible: true
         x: Screen.width - isobathsSettings.width
-        y: bleLivedataScaning.height - 20
+        y: expandToolBar.iconSize * 3
         targetPlot: toolBarXR.targetPlot
     }
 
@@ -863,31 +863,31 @@ ApplicationWindow  {
             }
 
             GraphicsScene3dView {
-               id:      renderer
-               visible: (menuBar !== null) ? menuBar.is3DVisible : false
-               objectName: "GraphicsScene3dView"
-               x: visualisationLayout.splitMode === 1 ? 10 : 0
-               y: visualisationLayout.splitMode === 1 ?
+                id:      renderer
+                visible: (menuBar !== null) ? menuBar.is3DVisible : false
+                objectName: "GraphicsScene3dView"
+                x: visualisationLayout.splitMode === 1 ? 10 : 0
+                y: visualisationLayout.splitMode === 1 ?
                     (visualisationLayout.height - visualisationLayout.cornerWindowHeight - 10) : 0
-               z: visualisationLayout.splitMode === 1 ? 10 : 1
-               width: {
+                z: visualisationLayout.splitMode === 1 ? 10 : 1
+                width: {
                    if (visualisationLayout.splitMode === 1) {
                        // 声呐全屏模式：地图小窗固定宽度
                        return visualisationLayout.cornerWindowWidth
                    }
                    // 正常分窗或地图全屏模式
                     return visualisationLayout.landscapeMode ? visualisationLayout.handlePaneLength : visualisationLayout.width
-               }
-               height: {
+                }
+                height: {
                    if (visualisationLayout.splitMode === 1) {
                        // 声呐全屏模式：地图小窗固定高度
                        return visualisationLayout.cornerWindowHeight
                    }
                    // 正常分窗或地图全屏模式
                    return visualisationLayout.landscapeMode ? visualisationLayout.height : visualisationLayout.handlePaneLength
-               }
+                }
 
-               focus: true
+                focus: true
 
                 ScreetRect { }
 
@@ -1061,9 +1061,11 @@ ApplicationWindow  {
                 }
 
                 Scene3DToolbar{
-                    id:     scene3DToolbar
-                    y: renderer.height - height - 2
+                    id: scene3DToolbar
+                    x: renderer.width * 0.5
+                    y: renderer.height - scene3DToolbar.height * 1.5
                     Keys.forwardTo:    [mousearea3D]
+                    visible: visualisationLayout.splitMode !== 1
                 }
 
 

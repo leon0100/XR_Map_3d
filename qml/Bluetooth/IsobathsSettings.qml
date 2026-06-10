@@ -39,62 +39,101 @@ Item {
 
 
     // ---------------- 侧边按钮 -----------------
-    Column {
+    ColumnLayout {
         id: toggleButton
-        width: iconSize * 1.1
-        height: width * 2.2
+        width: iconSize * 1.2
         spacing: 2
 
         Rectangle {
             id: isobathsToggleBtn
-            width:  iconSize
-            height: iconSize
+            width: iconSize
+            height: iconSize * 5
             color: "#879fc6"
-            opacity: 0.7
+            opacity: 0.6
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
                     isobathsDrawOpen = !isobathsDrawOpen
                     if(isobathsDrawOpen) {
-                       bluetoothDrawOpen = false
+                        bluetoothDrawOpen = false
+                        bluetoothToggleBtn.color = "#879fc6"
                     }
+                    parent.color = isobathsDrawOpen ? "white" : "#879fc6"
                 }
             }
 
-            Image {
-                anchors.centerIn: parent
-                source: "qrc:/XR/contour.png"
-                width:  iconSize
-                height: iconSize
-                fillMode: Image.PreserveAspectFit
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 2
+
+                Image {
+                    source: "qrc:/XR/contour.png"
+                    Layout.preferredWidth: iconSize
+                    Layout.preferredHeight: iconSize
+                    Layout.alignment: Qt.AlignHCenter
+                    fillMode: Image.PreserveAspectFit
+                }
+
+                Item {
+                    width: parent.width
+                    height: parent.height - iconSize - 10
+                    Text {
+                        anchors.centerIn: parent
+                        text: qsTr("Isobaths")
+                        color: "white"
+                        font.pixelSize: iconSize * 0.8
+                        rotation: 90
+                        transformOrigin: Item.Center
+                    }
+                }
             }
         }
 
         Rectangle {
-           id: bluetoothToggleBtn
-           width:  iconSize
-           height: iconSize
-           color: "#879fc6"
-           opacity: 0.7
+            id: bluetoothToggleBtn
+            width: iconSize
+            height: iconSize * 5
+            color: "#879fc6"
+            opacity: 0.6
 
-           MouseArea {
-               anchors.fill: parent
-               onClicked: {
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
                     bluetoothDrawOpen = !bluetoothDrawOpen
-                   if(bluetoothDrawOpen) {
-                      isobathsDrawOpen = false
-                   }
-               }
-           }
+                    if(bluetoothDrawOpen) {
+                        isobathsDrawOpen = false
+                        isobathsToggleBtn.color = "#879fc6"
+                    }
+                    parent.color = bluetoothDrawOpen ? "white" : "#879fc6"
+                }
+            }
 
-           Image {
-               anchors.centerIn: parent
-               source: "qrc:/XR/bluetooth.png"
-               width: iconSize
-               height: iconSize
-               fillMode: Image.PreserveAspectFit
-           }
+            ColumnLayout {
+                anchors.fill: parent
+                spacing: 2
+
+                Image {
+                    source: "qrc:/XR/bluetooth.png"
+                    Layout.preferredWidth: iconSize
+                    Layout.preferredHeight: iconSize
+                    Layout.alignment: Qt.AlignHCenter
+                    fillMode: Image.PreserveAspectFit
+                }
+
+                Item {
+                    width: parent.width
+                    height: parent.height - iconSize - 10
+                    Text {
+                        anchors.centerIn: parent
+                        text: qsTr("Bluetooth")
+                        color: "white"
+                        font.pixelSize: iconSize * 0.8
+                        rotation: 90
+                        transformOrigin: Item.Center
+                    }
+                }
+            }
         }
 
     }
@@ -102,19 +141,19 @@ Item {
 
 
 
-    // ----------------- 抽屉 ------------------
+    // --------------------- 抽屉 --------------------
     Rectangle {
         id: isobathsContent
-        width: isobathSize
+        width:  isobathSize
         height: isobathSize * 1.2
-        anchors.top: parent.top
+        anchors.top: toggleButton.top
         anchors.right: toggleButton.left
         anchors.rightMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width)
 
         color: "#f0f0f0"
         border.color: "#3498db"
         border.width: 1
-        radius: 8
+        radius: 5
 
         // 拦截鼠标事件，防止点击穿透到地图
         MouseArea {
@@ -132,21 +171,42 @@ Item {
             NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
         }
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 16
-            spacing: 12
 
+        Rectangle {
+            id: isobathsTitleBar
+            anchors.top: parent.top
+            anchors.left: parent.left
+            height: iconSize * 1.5
+            color: "#3498db"
+
+            Text {
+                anchors.left: parent.left
+                anchors.leftMargin: 3
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Isobaths Settings")
+                font.pixelSize: iconSize
+            }
+        }
+
+        ColumnLayout {
+            anchors.top: isobathsTitleBar.bottom
+            anchors.topMargin: iconSize
+            anchors.left: parent.left
+            anchors.leftMargin: iconSize
+            anchors.right: parent.right
+            anchors.rightMargin: iconSize
+            spacing: 12
 
             RowLayout {
                 spacing: 32
+                Layout.alignment: Qt.AlignHCenter
 
                 Button {
                     id: outlineButton
                     text: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
                     font.pixelSize: iconSize
                     implicitWidth:  isobathSize * 0.4
-                    Layout.preferredHeight: iconSize * 1.1
+                    Layout.preferredHeight: iconSize * 1.5
                     palette.button: "#b9c6db"
 
                     onClicked: {
@@ -162,24 +222,12 @@ Item {
                     text: qsTr("Draw Isobaths")
                     font.pixelSize: iconSize
                     implicitWidth:  isobathSize * 0.4
-                    Layout.preferredHeight: iconSize * 1.1
+                    Layout.preferredHeight: iconSize * 1.5
                     palette.button: "#b9c6db"
 
                     onClicked: {
                         if (targetPlot) {
-                                targetPlot.doDistProcessing(
-                                    0,     // preset
-                                    1,     // window_size
-                                    0,     // vertical_gap
-                                    0,     // range_min
-                                    1000,  // range_max
-                                    1,     // gain_slope
-                                    0,     // threshold
-                                    0,     // offsetx
-                                    0,     // offsety
-                                    0,     // offsetz
-                                    false  // manual
-                                 )
+                            targetPlot.doDistProcessing( 0, 1, 0, 0, 1000, 1, 0, 0, 0, 0, false)
                         }
                     }
                 }
@@ -188,445 +236,446 @@ Item {
 
 
             Rectangle {
-                id: boatTrack
                 Layout.fillWidth: true
-                Layout.preferredHeight: layoutHeight
-                color: "#f9f9fb"
-                border.color: "#b0b3b8"
+                Layout.preferredHeight: layoutHeight * 6
+                Layout.alignment: Qt.AlignHCenter
+                Layout.topMargin: 5
+                Layout.bottomMargin: 5
+
+                border.color: "#7f8fa6"
                 border.width: 1
 
-                property bool checked: true
-
-                SequentialAnimation {
-                   id: flashAnim1
-                   running: false
-                   loops: 1
-
-                   ColorAnimation {
-                       target: boatTrack
-                       property: "color"
-                       to: "#9ecbff"
-                       duration: 100
-                   }
-                   ColorAnimation {
-                       target: boatTrack
-                       property: "color"
-                       to: "#d6e6ff"
-                       duration: 100
-                   }
-                }
-
-                Row {
+                ColumnLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: iconSize * 0.5
-                    anchors.rightMargin: iconSize * 0.5
-                    spacing: iconSize * 0.5
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Image {
-                        source: "qrc:/icons/ui/route.svg"
-                        width: iconSize * 1.2
-                        height: iconSize * 1.2
-                        fillMode: Image.PreserveAspectFit
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
+                    anchors.margins: 5
+                    spacing: 2
 
                     Rectangle {
-                        width: iconSize * 1.1
-                        height: iconSize * 1.1
-                        radius: 5
-                        border.color: "#b0b3b8"
-                        border.width: 1
-                        anchors.verticalCenter: parent.verticalCenter
+                        id: boatTrack
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: layoutHeight
+                        color: "#f9f9fb"
 
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: parent.width * 0.8
-                            height: parent.height * 0.8
-                            radius: parent.height * 0.4
-                            color: "#66E07A"
-                            visible: isShowBoatTrack
+                        property bool checked: true
+
+                        SequentialAnimation {
+                            id: flashAnim1
+                            running: false
+                            loops: 1
+
+                            ColorAnimation {
+                                target: boatTrack
+                                property: "color"
+                                to: "#9ecbff"
+                                duration: 100
+                            }
+                            ColorAnimation {
+                                target: boatTrack
+                                property: "color"
+                                to: "#d6e6ff"
+                                duration: 100
+                            }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: iconSize * 0.5
+                            anchors.rightMargin: iconSize * 0.5
+                            spacing: iconSize * 0.5
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Image {
+                                source: "qrc:/icons/ui/route.svg"
+                                width: iconSize * 1.2
+                                height: iconSize * 1.2
+                                fillMode: Image.PreserveAspectFit
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Rectangle {
+                                width: iconSize * 1.1
+                                height: iconSize * 1.1
+                                radius: 5
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#66E07A"
+                                    visible: isShowBoatTrack
+                                }
+                            }
+
+                            Text {
+                                text: qsTr("Boat Track")
+                                font.pixelSize: iconSize
+                                color: "black"
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            onClicked: {
+                                flashAnim1.restart()
+                                isShowBoatTrack = !isShowBoatTrack
+                                BoatTrackControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoatTrack)
+                            }
+
+                            onEntered: parent.color = "#d6e6ff"
+                            onExited:  parent.color = "#f9f9fb"
                         }
                     }
 
-                    Text {
-                        text: qsTr("Boat Track")
-                        font.pixelSize: iconSize
-                        color: "black"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        flashAnim1.restart()
-                        isShowBoatTrack = !isShowBoatTrack
-                        BoatTrackControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoatTrack)
-                    }
-
-                    onEntered: parent.color = "#d6e6ff"
-                    onExited: parent.color = "#f9f9fb"
-                }
-            }
-
-
-            Rectangle {
-                id: showOutline
-                Layout.fillWidth: true
-                Layout.preferredHeight: layoutHeight
-                color: "#f9f9fb"
-                border.color: "#b0b3b8"
-                border.width: 1
-
-                property bool checked: true
-
-                SequentialAnimation {
-                   id: flashAnim2
-                   running: false
-                   loops: 1
-
-                   ColorAnimation {
-                       target: showOutline
-                       property: "color"
-                       to: "#9ecbff"
-                       duration: 100
-                   }
-                   ColorAnimation {
-                       target: showOutline
-                       property: "color"
-                       to: "#d6e6ff"
-                       duration: 100
-                   }
-                }
-
-                Row {
-                    anchors.fill: parent
-                    anchors.leftMargin: iconSize * 0.5
-                    anchors.rightMargin: iconSize * 0.5
-                    spacing: iconSize * 0.5
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Image {
-                        source: "qrc:/XR/outline.svg"
-                        width: iconSize * 1.2
-                        height: iconSize * 1.2
-                        fillMode: Image.PreserveAspectFit
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
 
                     Rectangle {
-                        width: iconSize * 1.1
-                        height: iconSize * 1.1
-                        radius: 5
-                        border.color: "#b0b3b8"
-                        border.width: 1
-                        anchors.verticalCenter: parent.verticalCenter
+                        id: showOutline
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: layoutHeight
+                        color: "#f9f9fb"
 
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: parent.width * 0.8
-                            height: parent.height * 0.8
-                            radius: parent.height * 0.4
-                            color: "#66E07A"
-                            visible: isShowOutline
+                        property bool checked: true
+
+                        SequentialAnimation {
+                            id: flashAnim2
+                            running: false
+                            loops: 1
+
+                            ColorAnimation {
+                                target: showOutline
+                                property: "color"
+                                to: "#9ecbff"
+                                duration: 100
+                            }
+                            ColorAnimation {
+                                target: showOutline
+                                property: "color"
+                                to: "#d6e6ff"
+                                duration: 100
+                            }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: iconSize * 0.5
+                            anchors.rightMargin: iconSize * 0.5
+                            spacing: iconSize * 0.5
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Image {
+                                source: "qrc:/XR/outline.svg"
+                                width: iconSize * 1.2
+                                height: iconSize * 1.2
+                                fillMode: Image.PreserveAspectFit
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Rectangle {
+                                width: iconSize * 1.1
+                                height: iconSize * 1.1
+                                radius: 5
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#66E07A"
+                                    visible: isShowOutline
+                                }
+                            }
+
+                            Text {
+                                text: qsTr("Track Boundary")
+                                font.pixelSize: iconSize
+                                color: "black"
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            onClicked: {
+                                flashAnim2.restart()
+                                isShowOutline = !isShowOutline
+                                IsobathsViewControlMenuController.onOutlineVisibleChanged(isShowOutline)
+                                // IsobathsViewControlMenuController.autoDrawTrackBoundary()
+                            }
+
+                            onEntered: parent.color = "#d6e6ff"
+                            onExited:  parent.color = "#f9f9fb"
                         }
                     }
 
-                    Text {
-                        text: qsTr("Track Boundary")
-                        font.pixelSize: iconSize
-                        color: "black"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
 
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        flashAnim2.restart()
-                        isShowOutline = !isShowOutline
-                        IsobathsViewControlMenuController.onOutlineVisibleChanged(isShowOutline)
-                        // IsobathsViewControlMenuController.autoDrawTrackBoundary()
-                    }
-
-                    onEntered: parent.color = "#d6e6ff"
-                    onExited: parent.color = "#f9f9fb"
-                }
-            }
-
-
-
-            Rectangle {
-                id: contour
-                Layout.fillWidth: true
-                Layout.preferredHeight: layoutHeight
-                color: "#f9f9fb"
-                border.color: "#b0b3b8"
-                border.width: 1
-
-                property bool checked: true
-
-                SequentialAnimation {
-                   id: flashAnim3
-                   running: false
-                   loops: 1
-
-                   ColorAnimation {
-                       target: contour
-                       property: "color"
-                       to: "#9ecbff"
-                       duration: 100
-                   }
-                   ColorAnimation {
-                       target: contour
-                       property: "color"
-                       to: "#d6e6ff"
-                       duration: 100
-                   }
-                }
-
-                Row {
-                    anchors.fill: parent
-                    anchors.leftMargin: iconSize * 0.5
-                    anchors.rightMargin: iconSize * 0.5
-                    spacing: iconSize * 0.5
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Image {
-                        source: "qrc:/XR/contour_map.svg"
-                        width: iconSize * 1.2
-                        height: iconSize * 1.2
-                        fillMode: Image.PreserveAspectFit
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
 
                     Rectangle {
-                        width: iconSize * 1.1
-                        height: iconSize * 1.1
-                        radius: 5
-                        border.color: "#b0b3b8"
-                        border.width: 1
-                        anchors.verticalCenter: parent.verticalCenter
+                        id: contour
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: layoutHeight
+                        color: "#f9f9fb"
 
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: parent.width * 0.8
-                            height: parent.height * 0.8
-                            radius: parent.height * 0.4
-                            color: "#66E07A"
-                            visible: isContours
+                        property bool checked: true
+
+                        SequentialAnimation {
+                            id: flashAnim3
+                            running: false
+                            loops: 1
+
+                            ColorAnimation {
+                                target: contour
+                                property: "color"
+                                to: "#9ecbff"
+                                duration: 100
+                            }
+                            ColorAnimation {
+                                target: contour
+                                property: "color"
+                                to: "#d6e6ff"
+                                duration: 100
+                            }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: iconSize * 0.5
+                            anchors.rightMargin: iconSize * 0.5
+                            spacing: iconSize * 0.5
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Image {
+                                source: "qrc:/XR/contour_map.svg"
+                                width: iconSize * 1.2
+                                height: iconSize * 1.2
+                                fillMode: Image.PreserveAspectFit
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Rectangle {
+                                width: iconSize * 1.1
+                                height: iconSize * 1.1
+                                radius: 5
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#66E07A"
+                                    visible: isContours
+                                }
+                            }
+
+                            Text {
+                                text: qsTr("Contours")
+                                font.pixelSize: iconSize
+                                color: "black"
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            onClicked: {
+                                flashAnim3.restart()
+                                isContours = !isContours
+                                // IsobathsViewControlMenuController.onProcessStateChanged(isContours);
+                                IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isContours)
+                            }
+
+                            onEntered: parent.color = "#d6e6ff"
+                            onExited:  parent.color = "#f9f9fb"
                         }
                     }
 
-                    Text {
-                        text: qsTr("Contours")
-                        font.pixelSize: iconSize
-                        color: "black"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        flashAnim3.restart()
-                        isContours = !isContours
-                        // IsobathsViewControlMenuController.onProcessStateChanged(isContours);
-                        IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isContours)
-                    }
-
-                    onEntered: parent.color = "#d6e6ff"
-                    onExited:  parent.color = "#f9f9fb"
-                }
-            }
-
-
-            Rectangle {
-                id: isobaths
-                Layout.fillWidth: true
-                Layout.preferredHeight: layoutHeight
-                color: "#f9f9fb"
-                border.color: "#b0b3b8"
-                border.width: 1
-
-                property bool checked: true
-
-                SequentialAnimation {
-                   id: flashAnim_isobaths
-                   running: false
-                   loops: 1
-
-                   ColorAnimation {
-                       target: isobaths
-                       property: "color"
-                       to: "#9ecbff"
-                       duration: 100
-                   }
-                   ColorAnimation {
-                       target: isobaths
-                       property: "color"
-                       to: "#d6e6ff"
-                       duration: 100
-                   }
-                }
-
-                Row {
-                    anchors.fill: parent
-                    anchors.leftMargin: iconSize * 0.5
-                    anchors.rightMargin: iconSize * 0.5
-                    spacing: iconSize * 0.5
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Image {
-                        source: "qrc:/XR/contour.png"
-                        width: iconSize * 1.2
-                        height: iconSize * 1.2
-                        fillMode: Image.PreserveAspectFit
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
 
                     Rectangle {
-                        width: iconSize * 1.1
-                        height: iconSize * 1.1
-                        radius: 5
-                        border.color: "#b0b3b8"
-                        border.width: 1
-                        anchors.verticalCenter: parent.verticalCenter
+                        id: isobaths
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: layoutHeight
+                        color: "#f9f9fb"
 
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: parent.width * 0.8
-                            height: parent.height * 0.8
-                            radius: parent.height * 0.4
-                            color: "#66E07A"
-                            visible: isShowIsobaths
+                        property bool checked: true
+
+                        SequentialAnimation {
+                            id: flashAnim_isobaths
+                            running: false
+                            loops: 1
+
+                            ColorAnimation {
+                                target: isobaths
+                                property: "color"
+                                to: "#9ecbff"
+                                duration: 100
+                            }
+                            ColorAnimation {
+                                target: isobaths
+                                property: "color"
+                                to: "#d6e6ff"
+                                duration: 100
+                            }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: iconSize * 0.5
+                            anchors.rightMargin: iconSize * 0.5
+                            spacing: iconSize * 0.5
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Image {
+                                source: "qrc:/XR/contour.png"
+                                width: iconSize * 1.2
+                                height: iconSize * 1.2
+                                fillMode: Image.PreserveAspectFit
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Rectangle {
+                                width: iconSize * 1.1
+                                height: iconSize * 1.1
+                                radius: 5
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#66E07A"
+                                    visible: isShowIsobaths
+                                }
+                            }
+
+                            Text {
+                                text: qsTr("Isobaths")
+                                font.pixelSize: iconSize
+                                color: "black"
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            onClicked: {
+                                flashAnim_isobaths.restart()
+                                isShowIsobaths = !isShowIsobaths
+                                // IsobathsViewControlMenuController.onProcessStateChanged(isShowIsobaths);
+                                IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
+                            }
+
+                            onEntered: parent.color = "#d6e6ff"
+                            onExited:  parent.color = "#f9f9fb"
                         }
                     }
 
-                    Text {
-                        text: qsTr("Isobaths")
-                        font.pixelSize: iconSize
-                        color: "black"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        flashAnim_isobaths.restart()
-                        isShowIsobaths = !isShowIsobaths
-                        // IsobathsViewControlMenuController.onProcessStateChanged(isShowIsobaths);
-                        IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
-                    }
-
-                    onEntered: parent.color = "#d6e6ff"
-                    onExited:  parent.color = "#f9f9fb"
-                }
-            }
-
-
-            Rectangle {
-                id: showBoat
-                Layout.fillWidth: true
-                Layout.preferredHeight: layoutHeight
-                color: "#f9f9fb"
-                border.color: "#b0b3b8"
-                border.width: 1
-
-                property bool checked: true
-
-                SequentialAnimation {
-                   id: flashAnim4
-                   running: false
-                   loops: 1
-
-                   ColorAnimation {
-                       target: showBoat
-                       property: "color"
-                       to: "#9ecbff"
-                       duration: 100
-                   }
-                   ColorAnimation {
-                       target: showBoat
-                       property: "color"
-                       to: "#d6e6ff"
-                       duration: 100
-                   }
-                }
-
-                Row {
-                    anchors.fill: parent
-                    anchors.leftMargin: iconSize * 0.5
-                    anchors.rightMargin: iconSize * 0.5
-                    spacing: iconSize * 0.5
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Image {
-                        source: "qrc:/icons/ui/speedboat.svg"
-                        width: iconSize * 1.2
-                        height: iconSize * 1.2
-                        fillMode: Image.PreserveAspectFit
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
 
                     Rectangle {
-                        width: iconSize * 1.1
-                        height: iconSize * 1.1
-                        radius: 5
-                        border.color: "#b0b3b8"
-                        border.width: 1
-                        anchors.verticalCenter: parent.verticalCenter
+                        id: showBoat
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: layoutHeight
+                        color: "#f9f9fb"
 
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: parent.width * 0.8
-                            height: parent.height * 0.8
-                            radius: parent.height * 0.4
-                            color: "#66E07A"
-                            visible: isShowBoat
+                        property bool checked: true
+
+                        SequentialAnimation {
+                            id: flashAnim4
+                            running: false
+                            loops: 1
+
+                            ColorAnimation {
+                                target: showBoat
+                                property: "color"
+                                to: "#9ecbff"
+                                duration: 100
+                            }
+                            ColorAnimation {
+                                target: showBoat
+                                property: "color"
+                                to: "#d6e6ff"
+                                duration: 100
+                            }
+                        }
+
+                        Row {
+                            anchors.fill: parent
+                            anchors.leftMargin: iconSize * 0.5
+                            anchors.rightMargin: iconSize * 0.5
+                            spacing: iconSize * 0.5
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Image {
+                                source: "qrc:/icons/ui/speedboat.svg"
+                                width: iconSize * 1.2
+                                height: iconSize * 1.2
+                                fillMode: Image.PreserveAspectFit
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Rectangle {
+                                width: iconSize * 1.1
+                                height: iconSize * 1.1
+                                radius: 5
+                                border.color: "#b0b3b8"
+                                border.width: 1
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Rectangle {
+                                    anchors.centerIn: parent
+                                    width: parent.width * 0.8
+                                    height: parent.height * 0.8
+                                    radius: parent.height * 0.4
+                                    color: "#66E07A"
+                                    visible: isShowBoat
+                                }
+                            }
+
+                            Text {
+                                text: qsTr("Boat")
+                                font.pixelSize: iconSize
+                                color: "black"
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            onClicked: {
+                                flashAnim4.restart()
+                                isShowBoat = !isShowBoat
+                                NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
+                                // IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
+                            }
+
+                            onEntered: parent.color = "#d6e6ff"
+                            onExited: parent.color = "#f9f9fb"
                         }
                     }
 
-                    Text {
-                        text: qsTr("Boat")
-                        font.pixelSize: iconSize
-                        color: "black"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-
-                    onClicked: {
-                        flashAnim4.restart()
-                        isShowBoat = !isShowBoat
-                        NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
-                        // IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
-                    }
-
-                    onEntered: parent.color = "#d6e6ff"
-                    onExited: parent.color = "#f9f9fb"
-                }
-            }
-
-
-            // ------------------- 分隔线 -----------------
-            Rectangle {
-                height: 2
-                color: "#9c9c9c"
-                Layout.fillWidth: true
             }
 
 
@@ -646,9 +695,9 @@ Item {
 
                 Rectangle {
                     id: renderSpanControl
-                    width:  iconSize * 3.5
+                    width:  iconSize * 3.3
                     height: iconSize * 1.3
-                    radius: iconSize * 0.35
+                    radius: iconSize * 0.65
                     color:  hovered ? (renderSpanControl.isOn ? "#36D85A" : "#AFCFFF")
                                     : (renderSpanControl.isOn?  "#66E07A" : "#D0D0D2")
                     property bool isOn: true
@@ -780,14 +829,6 @@ Item {
             }
 
 
-            // ================= 分隔线 =================
-            Rectangle {
-                height: 2
-                color: "#9c9c9c"
-                Layout.fillWidth: true
-            }
-
-
             // ================= 垂直缩放 =================
             RowLayout {
                 spacing: 20
@@ -846,39 +887,21 @@ Item {
 
 
 
+    property bool isShowDataPanel: false
 
+    onVisibleChanged: {
+        BleManager.setBleLiveScanningVisible(visible)
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        property bool isShowDataPanel: false
-
-        onVisibleChanged: {
-            BleManager.setBleLiveScanningVisible(visible)
+    Connections {
+        target: BleManager
+        function onConnectedChanged(connected) {
+            switchControl.isOn = connected
+            readControl.isReading  = connected
+            root.isShowDataPanel = true
+            // root.visible = false
         }
-
-        Connections {
-            target: BleManager
-            function onConnectedChanged(connected) {
-                switchControl.isOn = connected
-                readControl.isReading  = connected
-                root.isShowDataPanel = true
-                // root.visible = false
-            }
-        }
+    }
 
 
 
@@ -887,18 +910,16 @@ Item {
     // ----------------- Bluetooth Live Data 抽屉 ------------------
     Rectangle {
         id: bluetoothContent
-        width: isobathSize * 0.8
-        height: isobathSize * 0.6
-        anchors.top: toggleButton.top
-        anchors.topMargin: 5
+        width:  isobathSize
+        height: isobathSize * 0.8
+        anchors.top:   toggleButton.top
         anchors.right: toggleButton.left
         anchors.rightMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width)
-
 
         color: "#f0f0f0"
         border.color: "#3498db"
         border.width: 1
-        radius: 8
+        radius: 5
 
         // 拦截鼠标事件，防止点击穿透到地图
         MouseArea {
@@ -907,17 +928,45 @@ Item {
             preventStealing: true
         }
 
+        Rectangle {
+            anchors.fill: parent
+            color: "#dbe3f2"
+        }
 
         Behavior on anchors.rightMargin {
             NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
         }
 
 
+
+        Rectangle {
+            id: bluetoothTitleBar
+            anchors.top:  parent.top
+            anchors.left: parent.left
+            height: iconSize * 1.5
+            color: "#3498db"
+
+            Text {
+                anchors.left: parent.left
+                anchors.leftMargin: 3
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Bluetooth Settings")
+                font.pixelSize: iconSize
+            }
+        }
+
+
         ColumnLayout
         {
-            id: mainLayout
-            anchors.fill: parent
-            anchors.margins: 10
+            anchors.top: bluetoothTitleBar.bottom
+            anchors.topMargin: iconSize
+            anchors.left: parent.left
+            anchors.leftMargin: iconSize
+            anchors.right: parent.right
+            anchors.rightMargin: iconSize
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: iconSize
+
             spacing: 10
 
             RowLayout
