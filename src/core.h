@@ -35,6 +35,7 @@
 #include "tile_manager.h"
 #include "data_horizon.h"
 #include "blemanager.h"
+#include "udpmanager.h"
 #include "location.h"
 
 class Core : public QObject
@@ -224,7 +225,8 @@ private:
     std::unique_ptr<map::TileManager>                  tileManager_;
 
     std::shared_ptr<BLEManager>  bleManager_;
-    std::shared_ptr<Locations> locations_;
+    std::shared_ptr<UdpManager>  udpManager_;
+    std::shared_ptr<Locations>   locations_;
     // Locations locations_;
 
 

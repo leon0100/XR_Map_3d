@@ -67,6 +67,7 @@ public:
         void resetZAxis();
         void moveZAxis(float z);
         void zoom(qreal delta);
+        void zoomAndroid(qreal delta);
         void commitMovement();
         void focusOnObject(std::weak_ptr<SceneObject> object);
         void focusOnPosition(const QVector3D& pos);
@@ -181,7 +182,7 @@ public:
 
     };
 
-    enum ActiveMode{
+    enum ActiveMode {
         Idle                                = 0, // not used
         BottomTrackVertexSelectionMode      = 1,
         BottomTrackVertexComboSelectionMode = 2,
@@ -244,7 +245,6 @@ public:
     Q_INVOKABLE void keyPressTrigger(Qt::Key key);
     Q_INVOKABLE void bottomTrackActionEvent(BottomTrack::ActionEvent actionEvent);
     Q_INVOKABLE void zoomInOut(bool zoomIn);
-
 
     void setTrackLastData(bool state);
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);

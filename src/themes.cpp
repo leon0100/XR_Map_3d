@@ -9,7 +9,6 @@ Themes::Themes() : QObject(),
     resolutionCoeff_(1.0),
     isFakeCoords_(false)
 {
-
 #if defined (FAKE_COORDS)
     isFakeCoords_ = true;
 #endif
@@ -89,7 +88,7 @@ void Themes::setTheme(int theme_id)
     updateSystemToolBarStatus();
     m_batteryTimer.setTimerType(Qt::VeryCoarseTimer);
     connect(&m_batteryTimer, &QTimer::timeout, this, &Themes::updateSystemToolBarStatus);
-    m_batteryTimer.start(58000);
+    m_batteryTimer.start(55000);
 }
 
 
@@ -284,7 +283,7 @@ void Themes::saveSoftwareParameters()
 #ifdef Q_OS_ANDROID
     QAndroidJniObject context = QtAndroid::androidContext();
     QAndroidJniObject::callStaticMethod<void>(
-         "com/nqc/Config",
+        "com/nqc/Config",
         "saveSoftwareParameters",
         "(Landroid/content/Context;IIDDIIZIZ)V",
         context.object<jobject>(),

@@ -109,5 +109,6 @@
 	<file>XR/expand_sonar.svg</file>
 	<file>XR/zoom_in.png</file>
 	<file>XR/zoom_out.png</file>
+	<file>XR/content.svg</file>
     </qresource>
 </RCC>

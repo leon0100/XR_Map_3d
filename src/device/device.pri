@@ -8,9 +8,12 @@ HEADERS *= \
 	$$PWD/device_manager.h \
 	$$PWD/device_manager_wrapper.h \
 	$$PWD/blemanager.h \
+    $$PWD/tmodem.h \
+    $$PWD/udpmanager.h
 
 SOURCES *= \
     $$PWD/dev_driver.cpp \
 	$$PWD/device_manager.cpp \
 	$$PWD/device_manager_wrapper.cpp \
 	$$PWD/blemanager.cpp \
+    $$PWD/udpmanager.cpp

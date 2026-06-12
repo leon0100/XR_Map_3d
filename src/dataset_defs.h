@@ -28,6 +28,10 @@
 #include "tslw.h"
 #include "tsl3.h"
 
+
+#define U8_TO_16(a,b)  (((uchar)a)+(((uchar)b)<<8))
+
+
 typedef enum
 {
     filetype_tsl1 = 0,

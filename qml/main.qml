@@ -72,6 +72,7 @@ ApplicationWindow  {
 
     ExpandToolBar {
         id: expandToolBar
+        visible: visualisationLayout.splitMode !== 1
     }
 
 
@@ -1650,8 +1651,8 @@ ApplicationWindow  {
                    : Math.round((visualisationLayout.width - width) * 0.5)
                 y: visualisationLayout.landscapeMode ? Math.round((visualisationLayout.height - height) * 0.5)
                    : Math.round(visualisationLayout.handlePaneLength - height * 0.5)
-                width:  iconSize * 1.5
-                height: screenSize * 0.1
+                width:  iconSize * 2
+                height: screenSize * 0.2
                 z: 10000
 
                 Rectangle {

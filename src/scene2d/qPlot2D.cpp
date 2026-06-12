@@ -23,7 +23,7 @@ qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(
 
 void qPlot2D::paint(QPainter *painter)
 {
-    qDebug() << "qPlot2D::paint(..........";
+    // qDebug() << "qPlot2D::paint(..........";
     if (!Plot2D::plotEnabled()) {
         return;
     }

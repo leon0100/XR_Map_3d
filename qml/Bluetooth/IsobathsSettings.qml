@@ -1253,7 +1253,7 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     x: readControl.isReading ? parent.width-width-2 : 2
                                     color: "#FAFAFA"
-                                    scale: mouse2Area.pressed ? 0.9 : 1.0
+                                    scale: mouse2Area2.pressed ? 0.9 : 1.0
 
                                     Behavior on x {
                                         NumberAnimation { duration: 200; easing.type: Easing.OutCubic }

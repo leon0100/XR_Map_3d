@@ -10,11 +10,10 @@
 #include "link.h"
 #include "stream_list.h"
 #include "dev_q_property.h"
-#include "proto_binnary.h"
 #include "id_binnary.h"
 
 
-#define U8_TO_16(a,b)  (((uchar)a)+(((uchar)b)<<8))
+
 
 
 class LocationReader;

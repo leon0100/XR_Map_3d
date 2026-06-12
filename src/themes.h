@@ -234,7 +234,6 @@ public:
     Q_PROPERTY(int systemNetStatus       READ systemNetStatus    NOTIFY sysytemToolBarChanged)
 
 
-
     bool getIsFakeCoords() const { return isFakeCoords_; };
     qreal getResolutionCoeff() const { return resolutionCoeff_; };
     QColor textColor() { return *_textColor; }

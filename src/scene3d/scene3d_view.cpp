@@ -6,7 +6,6 @@
 #include <QVector3D>
 
 
-
 #include "scene3d_renderer.h"
 #include "dataset.h"
 #include "map_defs.h"
@@ -609,7 +608,8 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
     if(polygonOutline_->getOutlineMode()) {
         return;
     }
-    m_camera->zoom(scaleDelta);
+
+    m_camera->zoom(scaleDelta);   
 
     if (!isNorth_) {
         m_camera->rotate(prevCenter, currCenter, angleDelta, height());
@@ -628,7 +628,11 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
 void GraphicsScene3dView::zoomInOut(bool zoomIn)
 {
     qreal delta = zoomIn ? 120.0 : -120.0;
+#ifdef Q_OS_WIN
     m_camera->zoom(delta);
+#elif defined(Q_OS_ANDROID)
+    m_camera->zoomAndroid(delta);
+#endif
 
     QQuickFramebufferObject::update();
 
@@ -1260,7 +1264,7 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
     latitude  = lla.latitude;
     longitude = lla.longitude;
 
-    qDebug() << "mouseTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
+    // qDebug() << "mouseTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
 }
 
 QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
@@ -1278,13 +1282,13 @@ QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
 void GraphicsScene3dView::updateDistance()
 {
     QVector3D origin = calculateToWorldCoor(16, 16);
-    QVector3D end    = calculateToWorldCoor(116, 16);
-    const float dx = (end.x() - origin.x());
-    const float dy = (end.y() - origin.y());
+    QVector3D end    = calculateToWorldCoor(16 + screetShot_.rulerBar_, 16);
+    const float dx   = (end.x() - origin.x());
+    const float dy   = (end.y() - origin.y());
     double dist = std::sqrt(dx * dx + dy * dy);
     emit screetShot_.signalStartToEndDist(dist);
 
-    /*---- 测距模块 ----*/
+    /*------- 测距模块 -------*/
     if(screetShot_.isDistMeasureMode_) {
         QPointF p1 = screetShot_.getDistLineP1();
         QPointF p2 = screetShot_.getDistLineP2();
@@ -2319,6 +2323,60 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
     //    m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
     //    viewLlaRef_ = datasetLlaRef_;
     //}
+    else if ((!isPerspective_ && projectionChanged && (datasetDist < lowDistThreshold_) && getIsFarAwayFromOriginLla())) { // catching when ortho->persp trans and near place
+        if (cameraListener_) {
+            cameraListener_->resetRotationAngle();
+        }
+
+        viewPtr_->setNeedToResetStartPos(true);
+        LLA datasetLla(datasetLlaRef_.refLla.latitude, datasetLlaRef_.refLla.longitude, 0.0);
+        North_East_Down datasetNed(&datasetLla, &viewLlaRef_, !isPerspective_);
+        m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
+        viewLlaRef_ = datasetLlaRef_;
+        m_rotAngle = { 0.0f, 0.0f };
+    }
+    else if ((isPerspective_ && projectionChanged) || (!isPerspective_ && !projectionChanged)) { // 透视投影切换到正交投影
+        viewPtr_->setNeedToResetStartPos(true);
+        viewLlaRef_ = lookAtLlaRef;
+        m_lookAt = QVector3D(0.0f, 0.0f, 0.0f);
+        m_rotAngle = { 0.0f, 0.0f };
+    }
+
+    updateCameraParams();
+    updateViewMatrix();
+}
+
+
+void GraphicsScene3dView::Camera::zoomAndroid(qreal delta)
+{
+    m_distToFocusPoint = delta > 0.f ? m_distToFocusPoint / 1.15f : m_distToFocusPoint * 1.15f;
+    distForMapView_ = m_distToFocusPoint;
+
+    const float minFocusDist = 2.0f;
+    const float maxFocusDist = 100000.0f * 100.0f;
+    if (m_distToFocusPoint < minFocusDist) {
+        m_distToFocusPoint = minFocusDist;
+        distForMapView_ = m_distToFocusPoint;
+    }
+    if (m_distToFocusPoint >= maxFocusDist) {
+        m_distToFocusPoint = maxFocusDist;
+        distForMapView_ = m_distToFocusPoint;
+    }
+
+    bool preIsPersp{ false };
+    distToGround_ = std::max(0.0f, std::fabs(-cosf(m_rotAngle.y()) * m_distToFocusPoint));
+    float perspEdge = viewPtr_ ? viewPtr_->perspectiveEdge_ : 5000.0f;
+    preIsPersp = distToGround_ < perspEdge;
+    bool projectionChanged    =  isPerspective_ !=  preIsPersp;
+
+    North_East_Down lookAtNed(m_lookAt.x(), m_lookAt.y(), 0.0f);
+    LLA lookAtLla(&lookAtNed, &viewLlaRef_, isPerspective_);
+    LLARef lookAtLlaRef(lookAtLla);
+
+    float datasetDist = map::calculateDistance(lookAtLlaRef, datasetLlaRef_);
+
+    if (isPerspective_ && !projectionChanged) {
+    }
     else if ((!isPerspective_ && projectionChanged && (datasetDist < lowDistThreshold_) && getIsFarAwayFromOriginLla())) { // catching when ortho->persp trans and near place
         if (cameraListener_) {
             cameraListener_->resetRotationAngle();

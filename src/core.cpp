@@ -40,12 +40,16 @@ Core::Core() : QObject(),
 #endif
 
     createDataProcessor();
-
 }
 
 Core::~Core()
 {
     destroyDataProcessor();
+    if (udpManager_) {
+        udpManager_->disConnectUdp();
+        udpManager_.reset();
+        qDebug() << "Core::~Core() - UDP resources released";
+    }
 }
 
 void Core::setEngine(QQmlApplicationEngine *engine)
@@ -1693,6 +1697,7 @@ void Core::createControllers()
     usblViewControlMenuController_        = std::make_shared<UsblViewControlMenuController>();
 
     bleManager_                           = std::make_shared<BLEManager>();
+    udpManager_                           = std::make_shared<UdpManager>();
     locations_                            = std::make_shared<Locations>();
 }
 
@@ -1788,26 +1793,28 @@ void Core::createLinkManagerConnections()
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkClosed,   linkManagerConnection));
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkOpened,   linkManagerConnection));
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkDeleted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkDeleted,  linkManagerConnection));
-
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  this, [this]() {
 #ifdef SEPARATE_READING
        tryOpenedfilePath_.clear();
 #endif
-       datasetPtr_->setState(Dataset::DatasetState::kConnection); }, linkManagerConnection));
+    datasetPtr_->setState(Dataset::DatasetState::kConnection); }, linkManagerConnection));
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  this, [this]() {
         if (scene3dViewPtr_) {
             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
         }
     }, linkManagerConnection));
-        linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::sendDoRequestAll,
-        deviceManagerWrapperPtr_->getWorker(),&DeviceManager::onSendRequestAll, linkManagerConnection));
+    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::sendDoRequestAll,
+    deviceManagerWrapperPtr_->getWorker(),&DeviceManager::onSendRequestAll, linkManagerConnection));
 }
 
 void Core::removeLinkManagerConnections()
 {
-    for (auto& itm : linkManagerWrapperConnections_)
+    for (auto& itm : linkManagerWrapperConnections_) {
         disconnect(itm);
+    }
+
     linkManagerWrapperConnections_.clear();
+    udpManager_->disConnectUdp();
 }
 
 QHash<QUuid, QString> Core::getLinkNames() const

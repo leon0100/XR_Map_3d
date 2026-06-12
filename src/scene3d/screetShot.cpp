@@ -46,6 +46,9 @@ ScreetShot::ScreetShot(QObject *parent) : QObject{parent}
         QSize size = screen->size();
         screenCenterX_  = size.width() * 0.5;
         screenCenterY_  = size.height() * 0.5;
+
+        int screenSize   = qMin(size.width(), size.height());
+        rulerBar_    = screenSize * 0.132;
     }
     else {
         screenCenterX_  = 100;

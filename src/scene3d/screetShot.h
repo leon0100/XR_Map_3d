@@ -236,6 +236,7 @@ public:
     int isDrawMeasure_ = -1;   //0:开始绘制（起点还没绘）    1：完成起点绘制    2:保持绘制完成的持续状态
     double startLati_, startLon_;
     QVector3D worldCoorOrigin_;
+    int rulerBar_;
 
 signals:
     void distMeasureVisibleChanged();
@@ -328,6 +329,7 @@ private:
     QString dialogTitle_;
     int landMarkX_, landMarkY_;
     int screenCenterX_, screenCenterY_;
+
 
 };
 

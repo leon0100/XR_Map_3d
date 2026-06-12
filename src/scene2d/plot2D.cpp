@@ -908,7 +908,6 @@ void Plot2D::updateContact()
 
 void Plot2D::onCursorMoved(int x, int y)
 {
-    qDebug() << "Plot2D::onCursorMoved.........";
     if (isHorizontal_) {
         contacts_.setMousePos(x, y);
     } 

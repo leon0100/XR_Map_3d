@@ -25,7 +25,7 @@
 // #include "tmodem.h"
 // #include "../Code/fifotmodem.h"
 // #include "../Map/gpsprocessing.h"
-#define RX_FIFO_SIZE (1024*1024*4)
+#define RX_FIFO_SIZE (1024 * 1024 * 4)
 
 
 struct BoatPoint {

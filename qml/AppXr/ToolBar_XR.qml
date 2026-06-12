@@ -95,10 +95,10 @@ Rectangle {
     {
         id: windowsRowComponent
 
-        Row {
+        RowLayout {
             anchors.fill: parent
 
-            Row {
+            RowLayout {
                 anchors.fill: parent
                 anchors.margins: 2
                 spacing: 3
@@ -135,7 +135,7 @@ Rectangle {
                 width: 2
                 height: parent.height * 0.8
                 color: "#d0d0d0"
-                anchors.verticalCenter: parent.verticalCenter
+                Layout.alignment: Qt.AlignVCenter
             }
 
             MenuButton {  // 截图

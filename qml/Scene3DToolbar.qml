@@ -11,19 +11,17 @@ import AppXr 1.0
 Item  {
     id: toolbarRoot
 
-    width:  rowButtons.implicitWidth
-    height: rowButtons.implicitHeight
+    width:  theme.menuWidth * 4
+    height: theme.menuWidth
 
-    property bool isNorthModeCheckButtonHovered:   false
+    property bool isNorthModeCheckButtonHovered: false
 
     property bool toolbarHovered: Qt.platform.os === "android" ?
                 northModeCheckButton.down : isNorthModeCheckButtonHovered
 
-
     Behavior on opacity { NumberAnimation { duration: 120 } }
 
-
-    property string  distance: "0m"
+    property string distance: "0m"
     Connections {
         target: renderer.screetShot
 
@@ -43,42 +41,61 @@ Item  {
         spacing: 8
         Layout.alignment: Qt.AlignHCenter
 
+
         Item {
             id: scaleBar
-            Layout.alignment: Qt.AlignVCenter
-            width: 110
-            height: 30
+
+            width:  theme.menuWidth * 2.5
+            height: theme.menuWidth
+
+            property real lineWidth: theme.iconSize * 0.25
+            property real barWidth:  theme.menuWidth * 2.2
+            property real barHeight: theme.menuWidth * 0.2
 
             Column {
                 anchors.centerIn: parent
-                spacing: 2
+                spacing: 4
 
+                // 距离文字
                 Text {
-                  anchors.horizontalCenter: parent.horizontalCenter
-                  text: distance
-                  color: "white"
-                  font.pixelSize: theme.iconSize
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: distance
+                    color: "white"
+                    font.pixelSize: theme.iconSize
+                    font.bold: true
                 }
 
-                Canvas {
-                   width: 100
-                   height: 12
+                // 比例尺
+                Item {
+                    width: scaleBar.barWidth
+                    height: scaleBar.barHeight
 
-                   onPaint: {
-                      var ctx = getContext("2d");
-                      ctx.clearRect(0, 0, width, height);
-                      ctx.strokeStyle = "white";
-                      ctx.lineWidth = 4;
+                    // 底部横线
+                    Rectangle {
+                        x: 0
+                        y: parent.height
+                        width: parent.width
+                        height: scaleBar.lineWidth
+                        color: "white"
+                    }
 
-                      ctx.beginPath();
-                      ctx.moveTo(0, height * 0.6);
-                      ctx.lineTo(width, height * 0.6);
-                      ctx.moveTo(0, 0);
-                      ctx.lineTo(0, height * 0.6);
-                      ctx.moveTo(width, 0);
-                      ctx.lineTo(width, height * 0.6);
-                      ctx.stroke();
-                   }
+                    // 左侧竖线（向下）
+                    Rectangle {
+                        x: 0
+                        y: 0
+                        width: scaleBar.lineWidth
+                        height: parent.height
+                        color: "white"
+                    }
+
+                    // 右侧竖线（向下）
+                    Rectangle {
+                        x: parent.width - scaleBar.lineWidth
+                        y: 0
+                        width: scaleBar.lineWidth
+                        height: parent.height
+                        color: "white"
+                    }
                 }
             }
         }
@@ -86,8 +103,8 @@ Item  {
 
         Button {
             id: zoomInBtn
-            implicitHeight:  theme.menuWidth
-            implicitWidth:   theme.menuWidth
+            implicitHeight: theme.menuWidth
+            implicitWidth:  theme.menuWidth
 
             CMouseOpacityArea {
                 toolTipText: qsTr("Zoom In")
@@ -174,7 +191,6 @@ Item  {
                 property alias northModeCheckButton: northModeCheckButton.checked
             }
         }
-
 
 
         // CheckButton {

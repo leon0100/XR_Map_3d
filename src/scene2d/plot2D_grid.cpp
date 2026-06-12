@@ -11,7 +11,6 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
     auto &canvas = parent->canvas();
     auto &cursor = parent->cursor();
 
-    qDebug() << "isVisible: " << isVisible();
     if (!isVisible())  return false;
 
     QPen pen(_lineColor);
