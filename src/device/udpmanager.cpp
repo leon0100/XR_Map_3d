@@ -277,8 +277,10 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
             continue;
         }
 
-        // qDebug() << "tbbpFrame.payload............." << tbbpFrame.payload;
+        qDebug() << "tbbpFrame.payload............." << tbbpFrame.payload;
         m_tsl3Buffer += tbbpFrame.payload;
+        tsl_3 tsl3Struct;
+        parsePayload_tsl3(m_tsl3Buffer, tsl3Struct);
 
         // 9. 添加到帧列表
         frames.append(tbbpFrame);
@@ -288,9 +290,62 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
         pos += frameLen;
     }
 
-    parseTsl3FromTModem();
+    // parseTsl3FromTModem();
 }
 
+
+
+
+
+bool UdpManager::parsePayload_tsl3(QByteArray &payload, tsl_3 &tsl3Struct)
+{
+    QByteArray tslByteArray = payload;
+
+    int nowIndex=0;
+    /*-当前序号是#代表可能是帧头，要进一步进行数量检测-*/
+    if('#' == tslByteArray.at(nowIndex))
+    {
+        /*-算一下按照当前#是帧头的情况下，读取到的像素的个数，看是不是在100~1000范围内-*/
+        int byteCount = sizeof(pack_head_t3) +sizeof(ping_info_t3) +sizeof(navi_info_t3) +sizeof(aux_info_t3) +U8_TO_16(tslByteArray.at(nowIndex+22),tslByteArray.at(nowIndex+23)) +1;
+
+        /*-检查一下当前序号再加上获取的像素个数是不是已经超过整体长度了，超过的话再次查找下一个#-*/
+        if((nowIndex + byteCount) == tslByteArray.count())
+        {
+            /*-这里取出来不会超过最大长度了-*/
+            QByteArray tslByteArray_xor = tslByteArray.mid(nowIndex,byteCount);
+
+            quint8 chk=0;
+            for(int i=3;i<tslByteArray_xor.count()-1;i++)
+            {
+                chk ^= tslByteArray_xor.at(i);
+            }
+
+            /*-如果连异或校验也通过了，那么可以放进list里了-*/
+            if(chk == (quint8)tslByteArray_xor.at(tslByteArray_xor.count()-1))
+            {
+                QByteArray tsl3ByteArray = tslByteArray.mid(nowIndex,byteCount);
+                //tsl_3 tsl3Struct;
+                memcpy(&tsl3Struct, tsl3ByteArray, sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3));
+
+                // 获取 QByteArray 的一部分
+                QByteArray part = tsl3ByteArray.mid(sizeof(pack_head_t3) + sizeof(ping_info_t3) + sizeof(navi_info_t3) + sizeof(aux_info_t3), tsl3Struct.ping.size);
+
+                // 将 QByteArray 转换为 QList<quint8>
+                QList<quint8> listPart;
+                for (char byte : part) {
+                    listPart.append(static_cast<quint8>(byte));
+                }
+
+                // 将转换后的 QList<quint8> 追加到 rawDat
+                tsl3Struct.rawDat.append(listPart);
+                qDebug() << "tsl3Struct........." << tsl3Struct.boat.latitude << "  " << tsl3Struct.boat.longitude;
+
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 void UdpManager::parseTsl3FromTModem()
 {

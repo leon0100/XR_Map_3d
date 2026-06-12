@@ -42,6 +42,7 @@ private:
     void parseTModemFrame(const QByteArray& rawData);
     void parseTsl3FromTModem();
     double dm_to_dd(double ddmmmmmmm);
+    bool parsePayload_tsl3(QByteArray &payload, tsl_3 &tsl3Struct);
 
 
 
