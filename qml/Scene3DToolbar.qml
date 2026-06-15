@@ -25,7 +25,7 @@ Item  {
     Connections {
         target: renderer.screetShot
 
-        function onSignalStartToEndDist(dist) {
+        function onSignalSreenBoxDist(dist) {
             if (dist >= 1000) {
                 distance = (dist / 1000).toFixed(2) + " km"
             }

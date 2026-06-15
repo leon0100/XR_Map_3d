@@ -42,7 +42,7 @@ private:
     void parseTModemFrame(const QByteArray& rawData);
     void parseTsl3FromTModem();
     double dm_to_dd(double ddmmmmmmm);
-    bool parsePayload_tsl3(QByteArray &payload, tsl_3 &tsl3Struct);
+    QByteArray decompressTsl3(const QByteArray &compressed);
 
 
 
@@ -57,6 +57,8 @@ private slots:
 signals:
     void dataReceived(const QByteArray& data);
 
+    void positionComplete(double lat, double lon, double depth, bool isRead);
+    void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ, bool isRead);
 
 
 
@@ -71,9 +73,11 @@ private:
 
     QTimer* m_heartbeatTimer = nullptr;
     QByteArray m_tsl3Buffer;
-    int nowIndex  = 0;
+    int nowIndex_  = 0;
     int tslIndex_ = 0;
-    QList<QByteArray> tslByteList;
+    QVector<float> depthHistory_;
+    double minDepth_ = 0.0, maxDepth_ = 0.0;
+    bool readingDrawTrack_ = true;
 
 };
 

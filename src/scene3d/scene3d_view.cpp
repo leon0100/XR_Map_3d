@@ -1286,7 +1286,7 @@ void GraphicsScene3dView::updateDistance()
     const float dx   = (end.x() - origin.x());
     const float dy   = (end.y() - origin.y());
     double dist = std::sqrt(dx * dx + dy * dy);
-    emit screetShot_.signalStartToEndDist(dist);
+    emit screetShot_.signalSreenBoxDist(dist);
 
     /*------- 测距模块 -------*/
     if(screetShot_.isDistMeasureMode_) {

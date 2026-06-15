@@ -1,5 +1,6 @@
 #include "udpmanager.h"
 
+#include "minilzo.h"
 
 
 UdpManager::UdpManager(QObject *parent) : QObject{ parent }
@@ -25,14 +26,12 @@ UdpManager::UdpManager(QObject *parent) : QObject{ parent }
 
 UdpManager::~UdpManager()
 {
-    qDebug() << "UdpManager::~UdpManager()............";
     disConnectUdp();
 }
 
 
 void UdpManager::disConnectUdp()
 {
-    qDebug() << "UdpManager::disConnectUdp()..........";
     if (m_heartbeatTimer) {
         m_heartbeatTimer->stop();
         m_heartbeatTimer->deleteLater();
@@ -45,7 +44,6 @@ void UdpManager::disConnectUdp()
         m_udpSocket->close();
         delete m_udpSocket;
         m_udpSocket = nullptr;
-        qDebug() << "  - UDP socket已关闭并释放";
     }
 }
 
@@ -213,21 +211,20 @@ QByteArray UdpManager::buildTModemFrame_xrmap(uint8_t dev_addr, uint8_t sn, bool
 }
 
 
-
 void UdpManager::parseTModemFrame(const QByteArray& rawData)
 {
+    qDebug() << "rawData.size().... " << rawData.size();
     QList<StructFrameTM> frames;
 
-    const quint8 HEAD1 = 0xAA;
-    const quint8 HEAD2 = 0xBB;
-    const int HEADER_LEN = sizeof(TModemHeader); // 8 字节
-    const int MAX_PAYLOAD = 4096;
+    const quint8 HEAD1       = 0xAA;
+    const quint8 HEAD2       = 0xBB;
+    const int    HEADER_LEN  = sizeof(TModemHeader); // 8字节
+    const int    MAX_PAYLOAD = 4096;
 
     int pos = 0;
     int dataLen = rawData.size();
-    int frameCount = 0;
 
-    while (pos <= dataLen - HEADER_LEN)
+    while (pos <= (dataLen - HEADER_LEN))
     {
         // 1. 查找包头 0xAA 0xBB
         if (!(static_cast<quint8>(rawData.at(pos)) == HEAD1 && static_cast<quint8>(rawData.at(pos + 1)) == HEAD2)) {
@@ -235,17 +232,16 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
             continue;
         }
 
-
         // 2. 读取并校验头部
         TModemHeader header{};
         memcpy(&header, rawData.constData() + pos, HEADER_LEN);
-
+        QByteArray hdr = rawData.left(HEADER_LEN);
         if (!header.verifyXorChk()) {
             pos++;
             continue;
         }
 
-        // 3. 小端序转换长度字段
+        // 3.小端序转换长度字段
         header.length = qFromLittleEndian(header.length);
 
         // 4. 长度检查
@@ -268,8 +264,8 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
         StructFrameTM tbbpFrame{};
         memcpy(&tbbpFrame.header, packet.constData(), HEADER_LEN);
         tbbpFrame.payload = packet.mid(HEADER_LEN, payloadLen);
-        tbbpFrame.check1 = static_cast<quint8>(packet.at(packet.size() - 2));
-        tbbpFrame.check2 = static_cast<quint8>(packet.at(packet.size() - 1));
+        tbbpFrame.check1  = static_cast<quint8>(packet.at(packet.size() - 2));
+        tbbpFrame.check2  = static_cast<quint8>(packet.at(packet.size() - 1));
 
         // 8. 校验整帧CRC
         if (!tbbpFrame.verifyChecks()) {
@@ -277,213 +273,120 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
             continue;
         }
 
-        qDebug() << "tbbpFrame.payload............." << tbbpFrame.payload;
-        m_tsl3Buffer += tbbpFrame.payload;
-        tsl_3 tsl3Struct;
-        parsePayload_tsl3(m_tsl3Buffer, tsl3Struct);
+        // qDebug() << "tbbpFrame.payload............." << tbbpFrame.payload;
+        m_tsl3Buffer += decompressTsl3(tbbpFrame.payload);
 
         // 9. 添加到帧列表
         frames.append(tbbpFrame);
-        frameCount++;
 
         // 10. 移动到下一帧
         pos += frameLen;
     }
 
-    // parseTsl3FromTModem();
-}
+    parseTsl3FromTModem();
 
-
-
-
-
-bool UdpManager::parsePayload_tsl3(QByteArray &payload, tsl_3 &tsl3Struct)
-{
-    QByteArray tslByteArray = payload;
-
-    int nowIndex=0;
-    /*-当前序号是#代表可能是帧头，要进一步进行数量检测-*/
-    if('#' == tslByteArray.at(nowIndex))
-    {
-        /*-算一下按照当前#是帧头的情况下，读取到的像素的个数，看是不是在100~1000范围内-*/
-        int byteCount = sizeof(pack_head_t3) +sizeof(ping_info_t3) +sizeof(navi_info_t3) +sizeof(aux_info_t3) +U8_TO_16(tslByteArray.at(nowIndex+22),tslByteArray.at(nowIndex+23)) +1;
-
-        /*-检查一下当前序号再加上获取的像素个数是不是已经超过整体长度了，超过的话再次查找下一个#-*/
-        if((nowIndex + byteCount) == tslByteArray.count())
-        {
-            /*-这里取出来不会超过最大长度了-*/
-            QByteArray tslByteArray_xor = tslByteArray.mid(nowIndex,byteCount);
-
-            quint8 chk=0;
-            for(int i=3;i<tslByteArray_xor.count()-1;i++)
-            {
-                chk ^= tslByteArray_xor.at(i);
-            }
-
-            /*-如果连异或校验也通过了，那么可以放进list里了-*/
-            if(chk == (quint8)tslByteArray_xor.at(tslByteArray_xor.count()-1))
-            {
-                QByteArray tsl3ByteArray = tslByteArray.mid(nowIndex,byteCount);
-                //tsl_3 tsl3Struct;
-                memcpy(&tsl3Struct, tsl3ByteArray, sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3));
-
-                // 获取 QByteArray 的一部分
-                QByteArray part = tsl3ByteArray.mid(sizeof(pack_head_t3) + sizeof(ping_info_t3) + sizeof(navi_info_t3) + sizeof(aux_info_t3), tsl3Struct.ping.size);
-
-                // 将 QByteArray 转换为 QList<quint8>
-                QList<quint8> listPart;
-                for (char byte : part) {
-                    listPart.append(static_cast<quint8>(byte));
-                }
-
-                // 将转换后的 QList<quint8> 追加到 rawDat
-                tsl3Struct.rawDat.append(listPart);
-                qDebug() << "tsl3Struct........." << tsl3Struct.boat.latitude << "  " << tsl3Struct.boat.longitude;
-
-                return true;
-            }
-        }
-    }
-    return false;
 }
 
 void UdpManager::parseTsl3FromTModem()
 {
-    // if(tmodemSn_ == 1) {
-    //     tslByteArray.remove(0, 512);  /*- 把文件头512字节的文件信息去掉，只保留声呐数据 -*/
-    // }
-
-    /*-将去掉文件头的所有剩下的声呐数据，按照一帧一帧的模式放入临时容器-*/
-    // QList<QByteArray> tslByteList;
-    // int nowIndex  = 0;
+    QList<QByteArray> tslByteList;
     int byteCount = 0;
     int maxCount = m_tsl3Buffer.count();
-    while(nowIndex < (maxCount-100))
+    while(nowIndex_ < (maxCount-100))
     {
-        if('#' == m_tsl3Buffer.at(nowIndex)) {
-            qDebug() << "'#' == m_tsl3Buffer.at(nowIndex)..........";
+        if('#' == m_tsl3Buffer.at(nowIndex_)) {
             byteCount = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3)+
-                        U8_TO_16(m_tsl3Buffer.at(nowIndex+22),m_tsl3Buffer.at(nowIndex+23))+1;
-            qDebug() << "byteCount......." << byteCount;
+                        U8_TO_16(m_tsl3Buffer.at(nowIndex_+22),m_tsl3Buffer.at(nowIndex_+23))+1;
             if((byteCount >= 100) && (byteCount <= 2048)) {
-                /*- 检查一下当前序号再加上获取的像素个数是不是已经超过整体长度了，超过的话进入下个循环 -*/
-                if((nowIndex + byteCount) > maxCount) {
-                    nowIndex++;
+                if((nowIndex_ + byteCount) > maxCount) {
+                    nowIndex_++;
                     continue;
                 }
                 else {
-                    QByteArray tslByteArray_xor = m_tsl3Buffer.mid(nowIndex,byteCount);
+                    QByteArray tslByteArrayXor = m_tsl3Buffer.mid(nowIndex_,byteCount);
                     quint8 chk = 0;
-                    for(int i = 3;i < tslByteArray_xor.count()-1;i++) {
-                        chk ^= tslByteArray_xor.at(i);
+                    for(int i = 3;i < (tslByteArrayXor.count()-1);i++) {
+                        chk ^= tslByteArrayXor.at(i);
                     }
 
-                    if(chk == (quint8)tslByteArray_xor.at(tslByteArray_xor.count()-1)) {
-                        tslByteList.append(m_tsl3Buffer.mid(nowIndex,byteCount));
-                        nowIndex += byteCount;
+                    if(chk == (quint8)tslByteArrayXor.at(tslByteArrayXor.count()-1)) {
+                        tslByteList.append(m_tsl3Buffer.mid(nowIndex_,byteCount));
+                        nowIndex_ += byteCount;
                     }
                     else {
-                        nowIndex++;
+                        nowIndex_++;
                         continue;
                     }
                 }
             }
             else {
-                qDebug() << "!!(byteCount >= 100) && (byteCount <= 2048)..........." << nowIndex;
-                nowIndex++;
+                nowIndex_++;
                 continue;
             }
         }
         else {
-            // qDebug() << "'#' != m_tsl3Buffer.at(nowIndex)..........." << nowIndex;
-            nowIndex++;
+            nowIndex_++;
             continue;
         }
     }
 
-
-    int tsl3Cnt = tslByteList.count();
     int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
-
-    QList<LLA> track;
-    QVector<float> vec_CSV;
-    double minZ = 0.0, maxZ = 0.0;
-
-    qDebug() << "tslWCnt.size()........." << tsl3Cnt;
-    const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
-    const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
-    QList<LLA> buffer;
-    int progressInterval = qMax(1, tsl3Cnt / 100);
-
-    for(; tslIndex_ < tsl3Cnt; tslIndex_++)
-    {
+    for(auto tslData : tslByteList) {
         QByteArray tslDataTemp = tslByteList.at(tslIndex_);
 
         tsl_3 tslSingleStruct;
-        memcpy(&tslSingleStruct, tslDataTemp, idx);
+        memcpy(&tslSingleStruct, tslData, idx);
         LLA lla;
         lla.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
         lla.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
-        lla.altitude = tslSingleStruct.auxInfo.depth / 100.f;
+        lla.altitude  = tslSingleStruct.auxInfo.depth / 100.f;
 
-        buffer.append(lla);
-        if (buffer.size() < MEDIAN_WINDOW) {
-            // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
-            if (buffer.size() <= MEDIAN_WINDOW / 2) {
-                minZ = std::min(minZ, lla.altitude);
-                maxZ = std::max(maxZ, lla.altitude);
-                vec_CSV.append(lla.altitude);
-                track.append(lla);
-            }
-        } else {
-            // 窗口超过设定大小，移除最旧的点，让窗口滑动
-            if (buffer.size() > MEDIAN_WINDOW) {
-                buffer.removeFirst();
-            }
+        // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
 
-            // 获取窗口正中间的点
-            int midIndex = MEDIAN_WINDOW / 2;
-            LLA targetLla = buffer[midIndex];
+        emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
 
-            // 提取当前窗口内的所有深度，用于求中值
-            QVector<float> depths;
-            for (const LLA& item : buffer) {
-                depths.append(item.altitude);
-            }
-            // 排序找中位数
-            std::sort(depths.begin(), depths.end());
-            float medianDepth = depths[MEDIAN_WINDOW / 2];
+        depthHistory_.append(static_cast<float>(lla.altitude));
+        minDepth_ = std::min(minDepth_, lla.altitude);
+        maxDepth_ = std::max(maxDepth_, lla.altitude);
 
-            // 异常值判断：与中位数偏差是否超过阈值
-            if (std::abs(targetLla.altitude - medianDepth) > SPIKE_THRESHOLD) {
-                targetLla.altitude = medianDepth; // 使用中值替代
-                buffer[midIndex].altitude = medianDepth;
-            }
-
-            // 将过滤后的中心点加入最终轨迹
-            minZ = std::min(minZ, targetLla.altitude);
-            maxZ = std::max(maxZ, targetLla.altitude);
-            vec_CSV.append(targetLla.altitude);
-            track.append(targetLla);
-        }
-
-        qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
-        bool enableRender = (tslIndex_ + 1) == tsl3Cnt ? true : false;
-        // emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
-
-
+        emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
     }
-
 
 }
 
 double UdpManager::dm_to_dd(double ddmmmmmmm)
 {
     double dm = (double)ddmmmmmmm / 100.0f;
-
     int dd = (int)dm;
-
     double mm = (dm-dd) / 0.6f;
 
     return ((double)dd+mm);
+}
+
+
+
+QByteArray UdpManager::decompressTsl3(const QByteArray &compressed)
+{
+    if (compressed.isEmpty())
+    {
+        qWarning() << "[TslCompressor] Compressed data is empty.";
+        return QByteArray();
+    }
+
+    int maxDecompressedSize = 4096;
+    QByteArray result;
+    result.resize(maxDecompressedSize);
+
+    lzo_uint decompressedLen = result.size();
+    int res = lzo1x_decompress_safe((const lzo_bytep)compressed.constData(), compressed.size(),
+        (lzo_bytep)result.data(),&decompressedLen, nullptr);
+
+    if (res != LZO_E_OK)
+    {
+        qDebug() << "Decompression failed with error code:" << res;
+        return QByteArray();
+    }
+
+    result.resize(decompressedLen);
+    return result;
 }

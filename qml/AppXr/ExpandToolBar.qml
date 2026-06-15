@@ -391,27 +391,53 @@ Rectangle {
         }
     }
 
-    ToolButton {
+    // ToolButton {
+    //     id: handleBtn
+    //     anchors.top: parent.top
+    //     width:  iconSize * 1.1
+    //     height: iconSize * 1.1
+
+    //     // 修改背景使之透明，或配合整体
+    //     background: Rectangle { color: "white" }
+
+    //     contentItem: Image {
+    //         source: root.expanded ? "qrc:/icons/ui/arrow_bar_to_down.svg" : "qrc:/XR/content.svg"
+    //         width:  iconSize
+    //         height: iconSize
+    //         fillMode: Image.PreserveAspectFit
+    //         anchors.centerIn: parent
+    //     }
+
+    //     onClicked: {
+    //         root.expanded = !root.expanded
+    //     }
+    // }
+
+    MenuButton {  // 截图
         id: handleBtn
-        anchors.top: parent.top
-        width:  iconSize * 1.1
-        height: iconSize * 1.1
+        icon.source: root.expanded ? "qrc:/icons/ui/arrow_bar_to_down.svg" : "qrc:/XR/content.svg"
+        icon.width:  root.iconSize
+        icon.height: root.iconSize
+        width:       root.iconSize
+        height:      root.iconSize
 
-        // 修改背景使之透明，或配合整体
-        background: Rectangle { color: "white" }
-
-        contentItem: Image {
-            source: root.expanded ? "qrc:/icons/ui/arrow_bar_to_down.svg" : "qrc:/XR/content.svg"
-            width:  iconSize
-            height: iconSize
-            fillMode: Image.PreserveAspectFit
-            anchors.centerIn: parent
+        CMouseOpacityArea {
+            toolTipText: qsTr("Click to Expand")
         }
 
-        onClicked: {
+        Rectangle {
+            anchors.fill: parent
+            radius: root.iconSize * 0.5
+            color: backColor
+        }
+
+        onPressed: {
             root.expanded = !root.expanded
         }
+
     }
+
+
 
     // 展开区域：靠在主按钮的左边
     Rectangle {

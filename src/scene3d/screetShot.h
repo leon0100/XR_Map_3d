@@ -244,6 +244,7 @@ signals:
     void p2VisibleChanged();
     void distLineChanged();
     void signalStartToEndDist(double dist);
+    void signalSreenBoxDist(double dist);
 
 private:
     bool isP1Visible_ = false, isP2Visible_ = false;

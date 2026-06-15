@@ -45,11 +45,6 @@ Core::Core() : QObject(),
 Core::~Core()
 {
     destroyDataProcessor();
-    if (udpManager_) {
-        udpManager_->disConnectUdp();
-        udpManager_.reset();
-        qDebug() << "Core::~Core() - UDP resources released";
-    }
 }
 
 void Core::setEngine(QQmlApplicationEngine *engine)
@@ -1765,6 +1760,7 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::rangefinderComplete, datasetPtr_, &Dataset::addRangefinder,  deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete, datasetPtr_, &Dataset::addPosition,     deviceManagerConnection);
     QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,     deviceManagerConnection);
+    QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,     deviceManagerConnection);
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file,     deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionCompleteRTK,  datasetPtr_, &Dataset::addPositionRTK,  deviceManagerConnection);
@@ -1779,6 +1775,7 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening2, this, &Core::onFileStopsOpening2, deviceManagerConnection);
 
     QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContour, deviceManagerConnection);
+    QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContour, deviceManagerConnection);
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame, deviceManagerConnection);
     QObject::connect(&logger_, &Logger::loggingKlfStarted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLoggingKlfStarted, deviceManagerConnection);
