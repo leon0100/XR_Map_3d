@@ -68,6 +68,7 @@ void Core::setEngine(QQmlApplicationEngine *engine)
     qmlAppEnginePtr_->rootContext()->setContextProperty("UsblViewControlMenuController",        usblViewControlMenuController_.get());
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",      bleManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",      udpManager_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("Locations",       locations_.get());
 
     // ── 注册 dataProcessor ──
@@ -1479,7 +1480,6 @@ void Core::clearRouteData()
                 bleManager_->clearRealData();
                 datasetPtr_->resetDataset();
                 dataHorizon_->clear();
-
                 QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
 
                 if (scene3dViewPtr_) {
@@ -1489,7 +1489,23 @@ void Core::clearRouteData()
 
                 emit isobathsViewControlMenuController_->edgeLimitChanged(100);
             }
+        });
+    }
+    else if(dataProcessorState_ == DataProcessorType::wifiTrack) {
+        GIF->dialogYesNo(tr("Confirm Clear All Historical Data?"),[this](bool confirmed) {
+            if(confirmed) {
+                udpManager_->clearRealData();
+                datasetPtr_->resetDataset();
+                dataHorizon_->clear();
+                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
 
+                if (scene3dViewPtr_) {
+                    scene3dViewPtr_->clear(true);
+                    scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+                }
+
+                emit isobathsViewControlMenuController_->edgeLimitChanged(100);
+            }
         });
     }
     else if(dataProcessorState_ == DataProcessorType::staticTrack) {
@@ -1774,8 +1790,8 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening, this,  &Core::onFileStopsOpening, deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening2, this, &Core::onFileStopsOpening2, deviceManagerConnection);
 
-    QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContour, deviceManagerConnection);
-    QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContour, deviceManagerConnection);
+    QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourBle, deviceManagerConnection);
+    QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi, deviceManagerConnection);
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame, deviceManagerConnection);
     QObject::connect(&logger_, &Logger::loggingKlfStarted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLoggingKlfStarted, deviceManagerConnection);
@@ -1976,7 +1992,7 @@ void Core::onZoomLevelChanged(int level)
     emit currentMapLevelChanged();
 }
 
-void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
+void Core::slot_RealtimeDrawContourBle(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
 {
     int vecSize = depthVec.size();
     if(vecSize > 0 && vecSize < 3) {
@@ -2004,6 +2020,37 @@ void Core::slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, doubl
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
     emit drawRealtimeContour(isRead);
+}
+
+void Core::slot_RealtimeDrawContourWifi(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
+{
+    int vecSize = depthVec.size();
+    if(vecSize > 0 && vecSize < 3) {
+        qDebug() << "vecSize..........." << vecSize;
+        onDataProcesstorStateChanged(DataProcessorType::wifiTrack);
+    }
+    if(isAutoRenderSpan_) {
+        if(vecSize == 200) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(80);
+        }
+        else if(vecSize == 400) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(60);
+        }
+        else if(vecSize == 600) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(50);
+        }
+        else if(vecSize == 800) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(40);
+        }
+    }
+
+    datasetPtr_->vec_CSV_  = depthVec;
+    datasetPtr_->minDepth_ = minZ;
+    datasetPtr_->maxDepth_ = maxZ;
+    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
+    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
+    emit drawRealtimeContour(isRead);
+
 }
 
 void Core::createDatasetConnections()

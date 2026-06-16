@@ -94,6 +94,7 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     case DataProcessorType::kMosaic:       clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
     case DataProcessorType::kSurface:      clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
     case DataProcessorType::bletoothTrack: clearAllProcessings();                                             break;
+    case DataProcessorType::wifiTrack:     clearAllProcessings();                                             break;
     case DataProcessorType::staticTrack:   clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
     default: break;
     }

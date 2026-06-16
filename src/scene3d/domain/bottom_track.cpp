@@ -164,7 +164,7 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     int rSize = r->cdata().size();
 
     DataProcessorType currDataType = datasetPtr_->getDataProcessorState();
-    if (currDataType == DataProcessorType::bletoothTrack) {
+    if (currDataType == DataProcessorType::bletoothTrack || currDataType == DataProcessorType::wifiTrack) {
         lEpoch = rEpoch > 1 ? (rEpoch-1) : 0;
     }
 

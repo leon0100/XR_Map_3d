@@ -180,7 +180,8 @@ private slots:
 
     void onZoomLevelChanged(int level);
 
-    void slot_RealtimeDrawContour(QVector<float>& depthVec, double minZ, double maxZ, bool isRead);
+    void slot_RealtimeDrawContourBle(QVector<float>& depthVec, double minZ, double maxZ, bool isRead);
+    void slot_RealtimeDrawContourWifi(QVector<float>& depthVec, double minZ, double maxZ, bool isRead);
 
 
 private:

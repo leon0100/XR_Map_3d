@@ -1055,7 +1055,7 @@ void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
         if(pool.isEmpty()) {
             GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
             if(qmlRootObject_) {
-                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSettings")) {
+                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSet")) {
                     isobathsSet->setProperty("outlineMode", false);
                 }
             }
@@ -1101,7 +1101,7 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
             // }
             // clearComboSelectionRect();
             if(datasetPtr_->polygonNEDEmpty() && qmlRootObject_) {
-                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSettings")) {
+                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSet")) {
                     isobathsSet->setProperty("outlineMode", true);
                 }
             }

@@ -91,13 +91,6 @@
         <file>MosaicExtraSettings.qml</file>
         <file>ScreetRect.qml</file>
         <file>CMouseArea.qml</file>
-        <file>Bluetooth/BleButton.qml</file>
-        <file>Bluetooth/BleDataPanel.qml</file>
-        <file>Bluetooth/BleLivedataScanning.qml</file>
-        <file>Bluetooth/SerialPort.qml</file>
-        <file>Bluetooth/qmldir</file>
-        <file>Bluetooth/loading.qml</file>
-        <file>Bluetooth/IsobathsSettings.qml</file>
         <file>CollapseRectangle.qml</file>
         <file>QmlCommon/KDialogOK.qml</file>
         <file>QmlCommon/KDialogYesNo.qml</file>
@@ -119,5 +112,12 @@
         <file>AppXr/LandMarks.qml</file>
         <file>AppXr/LandMarkPoint.qml</file>
         <file>AppXr/ExpandToolBar.qml</file>
+        <file>Communication/BleButton.qml</file>
+        <file>Communication/BleDataPanel.qml</file>
+        <file>Communication/BleLivedataScanning.qml</file>
+        <file>Communication/IsobathsSet.qml</file>
+        <file>Communication/loading.qml</file>
+        <file>Communication/qmldir</file>
+        <file>Communication/SerialPort.qml</file>
     </qresource>
 </RCC>

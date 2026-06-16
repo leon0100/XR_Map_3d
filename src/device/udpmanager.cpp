@@ -1,27 +1,16 @@
 #include "udpmanager.h"
 
+#include <QProcess>
+#include <QRegularExpression>
+
+
 #include "minilzo.h"
+#include "console.h"
 
 
 UdpManager::UdpManager(QObject *parent) : QObject{ parent }
 {
-    m_heartbeatCnt = 0;
-    m_remotePort   = 8535;
-    m_remoteIp     = "192.168.4.1";
-
-    m_udpSocket = new QUdpSocket(this);
-    if(m_udpSocket == nullptr) {
-        return;
-    }
-    m_udpSocket->bind(QHostAddress::AnyIPv4, 8535, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
-
-    connect(m_udpSocket, &QUdpSocket::readyRead, this, &UdpManager::onReadyRead);
-
-    m_heartbeatTimer = new QTimer(this);
-
-    connect(m_heartbeatTimer, &QTimer::timeout, this, &UdpManager::onHeartbeatTimeout);
-
-    m_heartbeatTimer->start(8000);
+    // getCurrentWifiName();
 }
 
 UdpManager::~UdpManager()
@@ -29,6 +18,29 @@ UdpManager::~UdpManager()
     disConnectUdp();
 }
 
+QString UdpManager::getCurrentWifiName()
+{
+    QProcess process;
+    process.start("netsh", QStringList() << "wlan" << "show" << "interfaces");
+    process.waitForFinished();
+
+    QString result = QString::fromLocal8Bit(process.readAllStandardOutput());
+    QStringList lines = result.split('\n');
+    for(QString line : lines) {
+        line = line.trimmed();
+        if(line.startsWith("SSID") && !line.startsWith("BSSID"))
+        {
+            int pos = line.indexOf(':');
+
+            if(pos > 0)
+            {
+                return line.mid(pos + 1).trimmed();
+            }
+        }
+    }
+
+    return QString();
+}
 
 void UdpManager::disConnectUdp()
 {
@@ -45,22 +57,30 @@ void UdpManager::disConnectUdp()
         delete m_udpSocket;
         m_udpSocket = nullptr;
     }
+
+    m_heartbeatCnt = 0;
 }
 
-
-void UdpManager::stopHeartbeat()
+void UdpManager::clearRealData()
 {
-    m_heartbeatTimer->stop();
+    m_heartbeatCnt = 0;
+    tmodemSn_ = 0;
+    m_tsl3Buffer.clear();
+    nowIndex_  = 0;
+    tslIndex_ = 0;
+    depthHistory_.clear();
+    minDepth_ = 0.0;
+    maxDepth_ = 0.0;
 }
 
 void UdpManager::onHeartbeatTimeout()
 {
     tmodemSn_++;
     QByteArray payload = buildXrmapActivePayload(1, QStringLiteral("T"),
-                            102400u, 0x55AA, 0x11223344u, 512, 200, 1732000000u);
+                         102400u, 0x55AA, 0x11223344u, 512, 200, 1732000000u);
     QByteArray frame = buildTModemFrame_xrmap(0, tmodemSn_, true, 0x3E, payload);
 
-    m_udpSocket->writeDatagram(frame, QHostAddress(m_remoteIp), m_remotePort);
+    m_udpSocket->writeDatagram(frame, QHostAddress(m_remoteIp), m_remotePort.toUShort());
 
     // qDebug() << "[UDP Heartbeat]" << packet << "len=" << len;
 }
@@ -81,6 +101,79 @@ void UdpManager::onReadyRead()
         // qDebug() << "recv:" << data << "from" << sender.toString() << senderPort;
     }
 }
+
+QString UdpManager::remoteIp() const
+{
+    return m_remoteIp;
+}
+void UdpManager::setRemoteIp(const QString& ip)
+{
+    m_remoteIp = ip;
+    emit remoteIpChanged();
+}
+
+QString UdpManager::remotePort() const
+{
+    return m_remotePort;
+}
+void UdpManager::setRemotePort(QString port)
+{
+    m_remotePort = port;
+    emit remotePortChanged();
+}
+
+QString UdpManager::wifiName() const
+{
+    return m_wifi;
+}
+
+
+void UdpManager::openUdp(bool open)
+{
+    if(open) {
+        if(m_remoteIp.isEmpty()) {
+            GIF->dialogInfo(Dialog_OK, tr("Remote IP is Empty!"));
+            emit signalCancelUdpOn(false);
+            return;
+        }
+
+        if(m_remotePort.isEmpty()) {
+            GIF->dialogInfo(Dialog_OK, tr("Port is Empty!"));
+            emit signalCancelUdpOn(false);
+            return;
+        }
+
+        m_heartbeatCnt = 0;
+        m_udpSocket = new QUdpSocket(this);
+        m_udpSocket->bind(QHostAddress::AnyIPv4, m_remotePort.toUShort(),
+                          QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint);
+
+        connect(m_udpSocket, &QUdpSocket::readyRead, this, &UdpManager::onReadyRead);
+
+        m_heartbeatTimer = new QTimer(this);
+        connect(m_heartbeatTimer, &QTimer::timeout, this, &UdpManager::onHeartbeatTimeout);
+        m_heartbeatTimer->start(8000);
+        emit signalCancelUdpOn(true);
+    }
+    else {
+        disConnectUdp();
+        emit signalCancelUdpOn(false);
+    }
+
+
+}
+
+void UdpManager::setDataReading(bool isReading)
+{
+    readingDrawTrack_ = isReading;
+    emit dataReadingChanged();
+}
+
+
+
+
+
+
 
 
 // --------------------------------------- CRC Helpers -------------------------------------------
@@ -132,13 +225,13 @@ QByteArray UdpManager::buildXrmapActivePayload(uint16_t map_ver,  const QString 
     memset(xr.map_name, 0, sizeof(xr.map_name));
     memcpy(xr.map_name, name.constData(), name.size());
 
-    xr.map_size = qToLittleEndian<uint32_t>(map_size);
+    xr.map_size      = qToLittleEndian<uint32_t>(map_size);
     xr.all_map_CRC16 = qToLittleEndian<uint16_t>(all_map_CRC16);
     xr.all_map_CRC32 = qToLittleEndian<uint32_t>(all_map_CRC32);
-    xr.pkt_bytes = qToLittleEndian<uint16_t>(pkt_bytes);
-    xr.MAP_PKT_NUM = qToLittleEndian<uint16_t>(MAP_PKT_NUM);
-    xr.unix_sec = qToLittleEndian<uint32_t>(unix_sec);
-    xr.CRC16 = 0; // 占位，稍后计算
+    xr.pkt_bytes     = qToLittleEndian<uint16_t>(pkt_bytes);
+    xr.MAP_PKT_NUM   = qToLittleEndian<uint16_t>(MAP_PKT_NUM);
+    xr.unix_sec      = qToLittleEndian<uint32_t>(unix_sec);
+    xr.CRC16         = 0; // 占位，稍后计算
 
     // 暂把 xrmap struct 写入 QByteArray，计算 SIZE 与 CRC16
     QByteArray xrba(reinterpret_cast<const char*>(&xr), sizeof(xr));
@@ -213,7 +306,7 @@ QByteArray UdpManager::buildTModemFrame_xrmap(uint8_t dev_addr, uint8_t sn, bool
 
 void UdpManager::parseTModemFrame(const QByteArray& rawData)
 {
-    qDebug() << "rawData.size().... " << rawData.size();
+    // qDebug() << "rawData.size().... " << rawData.size();
     QList<StructFrameTM> frames;
 
     const quint8 HEAD1       = 0xAA;
@@ -223,7 +316,6 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
 
     int pos = 0;
     int dataLen = rawData.size();
-
     while (pos <= (dataLen - HEADER_LEN))
     {
         // 1. 查找包头 0xAA 0xBB
@@ -339,8 +431,7 @@ void UdpManager::parseTsl3FromTModem()
         LLA lla;
         lla.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
         lla.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
-        lla.altitude  = tslSingleStruct.auxInfo.depth / 100.f;
-
+        lla.altitude  = tslSingleStruct.auxInfo.depth * 0.01f;
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
 
         emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
@@ -390,3 +481,4 @@ QByteArray UdpManager::decompressTsl3(const QByteArray &compressed)
     result.resize(decompressedLen);
     return result;
 }
+

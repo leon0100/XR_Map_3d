@@ -20,6 +20,7 @@ enum class DataProcessorType {
     kMosaic,
     kSurface,
     bletoothTrack,
+    wifiTrack,
     staticTrack,
     kmlkmzFile,
 };

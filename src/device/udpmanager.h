@@ -26,12 +26,31 @@ public:
     ~UdpManager();
 
 
-    void stopHeartbeat();
-
     void disConnectUdp();
+    void clearRealData();
+
+
+    Q_PROPERTY(QString wifiName    READ wifiName                          NOTIFY wifiNameChanged)
+    Q_PROPERTY(QString remoteIp    READ remoteIp     WRITE setRemoteIp    NOTIFY remoteIpChanged)
+    Q_PROPERTY(QString remotePort  READ remotePort   WRITE setRemotePort  NOTIFY remotePortChanged)
+
+
+    QString remoteIp() const;
+    void setRemoteIp(const QString& ip);
+
+    QString remotePort() const;
+    void setRemotePort(QString port);
+
+    QString wifiName() const;
+
+
+    Q_INVOKABLE void openUdp(bool open);
+    Q_INVOKABLE void setDataReading(bool isReading);
+
 
 
 private:
+    QString getCurrentWifiName();
     uint8_t crc8_poly7(const uint8_t *data, int len);
     uint16_t crc16_modbus(const uint8_t *data, int len);
     QByteArray buildXrmapActivePayload(uint16_t map_ver,  const QString &map_name,  uint32_t map_size,
@@ -55,6 +74,14 @@ private slots:
 
 
 signals:
+    void remoteIpChanged();
+    void remotePortChanged();
+    void wifiNameChanged();
+    void isConnectedChanged();
+    void dataReadingChanged();
+    void signalCancelUdpOn(bool isOn);
+
+
     void dataReceived(const QByteArray& data);
 
     void positionComplete(double lat, double lon, double depth, bool isRead);
@@ -66,8 +93,10 @@ signals:
 
 private:
     QUdpSocket* m_udpSocket;
+    QString m_wifi;
+    bool m_isConnected = false;
     QString m_remoteIp;
-    quint16 m_remotePort;
+    QString m_remotePort;
     int m_heartbeatCnt = 0;
     int tmodemSn_ = 0;
 

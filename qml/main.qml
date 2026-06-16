@@ -9,7 +9,7 @@ import Qt.labs.settings 1.1
 import WaterFall 1.0
 import BottomTrack 1.0
 import QmlCommon 1.0
-import Bluetooth 1.0
+import Communication 1.0
 import AppXr 1.0
 
 
@@ -118,10 +118,10 @@ ApplicationWindow  {
         id: mapTileLoad
     }
 
-    IsobathsSettings {
-        id: isobathsSettings
+    IsobathsSet {
+        id: isobathsSet
         visible: true
-        x: Screen.width - isobathsSettings.width
+        x: Screen.width - isobathsSet.width
         y: expandToolBar.iconSize * 3
         targetPlot: toolBarXR.targetPlot
     }

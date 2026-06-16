@@ -9,7 +9,7 @@ import "../"
 
 
 Item {
-    id: isobathsSettings
+    id: isobathsSet
 
     width: toggleButton.width
     height: toggleButton.height
@@ -36,6 +36,14 @@ Item {
        IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
        IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isShowIsobaths)
        IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
+    }
+
+
+    Connections {
+        target: UdpManager
+        function onSignalCancelUdpOn(isOn) {
+            onOffControl.isOn = isOn
+        }
     }
 
 
@@ -773,7 +781,7 @@ Item {
 
                     property int decimals: 1
 
-                    onFocusChanged: isobathsSettings.focus = true
+                    onFocusChanged: isobathsSet.focus = true
 
                     Component.onCompleted: {
                         IsobathsViewControlMenuController.onEdgeLimitChanged(edgeLimitSpinBox.value)
@@ -814,7 +822,7 @@ Item {
 
                     property real realValue: value / 10
 
-                    onFocusChanged: isobathsSettings.focus = true
+                    onFocusChanged: isobathsSet.focus = true
 
                     Component.onCompleted: {
                         IsobathsViewControlMenuController.onSetSurfaceLineStepSize(contourStep.realValue)
@@ -878,14 +886,6 @@ Item {
 
         }
     }
-
-
-
-
-
-
-
-
 
 
 
@@ -1192,7 +1192,6 @@ Item {
 
                                     // 滑块
                                     Rectangle {
-                                        id: slider2
                                         width:  layoutHeight * 0.9
                                         height: layoutHeight * 0.9
                                         radius: layoutHeight * 0.45
@@ -1248,7 +1247,7 @@ Item {
                                             }
                                         }
                                         onEntered: switchControl.hovered = true
-                                        onExited: switchControl.hovered = false
+                                        onExited:  switchControl.hovered = false
                                     }
 
                                     Behavior on color {
@@ -1268,7 +1267,6 @@ Item {
 
                                     // 滑块
                                     Rectangle {
-                                        id: readPause
                                         width:  layoutHeight * 0.9
                                         height: layoutHeight * 0.9
                                         radius: layoutHeight * 0.45
@@ -1327,8 +1325,8 @@ Item {
                                         ColorAnimation { duration: 200 }
                                     }
                                 }
-
                             }
+
                         }
                     }
 
@@ -1421,7 +1419,6 @@ Item {
 
 
 
-
         Item {
             id: wifiPage
 
@@ -1436,35 +1433,226 @@ Item {
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 10
+                anchors.margins: iconSize
+                spacing: iconSize * 0.8
 
                 Text {
-                    text: qsTr("WiFi Settings")
-                    font.pixelSize: iconSize
+                    text: qsTr("Tip: Ensure connected to WiFi \"FishFind\"")
+                    font.pixelSize: iconSize * 0.9
                 }
 
-                Button {
-                    text: qsTr("Scan WiFi")
-                    onClicked: {
-                        WifiManager.scan()
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: qsTr("Local IP:")
+                        font.pixelSize: iconSize
+                        font.bold: true
+                        Layout.preferredWidth: iconSize * 6
+                    }
+
+                    TextField {
+                        id: localIpEdit
+                        Layout.fillWidth: true
+                        placeholderText: "127.0.0.1"
+                        readOnly: true
+                        selectByMouse: false
                     }
                 }
 
-                ListView {
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    model: WifiManager.networks
 
-                    delegate: Rectangle {
-                        width: parent.width
+                    Text {
+                        text: qsTr("Remote IP:")
+                        font.pixelSize: iconSize
+                        font.bold: true
+                        Layout.preferredWidth: iconSize * 6
+                    }
+
+                    TextField {
+                        id: targetIpEdit
+                        Layout.fillWidth: true
+                        // text:
+                        placeholderText: ".  .  .  ."
+                        selectByMouse: true
+
+                        onTextChanged: UdpManager.remoteIp = text
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: qsTr("Port:")
+                        font.pixelSize: iconSize
+                        font.bold: true
+                        Layout.preferredWidth: iconSize * 6
+                    }
+
+                    TextField {
+                        id: targetPortEdit
+                        Layout.fillWidth: true
+                        // text: udpManager.remotePort
+                        validator: IntValidator {
+                            bottom: 1
+                            top: 65535
+                        }
+                        onTextChanged: UdpManager.remotePort = text
+                    }
+
+                }
+
+
+                RowLayout {
+                    id: udpControl
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: iconSize * 3
+
+
+                    Rectangle {
+                        id: onOffControl
+                        width:  layoutHeight * 2.2
                         height: layoutHeight
+                        radius: layoutHeight * 0.3
+                        color:  hovered ? (onOffControl.isOn ? "#36D85A" : "#D6E6FF")
+                                        : (onOffControl.isOn?  "#66E07A" : "#D0D0D2")
+                        property bool isOn: false
+                        property bool hovered: false
+
+                        // 滑块
+                        Rectangle {
+                            width:  layoutHeight * 0.9
+                            height: layoutHeight * 0.9
+                            radius: layoutHeight * 0.45
+                            anchors.verticalCenter: parent.verticalCenter
+                            x: onOffControl.isOn ? parent.width-width-2 : 2
+                            color: "#FAFAFA"
+                            scale: onOffArea.pressed ? 0.9 : 1.0
+
+                            Behavior on x {
+                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                            }
+                            Behavior on scale {
+                                NumberAnimation { duration: 100 }
+                            }
+                        }
 
                         Text {
-                            anchors.centerIn: parent
-                            text: modelData
+                            anchors {
+                                left: parent.left
+                                leftMargin: 10
+                                verticalCenter: parent.verticalCenter
+                            }
+                            text: qsTr("ON")
+                            font.pixelSize: iconSize * 0.8
+                            font.bold: true
+                            visible: onOffControl.isOn
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                        }
+
+                        Text {
+                            anchors {
+                                right: parent.right
+                                rightMargin: 10
+                                verticalCenter: parent.verticalCenter
+                            }
+                            text: qsTr("OFF")
+                            font.pixelSize: iconSize * 0.8
+                            font.bold: true
+                            visible: !onOffControl.isOn
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                UdpManager.openUdp(!onOffControl.isOn)
+                            }
+                            onEntered: onOffControl.hovered = true
+                            onExited:  onOffControl.hovered = false
+                        }
+
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
+                        }
+                    }
+
+                    Rectangle {
+                        id: readControl2
+                        width:  layoutHeight * 2.2
+                        height: layoutHeight
+                        radius: layoutHeight * 0.3
+                        color:  hovered ? (readControl2.isReading ? "#36D85A" : "#D6E6FF")
+                                        : (readControl2.isReading?  "#66E07A" : "#D0D0D2")
+                        property bool isReading: true
+                        property bool hovered: true
+
+                        // 滑块
+                        Rectangle {
+                            width:  layoutHeight * 0.9
+                            height: layoutHeight * 0.9
+                            radius: layoutHeight * 0.45
+                            anchors.verticalCenter: parent.verticalCenter
+                            x: readControl2.isReading ? parent.width-width-2 : 2
+                            color: "#FAFAFA"
+                            scale: readPauseArea.pressed ? 0.9 : 1.0
+
+                            Behavior on x {
+                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                            }
+                            Behavior on scale {
+                                NumberAnimation { duration: 100 }
+                            }
+                        }
+
+                        Text {
+                            anchors {
+                                left: parent.left
+                                leftMargin: 5
+                                verticalCenter: parent.verticalCenter
+                            }
+                            text: qsTr("Read")
+                            font.pixelSize: iconSize * 0.8
+                            font.bold: true
+                            visible: readControl2.isReading
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                        }
+
+                        Text {
+                            anchors {
+                                right: parent.right
+                                rightMargin: 5
+                                verticalCenter: parent.verticalCenter
+                            }
+                            text: qsTr("Pause")
+                            font.pixelSize: iconSize * 0.8
+                            font.bold: true
+                            visible: !readControl2.isReading
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                        }
+
+                        MouseArea {
+                            id: readPauseArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                readControl2.isReading = !readControl2.isReading
+                                UdpManager.setDataReading(readControl2.isReading)
+                            }
+                            onEntered: readControl2.hovered = true
+                            onExited:  readControl2.hovered = false
+                        }
+
+                        Behavior on color {
+                            ColorAnimation { duration: 200 }
                         }
                     }
                 }
+
+
             }
         }
 
