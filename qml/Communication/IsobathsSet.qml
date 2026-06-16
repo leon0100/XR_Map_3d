@@ -57,7 +57,7 @@ Item {
         Rectangle {
             id: isobathsToggleBtn
             width: iconSize
-            height: iconSize * 5
+            height: iconSize * 6
             color: "#879fc6"
             opacity: 0.6
 
@@ -87,7 +87,7 @@ Item {
 
                 Item {
                     width: parent.width
-                    height: parent.height - iconSize - 10
+                    height: iconSize * 4
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Isobaths")
@@ -103,7 +103,7 @@ Item {
         Rectangle {
             id: bluetoothToggleBtn
             width: iconSize
-            height: iconSize * 5
+            height: iconSize * 6
             color: "#879fc6"
             opacity: 0.6
 
@@ -133,10 +133,10 @@ Item {
 
                 Item {
                     width: parent.width
-                    height: parent.height - iconSize - 10
+                    height: iconSize * 4
                     Text {
                         anchors.centerIn: parent
-                        text: qsTr("Bluetooth")
+                        text: qsTr("Communication")
                         color: "white"
                         font.pixelSize: iconSize * 0.8
                         rotation: 90

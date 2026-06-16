@@ -99,8 +99,6 @@ Rectangle {
             anchors.fill: parent
 
             RowLayout {
-                // anchors.fill: parent
-                // anchors.margins: 2
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 3
@@ -311,7 +309,6 @@ Rectangle {
 
 
             Row {
-                // anchors.right: parent.right
                 Layout.alignment: Qt.AlignRight
                 spacing: 3
 
