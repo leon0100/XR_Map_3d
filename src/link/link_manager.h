@@ -51,7 +51,7 @@ public slots:
     void updateDestinationPort(QUuid uuid,int destinationPort);
     void updatePinnedState(QUuid uuid, bool state);
     void updateControlType(QUuid uuid, ControlType controlType);
-    void frameInput(Link* link, Parsers::FrameParser frame);
+    // void frameInput(Link* link, Parsers::FrameParser frame);
     void createAsUdp(QString address, int sourcePort, int destinationPort);
     void createAsTcp(QString address, int sourcePort, int destinationPort);
     void importPinnedLinksFromXML();

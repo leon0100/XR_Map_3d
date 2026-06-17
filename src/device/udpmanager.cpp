@@ -2,6 +2,7 @@
 
 #include <QProcess>
 #include <QRegularExpression>
+#include <QDateTime>
 
 
 #include "minilzo.h"
@@ -154,12 +155,14 @@ void UdpManager::openUdp(bool open)
         connect(m_heartbeatTimer, &QTimer::timeout, this, &UdpManager::onHeartbeatTimeout);
         m_heartbeatTimer->start(8000);
         emit signalCancelUdpOn(true);
+
+        QDateTime dateTime = QDateTime::currentDateTime();
+        constructionTime_  = QString::number(dateTime.toTime_t());
     }
     else {
         disConnectUdp();
         emit signalCancelUdpOn(false);
     }
-
 
 }
 
@@ -168,10 +171,6 @@ void UdpManager::setDataReading(bool isReading)
     readingDrawTrack_ = isReading;
     emit dataReadingChanged();
 }
-
-
-
-
 
 
 
@@ -422,17 +421,32 @@ void UdpManager::parseTsl3FromTModem()
         }
     }
 
-    int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
-    for(auto tslData : tslByteList) {
-        QByteArray tslDataTemp = tslByteList.at(tslIndex_);
+    /*- 用来写入像素数据 -*/
+    QFile file_lFreq(PATH_PIX_LFREQ.append(constructionTime_).append(".txt"));
+    file_lFreq.open(QIODevice::Append|QIODevice::ReadWrite);
+    QDataStream out_lFreq(&file_lFreq);
 
+    int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
+    for(auto tslDataTemp : tslByteList) {
         tsl_3 tslSingleStruct;
-        memcpy(&tslSingleStruct, tslData, idx);
+        memcpy(&tslSingleStruct, tslDataTemp, idx);
         LLA lla;
         lla.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
         lla.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
         lla.altitude  = tslSingleStruct.auxInfo.depth * 0.01f;
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
+
+        QByteArray rawDat;
+        for(int i = 0; i < tslSingleStruct.ping.size; i++) {
+            rawDat.append(tslDataTemp[idx + i]);
+        }
+        for(int i = tslSingleStruct.ping.size; i < PING_SIZE_MAX; i++) {
+            rawDat.append('\0');
+        }
+
+        if(fileInfo_snrCtrl.dualFrqEn == 1) {
+            out_lFreq.writeRawData(rawDat.data(), PING_SIZE_MAX);
+        }
 
         emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
 

@@ -13,8 +13,8 @@
 #include "id_binnary.h"
 
 
-
-
+#define  TEMP_PATH  (qApp->applicationDirPath().append("/temp/").append(QString::number(qApp->applicationPid())))
+#define  PATH_PIX_LFREQ   (TEMP_PATH.append("/pixL"))
 
 
 class UdpManager : public QObject
@@ -107,6 +107,8 @@ private:
     QVector<float> depthHistory_;
     double minDepth_ = 0.0, maxDepth_ = 0.0;
     bool readingDrawTrack_ = true;
+    typSnrCtrl fileInfo_snrCtrl;
+    QString constructionTime_;
 
 };
 

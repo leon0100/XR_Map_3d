@@ -4,7 +4,7 @@
 #include "xtf_conf.h"
 #include "dataset.h"
 #include <QUuid>
-#include "device_defs.h"
+// #include "device_defs.h"
 
 
 class ConverterXTF {
@@ -231,6 +231,7 @@ public:
                     dataset->addPosition(lat, lon);
                 }
 
+                constexpr auto kFileUuidStr = "12345678-1234-1234-1234-1234567890ab";
                 QUuid uuid = QUuid(kFileUuidStr);
 
                 for(uint16_t chi = 0; chi < ch_count; chi++) {

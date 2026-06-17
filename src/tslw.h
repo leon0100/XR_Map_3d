@@ -35,7 +35,7 @@ typedef struct
     qint32 latitude;      ///<放大 x10^7
     qint32 longitude;     ///<放大 x10^7
 
-    quint32  time;        ///<simplified GPS time
+    quint32 time;        ///<simplified GPS time
 
     quint16 heading;       ///<unit=0.1 degree
     quint16 HDOP;          ///<放大 x100

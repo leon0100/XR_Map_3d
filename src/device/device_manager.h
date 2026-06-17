@@ -9,10 +9,7 @@
 #include <QUuid>
 #include "link.h"
 #include "stream_list.h"
-#include "dev_q_property.h"
 #include "id_binnary.h"
-
-
 
 
 
@@ -22,7 +19,6 @@ class DeviceManager : public QObject
     Q_OBJECT
 
 public:
-    /*methods*/
     DeviceManager();
     ~DeviceManager();
 
@@ -31,20 +27,13 @@ public:
     Q_INVOKABLE float vruVelocityH();
     Q_INVOKABLE int   pilotArmState();
     Q_INVOKABLE int   pilotModeState();
-    QList<DevQProperty*> getDevList();
-    QList<DevQProperty*> getDevList(BoardVersion ver);
-    int calcAverageChartLosses();
-
 
     void setProgressDialog(QObject* dialog);
 
 public slots:
-    Q_INVOKABLE bool isCreatedId(int id);
     Q_INVOKABLE StreamListModel* streamsList();
 
     void initStreamList();
-    void frameInput(QUuid uuid, Link* link, Parsers::FrameParser frame);
-    void openFile(QString filePath);
     void openFile_CSV(QString filePath);
     void openFile_tsl(QString filePath, EnumFileType currentFileType);
 #ifdef SEPARATE_READING
@@ -57,7 +46,6 @@ public slots:
     void onLinkDeleted(QUuid uuid, Link* link);
     void binFrameOut(Parsers::ProtoBinOut protoOut);
     void setProtoBinConsoled(bool isConsoled);
-    void upgradeLastDev(QByteArray data);
 
     void beaconActivationReceive(uint8_t id);
     void beaconDirectQueueAsk();
@@ -110,6 +98,7 @@ signals:
     void rangefinderComplete(const ChannelId& channelId, float distance);
     void positionComplete(double lat, double lon, uint32_t date, uint32_t time);
     void positionComplete_file(double lat, double lon,int depth, bool enableRender);
+    void signalpositionSonar();
     void positionCompleteRTK(Position position);
     void depthComplete(float depth);
     void gnssVelocityComplete(double hSpeed, double course);
@@ -120,19 +109,13 @@ signals:
     void fileStopsOpening2(QVector<float>& depth, double minZ, double maxZ);
     void chartLossesChanged();
 
-    // logger
     void sendProtoFrame(const Parsers::ProtoBinOut& protoOut);
 
     void fileOpened();
 
 
-
 private:
-    /*methods*/
-    DevQProperty* getDevice(QUuid uuid, Link* link, uint8_t addr);
     void delAllDev();
-    void deleteDevicesByLink(QUuid uuid);
-    DevQProperty* createDev(QUuid uuid, Link* link, uint8_t addr);
 
     void openFileData_tslw(QByteArray &tslByteArray);
     void openFileData_tsl3(QByteArray &tslByteArray);
@@ -166,11 +149,7 @@ private:
     };
 
     VruData vru_;
-    DevQProperty* lastDevs_;
-    DevQProperty* lastDevice_;
     Link* mavlinkLink_;
-    QList<DevQProperty*> devList_;
-    QHash<QUuid, QHash<int, DevQProperty*>> devTree_;
     QHash<QUuid, int> otherProtocolStat_;
     StreamList streamList_;
     QUuid lastUuid_;

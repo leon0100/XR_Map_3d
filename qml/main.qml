@@ -64,7 +64,7 @@ ApplicationWindow  {
             width: parent.width
             anchors.top: parent.top
             Component.onCompleted: {
-                toolBarXR.menuPopup = menuToolBar
+                toolBarXR.menuPopup  = menuToolBar
                 toolBarXR.targetPlot = waterViewFirst  //把qPlot2D类与ToolBar_XR绑定
             }
         }
@@ -122,7 +122,7 @@ ApplicationWindow  {
         id: isobathsSet
         visible: true
         x: Screen.width - isobathsSet.width
-        y: expandToolBar.iconSize * 3
+        y: expandToolBar.iconSize * 2
         targetPlot: toolBarXR.targetPlot
     }
 
@@ -444,7 +444,7 @@ ApplicationWindow  {
         //添加键盘快捷键映射
         property var hotkeysMapScan: ({
             "57":  { "functionName":  "toggleFullScreen",  "parameter": undefined },   // F11
-            "41":  { "functionName":  "openFile",          "parameter": undefined },   // O
+            // "41":  { "functionName":  "openFile",          "parameter": undefined },   // O
             "44":  { "functionName":  "closeFile",         "parameter": undefined },   // W
             "33":  { "functionName":  "updateBottomTrack", "parameter": undefined },   // R
             "34":  { "functionName":  "updateMosaic",      "parameter": undefined },   // T
@@ -475,10 +475,6 @@ ApplicationWindow  {
             // high priority
             if (fn === "toggleFullScreen") {
                 toggleFullScreenMode()
-                return;
-            }
-            if (fn === "openFile") {
-                core.openLogFile(menuBar.filePath, false, false)
                 return;
             }
             if (fn === "openFileDialog") {
@@ -1301,7 +1297,7 @@ ApplicationWindow  {
 
                 Connections {
                     id: contactConnections
-                    target: null // contacts will init later
+                    target: null
                     function onContactChanged() {
                         contactDialog.visible = contacts.contactVisible
                         if (contacts.contactVisible) {
@@ -1772,11 +1768,8 @@ ApplicationWindow  {
                         instruments: menuBar.instruments
                         indx: 1
                         is3dVisible: menuBar.is3DVisible
-
                         onTimelinePositionChanged: historyScroll.value = waterViewFirst.timelinePosition
-
                         Component.onCompleted: waterViewFirst.setIndx(waterViewFirst.indx);
-
 
                         Rectangle {
                             x: 1
@@ -1804,7 +1797,6 @@ ApplicationWindow  {
                                 }
                             }
                         }
-
 
                         Rectangle {
                             x: 1

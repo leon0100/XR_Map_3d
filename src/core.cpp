@@ -571,18 +571,18 @@ bool Core::upgradeFW(const QString& name, QObject* dev)
         return false;
     }
 
-    if (auto* devQProp = dynamic_cast<DevQProperty*>(dev); devQProp) {
-        devQProp->sendUpdateFW(file.readAll());
-    }
+    // if (auto* devQProp = dynamic_cast<DevQProperty*>(dev); devQProp) {
+    //     devQProp->sendUpdateFW(file.readAll());
+    // }
 
     return true;
 }
 
 void Core::upgradeChanged(int progressStatus)
 {
-    if(progressStatus == DevDriver::successUpgrade) {
-        //        restoreBaudrate();
-    }
+    // if(progressStatus == DevDriver::successUpgrade) {
+    //     //        restoreBaudrate();
+    // }
 }
 
 bool Core::getKlfLogging() const
@@ -1777,6 +1777,7 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete, datasetPtr_, &Dataset::addPosition,     deviceManagerConnection);
     QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,     deviceManagerConnection);
     QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,     deviceManagerConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::chartComplete, datasetPtr_, &Dataset::addChart);
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file,     deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionCompleteRTK,  datasetPtr_, &Dataset::addPositionRTK,  deviceManagerConnection);
@@ -1802,7 +1803,7 @@ void Core::createDeviceManagerConnections()
 void Core::createLinkManagerConnections()
 {
     Qt::ConnectionType linkManagerConnection = Qt::ConnectionType::AutoConnection;
-    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::frameReady,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::frameInput,     linkManagerConnection));
+    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::frameReady,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::frameInput,     linkManagerConnection));
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkClosed,   linkManagerConnection));
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkOpened,   linkManagerConnection));
     linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkDeleted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkDeleted,  linkManagerConnection));
@@ -1827,7 +1828,6 @@ void Core::removeLinkManagerConnections()
     }
 
     linkManagerWrapperConnections_.clear();
-    udpManager_->disConnectUdp();
 }
 
 QHash<QUuid, QString> Core::getLinkNames() const

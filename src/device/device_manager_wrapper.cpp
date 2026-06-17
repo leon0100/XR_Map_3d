@@ -1,5 +1,5 @@
 #include "device_manager_wrapper.h"
-#include "device_defs.h"
+// #include "device_defs.h"
 
 
 DeviceManagerWrapper::DeviceManagerWrapper(QObject* parent) :
@@ -25,13 +25,13 @@ DeviceManagerWrapper::DeviceManagerWrapper(QObject* parent) :
     workerThread_->start();
 #else
     auto ct = Qt::DirectConnection;
-    QObject::connect(this, &DeviceManagerWrapper::sendOpenFile,  workerObject_.get(), &DeviceManager::openFile,  ct);
+    // QObject::connect(this, &DeviceManagerWrapper::sendOpenFile,  workerObject_.get(), &DeviceManager::openFile,  ct);
     QObject::connect(this, &DeviceManagerWrapper::sendOpenFile_CSV,  workerObject_.get(), &DeviceManager::openFile_CSV, Qt::QueuedConnection);
     QObject::connect(this, &DeviceManagerWrapper::sendOpenFile_tsl,  workerObject_.get(), &DeviceManager::openFile_tsl, Qt::QueuedConnection);
 
 
     QObject::connect(this, &DeviceManagerWrapper::sendCloseFile, workerObject_.get(), &DeviceManager::closeFile,   ct);
-    QObject::connect(workerObject_.get(), &DeviceManager::devChanged,  this,   &DeviceManagerWrapper::devChanged,   ct);
+    // QObject::connect(workerObject_.get(), &DeviceManager::devChanged,  this,   &DeviceManagerWrapper::devChanged,   ct);
     QObject::connect(workerObject_.get(), &DeviceManager::streamChanged,  this, &DeviceManagerWrapper::streamChanged,  ct);
     QObject::connect(workerObject_.get(), &DeviceManager::vruChanged,   this,   &DeviceManagerWrapper::vruChanged,   ct);
     QObject::connect(workerObject_.get(), &DeviceManager::chartLossesChanged,  this,  &DeviceManagerWrapper::calcAverageChartLosses, ct);
@@ -66,6 +66,7 @@ DeviceManager* DeviceManagerWrapper::getWorker()
 
 QUuid DeviceManagerWrapper::getFileUuid() const
 {
+    constexpr auto kFileUuidStr = "12345678-1234-1234-1234-1234567890ab";
     return QUuid(kFileUuidStr);
 }
 
@@ -80,6 +81,6 @@ void DeviceManagerWrapper::initStreamList()
 
 void DeviceManagerWrapper::calcAverageChartLosses()
 {
-    averageChartLosses_ = std::max(0, std::min(100, 100 - getWorker()->calcAverageChartLosses()));
+    // averageChartLosses_ = std::max(0, std::min(100, 100 - getWorker()->calcAverageChartLosses()));
     emit this->chartLossesChanged();
 }

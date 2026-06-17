@@ -17,12 +17,6 @@ ColumnLayout
     Layout.margins: 0
     spacing: 10
 
-    onDevListChanged: {
-        if (devList.length > 0) {
-            dev = devList[0]
-        }
-    }
-
     Connections {
         target: core
 

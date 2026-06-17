@@ -329,8 +329,32 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
     auto& canvas = parent->canvas();
     auto& cursor = parent->cursor();
 
-    if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
-        const int image_width = canvas.width();
+    _colorLevels.clear();
+
+    // ===== 测试用：创建简单的颜色表 =====
+    _colorLevels.resize(256);
+    for(int i = 0; i < 256; i++) {
+        if(i < 50) {
+            // 深蓝色 - 表示深水/无回声
+            _colorLevels[i] = qRgb(0, 0, 50 + i);
+        } else if(i < 100) {
+            // 蓝色到绿色渐变
+            _colorLevels[i] = qRgb(0, i - 50, 100);
+        } else if(i < 150) {
+            // 绿色到黄色渐变
+            _colorLevels[i] = qRgb(i - 100, 50 + (i - 100), 50);
+        } else if(i < 200) {
+            // 黄色到橙色渐变
+            _colorLevels[i] = qRgb(50 + (i - 150), 100, 0);
+        } else {
+            // 红色 - 表示强回声
+            _colorLevels[i] = qRgb(100 + (i - 200), 50, 0);
+        }
+    }
+
+
+    // if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
+        const int image_width  = canvas.width();
         const int image_height = canvas.height();
 
         if(_image.width() != image_width || _image.height() != image_height) {
@@ -339,9 +363,63 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
             _pixmap = QPixmap(image_width, image_height);
         }
 
-        const int cash_width = canvas.width();
-
+        const int cash_width    = canvas.width();
         const int cash_position = updateCash(parent, dataset, cash_width, image_height);
+
+
+        // -------------------- 测试用: 绘制模拟声呐数据 -----------------------
+        // 如果没有真实数据，绘制模拟的声呐图像
+        bool hasRealData = false;
+        if(dataset && dataset->size() > 0) {
+            hasRealData = true;
+        }
+
+        if(!hasRealData && image_width > 0 && image_height > 0) {
+            uint8_t* image_data = (uint8_t*)_image.bits();
+            const int b_scanline = _image.bytesPerLine();
+
+            // 绘制模拟的声呐回波
+            for(int y = 0; y < image_height; y++) {
+                uint8_t* row = image_data + y * b_scanline;
+
+                for(int x = 0; x < image_width; x++) {
+                    // 模拟距离衰减（距离越远，信号越弱）
+                    float distanceFactor = 1.0f - (float)y / image_height;
+
+                    // 模拟海底回波（底部有强反射）
+                    int bottomY = image_height * 0.8; // 模拟海底位置
+                    int bottomWidth = 20;
+                    float bottomEcho = 0;
+                    if(y >= bottomY - bottomWidth && y <= bottomY + bottomWidth) {
+                        bottomEcho = 1.0f - (float)abs(y - bottomY) / bottomWidth;
+                    }
+
+                    // 模拟一些随机噪声
+                    float noise = (rand() % 50) / 50.0f * 0.3f;
+
+                    // 模拟目标回波（随机位置的强反射）
+                    float targetEcho = 0;
+                    int targetX = image_width / 3;
+                    int targetWidth = 10;
+                    int targetY = image_height / 2;
+                    int targetHeight = 15;
+                    if(x >= targetX - targetWidth && x <= targetX + targetWidth &&
+                        y >= targetY - targetHeight && y <= targetY + targetHeight) {
+                        float dx = abs(x - targetX) / (float)targetWidth;
+                        float dy = abs(y - targetY) / (float)targetHeight;
+                        targetEcho = (1 - dx) * (1 - dy) * 0.8f;
+                    }
+
+                    // 组合所有信号
+                    float value = distanceFactor * 0.4f + bottomEcho * 0.8f + noise + targetEcho;
+                    value = qBound(0.0f, value, 1.0f);
+
+                    row[x] = (uint8_t)(value * 255);
+                }
+            }
+        }
+
+
 
         QPainter p(&_pixmap);
 
@@ -354,10 +432,10 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
             }
 
             int cash_update_width = cash_col - cash_col_1;
-
             if(cash_update_width > 0) {
                  p.drawImage(cash_col_1, 0, _image, cash_col_1, 0 , cash_update_width, 0, Qt::ThresholdDither); // Qt::NoOpaqueDetection |
-            } else {
+            }
+            else {
                 cash_col++;
             }
         }
@@ -366,8 +444,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
         canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, cash_width - cash_position, 0);
         canvas.painter()->drawPixmap(cash_width - cash_position, 0, _pixmap, 0, 0, cash_position, 0);
-    } else {
-    }
+    // }
 
     return true;
 }

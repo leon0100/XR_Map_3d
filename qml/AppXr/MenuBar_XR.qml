@@ -463,7 +463,7 @@ Popup {
         }
 
 
-        // 菜单项 3---------------------------------------------------
+        // 菜单项 3----------------------------------------
         MenuItem {
             id: help
             text: qsTr("Help")
@@ -512,7 +512,6 @@ Popup {
             }
         }
 
-
         MenuItem {
             id: exit
             text: qsTr("Exit")
@@ -524,7 +523,6 @@ Popup {
             }
             onClicked: core.exitApp()
         }
-
 
     }
 

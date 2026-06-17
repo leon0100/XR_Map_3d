@@ -8,7 +8,8 @@ Rectangle {
     id: toolBar_XR
     objectName:  "toolBar_XR"
     height: iconSize + 3
-    color:  Qt.platform.os === "android" ? "#828282" : "#eeeeee"
+    // color:  Qt.platform.os === "android" ? "#828282" : "#eeeeee"
+    color: "#828282"
     border.color: "#c0c0c0"
 
     signal openClicked()
@@ -88,7 +89,8 @@ Rectangle {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: Qt.platform.os === "android" ? androidRowComponent : windowsRowComponent
+        // sourceComponent: Qt.platform.os === "android" ? androidRowComponent : windowsRowComponent
+        sourceComponent: androidRowComponent
     }
 
     Component
@@ -392,28 +394,23 @@ Rectangle {
 
             }
 
-
-
         }
 
-
     }
-
-
 
 
     Component
     {
         id: androidRowComponent
 
-        Row {
+        Item {
             anchors.fill: parent
-            anchors.margins: 2
-            spacing: 3
-
 
             MenuButton {  //菜单
                 id: menuBtn
+                anchors.left: parent.left
+                anchors.leftMargin: 2
+                anchors.verticalCenter: parent.verticalCenter
                 icon.source: "qrc:/XR/config.png"
                 icon.width:  toolBar_XR.iconSize
                 icon.height: toolBar_XR.iconSize
@@ -442,6 +439,7 @@ Rectangle {
 
             Row {
                 anchors.right: parent.right
+                anchors.rightMargin: 5
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 5
 
@@ -458,6 +456,7 @@ Rectangle {
                     width: toolBar_XR.iconSize * 2.8
                     height: toolBar_XR.iconSize * 0.8
                     anchors.verticalCenter: parent.verticalCenter
+                    visible: Qt.platform.os === "android"
 
                     Rectangle {
                         id: batteryBody
@@ -496,6 +495,7 @@ Rectangle {
                     font.pixelSize: toolBar_XR.iconSize * 0.55
                     verticalAlignment: Text.AlignVCenter
                     anchors.verticalCenter: parent.verticalCenter
+                    visible: Qt.platform.os === "android"
                 }
 
                 // 网络信号强度
@@ -545,10 +545,7 @@ Rectangle {
                     width: 3
                     height: 1
                 }
-
             }
-
-
 
         }
 

@@ -30,7 +30,7 @@
 
 
 #define U8_TO_16(a,b)  (((uchar)a)+(((uchar)b)<<8))
-
+#define PING_SIZE_MAX 1024
 
 typedef enum
 {

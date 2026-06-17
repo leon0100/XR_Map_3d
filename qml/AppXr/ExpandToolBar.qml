@@ -2,6 +2,8 @@
 // import QtQuick.Controls 2.15
 // import QtQuick.Window 2.15
 
+
+/*----------------------------------------横着展开--------------------------------------*/
 // Rectangle {
 //     id: root
 //     x: Screen.width - expandedWidth - 10
@@ -354,7 +356,7 @@ Rectangle {
     z: 999
 
     // 让 root 的宽度始终等于展开后的总宽度，背景透明，靠内部组件来撑开视觉
-    width: iconSize
+    width: iconSize * 1.1
     height: expandedHeight
     color: "transparent"
 
@@ -378,7 +380,6 @@ Rectangle {
     // 胶囊状的半透明背景：它的宽度跟着 contentRect 动态变长
     Rectangle {
         id: bgRect
-        // anchors.right: parent.right
         anchors.top: parent.top
         width: parent.width
         height: handleBtn.height + contentRect.height
@@ -391,43 +392,17 @@ Rectangle {
         }
     }
 
-    // ToolButton {
-    //     id: handleBtn
-    //     anchors.top: parent.top
-    //     width:  iconSize * 1.1
-    //     height: iconSize * 1.1
-
-    //     // 修改背景使之透明，或配合整体
-    //     background: Rectangle { color: "white" }
-
-    //     contentItem: Image {
-    //         source: root.expanded ? "qrc:/icons/ui/arrow_bar_to_down.svg" : "qrc:/XR/content.svg"
-    //         width:  iconSize
-    //         height: iconSize
-    //         fillMode: Image.PreserveAspectFit
-    //         anchors.centerIn: parent
-    //     }
-
-    //     onClicked: {
-    //         root.expanded = !root.expanded
-    //     }
-    // }
-
-    MenuButton {  // 截图
+    MenuButton {
         id: handleBtn
         icon.source: root.expanded ? "qrc:/icons/ui/arrow_bar_to_down.svg" : "qrc:/XR/content.svg"
-        icon.width:  root.iconSize
-        icon.height: root.iconSize
-        width:       root.iconSize
-        height:      root.iconSize
-
-        CMouseOpacityArea {
-            toolTipText: qsTr("Click to Expand")
-        }
+        icon.width:  root.iconSize * 1.1
+        icon.height: root.iconSize * 1.1
+        width:       root.iconSize * 1.1
+        height:      root.iconSize * 1.1
 
         Rectangle {
             anchors.fill: parent
-            radius: root.iconSize * 0.5
+            radius: root.iconSize * 0.55
             color: backColor
         }
 
@@ -443,11 +418,16 @@ Rectangle {
     Rectangle {
         id: contentRect
         anchors.top: handleBtn.bottom
+        anchors.topMargin: iconSize * 0.2
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width
         height: root.expanded ? col.implicitHeight + 10 : 0
-        color: "transparent"
+        // color: "transparent"
+        color: "white"
         clip: true
+        border.width: 1
+        border.color: "#808080"
+        radius: width * 0.5
 
         Behavior on width {
             NumberAnimation {
@@ -599,13 +579,13 @@ Rectangle {
 
         cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
 
-        onEntered: {
-            root.expanded = true
-        }
+        // onEntered: {
+        //     root.expanded = true
+        // }
 
-        onExited: {
-            root.expanded = false
-        }
+        // onExited: {
+        //     root.expanded = false
+        // }
 
         onPressed: {
             root.expanded = true

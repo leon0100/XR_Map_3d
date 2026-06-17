@@ -3,8 +3,7 @@ DEPENDPATH *= $$PWD
 
 HEADERS *= \
     $$PWD/dev_driver.h\
-    $$PWD/dev_q_property.h \
-    $$PWD/device_defs.h \
+    # $$PWD/dev_q_property.h \
     $$PWD/device_manager.h \
     $$PWD/device_manager_wrapper.h \
     $$PWD/blemanager.h \

@@ -30,10 +30,6 @@ const char* HotkeysManager::s_defaultHotkeysXml = R"(<?xml version="1.0" encodin
     <Hotkey functionName="prevTheme"         scanCode="54"                 description="switch the echogram theme to the previous one"/>
     <Hotkey functionName="nextTheme"         scanCode="55"                 description="switch the echogram theme to the next one"/>
     <Hotkey functionName="toggleFullScreen"  scanCode="95"                 description="toggle fullscreen"/>
-    <Hotkey functionName="openFile"          scanCode="76"                 description="open file"/>
-    <Hotkey functionName="closeFile"         scanCode="75"                 description="close file"/>
-    <Hotkey functionName="updateBottomTrack" scanCode="72"                 description="update bottom track"/>
-    <Hotkey functionName="updateMosaic"      scanCode="74"                 description="update mosaic"/>
 </Hotkeys>
 )";
 #else
@@ -57,10 +53,6 @@ const char* HotkeysManager::s_defaultHotkeysXml = R"(<?xml version="1.0" encodin
     <Hotkey functionName="prevTheme"         scanCode="46"                 description="switch the echogram theme to the previous one"/>
     <Hotkey functionName="nextTheme"         scanCode="47"                 description="switch the echogram theme to the next one"/>
     <Hotkey functionName="toggleFullScreen"  scanCode="87"                 description="toggle fullscreen"/>
-    <Hotkey functionName="openFile"          scanCode="68"                 description="open file"/>
-    <Hotkey functionName="closeFile"         scanCode="67"                 description="close file"/>
-    <Hotkey functionName="updateBottomTrack" scanCode="64"                 description="update bottom track"/>
-    <Hotkey functionName="updateMosaic"      scanCode="66"                 description="update mosaic"/>
 </Hotkeys>
 )";
 #endif

@@ -4,6 +4,7 @@
 #include <QThread>
 #include <memory>
 
+
 #include "device_manager.h"
 
 
@@ -13,11 +14,9 @@ class DeviceManagerWrapper : public QObject
     Q_DISABLE_COPY(DeviceManagerWrapper)
 
 public:
-    /*methods*/
     DeviceManagerWrapper(QObject* parent = nullptr);
     ~DeviceManagerWrapper();
 
-    Q_PROPERTY(QList<DevQProperty*> devs READ getDevList NOTIFY devChanged)
     Q_PROPERTY(bool protoBinConsoled READ getProtoBinConsoled WRITE setProtoBinConsoled)
     Q_PROPERTY(StreamListModel* streamsList READ streamsList NOTIFY streamChanged)
     Q_PROPERTY(float vruVoltage READ vruVoltage NOTIFY vruChanged)
@@ -31,8 +30,6 @@ public:
     DeviceManager* getWorker();
     QUuid getFileUuid() const;
 
-    /*QML*/
-    QList<DevQProperty*> getDevList     () { return getWorker()->getDevList();     }
     StreamListModel*     streamsList    () { return getWorker()->streamsList();    }
     float                vruVoltage     () { return getWorker()->vruVoltage();     }
     float                vruCurrent     () { return getWorker()->vruCurrent();     }
@@ -63,7 +60,6 @@ public:
     }
 
 public slots:
-    Q_INVOKABLE bool isCreatedId(int id) { return getWorker()->isCreatedId(id); };
     void calcAverageChartLosses();
 
 signals:
@@ -76,7 +72,7 @@ signals:
     void sendCloseFile();
 #endif
 
-    void devChanged();
+    // void devChanged();
     void streamChanged();
     void vruChanged();
     void chartLossesChanged();

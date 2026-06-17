@@ -107,6 +107,7 @@ Item  {
             implicitWidth:  theme.menuWidth
 
             CMouseOpacityArea {
+                cursorShape: Qt.PointingHandCursor
                 toolTipText: qsTr("Zoom In")
                 popupPosition: "topRight"
             }
@@ -115,8 +116,8 @@ Item  {
                 Image {
                     source: "qrc:/XR/zoom_in.png"
                     anchors.centerIn: parent
-                    width:  theme.menuWidth * 0.85
-                    height: theme.menuWidth * 0.85
+                    width:  theme.menuWidth * 0.8
+                    height: theme.menuWidth * 0.8
                 }
             }
 
@@ -138,6 +139,7 @@ Item  {
             implicitWidth:  theme.menuWidth
 
             CMouseOpacityArea {
+                cursorShape: Qt.PointingHandCursor
                 toolTipText: qsTr("Zoom Out")
                 popupPosition: "topRight"
             }
@@ -175,6 +177,7 @@ Item  {
             opacity: toolbarHovered ? 1.0 : 0.5
 
             CMouseOpacityArea {
+                cursorShape: Qt.PointingHandCursor
                 toolTipText: qsTr("Lock 2D")
                 popupPosition: "topRight"
             }

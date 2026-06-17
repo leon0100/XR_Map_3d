@@ -23,7 +23,7 @@ qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(
 
 void qPlot2D::paint(QPainter *painter)
 {
-    // qDebug() << "qPlot2D::paint(..........";
+    qDebug() << "qPlot2D::paint(.........." << Plot2D::plotEnabled();
     if (!Plot2D::plotEnabled()) {
         return;
     }
@@ -39,7 +39,7 @@ void qPlot2D::paint(QPainter *painter)
     }
 
     clock_t end = clock();
-    int cpu_time_used = ((end-start));
+    int cpu_time_used = (end - start);
     Q_UNUSED(cpu_time_used);
 }
 

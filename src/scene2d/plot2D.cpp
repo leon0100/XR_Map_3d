@@ -161,6 +161,7 @@ bool Plot2D::getImage(int width, int height, QPainter* painter, bool is_horizont
 
 void Plot2D::draw(QPainter *painterPtr)
 {
+    qDebug() << "Plot2D::draw(QPainter *painterPtr)..............";
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
     attitude_.draw(this, datasetPtr_);
@@ -927,18 +928,21 @@ Canvas &Plot2D::canvas() { return canvas_; }
 
 DatasetCursor &Plot2D::cursor() { return cursor_; }
 
-void Plot2D::resetCash() {
+void Plot2D::resetCash()
+{
     echogram_.resetCash();
 }
 
 void Plot2D::plotUpdate() {}
 
-void Plot2D::sendSyncEvent(int epoch_index, QEvent::Type eventType) {
+void Plot2D::sendSyncEvent(int epoch_index, QEvent::Type eventType)
+{
     Q_UNUSED(epoch_index);
     Q_UNUSED(eventType);
 }
 
-void Plot2D::reindexingCursor() {
+void Plot2D::reindexingCursor()
+{
     if(datasetPtr_ == nullptr) { return; }
 
     const int image_width = canvas_.width();

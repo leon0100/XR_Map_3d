@@ -38,7 +38,6 @@ Item {
        IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
     }
 
-
     Connections {
         target: UdpManager
         function onSignalCancelUdpOn(isOn) {
@@ -47,16 +46,15 @@ Item {
     }
 
 
-
-    // ---------------- 侧边按钮 -----------------
+    // ------------------ 侧边按钮 -------------------
     ColumnLayout {
         id: toggleButton
-        width: iconSize * 1.2
+        width: iconSize * 1.6
         spacing: 2
 
         Rectangle {
             id: isobathsToggleBtn
-            width: iconSize
+            width: iconSize * 1.2
             height: iconSize * 6
             color: "#879fc6"
             opacity: 0.6
@@ -86,13 +84,13 @@ Item {
                 }
 
                 Item {
-                    width: parent.width
-                    height: iconSize * 4
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: iconSize * 3
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Isobaths")
                         color: "white"
-                        font.pixelSize: iconSize * 0.8
+                        font.pixelSize: iconSize * 0.9
                         rotation: 90
                         transformOrigin: Item.Center
                     }
@@ -102,7 +100,7 @@ Item {
 
         Rectangle {
             id: bluetoothToggleBtn
-            width: iconSize
+            width: iconSize * 1.2
             height: iconSize * 6
             color: "#879fc6"
             opacity: 0.6
@@ -132,13 +130,13 @@ Item {
                 }
 
                 Item {
-                    width: parent.width
-                    height: iconSize * 4
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: iconSize * 3
                     Text {
                         anchors.centerIn: parent
-                        text: qsTr("Communication")
+                        text: qsTr("Transmit")
                         color: "white"
-                        font.pixelSize: iconSize * 0.8
+                        font.pixelSize: iconSize * 0.9
                         rotation: 90
                         transformOrigin: Item.Center
                     }
@@ -1529,14 +1527,11 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             x: onOffControl.isOn ? parent.width-width-2 : 2
                             color: "#FAFAFA"
-                            scale: onOffArea.pressed ? 0.9 : 1.0
 
                             Behavior on x {
                                 NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                             }
-                            Behavior on scale {
-                                NumberAnimation { duration: 100 }
-                            }
+
                         }
 
                         Text {
@@ -1598,13 +1593,9 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             x: readControl2.isReading ? parent.width-width-2 : 2
                             color: "#FAFAFA"
-                            scale: readPauseArea.pressed ? 0.9 : 1.0
 
                             Behavior on x {
                                 NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                            }
-                            Behavior on scale {
-                                NumberAnimation { duration: 100 }
                             }
                         }
 
