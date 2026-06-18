@@ -4,6 +4,7 @@ INCLUDEPATH *= $$PWD
 DEPENDPATH *= $$PWD
 
 HEADERS += \
+    $$PWD/colorscheme.h \
     $$PWD/plot2D.h \
     $$PWD/plot2D_aim.h \
     $$PWD/plot2D_attitude.h \
@@ -22,9 +23,11 @@ HEADERS += \
     $$PWD/plot2D_rangefinder.h \
     $$PWD/plot2D_usbl_solution.h \
     $$PWD/plot2D_depth.h \
-    $$PWD/qPlot2D.h
+    $$PWD/qPlot2D.h \
+    $$PWD/zysonar.h
 
 SOURCES += \
+    $$PWD/colorscheme.cpp \
     $$PWD/plot2D.cpp \
     $$PWD/plot2D_aim.cpp \
     $$PWD/plot2D_attitude.cpp \
@@ -41,4 +44,5 @@ SOURCES += \
     $$PWD/plot2D_rangefinder.cpp \
     $$PWD/plot2D_usbl_solution.cpp \
     $$PWD/plot2D_depth.cpp \
-    $$PWD/qPlot2D.cpp
+    $$PWD/qPlot2D.cpp \
+    $$PWD/zysonar.cpp

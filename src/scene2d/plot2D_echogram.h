@@ -2,6 +2,7 @@
 
 #include "plot2D_plot_layer.h"
 #include "plot2D_defs.h"
+#include "colorScheme.h"
 
 
 class Plot2DEchogram : public PlotLayer {
@@ -11,7 +12,8 @@ public:
         SepiaTheme,
         WRGBDTheme,
         WBTheme,
-        BWTheme
+        BWTheme,
+        CustomTheme
     };
 
     Plot2DEchogram();
@@ -29,6 +31,13 @@ public:
     void setCompensation(int compensation_id);
 
     void updateColors();
+    // 加载外部配色文件
+    bool loadCustomColorScheme(const QString& fileName);
+    // 设置配色类型（surface/fish/bottom）
+    void setColorSchemeType(int type) { _colorSchemeType = type; }
+    int getColorSchemeType() const { return _colorSchemeType; }
+    // 应用自定义配色方案
+    void applyCustomColorScheme();
 
     int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
@@ -91,4 +100,10 @@ protected:
 private:
     ThemeId themeId_;
     QSet<int> reRenderPlotIndxs_;
+
+    // 自定义配色相关
+    ZyColorScheme _colorScheme;
+    QString _customSchemePath;  // 自定义配色文件路径
+    int _colorSchemeType;       // 配色类型：0=surface, 1=fish, 2=bottom
+    bool _useCustomScheme;      // 是否使用自定义配色
 };

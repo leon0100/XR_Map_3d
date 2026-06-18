@@ -209,21 +209,18 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     QVector<float> vec_CSV;
     double minZ = 0.0, maxZ = 0.0;
 
-
-
-    // ===== 为声呐数据创建 ChannelId =====
+    // ========== 为声呐数据创建 ChannelId ==========
     QUuid fileUuid = QUuid::createUuid(); // 使用临时 UUID
     ChannelId channelId(fileUuid, 0);     // 地址设为 0
 
-    // ===== 创建 ChartParameters =====
+    // =========== 创建 ChartParameters ==========
     ChartParameters chartParams;
     chartParams.boardVersion = BoardNone;
-    chartParams.version = v0;
-    // errList 保持为空
+    chartParams.version      = v0;
 
-    // ===== 声呐数据参数 =====
+    // ============ 声呐数据参数 =============
     float resolution = 0.1f;  // 分辨率（米/采样点），根据实际设备调整
-    float offset = 0.0f;      // 偏移量
+    float offset     = 0.0f;  // 偏移量
 
     qDebug() << "tslWCnt.size()........." << tslWCnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
@@ -246,7 +243,6 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
             rawDat.append('\0');
         }
 
-
         // ===== 将声呐数据发送到 Dataset =====
         QVector<QVector<uint8_t>> data;
         QVector<uint8_t> channelData;
@@ -259,8 +255,6 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 
         // 发送信号，让 Dataset 接收声呐数据
         emit chartComplete(channelId, chartParams, data, resolution, offset);
-
-
 
         tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
         tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;
@@ -319,12 +313,13 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         if (progressDialog_ && (i % progressInterval == 0 || i == (tslWCnt - 1))) {
             double progress = static_cast<double>(i + 1) / tslWCnt;
             QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                     .arg(i + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+                                    .arg(i + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
         }
     }
+
 
     qDebug() << "track-tslw size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 

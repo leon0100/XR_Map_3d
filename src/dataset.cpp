@@ -195,7 +195,8 @@ void Dataset::setFixBlackStripesBackwardSteps(int val)
     bSProc_->setBackwardSteps(val);
 }
 
-void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset)
+void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartParams,
+                       const QVector<QVector<uint8_t>>& data, float resolution, float offset)
 {
     if (data.empty() || qFuzzyIsNull(resolution)) {
         return;
@@ -204,7 +205,6 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
     // ! we need all channels in data !
     uint8_t numSubChannels = data.size();
     if (shouldAddNewEpoch(channelId, numSubChannels)) {
-        qDebug() << "Dataset::addChart........................";
         addNewEpoch();
     }
 
@@ -277,7 +277,7 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
         if (backSteps) {
             bSProc_->clearEthalonData(channelId, BlackStripesProcessor::Direction::kBackward);
 
-            const int startIndx  = std::max(0, endIndx - backSteps);
+            const int startIndx = std::max(0, endIndx - backSteps);
             for (int i = endIndx; i >= startIndx; --i) {
                 if (auto* iEpoch = &pool_[i]; iEpoch) {
                     float iResolution = resolution;
@@ -1266,7 +1266,8 @@ bool Dataset::shouldAddNewEpoch(const ChannelId &channelId, uint8_t numSubChanne
     return true;
 }
 
-void Dataset::updateEpochWithChart(const ChannelId &channelId, const ChartParameters &chartParams, const QVector<QVector<uint8_t> > &data, float resolution, float offset)
+void Dataset::updateEpochWithChart(const ChannelId &channelId, const ChartParameters &chartParams,
+                                const QVector<QVector<uint8_t> > &data, float resolution, float offset)
 {
     const int indx = endIndex();
     auto& epoch = pool_[indx];

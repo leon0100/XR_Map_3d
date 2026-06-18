@@ -1,11 +1,32 @@
 #include "plot2D_echogram.h"
 #include "plot2D.h"
 
+#include <QApplication>
+#include <QSettings>
+
 
 Plot2DEchogram::Plot2DEchogram()
 {
-    setThemeId(ClassicTheme);
+    setThemeId(CustomTheme);
     setLevels(10, 100);
+    _colorSchemeType = 0;  // 默认使用 surface 配色
+    _useCustomScheme = false;
+    _customSchemePath = QString();
+
+
+
+    // ==================== 配色方案处理 ====================
+    // 尝试从默认路径加载自定义配色
+    QString defaultPath = qApp->applicationDirPath() + "/dcs_caise.tcs";
+    QFile schemeFile(defaultPath);
+
+    // 只有在配色文件存在且还未加载时才加载
+    if(schemeFile.exists() && !_useCustomScheme) {
+        qDebug() << "Loading color scheme from:" << defaultPath;
+        loadCustomColorScheme(defaultPath);
+    }
+
+
 }
 
 void Plot2DEchogram::setLowLevel(float low)
@@ -59,48 +80,181 @@ int Plot2DEchogram::getThemeId() const
 }
 
 void Plot2DEchogram::setThemeId(int theme_id) {
-    if (theme_id >= ClassicTheme && theme_id <= BWTheme) {
-        themeId_ = static_cast<ThemeId>(theme_id);
+    // if (theme_id >= ClassicTheme && theme_id <= BWTheme) {
+    //     themeId_ = static_cast<ThemeId>(theme_id);
+    // }
+    // else {
+    //     themeId_ = ClassicTheme;
+    // }
+
+    // QVector<QColor> coloros;
+    // QVector<int> levels;
+
+    // if(theme_id == ClassicTheme) {
+    //     coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(20, 5, 80), QColor::fromRgb(50, 180, 230), QColor::fromRgb(190, 240, 250), QColor::fromRgb(255, 255, 255)};
+    //     levels = {0, 30, 130, 220, 255};
+    // } else if(theme_id == SepiaTheme) {
+    //     coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(50, 50, 10), QColor::fromRgb(230, 200, 100), QColor::fromRgb(255, 255, 220)};
+    //     levels = {0, 30, 130, 255};
+    // }else if(theme_id == WRGBDTheme) {
+    //     coloros = {
+    //         QColor::fromRgb(0, 0, 0),
+    //         QColor::fromRgb(40, 0, 80),
+    //         QColor::fromRgb(0, 30, 150),
+    //         QColor::fromRgb(20, 230, 30),
+    //         QColor::fromRgb(255, 50, 20),
+    //         QColor::fromRgb(255, 255, 255),
+    //     };
+
+    //     levels = {0, 30, 80, 120, 150, 255};
+    // } else if(theme_id == WBTheme) {
+    //     coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(190, 200, 200), QColor::fromRgb(230, 255, 255)};
+    //     levels = {0, 150, 255};
+    // } else if(theme_id == BWTheme) {
+    //     coloros = {QColor::fromRgb(230, 255, 255), QColor::fromRgb(70, 70, 70), QColor::fromRgb(0, 0, 0)};
+    //     levels = {0, 150, 255};
+    // }
+
+    // setColorScheme(coloros, levels);
+
+    // 如果切换到内置主题，禁用自定义配色
+    if(theme_id != CustomTheme) {
+        _useCustomScheme = false;
     }
-    else {
+
+    themeId_ = static_cast<ThemeId>(theme_id);
+
+    switch(themeId_) {
+    case ClassicTheme:
+    {
+        QVector<QColor> colors;
+        QVector<int> levels;
+
+        colors << QColor(0, 0, 0)
+               << QColor(0, 0, 255)
+               << QColor(0, 255, 255)
+               << QColor(0, 255, 0)
+               << QColor(255, 255, 0)
+               << QColor(255, 0, 0);
+        levels << 0 << 42 << 85 << 127 << 170 << 255;
+        setColorScheme(colors, levels);
+    }
+    break;
+    case SepiaTheme:
+    {
+        QVector<QColor> colors;
+        QVector<int> levels;
+
+        colors << QColor(0, 0, 0)
+               << QColor(51, 34, 17)
+               << QColor(102, 68, 34)
+               << QColor(153, 102, 51)
+               << QColor(204, 153, 102)
+               << QColor(255, 204, 153);
+        levels << 0 << 42 << 85 << 127 << 170 << 255;
+        setColorScheme(colors, levels);
+    }
+    break;
+    case WRGBDTheme:
+    {
+        QVector<QColor> colors;
+        QVector<int> levels;
+
+        colors << QColor(255, 255, 255)
+               << QColor(255, 0, 0)
+               << QColor(0, 255, 0)
+               << QColor(0, 0, 255)
+               << QColor(0, 0, 0);
+        levels << 0 << 63 << 127 << 191 << 255;
+        setColorScheme(colors, levels);
+      }
+
+    case CustomTheme:
+        // 自定义主题，需要加载外部文件
+        if(_customSchemePath.isEmpty()) {
+            // 尝试从默认路径加载
+            QString defaultPath = qApp->applicationDirPath() + "/dcs_caise.tcs";
+            loadCustomColorScheme(defaultPath);
+        } else {
+            loadCustomColorScheme(_customSchemePath);
+        }
+        break;
+    default:
         themeId_ = ClassicTheme;
+        break;
     }
-
-    QVector<QColor> coloros;
-    QVector<int> levels;
-
-    if(theme_id == ClassicTheme) {
-        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(20, 5, 80), QColor::fromRgb(50, 180, 230), QColor::fromRgb(190, 240, 250), QColor::fromRgb(255, 255, 255)};
-        levels = {0, 30, 130, 220, 255};
-    } else if(theme_id == SepiaTheme) {
-        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(50, 50, 10), QColor::fromRgb(230, 200, 100), QColor::fromRgb(255, 255, 220)};
-        levels = {0, 30, 130, 255};
-    }else if(theme_id == WRGBDTheme) {
-        coloros = {
-            QColor::fromRgb(0, 0, 0),
-            QColor::fromRgb(40, 0, 80),
-            QColor::fromRgb(0, 30, 150),
-            QColor::fromRgb(20, 230, 30),
-            QColor::fromRgb(255, 50, 20),
-            QColor::fromRgb(255, 255, 255),
-        };
-
-        levels = {0, 30, 80, 120, 150, 255};
-    } else if(theme_id == WBTheme) {
-        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(190, 200, 200), QColor::fromRgb(230, 255, 255)};
-        levels = {0, 150, 255};
-    } else if(theme_id == BWTheme) {
-        coloros = {QColor::fromRgb(230, 255, 255), QColor::fromRgb(70, 70, 70), QColor::fromRgb(0, 0, 0)};
-        levels = {0, 150, 255};
-    }
-
-    setColorScheme(coloros, levels);
 }
 
 void Plot2DEchogram::setCompensation(int compensation_id)
 {
     _compensation_id = compensation_id;
+    resetCash();
 }
+
+// 加载自定义配色文件
+bool Plot2DEchogram::loadCustomColorScheme(const QString& fileName)
+{
+    QFile file(fileName);
+    if(!file.exists()) {
+        qDebug() << "Color scheme file not found:" << fileName;
+        return false;
+    }
+
+    _customSchemePath = fileName;
+    _useCustomScheme  = true;
+    themeId_          = CustomTheme;
+
+    // 使用 ZyColorScheme 加载配色
+    _colorScheme.loadColorScheme(fileName);
+
+    qDebug() << "Before applyCustomColorScheme - colorScheme_surface[0]:" << ZyColorScheme::colorScheme_surface[0];
+    applyCustomColorScheme();
+
+    qDebug() << "Custom color scheme loaded:" << fileName;
+    return true;
+}
+
+// 应用自定义配色方案
+void Plot2DEchogram::applyCustomColorScheme()
+{
+    _colorTable.resize(256);
+    _colorLevels.resize(256);
+
+    // 根据配色类型选择对应的颜色数组
+    int* colorArray = nullptr;
+    switch(_colorSchemeType) {
+    case 0:  // surface
+        colorArray = ZyColorScheme::colorScheme_surface;
+        break;
+    case 1:  // fish
+        colorArray = ZyColorScheme::colorScheme_fish;
+        break;
+    case 2:  // bottom
+        colorArray = ZyColorScheme::colorScheme_bottom;
+        break;
+    default:
+        colorArray = ZyColorScheme::colorScheme_surface;
+    }
+
+    for(int i = 0; i < 255; i++) {
+        int color = colorArray[i];
+        int red   = (color >> 16) & 0xFF;
+        int green = (color >> 8) & 0xFF;
+        int blue  = color & 0xFF;
+        _colorTable[i] = qRgb(red, green, blue);
+    }
+    // 第256个颜色使用最后一个颜色
+    if(colorArray != nullptr) {
+        int lastColor = colorArray[254];
+        int red = (lastColor >> 16) & 0xFF;
+        int green = (lastColor >> 8) & 0xFF;
+        int blue = lastColor & 0xFF;
+        _colorTable[255] = qRgb(red, green, blue);
+    }
+
+    updateColors();
+}
+
 
 void Plot2DEchogram::updateColors()
 {
@@ -116,15 +270,18 @@ void Plot2DEchogram::updateColors()
         index_map_scale = 10000;
     }
 
+     qDebug() << "_colorTable.size()....." << _colorTable.size();
     for(int i = 0; i < _colorTable.size(); i++) {
         int index_map = ((float)(i - index_offset)*index_map_scale);
         if(index_map < 0) { index_map = 0; }
         else if(index_map > 255) { index_map = 255; }
         _colorLevels[i] = _colorTable[index_map];
     }
+    qDebug() << "_colorLevels.size()....." << _colorLevels.size();
 
     _flagColorChanged = true;
     _image.setColorTable(_colorLevels);
+
 }
 
 void Plot2DEchogram::resetCash()
@@ -295,7 +452,6 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
             }
         } else {
             if(_cash[column].state != CashLine::CashState::CashStateEraced) {
-//                _cash[column].stateColor = CashLine::CashState::CashStateNotValid;
                 _cash[column].state = CashLine::CashState::CashStateNotValid;
                 _cash[column].data.fill(0);
                 _cash[column].poolIndex = -1;
@@ -311,7 +467,6 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                     cash_data++;
                 }
             }
-
         }
     }
 
@@ -331,29 +486,51 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
     _colorLevels.clear();
 
-    // ===== 测试用：创建简单的颜色表 =====
-    _colorLevels.resize(256);
-    for(int i = 0; i < 256; i++) {
-        if(i < 50) {
-            // 深蓝色 - 表示深水/无回声
-            _colorLevels[i] = qRgb(0, 0, 50 + i);
-        } else if(i < 100) {
-            // 蓝色到绿色渐变
-            _colorLevels[i] = qRgb(0, i - 50, 100);
-        } else if(i < 150) {
-            // 绿色到黄色渐变
-            _colorLevels[i] = qRgb(i - 100, 50 + (i - 100), 50);
-        } else if(i < 200) {
-            // 黄色到橙色渐变
-            _colorLevels[i] = qRgb(50 + (i - 150), 100, 0);
-        } else {
-            // 红色 - 表示强回声
-            _colorLevels[i] = qRgb(100 + (i - 200), 50, 0);
-        }
-    }
+    // // ----------------- 测试用：创建简单的颜色表 ------------------
+    // _colorLevels.resize(256);
+    // for(int i = 0; i < 256; i++) {
+    //     if(i < 20) {
+    //         _colorLevels[i] = qRgb(0, 0, 20 + i);
+    //     }
+    //     else if(i < 50) {
+    //         _colorLevels[i] = qRgb(0, i - 20, 50);
+    //     }
+    //     else if(i < 75) {
+    //         _colorLevels[i] = qRgb(i - 50, 20 + (i - 50), 20);
+    //     }
+    //     else if(i < 100) {
+    //         _colorLevels[i] = qRgb(20 + (i - 75), 20, 0);
+    //     }
+    //     else {
+    //         int red = 75 + (i - 100);
+    //         red = qBound(0, red, 255);
+    //         _colorLevels[i] = qRgb(red, 20, 0);
+    //     }
+    // }
 
 
-    // if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
+
+
+
+
+
+
+
+
+    // // ==================== 配色方案处理 ====================
+    // // 检查是否需要加载自定义配色
+    // // if(_useCustomScheme && _customSchemePath.isEmpty()) {
+    //     // 尝试从默认路径加载
+    //     QString defaultPath = qApp->applicationDirPath() + "/dcs_caise.tcs";
+    //     loadCustomColorScheme(defaultPath);
+    // // }
+
+    // 确保颜色级别表已更新
+    updateColors();
+
+
+
+    if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
         const int image_width  = canvas.width();
         const int image_height = canvas.height();
 
@@ -363,63 +540,11 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
             _pixmap = QPixmap(image_width, image_height);
         }
 
+        // 设置颜色表
+        _image.setColorTable(_colorLevels);
+
         const int cash_width    = canvas.width();
         const int cash_position = updateCash(parent, dataset, cash_width, image_height);
-
-
-        // -------------------- 测试用: 绘制模拟声呐数据 -----------------------
-        // 如果没有真实数据，绘制模拟的声呐图像
-        bool hasRealData = false;
-        if(dataset && dataset->size() > 0) {
-            hasRealData = true;
-        }
-
-        if(!hasRealData && image_width > 0 && image_height > 0) {
-            uint8_t* image_data = (uint8_t*)_image.bits();
-            const int b_scanline = _image.bytesPerLine();
-
-            // 绘制模拟的声呐回波
-            for(int y = 0; y < image_height; y++) {
-                uint8_t* row = image_data + y * b_scanline;
-
-                for(int x = 0; x < image_width; x++) {
-                    // 模拟距离衰减（距离越远，信号越弱）
-                    float distanceFactor = 1.0f - (float)y / image_height;
-
-                    // 模拟海底回波（底部有强反射）
-                    int bottomY = image_height * 0.8; // 模拟海底位置
-                    int bottomWidth = 20;
-                    float bottomEcho = 0;
-                    if(y >= bottomY - bottomWidth && y <= bottomY + bottomWidth) {
-                        bottomEcho = 1.0f - (float)abs(y - bottomY) / bottomWidth;
-                    }
-
-                    // 模拟一些随机噪声
-                    float noise = (rand() % 50) / 50.0f * 0.3f;
-
-                    // 模拟目标回波（随机位置的强反射）
-                    float targetEcho = 0;
-                    int targetX = image_width / 3;
-                    int targetWidth = 10;
-                    int targetY = image_height / 2;
-                    int targetHeight = 15;
-                    if(x >= targetX - targetWidth && x <= targetX + targetWidth &&
-                        y >= targetY - targetHeight && y <= targetY + targetHeight) {
-                        float dx = abs(x - targetX) / (float)targetWidth;
-                        float dy = abs(y - targetY) / (float)targetHeight;
-                        targetEcho = (1 - dx) * (1 - dy) * 0.8f;
-                    }
-
-                    // 组合所有信号
-                    float value = distanceFactor * 0.4f + bottomEcho * 0.8f + noise + targetEcho;
-                    value = qBound(0.0f, value, 1.0f);
-
-                    row[x] = (uint8_t)(value * 255);
-                }
-            }
-        }
-
-
 
         QPainter p(&_pixmap);
 
@@ -433,7 +558,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
             int cash_update_width = cash_col - cash_col_1;
             if(cash_update_width > 0) {
-                 p.drawImage(cash_col_1, 0, _image, cash_col_1, 0 , cash_update_width, 0, Qt::ThresholdDither); // Qt::NoOpaqueDetection |
+                 p.drawImage(cash_col_1, 0, _image, cash_col_1, 0 , cash_update_width, image_height, Qt::ThresholdDither); // Qt::NoOpaqueDetection |
             }
             else {
                 cash_col++;
@@ -442,9 +567,9 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
         _flagColorChanged = false;
 
-        canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, cash_width - cash_position, 0);
-        canvas.painter()->drawPixmap(cash_width - cash_position, 0, _pixmap, 0, 0, cash_position, 0);
-    // }
+        canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, cash_width - cash_position, image_height);
+        canvas.painter()->drawPixmap(cash_width - cash_position, 0, _pixmap, 0, 0, cash_position, image_height);
+    }
 
     return true;
 }

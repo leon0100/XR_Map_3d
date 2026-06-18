@@ -47,8 +47,7 @@ using ListLinkedChannels = QList<QPair<ChannelId, uint8_t>>;
 
 struct ChartParameters {
     ChartParameters()
-        : boardVersion(BoardNone),
-          version(v0)
+        : boardVersion(BoardNone), version(v0)
     {};
 
     ChartParameters(BoardVersion _boardVersion, Version _version, QList<Segment> _errList)
