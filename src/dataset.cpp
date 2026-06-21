@@ -235,26 +235,26 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
             };
 
             const int remainingIndx = lastAddChartEpochIndx_[channelId] + 1;
-            const uint8_t subChannelId = 0; //
+            const uint8_t subChannelId = 0;
 
             for (int i = remainingIndx; i <= endIndx; ++i) {
                 if (auto* iEpoch = &pool_[i]; iEpoch) {
                     float iResolution = 0.0f;
-                    float iOffset = 0.0f;
+                    float iOffset     = 0.0f;
 
                     if (i == endIndx) {
                         iResolution = resolution;
-                        iOffset = offset;
+                        iOffset     = offset;
                     }
                     else {
                         if (const auto* iChart = iEpoch->chart(channelId, subChannelId); iChart) {
                             iResolution = iChart->resolution;
-                            iOffset = iChart->offset;
+                            iOffset     = iChart->offset;
                         }
                         else {
                             if (auto* preChart = getPreChart(i, subChannelId); preChart) {
                                 iResolution = preChart->resolution;
-                                iOffset = preChart->offset;
+                                iOffset     = preChart->offset;
                             }
                         }
                     }
@@ -296,7 +296,6 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
                 }
             }
         }
-
 
         if (!updatedIndxs.empty()) {
             emit redrawEpochs(updatedIndxs);
@@ -1267,7 +1266,7 @@ bool Dataset::shouldAddNewEpoch(const ChannelId &channelId, uint8_t numSubChanne
 }
 
 void Dataset::updateEpochWithChart(const ChannelId &channelId, const ChartParameters &chartParams,
-                                const QVector<QVector<uint8_t> > &data, float resolution, float offset)
+                                const QVector<QVector<uint8_t>> &data, float resolution, float offset)
 {
     const int indx = endIndex();
     auto& epoch = pool_[indx];

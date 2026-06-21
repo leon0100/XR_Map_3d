@@ -30,11 +30,10 @@ void Epoch::setChart(const ChannelId& channelId, const QVector<QVector<uint8_t>>
         }
 
         auto& echogram = charts_[channelId][i];
-
-        echogram.amplitude = data[i];
+        echogram.amplitude  = data[i];
         echogram.resolution = resolution;
-        echogram.offset = offset;
-        echogram.type = 1;
+        echogram.offset     = offset;
+        echogram.type       = 1;
     }
 }
 

@@ -486,30 +486,27 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
     _colorLevels.clear();
 
-    // // ----------------- 测试用：创建简单的颜色表 ------------------
-    // _colorLevels.resize(256);
-    // for(int i = 0; i < 256; i++) {
-    //     if(i < 20) {
-    //         _colorLevels[i] = qRgb(0, 0, 20 + i);
-    //     }
-    //     else if(i < 50) {
-    //         _colorLevels[i] = qRgb(0, i - 20, 50);
-    //     }
-    //     else if(i < 75) {
-    //         _colorLevels[i] = qRgb(i - 50, 20 + (i - 50), 20);
-    //     }
-    //     else if(i < 100) {
-    //         _colorLevels[i] = qRgb(20 + (i - 75), 20, 0);
-    //     }
-    //     else {
-    //         int red = 75 + (i - 100);
-    //         red = qBound(0, red, 255);
-    //         _colorLevels[i] = qRgb(red, 20, 0);
-    //     }
-    // }
-
-
-
+    // ----------------- 测试用：创建简单的颜色表 ------------------
+    _colorLevels.resize(256);
+    for(int i = 0; i < 256; i++) {
+        if(i < 20) {
+            _colorLevels[i] = qRgb(0, 0, 20 + i);
+        }
+        else if(i < 50) {
+            _colorLevels[i] = qRgb(0, i - 20, 50);
+        }
+        else if(i < 75) {
+            _colorLevels[i] = qRgb(i - 50, 20 + (i - 50), 20);
+        }
+        else if(i < 100) {
+            _colorLevels[i] = qRgb(20 + (i - 75), 20, 0);
+        }
+        else {
+            int red = 75 + (i - 100);
+            red = qBound(0, red, 255);
+            _colorLevels[i] = qRgb(red, 20, 0);
+        }
+    }
 
 
 
