@@ -23,8 +23,7 @@ HEADERS += \
     $$PWD/plot2D_rangefinder.h \
     $$PWD/plot2D_usbl_solution.h \
     $$PWD/plot2D_depth.h \
-    $$PWD/qPlot2D.h \
-    $$PWD/zysonar.h
+    $$PWD/qPlot2D.h
 
 SOURCES += \
     $$PWD/colorscheme.cpp \
@@ -44,5 +43,4 @@ SOURCES += \
     $$PWD/plot2D_rangefinder.cpp \
     $$PWD/plot2D_usbl_solution.cpp \
     $$PWD/plot2D_depth.cpp \
-    $$PWD/qPlot2D.cpp \
-    $$PWD/zysonar.cpp
+    $$PWD/qPlot2D.cpp

@@ -23,6 +23,23 @@ int ZyColorScheme::colorScheme_surface_channel2[255] = {0};
 int ZyColorScheme::colorScheme_fish_channel2[255] = {0};
 int ZyColorScheme::colorScheme_bottom_channel2[255] = {0};
 
+/* 静态成员初始化 */
+QList<StructColorList> ZyColorScheme::colorList_surface;
+QList<StructColorList> ZyColorScheme::colorList_fish;
+QList<StructColorList> ZyColorScheme::colorList_bottom;
+
+QList<StructColorList> ZyColorScheme::colorList_surface_2;
+QList<StructColorList> ZyColorScheme::colorList_fish_2;
+QList<StructColorList> ZyColorScheme::colorList_bottom_2;
+
+QList<StructColorList> ZyColorScheme::colorList_surface_channel1;
+QList<StructColorList> ZyColorScheme::colorList_fish_channel1;
+QList<StructColorList> ZyColorScheme::colorList_bottom_channel1;
+
+QList<StructColorList> ZyColorScheme::colorList_surface_channel2;
+QList<StructColorList> ZyColorScheme::colorList_fish_channel2;
+QList<StructColorList> ZyColorScheme::colorList_bottom_channel2;
+
 ZyColorScheme::ZyColorScheme(){}
 ZyColorScheme::~ZyColorScheme(){}
 

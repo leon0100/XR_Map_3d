@@ -5,6 +5,19 @@
 #include "colorScheme.h"
 
 
+
+typedef struct
+{
+    int draft;    //吃水深度
+    int sfEnd;    //surfaceEnd
+    int btStart;  //bottomStart
+    int startIdx;
+    int endIdx;
+    QList<quint8> rawData; //像素点
+}StructSonarInfo;
+
+#define COLOR_LINE 7   //偏移量
+
 class Plot2DEchogram : public PlotLayer {
 public:
     enum ThemeId {
@@ -31,13 +44,13 @@ public:
     void setCompensation(int compensation_id);
 
     void updateColors();
-    // 加载外部配色文件
-    bool loadCustomColorScheme(const QString& fileName);
+
     // 设置配色类型（surface/fish/bottom）
     void setColorSchemeType(int type) { _colorSchemeType = type; }
     int getColorSchemeType() const { return _colorSchemeType; }
-    // 应用自定义配色方案
-    void applyCustomColorScheme();
+    void readColorToColorList(QString fileName);
+    void getColorFromColorList();
+    void drawImagePixsel(int column, StructSonarInfo sonarInfo, float scale, int colorNum);
 
     int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
@@ -60,9 +73,6 @@ protected:
         bool isNeedUpdate = true;
 
         QVector<int16_t> data;
-
-//        CashState stateColor = CashState::CashStateNotValid;
-//        QVector<uint16_t> color;
     };
 
     uint16_t _colorHashMap[256];
@@ -106,4 +116,15 @@ private:
     QString _customSchemePath;  // 自定义配色文件路径
     int _colorSchemeType;       // 配色类型：0=surface, 1=fish, 2=bottom
     bool _useCustomScheme;      // 是否使用自定义配色
+
+
+    static int colorScheme_surface[];
+    static int colorScheme_fish[];
+    static int colorScheme_bottom[];
+
+    QList<StructColorList> colorList_surface;
+    QList<StructColorList> colorList_fish;
+    QList<StructColorList> colorList_bottom;
+
+    int sonarImageHeight = 1024;
 };

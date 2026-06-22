@@ -5,28 +5,26 @@
 #include <QSettings>
 
 
+int Plot2DEchogram::colorScheme_surface[255] = {0};
+int Plot2DEchogram::colorScheme_fish[255]    = {0};
+int Plot2DEchogram::colorScheme_bottom[255]  = {0};
+
 Plot2DEchogram::Plot2DEchogram()
 {
-    setThemeId(CustomTheme);
+    setThemeId(ClassicTheme);
     setLevels(10, 100);
-    _colorSchemeType = 0;  // 默认使用 surface 配色
-    _useCustomScheme = false;
+    _colorSchemeType  = 0;
+    _useCustomScheme  = false;
     _customSchemePath = QString();
 
-
-
-    // ==================== 配色方案处理 ====================
-    // 尝试从默认路径加载自定义配色
     QString defaultPath = qApp->applicationDirPath() + "/dcs_caise.tcs";
-    QFile schemeFile(defaultPath);
-
-    // 只有在配色文件存在且还未加载时才加载
-    if(schemeFile.exists() && !_useCustomScheme) {
-        qDebug() << "Loading color scheme from:" << defaultPath;
-        loadCustomColorScheme(defaultPath);
-    }
-
-
+    
+    // 加载 ZyColorScheme 的静态配色数组
+    ZyColorScheme::loadColorScheme(defaultPath);
+    
+    // 同时也加载 Plot2DEchogram 自己的配色数组（兼容性）
+    readColorToColorList(defaultPath);
+    getColorFromColorList();
 }
 
 void Plot2DEchogram::setLowLevel(float low)
@@ -41,7 +39,7 @@ void Plot2DEchogram::setHightLevel(float high)
 
 void Plot2DEchogram::setLevels(float low, float high)
 {
-    _levels.low = low;
+    _levels.low  = low;
     _levels.high = high;
     updateColors();
 }
@@ -79,110 +77,50 @@ int Plot2DEchogram::getThemeId() const
     return static_cast<int>(themeId_);
 }
 
-void Plot2DEchogram::setThemeId(int theme_id) {
-    // if (theme_id >= ClassicTheme && theme_id <= BWTheme) {
-    //     themeId_ = static_cast<ThemeId>(theme_id);
-    // }
-    // else {
-    //     themeId_ = ClassicTheme;
-    // }
-
-    // QVector<QColor> coloros;
-    // QVector<int> levels;
-
-    // if(theme_id == ClassicTheme) {
-    //     coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(20, 5, 80), QColor::fromRgb(50, 180, 230), QColor::fromRgb(190, 240, 250), QColor::fromRgb(255, 255, 255)};
-    //     levels = {0, 30, 130, 220, 255};
-    // } else if(theme_id == SepiaTheme) {
-    //     coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(50, 50, 10), QColor::fromRgb(230, 200, 100), QColor::fromRgb(255, 255, 220)};
-    //     levels = {0, 30, 130, 255};
-    // }else if(theme_id == WRGBDTheme) {
-    //     coloros = {
-    //         QColor::fromRgb(0, 0, 0),
-    //         QColor::fromRgb(40, 0, 80),
-    //         QColor::fromRgb(0, 30, 150),
-    //         QColor::fromRgb(20, 230, 30),
-    //         QColor::fromRgb(255, 50, 20),
-    //         QColor::fromRgb(255, 255, 255),
-    //     };
-
-    //     levels = {0, 30, 80, 120, 150, 255};
-    // } else if(theme_id == WBTheme) {
-    //     coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(190, 200, 200), QColor::fromRgb(230, 255, 255)};
-    //     levels = {0, 150, 255};
-    // } else if(theme_id == BWTheme) {
-    //     coloros = {QColor::fromRgb(230, 255, 255), QColor::fromRgb(70, 70, 70), QColor::fromRgb(0, 0, 0)};
-    //     levels = {0, 150, 255};
-    // }
-
-    // setColorScheme(coloros, levels);
-
-    // 如果切换到内置主题，禁用自定义配色
-    if(theme_id != CustomTheme) {
-        _useCustomScheme = false;
+void Plot2DEchogram::setThemeId(int theme_id)
+{
+    if (theme_id >= ClassicTheme && theme_id <= BWTheme) {
+        themeId_ = static_cast<ThemeId>(theme_id);
     }
-
-    themeId_ = static_cast<ThemeId>(theme_id);
-
-    switch(themeId_) {
-    case ClassicTheme:
-    {
-        QVector<QColor> colors;
-        QVector<int> levels;
-
-        colors << QColor(0, 0, 0)
-               << QColor(0, 0, 255)
-               << QColor(0, 255, 255)
-               << QColor(0, 255, 0)
-               << QColor(255, 255, 0)
-               << QColor(255, 0, 0);
-        levels << 0 << 42 << 85 << 127 << 170 << 255;
-        setColorScheme(colors, levels);
-    }
-    break;
-    case SepiaTheme:
-    {
-        QVector<QColor> colors;
-        QVector<int> levels;
-
-        colors << QColor(0, 0, 0)
-               << QColor(51, 34, 17)
-               << QColor(102, 68, 34)
-               << QColor(153, 102, 51)
-               << QColor(204, 153, 102)
-               << QColor(255, 204, 153);
-        levels << 0 << 42 << 85 << 127 << 170 << 255;
-        setColorScheme(colors, levels);
-    }
-    break;
-    case WRGBDTheme:
-    {
-        QVector<QColor> colors;
-        QVector<int> levels;
-
-        colors << QColor(255, 255, 255)
-               << QColor(255, 0, 0)
-               << QColor(0, 255, 0)
-               << QColor(0, 0, 255)
-               << QColor(0, 0, 0);
-        levels << 0 << 63 << 127 << 191 << 255;
-        setColorScheme(colors, levels);
-      }
-
-    case CustomTheme:
-        // 自定义主题，需要加载外部文件
-        if(_customSchemePath.isEmpty()) {
-            // 尝试从默认路径加载
-            QString defaultPath = qApp->applicationDirPath() + "/dcs_caise.tcs";
-            loadCustomColorScheme(defaultPath);
-        } else {
-            loadCustomColorScheme(_customSchemePath);
-        }
-        break;
-    default:
+    else {
         themeId_ = ClassicTheme;
-        break;
     }
+
+    QVector<QColor> coloros;
+    QVector<int> levels;
+
+    if(theme_id == ClassicTheme) {
+        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(20, 5, 80),
+                   QColor::fromRgb(50, 180, 230), QColor::fromRgb(190, 240, 250), QColor::fromRgb(255, 255, 255)};
+        levels = {0, 30, 130, 220, 255};
+    }
+    else if(theme_id == SepiaTheme) {
+        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(50, 50, 10),
+                   QColor::fromRgb(230, 200, 100), QColor::fromRgb(255, 255, 220)};
+        levels = {0, 30, 130, 255};
+    }
+    else if(theme_id == WRGBDTheme) {
+        coloros = {
+            QColor::fromRgb(0, 0, 0),
+            QColor::fromRgb(40, 0, 80),
+            QColor::fromRgb(0, 30, 150),
+            QColor::fromRgb(20, 230, 30),
+            QColor::fromRgb(255, 50, 20),
+            QColor::fromRgb(255, 255, 255),
+        };
+
+        levels = {0, 30, 80, 120, 150, 255};
+    }
+    else if(theme_id == WBTheme) {
+        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(190, 200, 200), QColor::fromRgb(230, 255, 255)};
+        levels = {0, 150, 255};
+    }
+    else if(theme_id == BWTheme) {
+        coloros = {QColor::fromRgb(230, 255, 255), QColor::fromRgb(70, 70, 70), QColor::fromRgb(0, 0, 0)};
+        levels = {0, 150, 255};
+    }
+
+    setColorScheme(coloros, levels);
 }
 
 void Plot2DEchogram::setCompensation(int compensation_id)
@@ -191,98 +129,308 @@ void Plot2DEchogram::setCompensation(int compensation_id)
     resetCash();
 }
 
-// 加载自定义配色文件
-bool Plot2DEchogram::loadCustomColorScheme(const QString& fileName)
+void Plot2DEchogram::readColorToColorList(QString fileName)
 {
-    QFile file(fileName);
-    if(!file.exists()) {
-        qDebug() << "Color scheme file not found:" << fileName;
-        return false;
+    /*-用于存取自定义色表-*/
+    QSettings selfColor(fileName, QSettings::IniFormat);
+    StructColorList tmp;
+
+    /*-自定义配色表读取-*/
+    colorList_surface.clear();
+    selfColor.beginGroup("surface");
+    for(int i=0;i<selfColor.value("count",0).toInt();i++) {
+        tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
+        tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
+        colorList_surface.append(tmp);
     }
+    selfColor.endGroup();
 
-    _customSchemePath = fileName;
-    _useCustomScheme  = true;
-    themeId_          = CustomTheme;
+    colorList_fish.clear();
+    selfColor.beginGroup("fish");
+    for(int i=0;i<selfColor.value("count",0).toInt();i++) {
+        tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
+        tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
+        colorList_fish.append(tmp);
+    }
+    selfColor.endGroup();
 
-    // 使用 ZyColorScheme 加载配色
-    _colorScheme.loadColorScheme(fileName);
-
-    qDebug() << "Before applyCustomColorScheme - colorScheme_surface[0]:" << ZyColorScheme::colorScheme_surface[0];
-    applyCustomColorScheme();
-
-    qDebug() << "Custom color scheme loaded:" << fileName;
-    return true;
+    colorList_bottom.clear();
+    selfColor.beginGroup("bottom");
+    for(int i=0;i<selfColor.value("count",0).toInt();i++) {
+        tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
+        tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
+        colorList_bottom.append(tmp);
+    }
+    selfColor.endGroup();
 }
 
-// 应用自定义配色方案
-void Plot2DEchogram::applyCustomColorScheme()
+void Plot2DEchogram::getColorFromColorList()
 {
-    _colorTable.resize(256);
-    _colorLevels.resize(256);
+    /*----表层渐变显示信号颜色图----*/
+    QLinearGradient linearGradient_Surface(QPointF(0, 0), QPointF(0, 255));
+    QLinearGradient linearGradient_Fish(QPointF(0, 0), QPointF(0, 255));
+    QLinearGradient linearGradient_Bottom(QPointF(0, 0), QPointF(0, 255));
+    QPixmap pixmap(100,256);
+    QPainter painter;
+    QImage GradientImage;
 
-    // 根据配色类型选择对应的颜色数组
-    int* colorArray = nullptr;
-    switch(_colorSchemeType) {
-    case 0:  // surface
-        colorArray = ZyColorScheme::colorScheme_surface;
-        break;
-    case 1:  // fish
-        colorArray = ZyColorScheme::colorScheme_fish;
-        break;
-    case 2:  // bottom
-        colorArray = ZyColorScheme::colorScheme_bottom;
-        break;
-    default:
-        colorArray = ZyColorScheme::colorScheme_surface;
+    /*-颜色链表中按顺序进行渐变-*/
+    for(int i = 0; i<colorList_surface.count(); i++)
+    {
+        linearGradient_Surface.setColorAt(colorList_surface.at(i).colorPosition/255.0, colorList_surface.at(i).colorValue);
+    }
+    painter.begin(&pixmap);
+    painter.setBrush(linearGradient_Surface);
+    painter.drawRect(0, 0, 100, 256);
+    painter.end();
+    GradientImage = pixmap.toImage();
+    for(int i=0;i<255;i++)
+    {
+        colorScheme_surface[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
+    }
+    /*-颜色链表中按顺序进行渐变-*/
+    for(int i = 0; i<colorList_fish.count(); i++)
+    {
+        linearGradient_Fish.setColorAt(colorList_fish.at(i).colorPosition/255.0, colorList_fish.at(i).colorValue);
+    }
+    painter.begin(&pixmap);
+    painter.setBrush(linearGradient_Fish);
+    painter.drawRect(0, 0, 100, 256);
+    painter.end();
+    GradientImage = pixmap.toImage();
+    for(int i=0;i<255;i++)
+    {
+        colorScheme_fish[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
+    }
+    /*-颜色链表中按顺序进行渐变-*/
+    for(int i = 0; i<colorList_bottom.count(); i++)
+    {
+        linearGradient_Bottom.setColorAt(colorList_bottom.at(i).colorPosition/255.0, colorList_bottom.at(i).colorValue);
+    }
+    painter.begin(&pixmap);
+    painter.setBrush(linearGradient_Bottom);
+    painter.drawRect(0, 0, 100, 256);
+    painter.end();
+    GradientImage = pixmap.toImage();
+    for(int i=0;i<255;i++)
+    {
+        colorScheme_bottom[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
+    }
+}
+
+QList<int> colorData;
+void Plot2DEchogram::drawImagePixsel(int column, StructSonarInfo sonarInfo, float scale, int colorNum)
+{
+    // if(scale < 1) {
+    //     scale = 1/scale;
+    //     compressImagePixsel(column, sonarInfo, scale, colorNum, is2nd);
+    // }
+    // else {
+    //     stretchImagePixsel(column, sonarInfo, scale, colorNum, is2nd);
+    // }
+
+    if(scale <= 0) {
+        return;
     }
 
-    for(int i = 0; i < 255; i++) {
-        int color = colorArray[i];
-        int red   = (color >> 16) & 0xFF;
-        int green = (color >> 8) & 0xFF;
-        int blue  = color & 0xFF;
-        _colorTable[i] = qRgb(red, green, blue);
+    colorData.clear();
+    if(colorNum == 1) {
+        /*-水表-*/
+        for(int j = 0; (j<sonarInfo.sfEnd)&&(j<sonarInfo.btStart)&&(j<sonarImageHeight); j++) {
+            if(sonarInfo.rawData[j] == 0) {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            } else {
+                if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
+                    colorData.append(ZyColorScheme::colorScheme_surface[254]);
+                }
+                else if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
+                    colorData.append(ZyColorScheme::colorScheme_surface[0]);
+                }
+                else {
+                    colorData.append(ZyColorScheme::colorScheme_surface[sonarInfo.rawData[j]+ ZyColorScheme::colorLine*COLOR_LINE]);
+                }
+            }
+        }
+        /*-水中-*/
+        for(int j = sonarInfo.sfEnd; ((j<sonarInfo.btStart)&&(j<sonarImageHeight)); j++)
+        {
+            if(sonarInfo.rawData[j] == 0) {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else
+            {
+                if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_fish[254]);
+                }
+                else if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_fish[0]);
+                }
+                else
+                {
+                    colorData.append(ZyColorScheme::colorScheme_fish[sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                }
+            }
+        }
+        /*-水底-*/
+        for(int j = sonarInfo.btStart; j < sonarImageHeight; j++)
+        {
+            if(sonarInfo.rawData[j] == 0)
+            {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else
+            {
+                if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_bottom[254]);
+                }
+                else if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_bottom[0]);
+                }
+                else
+                {
+                    colorData.append(ZyColorScheme::colorScheme_bottom[sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                }
+            }
+        }
     }
-    // 第256个颜色使用最后一个颜色
-    if(colorArray != nullptr) {
-        int lastColor = colorArray[254];
-        int red = (lastColor >> 16) & 0xFF;
-        int green = (lastColor >> 8) & 0xFF;
-        int blue = lastColor & 0xFF;
-        _colorTable[255] = qRgb(red, green, blue);
+    else if(colorNum == 2)
+    {
+        /*-水表-*/
+        for(int j = 0; (j<sonarInfo.sfEnd)&&(j<sonarInfo.btStart)&&(j<sonarImageHeight); j++)
+        {
+            if(sonarInfo.rawData[j] == 0)
+            {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else
+            {
+                if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_surface_2[254]);
+                }
+                else if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_surface_2[0]);
+                }
+                else
+                {
+                    colorData.append(ZyColorScheme::colorScheme_surface_2[sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                }
+            }
+        }
+        /*-水中-*/
+        for(int j = sonarInfo.sfEnd; ((j<sonarInfo.btStart)&&(j<sonarImageHeight)); j++)
+        {
+            if(sonarInfo.rawData[j] == 0)
+            {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else
+            {
+                if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_fish_2[254]);
+                }
+                else if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_fish_2[0]);
+                }
+                else
+                {
+                    colorData.append(ZyColorScheme::colorScheme_fish_2[sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                }
+            }
+        }
+        /*-水底-*/
+        for(int j = sonarInfo.btStart; j < sonarImageHeight; j++)
+        {
+            if(sonarInfo.rawData[j] <5) {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else {
+                if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_bottom_2[254]);
+                }
+                else if((sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
+                {
+                    colorData.append(ZyColorScheme::colorScheme_bottom_2[0]);
+                }
+                else
+                {
+                    colorData.append(ZyColorScheme::colorScheme_bottom_2[sonarInfo.rawData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                }
+            }
+        }
+
     }
 
-    updateColors();
 }
 
 
 void Plot2DEchogram::updateColors()
 {
-    float low = _levels.low;
-    float high = _levels.high;
+    _colorLevels.resize(256);
 
-    int level_range = high - low;
-    int index_offset = (int)((float)low*2.5f);
-    float index_map_scale = 0;
-    if(level_range > 0) {
-        index_map_scale = (float)(256 - 1)/((float)(high - low)*2.55f);
-    } else {
-        index_map_scale = 10000;
-    }
+    int colorOffset = ZyColorScheme::colorLine * COLOR_LINE;
 
-     qDebug() << "_colorTable.size()....." << _colorTable.size();
-    for(int i = 0; i < _colorTable.size(); i++) {
-        int index_map = ((float)(i - index_offset)*index_map_scale);
-        if(index_map < 0) { index_map = 0; }
-        else if(index_map > 255) { index_map = 255; }
-        _colorLevels[i] = _colorTable[index_map];
+    for(int i = 0; i < 256; i++) {
+        if(i == 0) {
+            _colorLevels[i] = qRgb((ZyColorScheme::background[ZyColorScheme::backgroundIndex] >> 16) & 0xFF,
+                            (ZyColorScheme::background[ZyColorScheme::backgroundIndex] >> 8) & 0xFF,
+                            ZyColorScheme::background[ZyColorScheme::backgroundIndex] & 0xFF);
+        } else {
+            // 计算颜色索引（参考 drawImagePixsel 的逻辑）
+            int colorIndex = i + colorOffset;
+
+            if(colorIndex > 254) {
+                colorIndex = 254;
+            }
+            else if(colorIndex < 0) {
+                colorIndex = 0;
+            }
+
+            if(colorIndex > 0 && colorIndex <= 100) {
+                _colorSchemeType = 0;
+            }
+            else if(colorIndex >100 && colorIndex <= 180) {
+                _colorSchemeType = 1;
+            }
+            else {
+                _colorSchemeType = 2;
+            }
+
+            int colorValue = 0;
+            qDebug() << "_colorSchemeType........" << _colorSchemeType;
+            switch(_colorSchemeType) {
+                case 0:
+                    colorValue = ZyColorScheme::colorScheme_surface[colorIndex];
+                    break;
+                case 1:
+                    colorValue = ZyColorScheme::colorScheme_fish[colorIndex];
+                    break;
+                case 2:
+                    colorValue = ZyColorScheme::colorScheme_bottom[colorIndex];
+                    break;
+                default:
+                    break;
+            }
+
+            _colorLevels[i] = qRgb((colorValue >> 16) & 0xFF,(colorValue >> 8) & 0xFF, colorValue & 0xFF);
+        }
     }
-    qDebug() << "_colorLevels.size()....." << _colorLevels.size();
 
     _flagColorChanged = true;
-    _image.setColorTable(_colorLevels);
 
+    if(!_image.isNull()) {
+        _image.setColorTable(_colorLevels);
+    }
 }
+
 
 void Plot2DEchogram::resetCash()
 {
@@ -487,44 +635,29 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
     _colorLevels.clear();
 
     // ----------------- 测试用：创建简单的颜色表 ------------------
-    _colorLevels.resize(256);
-    for(int i = 0; i < 256; i++) {
-        if(i < 20) {
-            _colorLevels[i] = qRgb(0, 0, 20 + i);
-        }
-        else if(i < 50) {
-            _colorLevels[i] = qRgb(0, i - 20, 50);
-        }
-        else if(i < 75) {
-            _colorLevels[i] = qRgb(i - 50, 20 + (i - 50), 20);
-        }
-        else if(i < 100) {
-            _colorLevels[i] = qRgb(20 + (i - 75), 20, 0);
-        }
-        else {
-            int red = 75 + (i - 100);
-            red = qBound(0, red, 255);
-            _colorLevels[i] = qRgb(red, 20, 0);
-        }
-    }
+    // _colorLevels.resize(256);
+    // for(int i = 0; i < 256; i++) {
+    //     if(i < 20) {
+    //         _colorLevels[i] = qRgb(0, 0, 20 + i);
+    //     }
+    //     else if(i < 50) {
+    //         _colorLevels[i] = qRgb(0, i - 20, 50);
+    //     }
+    //     else if(i < 75) {
+    //         _colorLevels[i] = qRgb(i - 50, 20 + (i - 50), 20);
+    //     }
+    //     else if(i < 100) {
+    //         _colorLevels[i] = qRgb(20 + (i - 75), 20, 0);
+    //     }
+    //     else {
+    //         int red = 75 + (i - 100);
+    //         red = qBound(0, red, 255);
+    //         _colorLevels[i] = qRgb(red, 20, 0);
+    //     }
+    // }
 
 
-
-
-
-
-
-    // // ==================== 配色方案处理 ====================
-    // // 检查是否需要加载自定义配色
-    // // if(_useCustomScheme && _customSchemePath.isEmpty()) {
-    //     // 尝试从默认路径加载
-    //     QString defaultPath = qApp->applicationDirPath() + "/dcs_caise.tcs";
-    //     loadCustomColorScheme(defaultPath);
-    // // }
-
-    // 确保颜色级别表已更新
     updateColors();
-
 
 
     if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
