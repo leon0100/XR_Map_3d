@@ -394,7 +394,7 @@ void Plot2DEchogram::updateColors()
                 colorIndex = 0;
             }
 
-            if(colorIndex > 0 && colorIndex <= 100) {
+            if(colorIndex > 0 && colorIndex <= 30) {
                 _colorSchemeType = 0;
             }
             else if(colorIndex >100 && colorIndex <= 180) {
