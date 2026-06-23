@@ -1758,6 +1758,13 @@ ApplicationWindow  {
                     columnSpacing: 0
                     rowSpacing: 0
 
+                    Rectangle {
+                           anchors.fill: parent
+                           color: "red"
+                       }
+
+
+
                     Plot2D {
                         id: waterViewFirst
                         Layout.fillHeight: true
@@ -1863,13 +1870,10 @@ ApplicationWindow  {
 
                     CSlider {
                         id: historyScroll
-                        Layout.row: 1
                         Layout.margins: 0
                         Layout.fillWidth: true
-                        Layout.fillHeight: false
                         Layout.columnSpan: parent.columns
-                        implicitHeight: theme.controlHeight
-                        height:         theme.controlHeight
+                        Layout.preferredHeight: theme.controlHeight * 2
                         value: waterViewFirst.timelinePosition
                         stepSize: 0.0001
                         from: 0
@@ -1877,6 +1881,11 @@ ApplicationWindow  {
                         barWidth: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
                         onMoved: core.resetAim();
+
+                        // background: Rectangle {
+                        //     color: "green"
+                        // }
+
                     }
                 }
             }
