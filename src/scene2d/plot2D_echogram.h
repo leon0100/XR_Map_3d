@@ -16,7 +16,7 @@ typedef struct
     QList<quint8> rawData; //像素点
 }StructSonarInfo;
 
-#define COLOR_LINE 7   //偏移量
+#define COLOR_LINE 0   //偏移量
 
 class Plot2DEchogram : public PlotLayer {
 public:
@@ -48,11 +48,9 @@ public:
     // 设置配色类型（surface/fish/bottom）
     void setColorSchemeType(int type) { _colorSchemeType = type; }
     int getColorSchemeType() const { return _colorSchemeType; }
-    void readColorToColorList(QString fileName);
-    void getColorFromColorList();
-    void drawImagePixsel(int column, StructSonarInfo sonarInfo, float scale, int colorNum);
 
-    int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
+    // int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
+    int updateCash(Plot2D* parent, Dataset* dataset, int width, int height, int sfEnd = -1, int btStart = -1);
     void resetCash();
 
     void addReRenderPlotIndxs(const QSet<int>& indxs);
@@ -66,7 +64,6 @@ protected:
             CashStateValid,
             CashStateEraced
         };
-
 
         int poolIndex = -1;
         CashState state = CashState::CashStateNotValid;
@@ -127,4 +124,15 @@ private:
     QList<StructColorList> colorList_bottom;
 
     int sonarImageHeight = 1024;
+
+
+    // 深度分区参数
+    float _currentDepth;        // 当前深度
+    float _currentLoRng;        // 低量程
+    float _currentUpRng;        // 高量程
+    float _currentSspd;         // 声速
+    int _currentPingSize;       // 脉冲大小
+    int _sfEnd;                 // 水表结束位置（像素）
+    int _btStart;               // 水底开始位置（像素）
+    int cntt_ = 0;
 };

@@ -200,7 +200,7 @@ void Plot2D::setAimEpochEventState(bool state)
 
 void Plot2D::setTimelinePosition(float position)
 {
-    qDebug() << "Plot2D::setTimelinePosition.........";
+    // qDebug() << "Plot2D::setTimelinePosition.........";
     if (position > 1.0f) {
         position = 1.0f;
     }
@@ -569,15 +569,15 @@ void Plot2D::scrollDistance(float ratio)
     plotUpdate();
 }
 
-void Plot2D::setMousePosition(int x, int y, bool isSync) {
-
-    qDebug() << "Plot2D::setMousePosition.........";
-    const int image_width = canvas_.width();
+void Plot2D::setMousePosition(int x, int y, bool isSync)
+{
+    qDebug() << "-------------------------------------Plot2D::setMousePosition....................." << x << "  " << y;
+    const int image_width  = canvas_.width();
     const int image_height = canvas_.height();
     const int dataset_from = cursor_.getIndex(0);
     Q_UNUSED(dataset_from);
 
-    const float distance_from = cursor_.distance.from;
+    const float distance_from  = cursor_.distance.from;
     const float distance_range = cursor_.distance.to - cursor_.distance.from;
     const float image_distance_ratio = distance_range/(float)image_height;
 
@@ -600,7 +600,6 @@ void Plot2D::setMousePosition(int x, int y, bool isSync) {
         _mouse.x = -1;
         cursor_.selectEpochIndx = -1;
         cursor_.currentEpochIndx = -1;
-        //_cursor.lastEpochIndx = -1; // ?
         plotUpdate();
         return;
     }

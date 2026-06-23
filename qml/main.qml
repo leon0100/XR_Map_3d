@@ -1863,13 +1863,14 @@ ApplicationWindow  {
 
                     CSlider {
                         id: historyScroll
+                        Layout.row: 1
                         Layout.margins: 0
                         Layout.fillWidth: true
                         Layout.fillHeight: false
                         Layout.columnSpan: parent.columns
                         implicitHeight: theme.controlHeight
                         height:         theme.controlHeight
-                        //value: waterViewFirst.timelinePosition
+                        value: waterViewFirst.timelinePosition
                         stepSize: 0.0001
                         from: 0
                         to: 1

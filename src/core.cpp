@@ -1284,6 +1284,7 @@ QString Core::getChannel2Name() const
 
 QVariant Core::getConvertedMousePos(int indx, int mouseX, int mouseY)
 {
+    qDebug() << "Core::getConvertedMousePos..." << indx << "  " << mouseX << "  " << mouseY;
     QVariantMap retVal;
 
     int currIndx = indx - 1;

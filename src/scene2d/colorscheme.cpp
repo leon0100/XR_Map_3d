@@ -1,7 +1,7 @@
 #include "colorscheme.h"
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-int ZyColorScheme::backgroundIndex = 0;
+int ZyColorScheme::backgroundIndex = 2;
 int ZyColorScheme::background[] = {0xffffff, 0x000000, 0x104684};
 int ZyColorScheme::colorLine = 0;
 int ZyColorScheme::onlineColor = 0xff0000;
@@ -379,7 +379,7 @@ void ZyColorScheme::getColorFromColorList()
     QImage GradientImage;
 
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_surface.count(); i++)
+    for(int i = 0; i < colorList_surface.count(); i++)
     {
         linearGradient_Surface.setColorAt(colorList_surface.at(i).colorPosition/255.0, colorList_surface.at(i).colorValue);
     }
@@ -388,12 +388,12 @@ void ZyColorScheme::getColorFromColorList()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
+    for(int i = 0;i < 255; i++)
     {
         colorScheme_surface[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_fish.count(); i++)
+    for(int i = 0; i < colorList_fish.count(); i++)
     {
         linearGradient_Fish.setColorAt(colorList_fish.at(i).colorPosition/255.0, colorList_fish.at(i).colorValue);
     }
@@ -402,7 +402,7 @@ void ZyColorScheme::getColorFromColorList()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
+    for(int i = 0;i < 255; i++)
     {
         colorScheme_fish[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }

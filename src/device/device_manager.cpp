@@ -219,8 +219,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     chartParams.version      = v0;
 
     // ============ 声呐数据参数 =============
-    float resolution = 0.1f;  // 分辨率（米/采样点），根据实际设备调整
-    float offset     = 0.0f;  // 偏移量
+    float resolution = 0.1f;
+    float offset     = 0.0f;
 
     qDebug() << "tslWCnt.size()........." << tslWCnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
@@ -252,6 +252,12 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
             channelData.append((uint8_t)rawDat[j]);
         }
         data.append(channelData);
+
+        chartParams.loRng = tslSingleStruct.ping.loRng;
+        chartParams.upRng = 0;
+        chartParams.depth = tslSingleStruct.auxInfo.depth;
+        chartParams.sspd  = 1500.0f;
+        chartParams.pingSize = PING_SIZE_MAX;
 
         // 发送信号，让 Dataset 接收声呐数据
         emit chartComplete(channelId, chartParams, data, resolution, offset);

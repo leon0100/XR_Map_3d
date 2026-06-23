@@ -61,7 +61,7 @@ void qPlot2D::setDataProcessor(DataProcessor *dataProcessorPtr)
 
 void qPlot2D::plotUpdate()
 {
-    // qDebug() << "qPlot2D::plotUpdate()..........";
+    qDebug() << "qPlot2D::plotUpdate()..........";
     if (!Plot2D::plotEnabled()) {
         return;
     }
