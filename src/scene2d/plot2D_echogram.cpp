@@ -458,27 +458,6 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                 else {
                     qDebug() << "choose color depend on region of depth....";
                     // 根据深度区域选择配色
-                    // if (sfEnd >= 0 && image_row <= sfEnd) {
-                    //     // 水表区域 - 使用 surface 配色
-                    //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
-                    //     colorIndex = qBound(0, colorIndex, 254);
-                    //     int rgb = ZyColorScheme::colorScheme_surface[colorIndex];
-                    //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                    // }
-                    // else if (btStart >= 0 && image_row < btStart) {
-                    //     // 水中区域 - 使用 fish 配色
-                    //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
-                    //     colorIndex = qBound(0, colorIndex, 254);
-                    //     int rgb = ZyColorScheme::colorScheme_fish[colorIndex];
-                    //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                    // }
-                    // else {
-                    //     // 水底区域 - 使用 bottom 配色
-                    //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
-                    //     colorIndex = qBound(0, colorIndex, 254);
-                    //     int rgb = ZyColorScheme::colorScheme_bottom[colorIndex];
-                    //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                    // }
                     if (image_row >= 0 && image_row < sfEnd) {
                         // 水表区域 - 使用 surface 配色
                         int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
@@ -582,6 +561,8 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                         //     int rgb = ZyColorScheme::colorScheme_bottom[colorIndex];
                         //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                         // }
+
+
                         if (image_row >= 0 && image_row < sfEnd) {
                             // 水表区域 - 使用 surface 配色
                             int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
