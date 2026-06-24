@@ -53,6 +53,7 @@ protected:
 
 signals:
     void timelinePositionChanged();
+    void plotEnableChanged();
     void contactChanged();
     void outlineModeChanged();
 

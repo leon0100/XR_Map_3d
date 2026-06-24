@@ -144,6 +144,7 @@ bool Plot2D::plotEnabled() const
 
 bool Plot2D::getImage(int width, int height, QPainter* painter, bool is_horizontal)
 {
+    // qDebug() << "bool Plot2D::getImage...........";
     if (is_horizontal) {
         canvas_.setSize(width, height, painter);
     }
@@ -571,7 +572,7 @@ void Plot2D::scrollDistance(float ratio)
 
 void Plot2D::setMousePosition(int x, int y, bool isSync)
 {
-    qDebug() << "-------------------------------------Plot2D::setMousePosition....................." << x << "  " << y;
+    qDebug() << "-------------------------Plot2D::setMousePosition....................." << x << "  " << y;
     const int image_width  = canvas_.width();
     const int image_height = canvas_.height();
     const int dataset_from = cursor_.getIndex(0);
@@ -579,7 +580,7 @@ void Plot2D::setMousePosition(int x, int y, bool isSync)
 
     const float distance_from  = cursor_.distance.from;
     const float distance_range = cursor_.distance.to - cursor_.distance.from;
-    const float image_distance_ratio = distance_range/(float)image_height;
+    const float imageDistanceRatio = distance_range/(float)image_height;
 
     struct {
         int x = -1, y = -1;
@@ -637,11 +638,10 @@ void Plot2D::setMousePosition(int x, int y, bool isSync)
     //qDebug() << "Cursor epoch" << cursor_.getIndex(x_start);
     int epoch_index = cursor_.getIndex(x_start);
     cursor_.currentEpochIndx = epoch_index;
-    cursor_.lastEpochIndx = cursor_.currentEpochIndx;
+    cursor_.lastEpochIndx  = cursor_.currentEpochIndx;
     sendSyncEvent(epoch_index, EpochSelected2d);
 
     if(cursor_.tool() > MouseToolNothing && !isSync) {
-
         for(int x_ind = 0; x_ind < x_length; x_ind++) {
             int epoch_index = cursor_.getIndex(x_start + x_ind);
 
@@ -652,18 +652,21 @@ void Plot2D::setMousePosition(int x, int y, bool isSync)
 
             if(epoch != NULL) {
                 float image_y_pos = ((float)y_start + (float)x_ind*y_scale);
-                float dist = abs(image_y_pos*image_distance_ratio + distance_from);
+                float dist = abs(image_y_pos * imageDistanceRatio + distance_from);
 
                 if(cursor_.tool() == MouseToolDistanceMin) {
                     epoch->setMinDistProc(channel1, dist);
                     epoch->setMinDistProc(channel2, dist);
-                } else if(cursor_.tool() == MouseToolDistance) {
+                }
+                else if(cursor_.tool() == MouseToolDistance) {
                     epoch->setDistProcessing(channel1, dist);
                     epoch->setDistProcessing(channel2, dist);
-                } else if(cursor_.tool()== MouseToolDistanceMax) {
+                }
+                else if(cursor_.tool()== MouseToolDistanceMax) {
                     epoch->setMaxDistProc(channel1, dist);
                     epoch->setMaxDistProc(channel2, dist);
-                } else if(cursor_.tool() == MouseToolDistanceErase) {
+                }
+                else if(cursor_.tool() == MouseToolDistanceErase) {
                     epoch->clearDistProcessing(channel1);
                     epoch->clearDistProcessing(channel2);
                 }
@@ -942,6 +945,7 @@ void Plot2D::sendSyncEvent(int epoch_index, QEvent::Type eventType)
 
 void Plot2D::reindexingCursor()
 {
+    // qDebug() << "void Plot2D::reindexingCursor()............";
     if(datasetPtr_ == nullptr) { return; }
 
     const int image_width = canvas_.width();
@@ -975,10 +979,10 @@ void Plot2D::reindexingCursor()
     for(int i = 0; i < image_width; i++) {
         int data_index = head_data_index + round((i - image_width)/hor_ratio) - 1;
         if(data_index >= 0 && data_index < data_width) {
-             cursor_.indexes[i] = data_index;
+            cursor_.indexes[i] = data_index;
         } else {
             ++cntZeros;
-             cursor_.indexes[i] = -1;
+            cursor_.indexes[i] = -1;
         }
     }
     cursor_.numZeroEpoch = cntZeros;

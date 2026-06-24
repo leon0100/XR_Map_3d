@@ -57,8 +57,8 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
     p->setFont(font);
 
     if (cursor._tool == MouseToolNothing || beenEpochEvent_) {
-        p->drawLine(0,             cursor.mouseY, canvas.width(),  cursor.mouseY);
-        p->drawLine(cursor.mouseX, 0,             cursor.mouseX, canvas.height());
+        p->drawLine(0, cursor.mouseY, canvas.width(), cursor.mouseY);
+        p->drawLine(cursor.mouseX, 0, cursor.mouseX, canvas.height());
     }
 
     float canvas_height  = static_cast<float>(canvas.height());
@@ -78,7 +78,7 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
     }
 
     if (cursor.currentEpochIndx != -1) {
-        text += "\n" + QObject::tr("Epoch: ")   + QString::number(cursor.currentEpochIndx);
+        text += "\n" + QObject::tr("Epoch: ") + QString::number(cursor.currentEpochIndx);
 
         if (auto* ep = dataset->fromIndex(cursor.currentEpochIndx); ep) {
             if (auto* echogram = ep->chart(channelId, subIndx); echogram) {
@@ -121,16 +121,13 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
     QPoint shiftedPoint;
     if (!placeAbove) {
         shiftedPoint = onTheRight
-                           ? QPoint(cursor.mouseX - xShift - textRect.width(),
-                                    cursor.mouseY - yShift - textRect.height())
-                           : QPoint(cursor.mouseX + xShift,
-                                    cursor.mouseY - yShift - textRect.height());
-    } else {
+                           ? QPoint(cursor.mouseX - xShift - textRect.width(), cursor.mouseY - yShift - textRect.height())
+                           : QPoint(cursor.mouseX + xShift, cursor.mouseY - yShift - textRect.height());
+    }
+    else {
         shiftedPoint = onTheRight
-                           ? QPoint(cursor.mouseX - xShift - textRect.width(),
-                                    cursor.mouseY + yShift)
-                           : QPoint(cursor.mouseX + xShift,
-                                    cursor.mouseY + yShift);
+                           ? QPoint(cursor.mouseX - xShift - textRect.width(), cursor.mouseY + yShift)
+                           : QPoint(cursor.mouseX + xShift, cursor.mouseY + yShift);
     }
 
     textRect.moveTopLeft(shiftedPoint);

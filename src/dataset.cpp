@@ -198,7 +198,7 @@ void Dataset::setFixBlackStripesBackwardSteps(int val)
 void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartParams,
                        const QVector<QVector<uint8_t>>& data, float resolution, float offset)
 {
-    qDebug() << "void Dataset::addChart............";
+    // qDebug() << "void Dataset::addChart............";
     if (data.empty() || qFuzzyIsNull(resolution)) {
         return;
     }

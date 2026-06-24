@@ -228,9 +228,9 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     QList<LLA> buffer;
     int progressInterval = qMax(1, tslWCnt / 100);
     int idx = sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w);
-    for(int i = 0; i < tslWCnt; i++)
+    for(int cnt = 0; cnt < tslWCnt; cnt++)
     {
-        QByteArray tslDataTemp = tslByteList.at(i);
+        QByteArray tslDataTemp = tslByteList.at(cnt);
 
         tsl_w tslSingleStruct;
         memcpy(&tslSingleStruct, tslDataTemp, idx);
@@ -260,7 +260,10 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.pingSize = PING_SIZE_MAX;
 
         // 发送信号，让 Dataset 接收声呐数据
-        emit chartComplete(channelId, chartParams, data, resolution, offset);
+        const int testEcogramCnt = 1200;
+        // if(cnt < testEcogramCnt) {
+            emit chartComplete(channelId, chartParams, data, resolution, offset);
+        // }
 
         tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
         tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;
@@ -312,14 +315,14 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         }
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
-        bool enableRender = (i + 1) == tslWCnt ? true : false;
+        bool enableRender = (cnt + 1) == tslWCnt ? true : false;
         emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
 
         // 更新进度条
-        if (progressDialog_ && (i % progressInterval == 0 || i == (tslWCnt - 1))) {
-            double progress = static_cast<double>(i + 1) / tslWCnt;
+        if (progressDialog_ && (cnt % progressInterval == 0 || cnt == (tslWCnt - 1))) {
+            double progress = static_cast<double>(cnt + 1) / tslWCnt;
             QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                    .arg(i + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+                                    .arg(cnt + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();

@@ -202,9 +202,9 @@ WaterFall {
                     longPressTimer.stop()
                 }
 
-                if (mouse.button === Qt.LeftButton) {
-                    plot.plotMousePosition(-1, -1)
-                }
+                // if (mouse.button === Qt.LeftButton) {
+                //     plot.plotMousePosition(-1, -1)
+                // }
 
                 if (mouse.button === Qt.RightButton) {
                     contactMouseX = mouse.x
@@ -231,11 +231,12 @@ WaterFall {
             }
 
             onPositionChanged: function(mouse) {
-                plot.onCursorMoved(mouse.x, mouse.y)
+                // plot.onCursorMoved(mouse.x, mouse.y)
 
                 if (Qt.platform.os === "android") {
                     if (!wasMoved) {
-                        var currDelta = Math.sqrt(Math.pow((mouse.x - startMousePos.x), 2) + Math.pow((mouse.y - startMousePos.y), 2));
+                        var currDelta = Math.sqrt(Math.pow((mouse.x - startMousePos.x), 2) +
+                                                  Math.pow((mouse.y - startMousePos.y), 2));
                         if (currDelta > mouseThreshold) {
                             wasMoved = true;
                         }
@@ -253,7 +254,6 @@ WaterFall {
                 if (mouse.button === Qt.RightButton) {
                     contactMouseX = mouse.x
                     contactMouseY = mouse.y
-
                     plot.simplePlotMousePosition(mouse.x, mouse.y)
                 }
             }
@@ -294,7 +294,7 @@ WaterFall {
         id: settingsRow
         anchors.left: parent.left
         anchors.bottom: parent.bottom
-        visible: false
+        visible: true
 
         MenuFrame {
             id: leftPanel
@@ -514,7 +514,7 @@ WaterFall {
                         CCheck {
                             id: echogramVisible
                             Layout.fillWidth: true
-                            //                        Layout.preferredWidth: 150
+                                                   Layout.preferredWidth: 150
                             checked: true
                             text: qsTr("Echogram")
                             onCheckedChanged: plotEchogramVisible(checked)
@@ -523,7 +523,7 @@ WaterFall {
 
                         CCombo  {
                             id: echoTheme
-                            //                        Layout.fillWidth: true
+                                                   Layout.fillWidth: true
                             Layout.preferredWidth: 150
                             model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
                             currentIndex: 0
@@ -540,7 +540,7 @@ WaterFall {
 
                         CCombo  {
                             id: echogramTypesList
-                            //                        Layout.fillWidth: true
+                                                   Layout.fillWidth: true
                             Layout.preferredWidth: 150
                             model: [qsTr("Raw"), qsTr("Side-Scan")]
                             currentIndex: 0
@@ -568,8 +568,8 @@ WaterFall {
 
                         CCombo  {
                             id: bottomTrackThemeList
-                            //                        Layout.fillWidth: true
-                            //                        Layout.preferredWidth: 150
+                                                   Layout.fillWidth: true
+                                                   Layout.preferredWidth: 150
                             model: [qsTr("Line1"), qsTr("Line2"), qsTr("Dot1"), qsTr("Dot2"), qsTr("DotLine")]
                             currentIndex: 1
 

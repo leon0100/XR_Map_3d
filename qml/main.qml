@@ -220,9 +220,9 @@ ApplicationWindow  {
             syncLoupePlot3D.update()
         }
 
-        if (syncLoupeOverlay && syncLoupeOverlay.visible) {
-            syncLoupeOverlay.refreshLoupePlot()
-        }
+        // if (syncLoupeOverlay && syncLoupeOverlay.visible) {
+        //     syncLoupeOverlay.refreshLoupePlot()
+        // }
 
         mainview.update()
     }
@@ -353,21 +353,23 @@ ApplicationWindow  {
         theme.updateResCoeff()
         core.progress = fileProgress
 
-        scene3DToolbar.updateBottomTrack.connect(handleUpdateBottomTrack)
         menuBar.languageChanged.connect(handleChildSignal)
         menuBar.syncPlotEnabled.connect(handleSyncPlotEnabled)
-        waterViewFirst.plotCursorChanged.connect(handlePlotCursorChanged)
-        waterViewSecond.plotCursorChanged.connect(handlePlotCursorChanged)
-        waterViewFirst.updateOtherPlot.connect(handleUpdateOtherPlot)
-        waterViewSecond.updateOtherPlot.connect(handleUpdateOtherPlot)
-        waterViewFirst. plotPressed.connect(handlePlotPressed)
-        waterViewSecond.plotPressed.connect(handlePlotPressed)
-        waterViewFirst. plotReleased.connect(handlePlotReleased)
-        waterViewSecond.plotReleased.connect(handlePlotReleased)
-        waterViewFirst.settingsClicked.connect(onPlotSettingsClicked)
-        waterViewSecond.settingsClicked.connect(onPlotSettingsClicked)
         menuBar.menuBarSettingOpened.connect(onMenuBarSettingsOpened)
 
+        waterViewFirst.plotCursorChanged.connect(handlePlotCursorChanged)
+        waterViewFirst.updateOtherPlot.connect(handleUpdateOtherPlot)
+        waterViewFirst. plotPressed.connect(handlePlotPressed)
+        waterViewFirst. plotReleased.connect(handlePlotReleased)
+        waterViewFirst.settingsClicked.connect(onPlotSettingsClicked)
+
+        waterViewSecond.plotCursorChanged.connect(handlePlotCursorChanged)
+        waterViewSecond.updateOtherPlot.connect(handleUpdateOtherPlot)
+        waterViewSecond.plotPressed.connect(handlePlotPressed)
+        waterViewSecond.plotReleased.connect(handlePlotReleased)
+        waterViewSecond.settingsClicked.connect(onPlotSettingsClicked)
+
+        scene3DToolbar.updateBottomTrack.connect(handleUpdateBottomTrack)
         scene3DToolbar.mosaicLAngleOffsetChanged.connect(handleMosaicLOffsetChanged)
         scene3DToolbar.mosaicRAngleOffsetChanged.connect(handleMosaicROffsetChanged)
 
@@ -1758,13 +1760,6 @@ ApplicationWindow  {
                     columnSpacing: 0
                     rowSpacing: 0
 
-                    Rectangle {
-                           anchors.fill: parent
-                           color: "red"
-                       }
-
-
-
                     Plot2D {
                         id: waterViewFirst
                         Layout.fillHeight: true
@@ -1833,40 +1828,40 @@ ApplicationWindow  {
                         }
                     }
 
-                    // Plot2D {
-                    //     id: waterViewSecond
+                    Plot2D {
+                        id: waterViewSecond
 
-                    //     enabled: menuBar.numPlots === 2
-                    //     visible: menuBar.numPlots === 2
+                        enabled: menuBar.numPlots === 2
+                        visible: menuBar.numPlots === 2
 
-                    //     Layout.fillHeight: true
-                    //     Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
 
-                    //     Layout.rowSpan   : 1
-                    //     Layout.columnSpan: 1
-                    //     focus: true
-                    //     instruments: menuBar.instruments
-                    //     indx: 2
+                        Layout.rowSpan   : 1
+                        Layout.columnSpan: 1
+                        focus: true
+                        instruments: menuBar.instruments
+                        indx: 2
 
-                    //     onEnabledChanged: {
-                    //         waterViewSecond.setPlotEnabled(enabled)
-                    //     }
+                        onEnabledChanged: {
+                            // waterViewSecond.setPlotEnabled = enabled
+                        }
 
-                    //     onVisibleChanged: {
-                    //         if (visible && menuBar.syncPlots) {
-                    //             setCursorFromTo(waterViewFirst.cursorFrom(), waterViewFirst.cursorTo())
-                    //             update()
-                    //         }
-                    //     }
+                        onVisibleChanged: {
+                            if (visible && menuBar.syncPlots) {
+                                setCursorFromTo(waterViewFirst.cursorFrom(), waterViewFirst.cursorTo())
+                                update()
+                            }
+                        }
 
-                    //     onTimelinePositionChanged: {
-                    //         historyScroll.value = timelinePosition
-                    //     }
+                        onTimelinePositionChanged: {
+                            historyScroll.value = timelinePosition
+                        }
 
-                    //     Component.onCompleted: {
-                    //         setIndx(waterViewSecond.indx);
-                    //     }
-                    // }
+                        Component.onCompleted: {
+                            setIndx(waterViewSecond.indx);
+                        }
+                    }
 
                     CSlider {
                         id: historyScroll
@@ -1881,10 +1876,6 @@ ApplicationWindow  {
                         barWidth: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
                         onMoved: core.resetAim();
-
-                        // background: Rectangle {
-                        //     color: "green"
-                        // }
 
                     }
                 }
@@ -1923,12 +1914,12 @@ ApplicationWindow  {
     }
 
     function handlePlotCursorChanged(indx, from, to) {
-        if (!menuBar.syncPlots) {
-            if (syncLoupeOverlay.visible) {
-                syncLoupeOverlay.refreshLoupePlot()
-            }
-            return;
-        }
+        // if (!menuBar.syncPlots) {
+        //     if (syncLoupeOverlay && syncLoupeOverlay.visible) {
+        //         syncLoupeOverlay.refreshLoupePlot()
+        //     }
+        //     return;
+        // }
 
         if (indx === 1 && waterViewSecond.enabled) {
             waterViewSecond.setCursorFromTo(from, to)
@@ -1939,9 +1930,9 @@ ApplicationWindow  {
             waterViewFirst.update()
         }
 
-        if (syncLoupeOverlay.visible) {
-            syncLoupeOverlay.refreshLoupePlot()
-        }
+        // if (syncLoupeOverlay.visible) {
+        //     syncLoupeOverlay.refreshLoupePlot()
+        // }
     }
 
     function handleUpdateOtherPlot(indx) {

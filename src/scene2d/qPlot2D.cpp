@@ -23,7 +23,7 @@ qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(
 
 void qPlot2D::paint(QPainter *painter)
 {
-    qDebug() << "qPlot2D::paint(.........." << Plot2D::plotEnabled();
+    // qDebug() << "qPlot2D::paint(.........." << Plot2D::plotEnabled();
     if (!Plot2D::plotEnabled()) {
         return;
     }
@@ -61,7 +61,7 @@ void qPlot2D::setDataProcessor(DataProcessor *dataProcessorPtr)
 
 void qPlot2D::plotUpdate()
 {
-    qDebug() << "qPlot2D::plotUpdate()..........";
+    // qDebug() << "qPlot2D::plotUpdate()..........";
     if (!Plot2D::plotEnabled()) {
         return;
     }
@@ -321,8 +321,9 @@ void qPlot2D::plotMousePosition(int x, int y, bool isSync)
     setAimEpochEventState(false);
     if(_isHorizontal) {
         setMousePosition(x, y, isSync);
-    } else {
-        if(x >=0 && y >= 0) {
+    }
+    else {
+        if(x >= 0 && y >= 0) {
             setMousePosition(height() - y, x, isSync);
         } else {
             setMousePosition(-1, -1, isSync);

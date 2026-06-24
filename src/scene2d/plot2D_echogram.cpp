@@ -21,7 +21,6 @@ Plot2DEchogram::Plot2DEchogram()
 
     // 加载 ZyColorScheme 的静态配色数组
     ZyColorScheme::loadColorScheme(defaultPath);
-
 }
 
 void Plot2DEchogram::setLowLevel(float low)
@@ -388,14 +387,14 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
         resetCash();
     }
 
-    bool is_cash_notvalid = getTriggerCashReset();
-    is_cash_notvalid |= !_lastCursor.isChannelsEqual(cursor);
-    is_cash_notvalid |= !_lastCursor.isDistanceEqual(cursor);
-    is_cash_notvalid |=  _lastWidth != width;
-    is_cash_notvalid |=  _lastHeight != height;
+    bool isCashNotvalid = getTriggerCashReset();
+    isCashNotvalid |= !_lastCursor.isChannelsEqual(cursor);
+    isCashNotvalid |= !_lastCursor.isDistanceEqual(cursor);
+    isCashNotvalid |= _lastWidth != width;
+    isCashNotvalid |= _lastHeight != height;
 
     float from = cursor.distance.from;
-    float to = cursor.distance.to;
+    float to   = cursor.distance.to;
     float fullrange = to - from;
 
     float range1 = 0;
@@ -424,11 +423,11 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
         to1 = -from;
     }
 
-    int wrap_start_pos = qAbs(cursor.getIndex(0) % width);
+    int wrapStartPos = qAbs(cursor.getIndex(0) % width);
 
     for (unsigned int i = 0; i < cursor.indexes.size(); i++) {
         if (cursor.indexes[i] > 0) {
-            wrap_start_pos = qAbs((cursor.indexes[i] + (width - i)) % width);
+            wrapStartPos = qAbs((cursor.indexes[i] + (width - i)) % width);
             break;
         }
     }
@@ -436,41 +435,65 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
 
     for(int column = 0; column < width; column++) {
         if(_cash[column].data.size() != height) {
-            _cash[column].state = CashLine::CashState::CashStateNotValid;
             _cash[column].data.resize(height);
+            _cash[column].data.fill(0);
             _cash[column].poolIndex = -1;
             _cash[column].state = CashLine::CashState::CashStateEraced;
             _cash[column].isNeedUpdate = true;
 
-            int16_t cash_data_size = _cash[column].data.size();
-            int16_t* cash_data = _cash[column].data.data();
-            uint32_t* img_data = (uint32_t*)_image.bits();
-            int bytesPerLine = _image.bytesPerLine() / 4;
-            for (int image_row = 0; image_row < cash_data_size; image_row++) {
+            int16_t cashDataSize = _cash[column].data.size();
+            int16_t* cash_data   = _cash[column].data.data();
+            uint32_t* img_data   = (uint32_t*)_image.bits();
+            int bytesPerLine     = _image.bytesPerLine() / 4;
+            for (int image_row = 0; image_row < cashDataSize; image_row++) {
                 uint8_t dataValue = static_cast<uint8_t>(*cash_data);
-                QRgb color;
+                int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+                QRgb color = qRgb((bgColor >> 16) & 0xFF, (bgColor >> 8) & 0xFF, bgColor & 0xFF);
 
                 if(dataValue == 0) {
+                    // qDebug() << "dataValue....." << dataValue;
                     int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
                     color = qRgb((bgColor >> 16) & 0xFF, (bgColor >> 8) & 0xFF, bgColor & 0xFF);
                 }
                 else {
+                    qDebug() << "choose color depend on region of depth....";
                     // 根据深度区域选择配色
-                    if (sfEnd >= 0 && image_row <= sfEnd) {
+                    // if (sfEnd >= 0 && image_row <= sfEnd) {
+                    //     // 水表区域 - 使用 surface 配色
+                    //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
+                    //     colorIndex = qBound(0, colorIndex, 254);
+                    //     int rgb = ZyColorScheme::colorScheme_surface[colorIndex];
+                    //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                    // }
+                    // else if (btStart >= 0 && image_row < btStart) {
+                    //     // 水中区域 - 使用 fish 配色
+                    //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
+                    //     colorIndex = qBound(0, colorIndex, 254);
+                    //     int rgb = ZyColorScheme::colorScheme_fish[colorIndex];
+                    //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                    // }
+                    // else {
+                    //     // 水底区域 - 使用 bottom 配色
+                    //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
+                    //     colorIndex = qBound(0, colorIndex, 254);
+                    //     int rgb = ZyColorScheme::colorScheme_bottom[colorIndex];
+                    //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                    // }
+                    if (image_row >= 0 && image_row < sfEnd) {
                         // 水表区域 - 使用 surface 配色
                         int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                         colorIndex = qBound(0, colorIndex, 254);
                         int rgb = ZyColorScheme::colorScheme_surface[colorIndex];
                         color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                     }
-                    else if (btStart >= 0 && image_row < btStart) {
+                    else if (image_row >= sfEnd && image_row < btStart) {
                         // 水中区域 - 使用 fish 配色
                         int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                         colorIndex = qBound(0, colorIndex, 254);
                         int rgb = ZyColorScheme::colorScheme_fish[colorIndex];
                         color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                     }
-                    else {
+                    else if(image_row >= btStart){
                         // 水底区域 - 使用 bottom 配色
                         int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                         colorIndex = qBound(0, colorIndex, 254);
@@ -484,40 +507,40 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
             }
         }
 
-        int cursor_pos = column - wrap_start_pos;
-        if(column < wrap_start_pos) {
+        int cursor_pos = column - wrapStartPos;
+        if(column < wrapStartPos) {
             cursor_pos += width;
         }
 
         int pool_index = cursor.getIndex(cursor_pos);
         int pool_index_safe = dataset->validIndex(pool_index);
         if(pool_index_safe >= 0) {
-
             bool wasValidlyRendered = true;
             if (reRenderPlotIndxs_.contains(pool_index_safe)) {
                 reRenderPlotIndxs_.remove(pool_index_safe);
                 wasValidlyRendered = false;
             }
 
-            auto* datasource = dataset->fromIndex(pool_index_safe);
+            Epoch* epochData = dataset->fromIndex(pool_index_safe);
             const int cash_index = _cash[column].poolIndex;
 
-            if (is_cash_notvalid || pool_index_safe != cash_index || !wasValidlyRendered) {
+            if (isCashNotvalid || pool_index_safe != cash_index || !wasValidlyRendered) {
+                // qDebug() << " if (isCashNotvalid || pool_index_safe != cash_index || !wasValidlyRendered).....";
                 _cash[column].poolIndex = pool_index_safe;
 
-                if(datasource != NULL) {
-                    _cash[column].state = CashLine::CashState::CashStateNotValid;
+                if(epochData != NULL) {
                     int16_t* cash_data = _cash[column].data.data();
                     int16_t cash_data_size = _cash[column].data.size();
 
                     if (cursor.channel2 == CHANNEL_NONE) {
-                        datasource->chartTo(cursor.channel1, cursor.subChannel1, from, to, cash_data, cash_data_size, _compensation_id);
+                        epochData->chartTo(cursor.channel1, cursor.subChannel1, from, to, cash_data, cash_data_size, _compensation_id);
                     }
                     else {
                         int cash_data_size_part1 = cash_data_size*(range1/fullrange);
+                        qDebug() << "cash_data_size_part1........." << cash_data_size_part1;
 
                         if(cash_data_size_part1 > 0) {
-                            datasource->chartTo(cursor.channel1, cursor.subChannel1, from1, to1, cash_data, cash_data_size_part1, _compensation_id, true);
+                            epochData->chartTo(cursor.channel1, cursor.subChannel1, from1, to1, cash_data, cash_data_size_part1, _compensation_id, true);
                         }
 
                         if(cash_data_size_part1 < 0) {
@@ -526,7 +549,7 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
 
                         const int cash_data_size_part2 = cash_data_size - cash_data_size_part1;
                         if(cash_data_size_part2 > 0) {
-                            datasource->chartTo(cursor.channel2, cursor.subChannel2, from2, to2, &cash_data[cash_data_size_part1], cash_data_size_part2, _compensation_id, false);
+                            epochData->chartTo(cursor.channel2, cursor.subChannel2, from2, to2, &cash_data[cash_data_size_part1], cash_data_size_part2, _compensation_id, false);
                         }
                     }
 
@@ -534,26 +557,46 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                     _cash[column].isNeedUpdate = true;
                     uint32_t* img_data = (uint32_t*)_image.bits();
                     int bytesPerLine = _image.bytesPerLine() / 4;
-                    // int16_t* cash_data = _cash[column].data.data();
-                    // int16_t cash_data_size = _cash[column].data.size();
                     for (int image_row = 0; image_row < cash_data_size; image_row++) {
                         uint8_t dataValue = static_cast<uint8_t>(*cash_data);
-                        QRgb color;
+                        int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+                        QRgb color = qRgb((bgColor >> 16) & 0xFF, (bgColor >> 8) & 0xFF, bgColor & 0xFF);
 
                         // 根据深度区域选择配色
-                        if (sfEnd >= 0 && image_row <= sfEnd) {
+                        // if (sfEnd >= 0 && image_row <= sfEnd) {
+                        //     // 水表区域 - 使用 surface 配色
+                        //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
+                        //     colorIndex = qBound(0, colorIndex, 254);
+                        //     int rgb = ZyColorScheme::colorScheme_surface[colorIndex];
+                        //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                        // } else if (btStart >= 0 && image_row < btStart) {
+                        //     // 水中区域 - 使用 fish 配色
+                        //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
+                        //     colorIndex = qBound(0, colorIndex, 254);
+                        //     int rgb = ZyColorScheme::colorScheme_fish[colorIndex];
+                        //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                        // } else {
+                        //     // 水底区域 - 使用 bottom 配色
+                        //     int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
+                        //     colorIndex = qBound(0, colorIndex, 254);
+                        //     int rgb = ZyColorScheme::colorScheme_bottom[colorIndex];
+                        //     color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                        // }
+                        if (image_row >= 0 && image_row < sfEnd) {
                             // 水表区域 - 使用 surface 配色
                             int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                             colorIndex = qBound(0, colorIndex, 254);
                             int rgb = ZyColorScheme::colorScheme_surface[colorIndex];
                             color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                        } else if (btStart >= 0 && image_row < btStart) {
+                        }
+                        else if (image_row >= sfEnd && image_row < btStart) {
                             // 水中区域 - 使用 fish 配色
                             int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                             colorIndex = qBound(0, colorIndex, 254);
                             int rgb = ZyColorScheme::colorScheme_fish[colorIndex];
                             color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                        } else {
+                        }
+                        else if(image_row >= btStart){
                             // 水底区域 - 使用 bottom 配色
                             int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                             colorIndex = qBound(0, colorIndex, 254);
@@ -567,7 +610,6 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                 }
                 else {
                     if(_cash[column].state != CashLine::CashState::CashStateEraced) {
-                        _cash[column].state = CashLine::CashState::CashStateNotValid;
                         _cash[column].data.fill(0);
                         _cash[column].poolIndex = -1;
                         _cash[column].state = CashLine::CashState::CashStateEraced;
@@ -577,6 +619,7 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                         int16_t* cash_data = _cash[column].data.data();
                         uint32_t* img_data = (uint32_t*)_image.bits();
                         int bytesPerLine = _image.bytesPerLine() / 4;
+                        qDebug() << "bytesPerLine......" << bytesPerLine;
                         for (int image_row = 0; image_row < cash_data_size; image_row++) {
                             uint8_t dataValue = static_cast<uint8_t>(*cash_data);
                             QRgb color;
@@ -608,7 +651,6 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
             }
         } else {
             if(_cash[column].state != CashLine::CashState::CashStateEraced) {
-                _cash[column].state = CashLine::CashState::CashStateNotValid;
                 _cash[column].data.fill(0);
                 _cash[column].poolIndex = -1;
                 _cash[column].state = CashLine::CashState::CashStateEraced;
@@ -618,22 +660,27 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                 int16_t cash_data_size = _cash[column].data.size();
                 uint32_t* img_data = (uint32_t*)_image.bits();
                 int bytesPerLine = _image.bytesPerLine() / 4;
+                qDebug() << "int 222222bytesPerLine...." << bytesPerLine;
                 for (int image_row = 0; image_row < cash_data_size; image_row++) {
                     uint8_t dataValue = static_cast<uint8_t>(*cash_data);
-                    QRgb color;
-
-                    // 根据深度区域选择配色
-                    if (sfEnd >= 0 && image_row <= sfEnd) {
+                    int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+                    QRgb color = qRgb((bgColor >> 16) & 0xFF, (bgColor >> 8) & 0xFF, bgColor & 0xFF);
+                    if (image_row >= 0 && image_row < sfEnd) {
+                        // 水表区域 - 使用 surface 配色
                         int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                         colorIndex = qBound(0, colorIndex, 254);
                         int rgb = ZyColorScheme::colorScheme_surface[colorIndex];
                         color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                    } else if (btStart >= 0 && image_row < btStart) {
+                    }
+                    else if (image_row >= sfEnd && image_row < btStart) {
+                        // 水中区域 - 使用 fish 配色
                         int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                         colorIndex = qBound(0, colorIndex, 254);
                         int rgb = ZyColorScheme::colorScheme_fish[colorIndex];
                         color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                    } else {
+                    }
+                    else if(image_row >= btStart){
+                        // 水底区域 - 使用 bottom 配色
                         int colorIndex = dataValue + ZyColorScheme::colorLine * COLOR_LINE;
                         colorIndex = qBound(0, colorIndex, 254);
                         int rgb = ZyColorScheme::colorScheme_bottom[colorIndex];
@@ -652,12 +699,12 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
     _lastWidth = width;
     _lastHeight = height;
 
-    return wrap_start_pos;
+    return wrapStartPos;
 }
 
 bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 {
-    qDebug() << "Plot2DEchogram::draw(............";
+    // qDebug() << "Plot2DEchogram::draw(............";
     auto& canvas = parent->canvas();
     auto& cursor = parent->cursor();
 
@@ -682,55 +729,52 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
         float depth = 0.0f;
         float loRng = 0.0f;
         float upRng = 0.0f;
-        float sspd = 1500.0f;
+        float sspd  = 1500.0f;
         int pingSize = 1024;
 
-        int currentEpochIndex = cursor.getIndex(cursor.indexes.size() / 2);
+
+        // int currentEpochIndex = cursor.getIndex(cursor.indexes.size() / 2);
+        int currentEpochIndex = cursor.getIndex(cursor.indexes.size()-1);
         int validIndex = dataset->validIndex(currentEpochIndex);
         if (validIndex >= 0) {
             auto* currentEpoch = dataset->fromIndex(validIndex);
             if (currentEpoch) {
                 ChartParameters params = currentEpoch->getChartParameters(cursor.channel1);
-                depth = params.depth;
-                loRng = params.loRng;
-                upRng = params.upRng;
-                sspd = params.sspd > 0 ? params.sspd : 1500.0f;
-                pingSize = params.pingSize > 0 ? params.pingSize : 240;
+                depth    = params.depth;
+                loRng    = params.loRng;
+                upRng    = params.upRng;
+                sspd     = params.sspd;
+                pingSize = params.pingSize;
             }
         }
 
-        float surfaceEnd;
-        if((depth < 100) && (depth > 30)) {
-            surfaceEnd = depth - 10;
-        }
-        else {
-            surfaceEnd = 100;
-        }
-        int sfEnd = (1500 / sspd) * (surfaceEnd /(loRng - upRng)) * pingSize;
-
-        //水中/水底分界:
         float rangeDiff = loRng - upRng;
         int btStart;
 
-        //确保计算值有效
-        if(rangeDiff != 0 && depth > 0) {
+        // 确保计算值有效
+        if (rangeDiff != 0 && depth > 0) {
             btStart = static_cast<int>((1500.0f / sspd) * (depth / rangeDiff) * pingSize);
-        }
-        else {
-            btStart = static_cast<int>(image_height * 0.66f);
+        } else {
+            btStart = static_cast<int>(image_height * 0.66f);  // 默认值：从2/3高度开始
         }
 
+        // 计算水表结束位置
+        int sfEnd;
+        float surfaceEnd = (depth < 100 && depth > 30) ? (depth - 10) : 100.0f;
+        if (rangeDiff != 0 && surfaceEnd > 0) {
+            sfEnd = static_cast<int>((1500.0f / sspd) * (surfaceEnd / rangeDiff) * pingSize);
+        } else {
+            sfEnd = static_cast<int>(image_height * 0.05f);  // 默认值：顶部5%
+        }
+
+        // 确保边界有效
+        sfEnd = qMax(1, sfEnd);
         btStart = qMax(sfEnd + 1, qMin(btStart, image_height - 1));
-                btStart = qMax(sfEnd + 1, qMin(btStart, static_cast<int>(image_height * 0.95f)));
-        qDebug() << "Depth partition - sfEnd:" << sfEnd << " btStart:" << btStart
-                 << " depth:" << depth << " loRng:" << loRng << " upRng:" << upRng;
 
-        int minBottomHeight = static_cast<int>(image_height * 0.05f);
-        btStart = qMin(btStart, image_height - minBottomHeight);
 
+        qDebug() << "Depth partition - sfEnd:"<< currentEpochIndex << "   " << sfEnd << "  " << btStart;
         const int cash_width = canvas.width();
         // const int cash_position = updateCash(parent, dataset, cash_width, image_height);
-        qDebug() << "cash_width....." << cash_width << "  " << image_height;
         const int cash_position = updateCash(parent, dataset, cash_width, image_height, sfEnd, btStart);
 
         QPainter p(&_pixmap);

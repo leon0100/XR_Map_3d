@@ -1778,7 +1778,6 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete, datasetPtr_, &Dataset::addPosition,     deviceManagerConnection);
     QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,     deviceManagerConnection);
     QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,     deviceManagerConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::chartComplete, datasetPtr_, &Dataset::addChart);
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file,     deviceManagerConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionCompleteRTK,  datasetPtr_, &Dataset::addPositionRTK,  deviceManagerConnection);
