@@ -235,8 +235,8 @@ WaterFall {
 
                 if (Qt.platform.os === "android") {
                     if (!wasMoved) {
-                        var currDelta = Math.sqrt(Math.pow((mouse.x - startMousePos.x), 2) +
-                                                  Math.pow((mouse.y - startMousePos.y), 2));
+                        var currDelta = Math.sqrt(Math.pow((mouse.x - startMousePos.x), 2)
+                                            + Math.pow((mouse.y - startMousePos.y), 2));
                         if (currDelta > mouseThreshold) {
                             wasMoved = true;
                         }

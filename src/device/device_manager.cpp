@@ -227,7 +227,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
     QList<LLA> buffer;
     int progressInterval = qMax(1, tslWCnt / 100);
-    int idx = sizeof(pack_head_w)+sizeof(ping_info_w)+sizeof(navi_info_w)+sizeof(aux_info_w);
+    int idx = sizeof(pack_head_w) + sizeof(ping_info_w) + sizeof(navi_info_w) + sizeof(aux_info_w);
     for(int cnt = 0; cnt < tslWCnt; cnt++)
     {
         QByteArray tslDataTemp = tslByteList.at(cnt);
@@ -253,11 +253,11 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         }
         data.append(channelData);
 
-        chartParams.loRng = tslSingleStruct.ping.loRng;
         chartParams.upRng = 0;
+        chartParams.loRng = tslSingleStruct.ping.loRng;
         chartParams.depth = tslSingleStruct.auxInfo.depth;
         chartParams.sspd  = 1500.0f;
-        chartParams.pingSize = PING_SIZE_MAX;
+        chartParams.pingSize = 240;
 
         // 发送信号，让 Dataset 接收声呐数据
         const int testEcogramCnt = 1200;

@@ -135,15 +135,11 @@ enum class DataType {
 
 struct ChannelId
 {
-  ChannelId()
-        : uuid(), address(0)
-    {
-    }
+    ChannelId() : uuid(), address(0)
+    { }
 
-    ChannelId(const QUuid& uuid, uint8_t address)
-        : uuid(uuid), address(address)
-    {
-    }
+    ChannelId(const QUuid& uuid, uint8_t address) : uuid(uuid), address(address)
+    { }
 
     bool isValid() const
     {

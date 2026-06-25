@@ -207,6 +207,63 @@ void Epoch::setEncoders(float enc1, float enc2, float enc3) {
     _encoder.e3 = enc3;
 }
 
+void Epoch::setDistProcessing(const ChannelId& channelId, float dist) {
+    if (charts_.contains(channelId)) {
+        auto& charts = charts_[channelId];
+        for (auto& iEchogram : charts) {
+            iEchogram.bottomProcessing.setDistance(dist, DistProcessing::DistanceSource::DistanceSourceDirectHand);
+        }
+    }
+}
+
+void Epoch::clearDistProcessing(const ChannelId& channelId) {
+    if (charts_.contains(channelId)) {
+        auto& charts = charts_[channelId];
+        for (auto& iEchogram : charts) {
+            iEchogram.bottomProcessing.clearDistance(DistProcessing::DistanceSource::DistanceSourceDirectHand);
+        }
+    }
+}
+
+void Epoch::setMinDistProc(const ChannelId& channelId, float dist) {
+    if (charts_.contains(channelId)) {
+        auto& charts = charts_[channelId];
+        for (auto& iEchogram : charts) {
+            iEchogram.bottomProcessing.setMin(dist, DistProcessing::DistanceSource::DistanceSourceConstrainHand);
+        }
+    }
+}
+
+void Epoch::setMaxDistProc(const ChannelId& channelId, float dist) {
+    if (charts_.contains(channelId)) {
+        auto& charts = charts_[channelId];
+        for (auto& iEchogram : charts) {
+            iEchogram.bottomProcessing.setMax(dist, DistProcessing::DistanceSource::DistanceSourceConstrainHand);
+        }
+    }
+}
+
+void Epoch::setMinMaxDistProc(const ChannelId& channelId, int min, int max,  bool isSave)
+{
+    if (charts_.contains(channelId)) {
+        auto& charts = charts_[channelId];
+        for (auto& iEchogram : charts) {
+            float minsave = iEchogram.bottomProcessing.getMin();
+            float maxsave = iEchogram.bottomProcessing.getMax();
+
+            iEchogram.bottomProcessing.setMin(min);
+            iEchogram.bottomProcessing.setMax(max);
+            iEchogram.bottomProcessing.resetDistance();
+
+            if (!isSave) {
+                iEchogram.bottomProcessing.setMin(minsave);
+                iEchogram.bottomProcessing.setMax(maxsave);
+            }
+        }
+    }
+}
+
+
 int Epoch::chartSize(const ChannelId &channelId, uint8_t subChannelId)
 {
     auto it = charts_.constFind(channelId);
@@ -287,6 +344,105 @@ void Epoch::doBottomTrackSideScan(Echogram &chart, bool is_update_dist) {
     Q_UNUSED(is_update_dist);
 }
 
+
+bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float start, float end, int16_t* dst, int dstLen, int imageType, bool reverse)
+{
+    if (dst == nullptr) {
+        return false;
+    }
+
+    ChannelId localChannelId = channelId;
+
+    if (!charts_.contains(localChannelId)) {
+        memset(dst, 0, dstLen * 2);
+        return false;
+    }
+
+    if (charts_[localChannelId][subChannelId].resolution == 0) {
+        memset(dst, 0, dstLen * 2);
+        return false;
+    }
+
+    int rawSize = charts_[localChannelId][subChannelId].amplitude.size();
+    // qDebug() << "rawSize............." << rawSize;
+
+    if (rawSize == 0) {
+        memset(dst, 0, dstLen * 2);
+        return false;
+    }
+
+    uint8_t* src = charts_[localChannelId][subChannelId].amplitude.data();
+
+    if (imageType == 1) {
+        if (charts_[localChannelId][subChannelId].compensated.size() == 0) {
+            charts_[localChannelId][subChannelId].updateCompesated();
+        }
+        src = charts_[localChannelId][subChannelId].compensated.data();
+    }
+
+    if (rawSize == 0) {
+        for (int iTo = 0; iTo < dstLen; iTo++) {
+            dst[iTo] = 0;
+        }
+    }
+
+    start -= charts_[localChannelId][subChannelId].offset;
+    end -= charts_[localChannelId][subChannelId].offset;
+    // qDebug() << "start...." << start << "  " << end;
+
+    float rawRangeF = charts_[localChannelId][subChannelId].range();
+    float targetRangeF = static_cast<float>(end - start);
+    float scaleFactor = (static_cast<float>(rawSize) / static_cast<float>(dstLen)) * (targetRangeF / rawRangeF);
+    int offset = start / charts_[localChannelId][subChannelId].resolution;
+
+    int srcStart = offset;
+    int dir = reverse ? -1 : 1;
+    int off = reverse ? (dstLen-1) : 0;
+    if (scaleFactor >= 0.8f) {
+        for (int iTo = 0; iTo < dstLen; iTo++) {
+            int srcEnd = static_cast<float>(iTo + 1) * scaleFactor + offset;
+
+            int32_t val = 0;
+            if (srcStart >= 0 && srcStart < rawSize) {
+                if (srcEnd > rawSize) {
+                    srcEnd = rawSize;
+                }
+
+                val = src[srcStart];
+                for (int i = srcStart; i < srcEnd; i++) {
+                    val += src[i];
+                }
+                val /= 1 + (srcEnd - srcStart);
+            }
+
+            srcStart = srcEnd;
+            dst[off + dir * iTo] = val;
+        }
+    }
+    else {
+        for (int iTo = 0; iTo < dstLen; iTo++) {
+            float cellOffset = static_cast<float>(iTo) * scaleFactor + static_cast<float>(offset) + 0.5f;
+            int srcStart = static_cast<int>(cellOffset);
+            int srcEnd = srcStart + 1;
+
+            int32_t val = 0;
+            if (srcStart >= 0 && srcStart < rawSize) {
+                if (srcEnd >= rawSize) {
+                    srcEnd = rawSize - 1;
+                }
+
+                float coef = cellOffset - floorf(cellOffset);
+                val = static_cast<float>(src[srcStart]) * (1 - coef) + static_cast<float>(src[srcEnd]) * coef;
+            }
+
+            dst[off + dir*iTo] = val;
+        }
+    }
+
+    return true;
+}
+
+
 void Epoch::moveComplexToEchogram(ChannelId channel_id, int group_id, float offset_m, float levels_offset_db) {
     QVector<ComplexSignal> chls = _complex[channel_id][group_id];
     float sample_rate = chls[0].sampleRate;
@@ -318,6 +474,14 @@ void Epoch::moveComplexToEchogram(ChannelId channel_id, int group_id, float offs
     }
 
     setChart(ChannelId(channel_id.uuid, group_id), chart, 1500.0f/sample_rate, offset_m);
+}
+
+uint8_t Epoch::getChartsSizeByChannelId(const ChannelId& channelId) const
+{
+    if (charts_.contains(channelId)) {
+        return static_cast<uint8_t>(charts_[channelId].size());
+    }
+    return 0;
 }
 
 // write to all

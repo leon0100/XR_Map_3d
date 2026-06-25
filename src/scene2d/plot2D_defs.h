@@ -41,9 +41,9 @@ typedef struct DatasetCursor {
         return (channel1.isValid() && channel2.isValid());
     }
 
-    std::vector<int> indexes;
+    std::vector<int> indexes; //nie:画布列到数据集索引的映射
 
-    inline int getIndex(int col) const {
+    inline int getIndex(int col) const {   //nie:将画布的X轴坐标（列索引）映射到数据集中的Epoch索引
         if(col < (int)indexes.size() && col >= 0) {
             return indexes[col];
         }
@@ -62,7 +62,6 @@ typedef struct DatasetCursor {
         float from = NAN;
         float to = NAN;
         AutoRangeMode mode = AutoRangeNone;
-
 
         void set(float f, float t)
         {

@@ -162,7 +162,7 @@ bool Plot2D::getImage(int width, int height, QPainter* painter, bool is_horizont
 
 void Plot2D::draw(QPainter *painterPtr)
 {
-    qDebug() << "Plot2D::draw(QPainter *painterPtr)..............";
+    // qDebug() << "Plot2D::draw(QPainter *painterPtr)..............";
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
     attitude_.draw(this, datasetPtr_);
