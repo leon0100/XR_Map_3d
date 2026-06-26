@@ -235,22 +235,31 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         tsl_w tslSingleStruct;
         memcpy(&tslSingleStruct, tslDataTemp, idx);
 
-        QByteArray rawDat;
-        for(int i = 0; i < 240; i++) {
-            rawDat.append(tslDataTemp[idx + i]);
-        }
-        for(int i = 240; i < PING_SIZE_MAX; i++) {
-            rawDat.append('\0');
-        }
+
+        // QByteArray rawDat;
+        // for(int i = 0; i < 240; i++) {
+        //     rawDat.append(tslDataTemp[idx + i]);
+        // }
+        // for(int i = 240; i < PING_SIZE_MAX; i++) {
+        //     rawDat.append('\0');
+        // }
+
+        // // 将 QByteArray 转换为 QVector<uint8_t>
+        // for(int j = 0; j < rawDat.size(); j++) {
+        //     channelData.append((uint8_t)rawDat[j]);
+        // }
+
 
         // ===== 将声呐数据发送到 Dataset =====
         QVector<QVector<uint8_t>> data;
         QVector<uint8_t> channelData;
-
-        // 将 QByteArray 转换为 QVector<uint8_t>
-        for(int j = 0; j < rawDat.size(); j++) {
-            channelData.append((uint8_t)rawDat[j]);
+        for(int i = 0; i < 240; i++) {
+            channelData.append((uint8_t)tslDataTemp[idx + i]);
         }
+        for(int i = 240; i < PING_SIZE_MAX; i++) {
+            channelData.append((uint8_t)'\0');
+        }
+
         data.append(channelData);
 
         chartParams.upRng = 0;

@@ -397,6 +397,7 @@ public:
     void doBottomTrackSideScan(Echogram &chart, bool is_update_dist = false);
     bool chartTo(const ChannelId& channelId, uint8_t subChannelId, float start,
                  float end, int16_t* dst, int dstLen, int imageType, bool reverse = false);
+    bool getSonarFrameData(const ChannelId& channelId, uint8_t subChannelId, uint8_t* dst, int dstLen);
     void moveComplexToEchogram(ChannelId channel_id, int group_id, float offset_m, float levels_offset_db);
 
     void setResolution      (const ChannelId& channelId, uint16_t resolution);

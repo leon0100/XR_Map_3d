@@ -344,7 +344,6 @@ void Epoch::doBottomTrackSideScan(Echogram &chart, bool is_update_dist) {
     Q_UNUSED(is_update_dist);
 }
 
-
 bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float start, float end, int16_t* dst, int dstLen, int imageType, bool reverse)
 {
     if (dst == nullptr) {
@@ -364,7 +363,7 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
     }
 
     int rawSize = charts_[localChannelId][subChannelId].amplitude.size();
-    // qDebug() << "rawSize............." << rawSize;
+    qDebug() << "rawSize............." << rawSize;
 
     if (rawSize == 0) {
         memset(dst, 0, dstLen * 2);
@@ -388,7 +387,7 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
 
     start -= charts_[localChannelId][subChannelId].offset;
     end -= charts_[localChannelId][subChannelId].offset;
-    // qDebug() << "start...." << start << "  " << end;
+    qDebug() << "start...." << start << "  " << end;
 
     float rawRangeF = charts_[localChannelId][subChannelId].range();
     float targetRangeF = static_cast<float>(end - start);
@@ -438,6 +437,48 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
             dst[off + dir*iTo] = val;
         }
     }
+
+    return true;
+}
+
+
+bool Epoch::getSonarFrameData(const ChannelId& channelId, uint8_t subChannelId, uint8_t* dst, int dstLen)
+{
+    // // 参数校验
+    // if (dst == nullptr || dstLen <= 0) {
+    //     return false;
+    // }
+
+    // // 检查通道是否存在
+    // if (!charts_.contains(channelId)) {
+    //     memset(dst, 0, dstLen * sizeof(uint8_t));
+    //     return false;
+    // }
+
+    auto& chart = charts_[channelId][subChannelId];
+
+    // // 检查数据是否有效
+    // if (chart.resolution == 0 || chart.amplitude.isEmpty()) {
+    //     memset(dst, 0, dstLen * sizeof(uint8_t));
+    //     return false;
+    // }
+
+    // 获取源数据
+    const QVector<uint8_t>& srcData = chart.amplitude;
+    int rawSize = srcData.size();
+
+    // 直接复制数据到目标数组（1:1映射，不缩放）
+    int copyLen = qMin(rawSize, dstLen);
+    for (int i = 0; i < copyLen; i++) {
+        dst[i] = srcData[i];
+    }
+
+    // 如果目标数组更长，剩余部分填0
+    for (int i = copyLen; i < dstLen; i++) {
+        dst[i] = 0;
+    }
+
+    qDebug() << "copyLen:...." << copyLen << "  dstLen:" << dstLen << "  rawSize:" << rawSize;
 
     return true;
 }
