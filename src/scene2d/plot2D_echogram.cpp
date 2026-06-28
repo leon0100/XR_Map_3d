@@ -3,6 +3,7 @@
 
 #include <QApplication>
 #include <QSettings>
+#include <QtGlobal>
 
 
 int Plot2DEchogram::colorScheme_surface[255] = {0};
@@ -20,7 +21,10 @@ Plot2DEchogram::Plot2DEchogram()
     QString defaultPath = qApp->applicationDirPath() + "/dcs_caise.tcs";
 
     // 加载 ZyColorScheme 的静态配色数组
-    ZyColorScheme::loadColorScheme(defaultPath);
+    // ZyColorScheme::loadColorScheme(defaultPath);
+    QString fileName = qApp->applicationDirPath() + "/dcs_caise.tcs";
+    zyColorScheme_ = new ZyColorScheme;
+    zyColorScheme_->loadColorScheme(fileName);
 }
 
 void Plot2DEchogram::setLowLevel(float low)
@@ -379,9 +383,8 @@ void Plot2DEchogram::addReRenderPlotIndxs(const QSet<int> &indxs)
 // }
 int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int height, int sfEnd, int btStart)
 {
-    qDebug() << "int Plot2DEchogram::updateCash......." << width << " " << height;
+    qDebug() << "::updateCash.......width:" << width << " height:" << height << " sfEnd:" << sfEnd << "  btStart:" << btStart;
     DatasetCursor& cursor = parent->cursor();
-
     if (_cash.size() != width) {
         _cash.resize(width);
         resetCash();
@@ -533,12 +536,12 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
                 if(epochData != NULL) {
                     // int16_t* cash_data     = _cash[column].data.data();
                     // int16_t cash_data_size = _cash[column].data.size();
-                    int cashDataSize = 934;
+                    int cashDataSize = height;
                     uint8_t* cashData = new uint8_t[cashDataSize];
                     memset(cashData, 0, cashDataSize * sizeof(uint8_t));
 
                     if (cursor.channel2 == CHANNEL_NONE) {
-                        qDebug() << "......cash_data_size............" << cashDataSize;
+                        // qDebug() << "......cash_data_size............" << cashDataSize;
                         // epochData->chartTo(cursor.channel1, cursor.subChannel1, from, to, cash_data, cash_data_size, _compensation_id);
                         bool getFrame = epochData->getSonarFrameData(cursor.channel1, cursor.subChannel1, cashData, cashDataSize);
                         if(getFrame == false) {
@@ -566,6 +569,9 @@ int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int 
 
                     _cash[column].state = CashLine::CashState::CashStateValid;
                     _cash[column].isNeedUpdate = true;
+
+
+
                     uint32_t* img_data = (uint32_t*)_image.bits();
                     int bytesPerLine = _image.bytesPerLine() / 4;
                     for (int image_row = 0; image_row < cashDataSize; image_row++) {
@@ -846,7 +852,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
             return 0;
         }
 
-        qDebug() << "........upRng:" << upRng << " loRng:" << loRng << "currentEpochIndex:" << currentEpochIndex << "  sfEnd:" << sfEnd << " btStart:" << btStart;
+        // qDebug() << "........upRng:" << upRng << " loRng:" << loRng << "currentEpochIndex:" << currentEpochIndex << "  sfEnd:" << sfEnd << " btStart:" << btStart;
         const int cash_width = canvas.width();
         // const int cash_position = updateCash(parent, dataset, cash_width, image_height);
         const int cash_position = updateCash(parent, dataset, cash_width, image_height, sfEnd, btStart);
@@ -861,9 +867,10 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
                 cash_col++;
             }
 
-            int cash_update_width = cash_col - cash_col_1;
-            if(cash_update_width > 0) {
-                p.drawImage(cash_col_1, 0, _image, cash_col_1, 0 , cash_update_width, image_height, Qt::ThresholdDither);
+            int cashUpdateWidth = cash_col - cash_col_1;
+            if(cashUpdateWidth > 0) {
+                // qDebug() << "cashUpdateWidth > 0..........";
+                p.drawImage(cash_col_1, 0, _image, cash_col_1, 0 , cashUpdateWidth, image_height, Qt::ThresholdDither);
             }
             else {
                 cash_col++;
@@ -872,6 +879,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
         _flagColorChanged = false;
 
+        // qDebug() << " canvas.painter()..............";
         canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, cash_width - cash_position, image_height);
         canvas.painter()->drawPixmap(cash_width - cash_position, 0, _pixmap, 0, 0, cash_position, image_height);
     }

@@ -478,7 +478,7 @@ bool Epoch::getSonarFrameData(const ChannelId& channelId, uint8_t subChannelId, 
         dst[i] = 0;
     }
 
-    qDebug() << "copyLen:...." << copyLen << "  dstLen:" << dstLen << "  rawSize:" << rawSize;
+    // qDebug() << "copyLen:...." << copyLen << "  dstLen:" << dstLen << "  rawSize:" << rawSize;
 
     return true;
 }

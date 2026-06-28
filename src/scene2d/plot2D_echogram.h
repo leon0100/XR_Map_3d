@@ -110,6 +110,7 @@ private:
 
     // 自定义配色相关
     ZyColorScheme _colorScheme;
+    ZyColorScheme *zyColorScheme_;
     QString _customSchemePath;  // 自定义配色文件路径
     int _colorSchemeType;       // 配色类型：0=surface, 1=fish, 2=bottom
     bool _useCustomScheme;      // 是否使用自定义配色
