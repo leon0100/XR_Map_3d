@@ -16,7 +16,7 @@ typedef struct
     QList<quint8> rawData; //像素点
 }StructSonarInfo;
 
-#define COLOR_LINE 0   //偏移量
+#define COLOR_LINE 7   //偏移量
 
 class Plot2DEchogram : public PlotLayer {
 public:
@@ -136,4 +136,5 @@ private:
     int _sfEnd;                 // 水表结束位置（像素）
     int _btStart;               // 水底开始位置（像素）
     int cntt_ = 0;
+    int indexEpoch_ = 0;
 };

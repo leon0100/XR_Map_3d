@@ -646,7 +646,7 @@ void Dataset::addPosition(double lat, double lon, uint32_t unix_time, int32_t na
             }
         }
         emit positionAdded(lastIndx);
-        // emit dataUpdate();
+        emit dataUpdate();
         emit lastPositionChanged();
     }
 }
@@ -686,7 +686,6 @@ void Dataset::addPosition_realTime(double lat, double lon, double depth, bool is
         }
     }
 }
-
 
 
 void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRender)

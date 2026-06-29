@@ -268,6 +268,58 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.sspd  = 1500.0f;
         chartParams.pingSize = 240;
 
+
+
+        // _image.setColorTable(_colorLevels);
+        float depth = tslSingleStruct.auxInfo.depth;
+        float loRng = tslSingleStruct.ping.loRng;
+        float upRng = 0.0f;
+        float sspd  = 1500.0f;
+        int pingSize = 240;
+
+        if((upRng < 0) || (loRng < 0) || (pingSize <= 0) || (upRng == loRng)) {
+            StructSonarInfo sonarInfo;
+            sonarInfo.draft   = 0;
+            sonarInfo.btStart = 0;
+            sonarInfo.sfEnd   = 0;
+        }
+
+        int sfEnd = 0, btStart = 0;
+        if(loRng != 0) {
+            if(loRng == upRng) {
+                StructSonarInfo sonarInfo;
+                sonarInfo.draft    = 0;
+                sonarInfo.btStart  = 0;
+                sonarInfo.sfEnd    = 0;
+                sonarInfo.startIdx = 0;
+                sonarInfo.endIdx   = 0;
+            }
+
+            // if(loRng > upRng) {
+            //     cursor.distance.set(0, loRng * 0.1);
+            // }
+
+            btStart = (1500/sspd) *(depth /(loRng-upRng)) * pingSize;
+
+            float surfaceEnd;
+            if((depth < 100) && (depth > 30)) {
+                surfaceEnd = depth - 10;
+            } else {
+                surfaceEnd = 100;
+            }
+            sfEnd = (1500/sspd) * (surfaceEnd / (loRng-upRng)) * pingSize;
+        }
+        if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
+            StructSonarInfo sonarInfo;
+            sonarInfo.draft   = 0;
+            sonarInfo.btStart = 0;
+            sonarInfo.sfEnd   = 0;
+        }
+
+        chartParams.sfEnd = sfEnd;
+        chartParams.btStart = btStart;
+
+
         // 发送信号，让 Dataset 接收声呐数据
         const int testEcogramCnt = 1200;
         // if(cnt < testEcogramCnt) {

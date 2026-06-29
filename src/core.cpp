@@ -289,6 +289,10 @@ void Core::onFileStartOpening()
     emit sendIsFileOpening();
     dataHorizon_->setIsFileOpening(isFileOpening_);
 
+    if (datasetPtr_) {
+        datasetPtr_->setAutoUpdateEnabled(false);
+    }
+
     if (scene3dViewPtr_) {
         scene3dViewPtr_->forceUpdateDatasetLlaRef();
     }
@@ -297,6 +301,11 @@ void Core::onFileStartOpening()
 void Core::onFileOpened()
 {
     qDebug() << "file opened!";
+
+    if (datasetPtr_) {
+        datasetPtr_->setAutoUpdateEnabled(true);
+        datasetPtr_->triggerManualUpdate();
+    }
 
     tryOpenedfilePath_.clear();
     fileIsCompleteOpened_ = true;

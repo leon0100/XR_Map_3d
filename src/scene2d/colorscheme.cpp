@@ -633,7 +633,7 @@ ZyColorScheme::~ZyColorScheme(){}
 
 void ZyColorScheme::loadColorScheme(QString fileName)
 {
-    /*-文件是否存在-*/
+    /*--文件是否存在--*/
     if(!fileName.isEmpty())
     {
         readColorToColorList(fileName);

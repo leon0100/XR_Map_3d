@@ -66,6 +66,8 @@ struct ChartParameters {
     float depth;
     float sspd;
     int pingSize;
+    int sfEnd;
+    int btStart;
 };
 
 class IDBin : public QObject
