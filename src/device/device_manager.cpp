@@ -213,15 +213,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     QUuid fileUuid = QUuid::createUuid(); // 使用临时 UUID
     ChannelId channelId(fileUuid, 0);     // 地址设为 0
 
-    // =========== 创建 ChartParameters ==========
-    ChartParameters chartParams;
-    chartParams.boardVersion = BoardNone;
-    chartParams.version      = v0;
-
     // ============ 声呐数据参数 =============
-    float resolution = 0.1f;
-    float offset     = 0.0f;
-
     qDebug() << "tslWCnt.size()........." << tslWCnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
     const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
@@ -235,23 +227,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         tsl_w tslSingleStruct;
         memcpy(&tslSingleStruct, tslDataTemp, idx);
 
-
-        // QByteArray rawDat;
-        // for(int i = 0; i < 240; i++) {
-        //     rawDat.append(tslDataTemp[idx + i]);
-        // }
-        // for(int i = 240; i < PING_SIZE_MAX; i++) {
-        //     rawDat.append('\0');
-        // }
-
-        // // 将 QByteArray 转换为 QVector<uint8_t>
-        // for(int j = 0; j < rawDat.size(); j++) {
-        //     channelData.append((uint8_t)rawDat[j]);
-        // }
-
-
-        // ===== 将声呐数据发送到 Dataset =====
-        QVector<QVector<uint8_t>> data;
+        // ----------- 将声呐数据发送到 Dataset ------------
+        QVector<QVector<uint8_t>> dataVec;
         QVector<uint8_t> channelData;
         for(int i = 0; i < 240; i++) {
             channelData.append((uint8_t)tslDataTemp[idx + i]);
@@ -259,47 +236,30 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         for(int i = 240; i < PING_SIZE_MAX; i++) {
             channelData.append((uint8_t)'\0');
         }
+        dataVec.append(channelData);
 
-        data.append(channelData);
-
-        chartParams.upRng = 0;
-        chartParams.loRng = tslSingleStruct.ping.loRng;
-        chartParams.depth = tslSingleStruct.auxInfo.depth;
-        chartParams.sspd  = 1500.0f;
-        chartParams.pingSize = 240;
-
-
-
-        // _image.setColorTable(_colorLevels);
-        float depth = tslSingleStruct.auxInfo.depth;
+        float upRng = 0.0;
+        int sfEnd;
+        int btStart;
+        int draft;
         float loRng = tslSingleStruct.ping.loRng;
-        float upRng = 0.0f;
-        float sspd  = 1500.0f;
+        float depth = tslSingleStruct.auxInfo.depth;
         int pingSize = 240;
 
-        if((upRng < 0) || (loRng < 0) || (pingSize <= 0) || (upRng == loRng)) {
-            StructSonarInfo sonarInfo;
-            sonarInfo.draft   = 0;
-            sonarInfo.btStart = 0;
-            sonarInfo.sfEnd   = 0;
+        if(loRng <= 0) {
+            draft   = 0;
+            btStart = 0;
+            sfEnd   = 0;
         }
 
-        int sfEnd = 0, btStart = 0;
         if(loRng != 0) {
-            if(loRng == upRng) {
-                StructSonarInfo sonarInfo;
-                sonarInfo.draft    = 0;
-                sonarInfo.btStart  = 0;
-                sonarInfo.sfEnd    = 0;
-                sonarInfo.startIdx = 0;
-                sonarInfo.endIdx   = 0;
+            if(loRng == 0.0) {
+                draft    = 0;
+                btStart  = 0;
+                sfEnd    = 0;
             }
 
-            // if(loRng > upRng) {
-            //     cursor.distance.set(0, loRng * 0.1);
-            // }
-
-            btStart = (1500/sspd) *(depth /(loRng-upRng)) * pingSize;
+            btStart = (depth /(loRng-upRng))*pingSize;
 
             float surfaceEnd;
             if((depth < 100) && (depth > 30)) {
@@ -307,24 +267,23 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
             } else {
                 surfaceEnd = 100;
             }
-            sfEnd = (1500/sspd) * (surfaceEnd / (loRng-upRng)) * pingSize;
+            sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
         }
         if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
-            StructSonarInfo sonarInfo;
-            sonarInfo.draft   = 0;
-            sonarInfo.btStart = 0;
-            sonarInfo.sfEnd   = 0;
+            draft   = 0;
+            btStart = 0;
+            sfEnd   = 0;
         }
 
-        chartParams.sfEnd = sfEnd;
-        chartParams.btStart = btStart;
-
-
-        // 发送信号，让 Dataset 接收声呐数据
-        const int testEcogramCnt = 1200;
-        // if(cnt < testEcogramCnt) {
-            emit chartComplete(channelId, chartParams, data, resolution, offset);
-        // }
+        ChartParameters chartParams;
+        chartParams.sfEnd    = sfEnd;
+        chartParams.btStart  = btStart;
+        chartParams.depth    = depth;
+        chartParams.pingSize = pingSize;
+        chartParams.upRng    = 0.0;
+        chartParams.loRng    = loRng;
+        // 让 Dataset 接收声呐数据
+        emit chartComplete(channelId, chartParams, dataVec, 0.1f, 0.0);
 
         tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
         tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;

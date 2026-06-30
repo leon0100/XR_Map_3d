@@ -444,44 +444,33 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
 
 bool Epoch::getSonarFrameData(const ChannelId& channelId, uint8_t subChannelId, uint8_t* dst, int dstLen)
 {
-    // // 参数校验
-    // if (dst == nullptr || dstLen <= 0) {
-    //     return false;
-    // }
+    if (dst == nullptr || dstLen <= 0) {
+        return false;
+    }
 
-    // // 检查通道是否存在
-    // if (!charts_.contains(channelId)) {
-    //     memset(dst, 0, dstLen * sizeof(uint8_t));
-    //     return false;
-    // }
+    Echogram& chart = charts_[channelId][subChannelId];
 
-    auto& chart = charts_[channelId][subChannelId];
-
-    // // 检查数据是否有效
-    // if (chart.resolution == 0 || chart.amplitude.isEmpty()) {
-    //     memset(dst, 0, dstLen * sizeof(uint8_t));
-    //     return false;
-    // }
-
-    // 获取源数据
     const QVector<uint8_t>& srcData = chart.amplitude;
     int rawSize = srcData.size();
 
-    // 直接复制数据到目标数组（1:1映射，不缩放）
     int copyLen = qMin(rawSize, dstLen);
     for (int i = 0; i < copyLen; i++) {
         dst[i] = srcData[i];
     }
 
-    // 如果目标数组更长，剩余部分填0
     for (int i = copyLen; i < dstLen; i++) {
         dst[i] = 0;
     }
 
-
-    // qDebug() << "copyLen:...." << copyLen << "  dstLen:" << dstLen << "  rawSize:" << rawSize;
-
+    // qDebug() << "copyLen:" << copyLen << "  dstLen:" << dstLen << "  rawSize:" << rawSize;//1024,1024,1024
     return true;
+}
+
+void Epoch::getSonarFramePixel(const ChannelId& channelId, uint8_t subChannelId, QVector<uint8_t>& pixelVec)
+{
+    Echogram& chart = charts_[channelId][subChannelId];
+
+    pixelVec = chart.amplitude;
 }
 
 

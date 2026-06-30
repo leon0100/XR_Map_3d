@@ -614,7 +614,7 @@
 
 
 
-int ZyColorScheme::backgroundIndex = 0;
+int ZyColorScheme::backgroundIndex = 2;
 int ZyColorScheme::background[] = {0xffffff, 0x000000, 0x104684};
 int ZyColorScheme::colorLine = 0;
 int ZyColorScheme::onlineColor = 0xff0000;

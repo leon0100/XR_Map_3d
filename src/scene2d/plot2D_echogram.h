@@ -50,7 +50,7 @@ public:
     int getColorSchemeType() const { return _colorSchemeType; }
 
     // int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
-    int updateCash(Plot2D* parent, Dataset* dataset, int width, int height, int sfEnd = -1, int btStart = -1);
+    int updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
 
     void addReRenderPlotIndxs(const QSet<int>& indxs);
@@ -104,6 +104,13 @@ protected:
         _cashFlags.resetCash = false;
         return reset_cash;
     }
+
+
+private:
+    void stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale);
+
+
+
 private:
     ThemeId themeId_;
     QSet<int> reRenderPlotIndxs_;
@@ -136,5 +143,4 @@ private:
     int _sfEnd;                 // 水表结束位置（像素）
     int _btStart;               // 水底开始位置（像素）
     int cntt_ = 0;
-    int indexEpoch_ = 0;
 };
