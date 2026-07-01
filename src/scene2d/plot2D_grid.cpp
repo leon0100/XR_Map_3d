@@ -22,8 +22,11 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
 
     QFontMetrics fm(p->font());
 
-    const int imageHeight{ canvas.height() }, imageWidth{ canvas.width() },
-        linesCount{ _lines }, textXOffset{ 30 }, textYOffset{ 10 };
+    const int  imageHeight = canvas.height();
+    const int  imageWidth  = canvas.width();
+    const int  linesCount  = _lines;
+    const int  textXOffset = 30;
+    const int  textYOffset = 10;
 
     // линии
     for (int i = 1; i < linesCount; ++i) {
@@ -43,16 +46,14 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
             lineText.append(text);
         }
         if (cursor.distance.isValid()) { // depth
-            // const float distFrom{ cursor.distance.from }, distTo{ cursor.distance.to },
-            //     distRange{ distTo - distFrom }, rangeVal{ distRange * i / linesCount + distFrom };
             float distFrom, distTo;
             distFrom = loRngMin_;
-            distTo   = loRngMax_;
+            distTo   = loRngMax_ / 100.0f;
 
             //     distFrom = cursor.distance.from;
             //     distTo   = cursor.distance.to;
             const float distRange{ distTo - distFrom }, rangeVal{ distRange * i / linesCount + distFrom };
-            lineText.append({QString::number(rangeVal, 'f', 2) + QObject::tr(" m")});
+            lineText.append({QString::number(rangeVal, 'f', 1) + QObject::tr(" m")});
         }
 
         const int textW = fm.horizontalAdvance(lineText);
@@ -75,19 +76,18 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
         }
     }
 
-    // глубина графика
-    if (cursor.distance.isValid()) {
-        p->setFont(QFont("Asap", 26, QFont::Normal));
-        QFontMetrics fm2(p->font());
-        float val{ cursor.distance.to };
-        bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
-        QString rangeText = QString::number(val, 'f', isInteger ? 0 : 2) + QObject::tr(" m");
-        const int w = fm2.horizontalAdvance(rangeText);
-        const int x = invert_ ? (textXOffset * 2) : (imageWidth - textXOffset * 0.5 - w);
-        p->drawText(x, imageHeight - 10, rangeText);
-    }
+    // // 图像深度
+    // if (cursor.distance.isValid()) {
+    //     p->setFont(QFont("Asap", 26, QFont::Normal));
+    //     QFontMetrics fm2(p->font());
+    //     float val{ cursor.distance.to };
+    //     bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
+    //     QString rangeText = QString::number(val, 'f', isInteger ? 0 : 2) + QObject::tr(" m");
+    //     const int w = fm2.horizontalAdvance(rangeText);
+    //     const int x = invert_ ? (textXOffset * 2) : (imageWidth - textXOffset * 0.5 - w);
+    //     p->drawText(x, imageHeight - 10, rangeText);
+    // }
 
-    qDebug() << "_rangeFinderLastVisible " << _rangeFinderLastVisible;
     // rangefinder
     if (_rangeFinderLastVisible && cursor.distance.isValid()) {
         Epoch* lastEpoch = dataset->last();
@@ -127,25 +127,6 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
 
         float temp = NAN;
         temp = dataset->getLastTemp();
-
-        // qDebug() << "Plot temp def: " << temp;
-
-        // if (lastEpoch != NULL && qIsFinite(lastEpoch->temperatureAvail())) {
-        //     temp = lastEpoch->temperature();
-        //     qDebug() << "Plot temp one: " << temp;
-        // }
-        // else if (preLastEpoch != NULL && qIsFinite(preLastEpoch->temperatureAvail())) {
-        //     temp = preLastEpoch->temperature();
-        //     qDebug() << "Plot temp sec: " << temp;
-        // } else if() {
-
-        // if (lastEpoch != NULL && qIsFinite(lastEpoch->temperatureAvail())) {
-        //     temp = preLastEpoch->temperature();
-        //     qDebug() << "Plot temp sec: " << temp;
-        // }
-
-        // }
-        // qDebug() << "Plot temp end: " << temp;
 
         if (temperatureVisible_ && qIsFinite(temp)) {
             pen.setColor(QColor(80, 200, 0));
