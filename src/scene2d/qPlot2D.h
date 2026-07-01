@@ -18,11 +18,13 @@ public:
     Q_PROPERTY(bool isEnabled  READ getPlotEnabled WRITE setPlotEnabled)
     Q_PROPERTY(QString contactInfo      READ getContactInfo      WRITE setContactInfo     NOTIFY contactChanged)
     Q_PROPERTY(bool    contactVisible   READ getContactVisible   WRITE setContactVisible  NOTIFY contactChanged)
-    Q_PROPERTY(int     contactPositionX READ getContactPositionX /*WRITE setContactPosition*/ NOTIFY contactChanged)
-    Q_PROPERTY(int     contactPositionY READ getContactPositionY /*WRITE setContactPosition*/ NOTIFY contactChanged)
-    Q_PROPERTY(int     contactIndx      READ getContactIndx /*WRITE setContactIndx*/   NOTIFY contactChanged)
-    Q_PROPERTY(double  contactLat       READ getContactLat  NOTIFY contactChanged)
-    Q_PROPERTY(double  contactDepth     READ getContactDepth /*WRITE setContactLon*/ NOTIFY contactChanged)
+    Q_PROPERTY(int     contactPositionX READ getContactPositionX                          NOTIFY contactChanged)
+    Q_PROPERTY(int     contactPositionY READ getContactPositionY                          NOTIFY contactChanged)
+    Q_PROPERTY(int     contactIndx      READ getContactIndx                               NOTIFY contactChanged)
+    Q_PROPERTY(double  contactLat       READ getContactLat                                NOTIFY contactChanged)
+    Q_PROPERTY(double  contactDepth     READ getContactDepth                              NOTIFY contactChanged)
+
+    Q_PROPERTY(float   maxLoRng         READ getMaxLoRng         WRITE setMaxLoRng        NOTIFY maxLoRngChanged)
 
     qPlot2D(QQuickItem* parent = nullptr);
     void paint(QPainter *painter) override;
@@ -39,6 +41,8 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override final;
     void sendSyncEvent(int epoch_index, QEvent::Type eventType) override final;
 
+    float getMaxLoRng();
+    void setMaxLoRng(float maxLoRng);
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
     Q_INVOKABLE void setCursorFromTo(float from, float to) { cursor_.distance.mode = AutoRangeNone; Plot2D::cursor_.distance.from = from; Plot2D::cursor_.distance.to = to; }
@@ -46,7 +50,7 @@ public:
 
 
 protected:
-    Dataset* m_plot = nullptr;
+    Dataset* dataset_ = nullptr;
     QTimer* m_updateTimer;
     bool m_needUpdate = true;
     bool _isHorizontal = true;
@@ -56,16 +60,19 @@ signals:
     void plotEnableChanged();
     void contactChanged();
     void outlineModeChanged();
+    void maxLoRngChanged();
 
 protected slots:
     void timerUpdater();
     void dataUpdate();
+    void updateMinMaxLoRng(float minLoRng, float maxLoRng);
 
 public slots:
     void updater();
     void horScrollEvent(int delta);
     void verZoomEvent(int delta);
     void verScrollEvent(int delta);
+    Q_INVOKABLE void scaleYZoomEvent(int delta);
     Q_INVOKABLE void plotMousePosition(int x, int y, bool isSync = false);
     Q_INVOKABLE void simplePlotMousePosition(int x, int y);
     Q_INVOKABLE void onCursorMoved(int x, int y);
@@ -133,9 +140,9 @@ public slots:
 
     void drawPolygonOutline(bool outlineMode);
     void doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max,
-                          float gain_slope, float threshold, float offsetx, float offsety, float offsetz, bool manual);
-    void refreshDistParams(int preset, int windowSize, float verticalGap, float rangeMin, float rangeMax, float gainSlope, float threshold, float offsetX, float offsetY, float offsetZ);
-
+                    float gain_slope, float threshold, float offsetx, float offsety, float offsetz, bool manual);
+    void refreshDistParams(int preset, int windowSize, float verticalGap, float rangeMin, float rangeMax,
+                    float gainSlope, float threshold, float offsetX, float offsetY, float offsetZ);
 
 
     void setPreset(int value);
@@ -151,5 +158,6 @@ public slots:
 
 private:
     int indx_ = -1;
+    float maxLoRng_ = 0.0f;
 
 };

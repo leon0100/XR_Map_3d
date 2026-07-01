@@ -27,7 +27,7 @@
 typedef struct
 {
     quint8 reg0;            ///<bit[1:0] hardware gain: 1x 2x 4x; bit[2]  gain mode: 1-- auto gain
-    quint32 loRng;     ///<in unit cm
+    quint32 loRng;          ///<in unit cm
 } ping_info_w;
 
 typedef struct

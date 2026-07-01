@@ -108,19 +108,15 @@ signals:
     void fileStopsOpening();
     void fileStopsOpening2(QVector<float>& depth, double minZ, double maxZ);
     void chartLossesChanged();
-
     void sendProtoFrame(const Parsers::ProtoBinOut& protoOut);
-
     void fileOpened();
 
 
 private:
     void delAllDev();
-
     void openFileData_tslw(QByteArray &tslByteArray);
     void openFileData_tsl3(QByteArray &tslByteArray);
     double dm_to_dd(double ddmmmmmmm);
-
 
     /*data*/
     struct VruData {
@@ -168,7 +164,6 @@ private:
     bool loggingStarted_ = false;
     LocationReader* locReader_;
     bool useGPS_{ false };
-
 
     QObject* progressDialog_ = nullptr;
 

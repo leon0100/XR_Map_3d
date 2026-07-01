@@ -19,6 +19,8 @@ public:
     bool isInvert() const { return invert_; }
     void setInvert(bool state) { invert_ = state; }
 
+    void setLoRngRange(float minLoRng, float maxLoRng);
+
 protected:
     bool angleVisibility_;
     bool _velocityVisible = true;
@@ -29,4 +31,7 @@ protected:
     QColor _lineColor = QColor(255, 255, 255, 255);
     bool fillWidth_ = false;
     bool invert_ = false;
+
+    float loRngMin_ = 0.0f, loRngMax_ = 0.0f;
+    bool loRngRangeValid_ = false;
 };

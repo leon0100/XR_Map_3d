@@ -11,8 +11,8 @@ WaterFall {
     id: plot
 
     property bool is3dVisible: false
-    property int indx: 0
-    property int instruments: instrumentsGradeList.currentIndex
+    property int  indx: 0
+    property int  instruments: instrumentsGradeList.currentIndex
 
     horizontal: horisontalVertical.checked
 
@@ -39,6 +39,13 @@ WaterFall {
     }
     function doVerScrollEvent(paramX) {
         verScrollEvent(paramX)
+    }
+
+    function cmToMeterText(cmValue) {
+        if(cmValue === undefined || cmValue === null || cmValue === "") {
+            return "0.01m"
+        }
+        return Number(cmValue / 100).toLocaleString(locale, 'f', 2) + "m"
     }
 
     onEnabledChanged: {
@@ -128,12 +135,14 @@ WaterFall {
             anchors.fill: parent
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-            property int lastMouseX: -1
-            property bool wasMoved: false
+            property int   lastMouseX:   -1
+            property bool  wasMoved:    false
             property point startMousePos: Qt.point(-1, -1)
-            property real mouseThreshold: 15
-            property int contactMouseX: -1
-            property int contactMouseY: -1
+            property real  mouseThreshold: 4
+            property int   contactMouseX: -1
+            property int   contactMouseY: -1
+            property bool  isPanning: false
+            property int   panStartX: -1
 
             hoverEnabled: true
 
@@ -147,7 +156,6 @@ WaterFall {
                         mousearea.contactMouseX = mousearea.mouseX
                         mousearea.contactMouseY = mousearea.mouseY
                         plot.simplePlotMousePosition(mousearea.mouseX, mousearea.mouseY)
-
                         menuBlock.position(mousearea.mouseX, mousearea.mouseY)
                     }
                 }
@@ -180,9 +188,11 @@ WaterFall {
                 }
 
                 if (mouse.button === Qt.LeftButton) {
-                    menuBlock.visible = false
-                    plot.plotMousePosition(mouse.x, mouse.y)
-                    plotPressed(indx, mouse.x, mouse.y)
+                    // menuBlock.visible = false
+                    // plot.plotMousePosition(mouse.x, mouse.y)
+                    // plotPressed(indx, mouse.x, mouse.y)
+                    isPanning = false
+                    panStartX = mouse.x
                 }
 
                 if (mouse.button === Qt.RightButton) {
@@ -216,6 +226,8 @@ WaterFall {
                 wasMoved = false
                 startMousePos = Qt.point(-1, -1)
                 plotReleased(indx)
+                isPanning = false
+                panStartX = -1
             }
 
             onCanceled: {
@@ -228,6 +240,8 @@ WaterFall {
                 wasMoved = false
                 startMousePos = Qt.point(-1, -1)
                 plotReleased(indx)
+                isPanning = false
+                panStartX = -1
             }
 
             onPositionChanged: function(mouse) {
@@ -236,19 +250,34 @@ WaterFall {
                 if (Qt.platform.os === "android") {
                     if (!wasMoved) {
                         var currDelta = Math.sqrt(Math.pow((mouse.x - startMousePos.x), 2)
-                                            + Math.pow((mouse.y - startMousePos.y), 2));
+                                                  + Math.pow((mouse.y - startMousePos.y), 2));
                         if (currDelta > mouseThreshold) {
                             wasMoved = true;
                         }
                     }
                 }
 
-                var delta = mouse.x - lastMouseX
+                var delta  = mouse.x - lastMouseX
                 lastMouseX = mouse.x
 
                 if (mousearea.pressedButtons & Qt.LeftButton) {
-                    plot.plotMousePosition(mouse.x, mouse.y)
-                    plotPressed(indx, mouse.x, mouse.y)
+                    // plot.plotMousePosition(mouse.x, mouse.y)
+                    // plotPressed(indx, mouse.x, mouse.y)
+
+                    if(!isPanning) {
+                        var totalDelta = mouse.x - panStartX
+                        if (Math.abs(totalDelta) > mouseThreshold) {
+                            isPanning = true
+                            plot.plotMousePosition(-1, -1)
+                        }
+                    }
+
+                    if (isPanning) {
+                        if (delta !== 0) {
+                            plot.horScrollEvent(delta)
+                            updateOtherPlot(indx)      //同步另一个声呐视图
+                        }
+                    }
                 }
 
                 if (mouse.button === Qt.RightButton) {
@@ -271,8 +300,7 @@ WaterFall {
                 }
                 else {
                     let val = wheel.angleDelta.y
-                    plot.horScrollEvent(val)
-                    updateOtherPlot(indx)
+                    plot.scaleYZoomEvent(val)
                 }
             }
         }
@@ -514,7 +542,7 @@ WaterFall {
                         CCheck {
                             id: echogramVisible
                             Layout.fillWidth: true
-                                                   Layout.preferredWidth: 150
+                            Layout.preferredWidth: 150
                             checked: true
                             text: qsTr("Echogram")
                             onCheckedChanged: plotEchogramVisible(checked)
@@ -523,7 +551,7 @@ WaterFall {
 
                         CCombo  {
                             id: echoTheme
-                                                   Layout.fillWidth: true
+                            Layout.fillWidth: true
                             Layout.preferredWidth: 150
                             model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
                             currentIndex: 0
@@ -540,7 +568,7 @@ WaterFall {
 
                         CCombo  {
                             id: echogramTypesList
-                                                   Layout.fillWidth: true
+                            Layout.fillWidth: true
                             Layout.preferredWidth: 150
                             model: [qsTr("Raw"), qsTr("Side-Scan")]
                             currentIndex: 0
@@ -788,36 +816,92 @@ WaterFall {
                                 text: qsTr("Grid")
                                 onCheckedChanged: plotGridVerticalNumber(gridNumber.value*gridVisible.checked)
                             }
-                            CCheck {
-                                id: fillWidthGrid
-                                Layout.fillWidth: true
-                                text: qsTr("fill")
-                                onCheckedChanged: plotGridFillWidth(checked)
-                                visible: gridVisible.checked
+                            // CCheck {
+                            //     id: fillWidthGrid
+                            //     Layout.fillWidth: true
+                            //     text: qsTr("fill")
+                            //     onCheckedChanged: plotGridFillWidth(checked)
+                            //     visible: gridVisible.checked
 
-                                Component.onCompleted: {
-                                    plotGridFillWidth(checked)
-                                }
-                                Settings {
-                                    category: "Plot2D_" + plot.indx
-                                    property alias fillWidthGrid: fillWidthGrid.checked
-                                }
-                            }
-                            CCheck {
-                                id: invertGrid
-                                Layout.fillWidth: true
-                                text: qsTr("invert")
-                                onCheckedChanged: plotGridInvert(checked)
-                                visible: gridVisible.checked
+                            //     Component.onCompleted: {
+                            //         plotGridFillWidth(checked)
+                            //     }
+                            //     Settings {
+                            //         category: "Plot2D_" + plot.indx
+                            //         property alias fillWidthGrid: fillWidthGrid.checked
+                            //     }
+                            // }
+                            // CCheck {
+                            //     id: invertGrid
+                            //     Layout.fillWidth: true
+                            //     text: qsTr("invert")
+                            //     onCheckedChanged: plotGridInvert(checked)
+                            //     visible: gridVisible.checked
 
-                                Component.onCompleted: {
-                                    plotGridInvert(checked)
-                                }
-                                Settings {
-                                    category: "Plot2D_" + plot.indx
-                                    property alias invertGrid: invertGrid.checked
-                                }
+                            //     Component.onCompleted: {
+                            //         plotGridInvert(checked)
+                            //     }
+                            //     Settings {
+                            //         category: "Plot2D_" + plot.indx
+                            //         property alias invertGrid: invertGrid.checked
+                            //     }
+                            // }
+
+                            TextField {
+                              id: scaleRangeMin
+                              Layout.fillWidth: true
+                              text: "0"
+                              placeholderText: qsTr("min")
+                              horizontalAlignment: TextInput.AlignHCenter
+                              font.pixelSize: 13
+                              visible: gridVisible.checked
+                              selectByMouse: true
+                              validator: DoubleValidator { bottom: -100; top: 100; decimals: 2; notation: DoubleValidator.StandardNotation }
+
+                              // function applyRange() {
+                              //     var from = parseFloat(text) || 0
+                              //     var to = parseFloat(scaleRangeMax.text) || 0
+                              //     plot.setCursorFromTo(from, to)
+                              //     plotCursorChanged(indx, from, to)
+                              // }
+                              onEditingFinished: applyRange()
+                              Component.onCompleted: applyRange()
+
+                              // Settings {
+                              //     category: "Plot2D_" + plot.indx
+                              //     property alias scaleRangeMin: scaleRangeMin.text
+                              // }
                             }
+                            TextField {
+                                id: scaleRangeMax
+                                Layout.fillWidth: true
+                                text: cmToMeterText(plot.maxLoRng)
+                                placeholderText: qsTr("max")
+                                horizontalAlignment: TextInput.AlignHCenter
+                                font.pixelSize: 13
+                                visible: gridVisible.checked
+                                selectByMouse: true
+                                validator: DoubleValidator { bottom: -100; top: 10000; decimals: 2; notation: DoubleValidator.StandardNotation }
+
+                                // function updateFromDataset() {
+                                //     var maxLoRng = plot.getMaxLoRng()
+                                //     if (maxLoRng > 0) {
+                                //         text = (maxLoRng * 2).toString()
+                                //     }
+                                // }
+                                // function applyRange() {
+                                //     var from = parseFloat(scaleRangeMin.text) || 0
+                                //     var to = parseFloat(text) || 0
+                                //     plot.setCursorFromTo(from, to)
+                                //     plotCursorChanged(indx, from, to)
+                                // }
+                                // onEditingFinished: applyRange()
+                                // Component.onCompleted: {
+                                //     updateFromDataset()
+                                //     applyRange()
+                                //   }
+
+                              }
                         }
 
                         SpinBoxCustom {
@@ -826,10 +910,8 @@ WaterFall {
                             to: 24
                             stepSize: 1
                             value: 5
-
                             onValueChanged: plotGridVerticalNumber(gridNumber.value*gridVisible.checked)
                             Component.onCompleted: plotGridVerticalNumber(gridNumber.value*gridVisible.checked)
-
                             Settings {
                                 category: "Plot2D_" + plot.indx
                                 property alias gridNumber: gridNumber.value

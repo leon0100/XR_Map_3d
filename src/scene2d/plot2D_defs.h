@@ -153,8 +153,6 @@ typedef struct PlotPen {
 
 class Canvas {
 public:
-//    QImage _image;
-
     Canvas() {
     }
 

@@ -30,6 +30,7 @@ public:
     };
 
     Plot2DEchogram();
+    ~Plot2DEchogram();
     bool draw(Plot2D* parent, Dataset* dataset);
 
     float getLowLevel() const;
@@ -48,6 +49,9 @@ public:
     // 设置配色类型（surface/fish/bottom）
     void setColorSchemeType(int type) { _colorSchemeType = type; }
     int getColorSchemeType() const { return _colorSchemeType; }
+
+    void setScaleYFactor(float factor);
+    float getScaleYFactor() const { return _scaleYFactor; };
 
     // int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
     int updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
@@ -142,5 +146,10 @@ private:
     int _currentPingSize;       // 脉冲大小
     int _sfEnd;                 // 水表结束位置（像素）
     int _btStart;               // 水底开始位置（像素）
-    int cntt_ = 0;
+
+    float _scaleYFactor = 0.4f;
+
+
+
+
 };

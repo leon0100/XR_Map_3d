@@ -19,35 +19,29 @@ qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(
     setAcceptedMouseButtons(Qt::AllButtons);
 
     _isHorizontal = false;
+
 }
 
 void qPlot2D::paint(QPainter *painter)
 {
     // qDebug() << "qPlot2D::paint(.........." << Plot2D::plotEnabled();
-    if (!Plot2D::plotEnabled()) {
+    if (!Plot2D::plotEnabled() || dataset_ == nullptr) {
         return;
     }
 
-    clock_t start = clock();
-
-    if (m_plot != nullptr && painter != nullptr) {
-        Plot2D::getImage((int)width(), (int)height(), painter, _isHorizontal);
-        Plot2D::draw(painter);
-        if (Plot2D::getIsContactChanged()) {
-            emit contactChanged();
-        }
+    Plot2D::getImage((int)width(), (int)height(), painter, _isHorizontal);
+    Plot2D::draw(painter);
+    if (Plot2D::getIsContactChanged()) {
+        emit contactChanged();
     }
-
-    clock_t end = clock();
-    int cpu_time_used = (end - start);
-    Q_UNUSED(cpu_time_used);
 }
 
 void qPlot2D::setPlot(Dataset *dataset) {
     if(dataset == nullptr) { return; }
-    m_plot = dataset;
+    dataset_ = dataset;
     setDataset(dataset);
     connect(dataset, &Dataset::dataUpdate, this, &qPlot2D::dataUpdate);
+    connect(dataset, &Dataset::updateMinMaxLoRng, this, &qPlot2D::updateMinMaxLoRng);
 }
 
 void qPlot2D::setDataProcessor(DataProcessor *dataProcessorPtr)
@@ -132,6 +126,20 @@ bool qPlot2D::setActiveContact(int indx)
 {
     return Plot2D::setActiveContact(indx);
 }
+
+float qPlot2D::getMaxLoRng()
+{
+    return maxLoRng_;
+}
+
+void qPlot2D::setMaxLoRng(float maxLoRng)
+{
+    maxLoRng_ = maxLoRng * 2;
+    grid_.setLoRngRange(0.0f, maxLoRng_);
+    emit maxLoRngChanged();
+    // plotUpdate();
+}
+
 
 bool qPlot2D::deleteContact(int indx)
 {
@@ -316,6 +324,19 @@ void qPlot2D::setOffsetZ(float value)
     }
 }
 
+void qPlot2D::scaleYZoomEvent(int delta)
+{
+    float factor = getEchogramScaleYFactor();
+    float step = 0.05f;
+    if(delta > 0) {
+        factor += step * ((delta + 119) / 120);
+    } else if(delta < 0) {
+        factor -= step * ((-delta + 119) / 120);
+    }
+
+    setEchogramScaleYFactor(factor);
+}
+
 void qPlot2D::plotMousePosition(int x, int y, bool isSync)
 {
     setAimEpochEventState(false);
@@ -360,11 +381,18 @@ void qPlot2D::timerUpdater() {
     }
 }
 
-void qPlot2D::dataUpdate() {
+void qPlot2D::dataUpdate()
+{
     plotUpdate();
+}
+
+void qPlot2D::updateMinMaxLoRng(float minLoRng, float maxLoRng)
+{
+    setMaxLoRng(maxLoRng);
 }
 
 void qPlot2D::updater() {
     m_needUpdate = true;
 }
+
 

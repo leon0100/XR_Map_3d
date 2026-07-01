@@ -338,87 +338,112 @@ int Plot2D::getThemeId() const
     return echogram_.getThemeId();
 }
 
-void Plot2D::setEchogramLowLevel(float low) {
+void Plot2D::setEchogramLowLevel(float low)
+{
     // qDebug() << "Plot2D::setEchogramLowLevel........." << low;
     echogram_.setLowLevel(low);
     plotUpdate();
 }
 
-void Plot2D::setEchogramHightLevel(float high) {
+void Plot2D::setEchogramHightLevel(float high)
+{
     // qDebug() << "Plot2D::setEchogramHightLevel........." << high;
     echogram_.setHightLevel(high);
     plotUpdate();
 }
 
-void Plot2D::setEchogramVisible(bool visible) {
+void Plot2D::setEchogramVisible(bool visible)
+{
     // qDebug() << "Plot2D::setEchogramVisible.........";
     echogram_.setVisible(visible);
     echogram_.resetCash();
     plotUpdate();
 }
 
-void Plot2D::setEchogramTheme(int theme_id) {
+void Plot2D::setEchogramTheme(int theme_id)
+{
     // qDebug() << "Plot2D::setEchogramTheme.........";
     echogram_.setThemeId(theme_id);
     plotUpdate();
 }
 
-void Plot2D::setEchogramCompensation(int compensation_id) {
+void Plot2D::setEchogramCompensation(int compensation_id)
+{
     // qDebug() << "Plot2D::setEchogramCompensation.........";
     echogram_.setCompensation(compensation_id);
     echogram_.resetCash();
     plotUpdate();
 }
 
-void Plot2D::setBottomTrackVisible(bool visible) {
+void Plot2D::setEchogramScaleYFactor(float factor)
+{
+    echogram_.setScaleYFactor(factor);
+    plotUpdate();
+}
+
+float Plot2D::getEchogramScaleYFactor() const
+{
+    return echogram_.getScaleYFactor();
+}
+
+void Plot2D::setBottomTrackVisible(bool visible)
+{
     // qDebug() << "Plot2D::setBottomTrackVisible.........";
     bottomProcessing_.setVisible(visible);
     plotUpdate();
 }
 
-void Plot2D::setBottomTrackTheme(int theme_id) {
+void Plot2D::setBottomTrackTheme(int theme_id)
+{
     Q_UNUSED(theme_id);
 }
 
-void Plot2D::setRangefinderVisible(bool visible) {
+void Plot2D::setRangefinderVisible(bool visible)
+{
     // qDebug() << "Plot2D::setRangefinderVisible.........";
     rangefinder_.setVisible(visible);
     grid_.setRangeFinderVisible(visible);
     plotUpdate();
 }
 
-void Plot2D::setRangefinderTheme(int theme_id) {
+void Plot2D::setRangefinderTheme(int theme_id)
+{
     // qDebug() << "Plot2D::setRangefinderTheme.........";
     rangefinder_.setTheme(theme_id);
     plotUpdate();
 }
 
-void Plot2D::setAttitudeVisible(bool visible) {
+void Plot2D::setAttitudeVisible(bool visible)
+{
     // qDebug() << "Plot2D::setAttitudeVisible.........";
     attitude_.setVisible(visible);
     plotUpdate();
 }
 
-void Plot2D::setTemperatureVisible(bool visible) {
+void Plot2D::setTemperatureVisible(bool visible)
+{
     // qDebug() << "Plot2D::setTemperatureVisible.........";
     grid_.setTemperatureVisible(visible);
     plotUpdate();
 }
 
-void Plot2D::setDopplerBeamVisible(bool visible, int beam_filter) {
+void Plot2D::setDopplerBeamVisible(bool visible, int beam_filter)
+{
     // qDebug() << "Plot2D::setDopplerBeamVisible.........";
     dvlBeamVelocity_.setVisible(visible);
     dvlBeamVelocity_.setBeamFilter(beam_filter);
     plotUpdate();
 }
 
-void Plot2D::setDopplerInstrumentVisible(bool visible) {
+void Plot2D::setDopplerInstrumentVisible(bool visible)
+{
     // qDebug() << "Plot2D::setDopplerInstrumentVisible.........";
     dvlSolution_.setVisible(visible);
     plotUpdate();
 }
 
-void Plot2D::setGNSSVisible(bool visible, int flags) {
+void Plot2D::setGNSSVisible(bool visible, int flags)
+{
     // qDebug() << "Plot2D::setGNSSVisible.........";
     Q_UNUSED(flags);
 
@@ -426,13 +451,15 @@ void Plot2D::setGNSSVisible(bool visible, int flags) {
     plotUpdate();
 }
 
-void Plot2D::setAcousticAngleVisible(bool visible) {
+void Plot2D::setAcousticAngleVisible(bool visible)
+{
     // qDebug() << "Plot2D::setAcousticAngleVisible.........";
     usblSolution_.setVisible(visible);
     plotUpdate();
 }
 
-void Plot2D::setGridVetricalNumber(int grids) {
+void Plot2D::setGridVetricalNumber(int grids)
+{
     // qDebug() << "Plot2D::setGridVetricalNumber.........";
     grid_.setVisible(grids > 0);
     grid_.setVetricalNumber(grids);
@@ -468,24 +495,28 @@ void Plot2D::setAngleRange(int angleRange)
     plotUpdate();
 }
 
-void Plot2D::setVelocityVisible(bool visible) {
+void Plot2D::setVelocityVisible(bool visible)
+{
     // qDebug() << "Plot2D::setVelocityVisible.........";
     grid_.setVelocityVisible(visible);
     plotUpdate();
 }
 
-void Plot2D::setVelocityRange(float velocity) {
+void Plot2D::setVelocityRange(float velocity)
+{
     // qDebug() << "Plot2D::setVelocityRange.........";
     cursor_.velocity.from = -velocity;
     cursor_.velocity.to = velocity;
     plotUpdate();
 }
 
-void Plot2D::setDistanceAutoRange(int auto_range_type) {
+void Plot2D::setDistanceAutoRange(int auto_range_type)
+{
     cursor_.distance.mode = AutoRangeMode(auto_range_type);
 }
 
-void Plot2D::setDistance(float from, float to) {
+void Plot2D::setDistance(float from, float to)
+{
     cursor_.distance.set(from, to);
 }
 
@@ -572,7 +603,7 @@ void Plot2D::scrollDistance(float ratio)
 
 void Plot2D::setMousePosition(int x, int y, bool isSync)
 {
-    qDebug() << "-------------------------Plot2D::setMousePosition....................." << x << "  " << y;
+    // qDebug() << "-------------------------Plot2D::setMousePosition....................." << x << "  " << y;
     const int image_width  = canvas_.width();
     const int image_height = canvas_.height();
     const int dataset_from = cursor_.getIndex(0);
@@ -745,7 +776,8 @@ void Plot2D::simpleSetMousePosition(int x, int y)
     //plotUpdate();
 }
 
-void Plot2D::setMouseTool(MouseTool tool) {
+void Plot2D::setMouseTool(MouseTool tool)
+{
     cursor_.setTool(tool);
 }
 
@@ -926,16 +958,25 @@ void Plot2D::onCursorMoved(int x, int y)
     plotUpdate();
 }
 
-Canvas &Plot2D::canvas() { return canvas_; }
+Canvas &Plot2D::canvas()
+{
+    return canvas_;
+}
 
-DatasetCursor &Plot2D::cursor() { return cursor_; }
+DatasetCursor &Plot2D::cursor()
+{
+    return cursor_;
+}
 
 void Plot2D::resetCash()
 {
     echogram_.resetCash();
 }
 
-void Plot2D::plotUpdate() {}
+void Plot2D::plotUpdate()
+{
+
+}
 
 void Plot2D::sendSyncEvent(int epoch_index, QEvent::Type eventType)
 {

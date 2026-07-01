@@ -203,6 +203,10 @@ public:
 
     int getLastBottomTrackEpoch() const;
 
+    float getMaxLoRng() {
+        return maxLoRng_;
+    }
+
     float getLastYaw() {
         return _lastYaw;
     }
@@ -263,7 +267,6 @@ public slots:
     void  addEvent(int timestamp, int id, int unixt = 0);
     void  addEncoder(float angle1_deg, float angle2_deg = NAN, float angle3_deg = NAN);
     void  addTimestamp(int timestamp);
-
     void setChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
     void setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
     void setSoundSpeed (const ChannelId& channelId, uint32_t soundSpeed);
@@ -327,7 +330,6 @@ public slots:
     void onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll);
 
 signals:
-    // data horizon
     void epochAdded(uint64_t indx);
     void positionAdded(uint64_t indx);
     void chartAdded(uint64_t indx); // without ChartId
@@ -336,6 +338,7 @@ signals:
     //void interpYaw(int epIndx);
     //void interpPos(int epIndx);
     void dataUpdate();
+    void updateMinMaxLoRng(float minLoRng, float maxLoRng);
     void bottomTrackUpdated(const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll);
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
@@ -411,7 +414,7 @@ private:
     int lastBottomTrackEpoch_;
     BottomTrackParam bottomTrackParam_;
     QMap<ChannelId, RecordParameters> usingRecordParameters_;
-    BlackStripesProcessor* bSProc_;
+    BlackStripesProcessor* bSProc_ = nullptr;
     QMap<ChannelId, int> lastAddChartEpochIndx_;
     QSet<ChannelId> channelsToResizeEthData_;
 
@@ -426,6 +429,7 @@ private:
     float angleToActiveContact_ = 0.0f;
     float lastDepth_            = 0.0f;
     float speed_                = 0.0f;
+    float maxLoRng_             = 0.0f;
     QVector3D sonarOffset_;
     uint64_t sonarPosIndx_;
 

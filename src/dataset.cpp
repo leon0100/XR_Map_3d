@@ -840,9 +840,7 @@ void Dataset::resetDataset()
     }
 
     resetRenderBuffers();
-
     resetDistProcessing();
-    // state_ = DatasetState::kUndefined;
 
 #if defined(FAKE_COORDS)
     testTime_ = 1740466541;
@@ -858,9 +856,10 @@ void Dataset::resetDataset()
     distToActiveContact_  = 0.0f;
     angleToActiveContact_ = 0.0f;
     lastDepth_            = 0.0f;
-
-    sonarPosIndx_ = 0;
-    _llaRef.isInit = false;
+    speed_                = 0.0f;
+    maxLoRng_             = 0.0f;
+    sonarPosIndx_         = 0;
+    _llaRef.isInit        = false;
 
     emit lastDepthChanged();
     emit channelsUpdated();
@@ -1275,6 +1274,9 @@ void Dataset::updateEpochWithChart(const ChannelId &channelId, const ChartParame
     if (usingRecordParameters_.contains(channelId)) {
         recParam = usingRecordParameters_[channelId];
     }
+
+    maxLoRng_ = (chartParams.loRng > maxLoRng_) ? chartParams.loRng : maxLoRng_;
+    emit updateMinMaxLoRng(0.0f, maxLoRng_);
 
     epoch.setChart(channelId, data, resolution, offset);
     epoch.setRecParameters(channelId, recParam);

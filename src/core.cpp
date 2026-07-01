@@ -1293,7 +1293,7 @@ QString Core::getChannel2Name() const
 
 QVariant Core::getConvertedMousePos(int indx, int mouseX, int mouseY)
 {
-    qDebug() << "Core::getConvertedMousePos..." << indx << "  " << mouseX << "  " << mouseY;
+    // qDebug() << "Core::getConvertedMousePos..." << indx << "  " << mouseX << "  " << mouseY;
     QVariantMap retVal;
 
     int currIndx = indx - 1;
@@ -1560,7 +1560,6 @@ void Core::clearAll()
                 scene3dViewPtr_->clear(true);
                 scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
             }
-
             // emit isobathsViewControlMenuController_->edgeLimitChanged(100);
         }
 

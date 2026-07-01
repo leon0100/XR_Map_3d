@@ -441,31 +441,6 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
     return true;
 }
 
-
-bool Epoch::getSonarFrameData(const ChannelId& channelId, uint8_t subChannelId, uint8_t* dst, int dstLen)
-{
-    if (dst == nullptr || dstLen <= 0) {
-        return false;
-    }
-
-    Echogram& chart = charts_[channelId][subChannelId];
-
-    const QVector<uint8_t>& srcData = chart.amplitude;
-    int rawSize = srcData.size();
-
-    int copyLen = qMin(rawSize, dstLen);
-    for (int i = 0; i < copyLen; i++) {
-        dst[i] = srcData[i];
-    }
-
-    for (int i = copyLen; i < dstLen; i++) {
-        dst[i] = 0;
-    }
-
-    // qDebug() << "copyLen:" << copyLen << "  dstLen:" << dstLen << "  rawSize:" << rawSize;//1024,1024,1024
-    return true;
-}
-
 void Epoch::getSonarFramePixel(const ChannelId& channelId, uint8_t subChannelId, QVector<uint8_t>& pixelVec)
 {
     Echogram& chart = charts_[channelId][subChannelId];

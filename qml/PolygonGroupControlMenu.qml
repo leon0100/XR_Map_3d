@@ -158,9 +158,7 @@ Item {
                                 return
 
                             root.controller.onPointCoordSpinBoxValueChanged(Qt.vector3d(value,
-                                                                                                    yValueSpinBox.value,
-                                                                                                    zValueSpinBox.value),
-                                                                                        polygonTreeView.currentIndex)
+                                     yValueSpinBox.value, zValueSpinBox.value), polygonTreeView.currentIndex)
                         }
                     }
                 }
@@ -178,9 +176,7 @@ Item {
                                 return
 
                             root.controller.onPointCoordSpinBoxValueChanged(Qt.vector3d(xValueSpinBox.value,
-                                                                                                    value,
-                                                                                                    zValueSpinBox.value),
-                                                                                        polygonTreeView.currentIndex)
+                                             value, zValueSpinBox.value), polygonTreeView.currentIndex)
                         }
                     }
                 }
@@ -198,9 +194,7 @@ Item {
                                 return
 
                             root.controller.onPointCoordSpinBoxValueChanged(Qt.vector3d(xValueSpinBox.value,
-                                                                                                    yValueSpinBox.value,
-                                                                                                    value),
-                                                                                        polygonTreeView.currentIndex)
+                                        yValueSpinBox.value, value), polygonTreeView.currentIndex)
                         }
                     }
                 }

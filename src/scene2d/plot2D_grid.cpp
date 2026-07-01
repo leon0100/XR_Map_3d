@@ -19,6 +19,7 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
     QPainter* p = canvas.painter();
     p->setPen(pen);
     p->setFont(QFont("Asap", 14, QFont::Normal));
+
     QFontMetrics fm(p->font());
 
     const int imageHeight{ canvas.height() }, imageWidth{ canvas.width() },
@@ -42,9 +43,16 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
             lineText.append(text);
         }
         if (cursor.distance.isValid()) { // depth
-            const float distFrom{ cursor.distance.from }, distTo{ cursor.distance.to },
-                distRange{ distTo - distFrom }, rangeVal{ distRange * i / linesCount + distFrom };
-            lineText.append( { QString::number(rangeVal, 'f', 2) + QObject::tr(" m") } );
+            // const float distFrom{ cursor.distance.from }, distTo{ cursor.distance.to },
+            //     distRange{ distTo - distFrom }, rangeVal{ distRange * i / linesCount + distFrom };
+            float distFrom, distTo;
+            distFrom = loRngMin_;
+            distTo   = loRngMax_;
+
+            //     distFrom = cursor.distance.from;
+            //     distTo   = cursor.distance.to;
+            const float distRange{ distTo - distFrom }, rangeVal{ distRange * i / linesCount + distFrom };
+            lineText.append({QString::number(rangeVal, 'f', 2) + QObject::tr(" m")});
         }
 
         const int textW = fm.horizontalAdvance(lineText);
@@ -75,7 +83,7 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
         bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
         QString rangeText = QString::number(val, 'f', isInteger ? 0 : 2) + QObject::tr(" m");
         const int w = fm2.horizontalAdvance(rangeText);
-        const int x = invert_ ? (textXOffset * 2) : (imageWidth - textXOffset / 2 - w);
+        const int x = invert_ ? (textXOffset * 2) : (imageWidth - textXOffset * 0.5 - w);
         p->drawText(x, imageHeight - 10, rangeText);
     }
 
@@ -156,4 +164,10 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
 void Plot2DGrid::setAngleVisibility(bool state)
 {
     angleVisibility_ = state;
+}
+
+void Plot2DGrid::setLoRngRange(float minLoRng, float maxLoRng)
+{
+    loRngMin_ = minLoRng;
+    loRngMax_ = maxLoRng;
 }

@@ -209,9 +209,7 @@ Item {
                                 return
 
                             root.controller.onCoordSpinBoxValueChanged(Qt.vector3d(xValueSpinBox.value,
-                                                                                               value,
-                                                                                               zValueSpinBox.value),
-                                                                                   pointList.currentIndex)
+                                                    value, zValueSpinBox.value), pointList.currentIndex)
                         }
                     }
                 }
