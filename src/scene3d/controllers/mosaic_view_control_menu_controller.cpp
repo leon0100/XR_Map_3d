@@ -11,7 +11,7 @@ MosaicViewControlMenuController::MosaicViewControlMenuController(QObject *parent
       pendingLambda_(nullptr),
       visibility_(false),
       usingFilter_(true),
-      gridVisible_(false),
+      rulerVisible_(false),
       measLineVisible_(false),
       resolution_(10.0f), // pixPerMeters
       updateState_(false),
@@ -70,11 +70,12 @@ void MosaicViewControlMenuController::onUseFilterChanged(bool state)
     }
 }
 
-void MosaicViewControlMenuController::onGridVisibleChanged(bool state)
+void MosaicViewControlMenuController::onRulerVisibleChanged(bool state)
 {
-    gridVisible_ = state;
+    rulerVisible_ = state;
 
     if (graphicsSceneViewPtr_) {
+
     }
     else {
         tryInitPendingLambda();

@@ -5,24 +5,23 @@
 
 Plot2D::Plot2D()
     : datasetPtr_(nullptr)
-    , pendingBtpLambda_(nullptr)
     , isHorizontal_(true)
     , isEnabled_(true)
 {
     qRegisterMetaType<ChannelId>("ChannelId");
 
     echogram_.setVisible(true);
-    attitude_.setVisible(true);
-    encoder_.setVisible(true);
-    dvlBeamVelocity_.setVisible(true);
-    dvlSolution_.setVisible(true);
-    usblSolution_.setVisible(true);
-    bottomProcessing_.setVisible(true);
-    rangefinder_.setVisible(true);
-    depth_.setVisible(true);
+    // attitude_.setVisible(true);
+    // encoder_.setVisible(true);
+    // dvlBeamVelocity_.setVisible(true);
+    // dvlSolution_.setVisible(true);
+    // usblSolution_.setVisible(true);
+    // bottomProcessing_.setVisible(true);
+    // rangefinder_.setVisible(true);
+    // depth_.setVisible(true);
     grid_.setVisible(true);
-    aim_.setVisible(true);
-    quadrature_.setVisible(false);
+    // aim_.setVisible(true);
+    // quadrature_.setVisible(false);
     setDataChannel(false, CHANNEL_NONE, 0, {});
     cursor_.attitude.from = -180;
     cursor_.attitude.to = 180;
@@ -52,10 +51,10 @@ std::tuple<ChannelId, uint8_t, QString> Plot2D::getSelectedChannelId(float curso
 void Plot2D::setDataset(Dataset *dataset)
 {
     datasetPtr_ = dataset;
-    if (pendingBtpLambda_) {
-        pendingBtpLambda_();
-        pendingBtpLambda_ = nullptr;
-    }
+    // if (pendingBtpLambda_) {
+    //     pendingBtpLambda_();
+    //     pendingBtpLambda_ = nullptr;
+    // }
 }
 
 void Plot2D::setDataProcessorPtr(DataProcessor *dataProcessorPtr)
@@ -165,20 +164,20 @@ void Plot2D::draw(QPainter *painterPtr)
     // qDebug() << "Plot2D::draw(QPainter *painterPtr)..............";
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
-    attitude_.draw(this, datasetPtr_);
-    encoder_.draw(this, datasetPtr_);
-    dvlBeamVelocity_.draw(this, datasetPtr_);
-    dvlSolution_.draw(this, datasetPtr_);
-    usblSolution_.draw(this, datasetPtr_);
-    bottomProcessing_.draw(this, datasetPtr_);
-    rangefinder_.draw(this, datasetPtr_);
-    depth_.draw(this, datasetPtr_);
-    gnss_.draw(this, datasetPtr_);
-    quadrature_.draw(this, datasetPtr_);
+    // attitude_.draw(this, datasetPtr_);
+    // encoder_.draw(this, datasetPtr_);
+    // dvlBeamVelocity_.draw(this, datasetPtr_);
+    // dvlSolution_.draw(this, datasetPtr_);
+    // usblSolution_.draw(this, datasetPtr_);
+    // bottomProcessing_.draw(this, datasetPtr_);
+    // rangefinder_.draw(this, datasetPtr_);
+    // depth_.draw(this, datasetPtr_);
+    // gnss_.draw(this, datasetPtr_);
+    // quadrature_.draw(this, datasetPtr_);
 
     painterPtr->setCompositionMode(QPainter::CompositionMode_Exclusion);
     grid_.draw(this, datasetPtr_);
-    aim_.draw(this, datasetPtr_);
+    // aim_.draw(this, datasetPtr_);
 
     contacts_.draw(this, datasetPtr_);
 }
@@ -196,7 +195,7 @@ void Plot2D::setHorizontal(bool is_horizontal)
 
 void Plot2D::setAimEpochEventState(bool state)
 {
-    aim_.setEpochEventState(state);
+    // aim_.setEpochEventState(state);
 }
 
 void Plot2D::setTimelinePosition(float position)
@@ -375,21 +374,15 @@ void Plot2D::setEchogramCompensation(int compensation_id)
     plotUpdate();
 }
 
-void Plot2D::setEchogramScaleYFactor(float factor)
-{
-    echogram_.setScaleYFactor(factor);
-    plotUpdate();
-}
-
-float Plot2D::getEchogramScaleYFactor() const
-{
-    return echogram_.getScaleYFactor();
-}
+// float Plot2D::getEchogramScaleYFactor() const
+// {
+//     return echogram_.getScaleYFactor();
+// }
 
 void Plot2D::setBottomTrackVisible(bool visible)
 {
     // qDebug() << "Plot2D::setBottomTrackVisible.........";
-    bottomProcessing_.setVisible(visible);
+    // bottomProcessing_.setVisible(visible);
     plotUpdate();
 }
 
@@ -401,7 +394,7 @@ void Plot2D::setBottomTrackTheme(int theme_id)
 void Plot2D::setRangefinderVisible(bool visible)
 {
     // qDebug() << "Plot2D::setRangefinderVisible.........";
-    rangefinder_.setVisible(visible);
+    // rangefinder_.setVisible(visible);
     grid_.setRangeFinderVisible(visible);
     plotUpdate();
 }
@@ -409,14 +402,14 @@ void Plot2D::setRangefinderVisible(bool visible)
 void Plot2D::setRangefinderTheme(int theme_id)
 {
     // qDebug() << "Plot2D::setRangefinderTheme.........";
-    rangefinder_.setTheme(theme_id);
+    // rangefinder_.setTheme(theme_id);
     plotUpdate();
 }
 
 void Plot2D::setAttitudeVisible(bool visible)
 {
     // qDebug() << "Plot2D::setAttitudeVisible.........";
-    attitude_.setVisible(visible);
+    // attitude_.setVisible(visible);
     plotUpdate();
 }
 
@@ -430,15 +423,15 @@ void Plot2D::setTemperatureVisible(bool visible)
 void Plot2D::setDopplerBeamVisible(bool visible, int beam_filter)
 {
     // qDebug() << "Plot2D::setDopplerBeamVisible.........";
-    dvlBeamVelocity_.setVisible(visible);
-    dvlBeamVelocity_.setBeamFilter(beam_filter);
+    // dvlBeamVelocity_.setVisible(visible);
+    // dvlBeamVelocity_.setBeamFilter(beam_filter);
     plotUpdate();
 }
 
 void Plot2D::setDopplerInstrumentVisible(bool visible)
 {
     // qDebug() << "Plot2D::setDopplerInstrumentVisible.........";
-    dvlSolution_.setVisible(visible);
+    // dvlSolution_.setVisible(visible);
     plotUpdate();
 }
 
@@ -447,22 +440,21 @@ void Plot2D::setGNSSVisible(bool visible, int flags)
     // qDebug() << "Plot2D::setGNSSVisible.........";
     Q_UNUSED(flags);
 
-    gnss_.setVisible(visible);
+    // gnss_.setVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setAcousticAngleVisible(bool visible)
 {
     // qDebug() << "Plot2D::setAcousticAngleVisible.........";
-    usblSolution_.setVisible(visible);
+    // usblSolution_.setVisible(visible);
     plotUpdate();
 }
 
 void Plot2D::setGridVetricalNumber(int grids)
 {
-    // qDebug() << "Plot2D::setGridVetricalNumber.........";
+    qDebug() << "Plot2D::setGridVetricalNumber........." << grids;
     grid_.setVisible(grids > 0);
-    grid_.setVetricalNumber(grids);
     plotUpdate();
 }
 

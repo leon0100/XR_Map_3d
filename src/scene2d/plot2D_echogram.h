@@ -44,18 +44,12 @@ public:
     void setThemeId(int theme_id);
     void setCompensation(int compensation_id);
 
-    void updateColors();
-
-    // 设置配色类型（surface/fish/bottom）
-    void setColorSchemeType(int type) { _colorSchemeType = type; }
-    int getColorSchemeType() const { return _colorSchemeType; }
-
-    void setScaleYFactor(float factor);
-    float getScaleYFactor() const { return _scaleYFactor; };
 
     // int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
     int updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
+    void setUpperRng(int maxUpRng);
+    void setLowerRng(int minLoRng);
 
     void addReRenderPlotIndxs(const QSet<int>& indxs);
 
@@ -111,7 +105,8 @@ protected:
 
 
 private:
-    void stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale);
+    void stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale, int startIndx);
+    void drawLatestWavePixel(Plot2D* parent, Dataset* dataset, int panelX, int panelY, int height);
 
 
 
@@ -119,37 +114,11 @@ private:
     ThemeId themeId_;
     QSet<int> reRenderPlotIndxs_;
 
-    // 自定义配色相关
-    ZyColorScheme _colorScheme;
     ZyColorScheme *zyColorScheme_;
-    QString _customSchemePath;  // 自定义配色文件路径
-    int _colorSchemeType;       // 配色类型：0=surface, 1=fish, 2=bottom
-    bool _useCustomScheme;      // 是否使用自定义配色
 
+    int currentUpRng_ = 0, currentLoRng_ = 3200;
 
-    static int colorScheme_surface[];
-    static int colorScheme_fish[];
-    static int colorScheme_bottom[];
-
-    QList<StructColorList> colorList_surface;
-    QList<StructColorList> colorList_fish;
-    QList<StructColorList> colorList_bottom;
-
-    int sonarImageHeight = 1024;
-
-
-    // 深度分区参数
-    float _currentDepth;        // 当前深度
-    float _currentLoRng;        // 低量程
-    float _currentUpRng;        // 高量程
-    float _currentSspd;         // 声速
-    int _currentPingSize;       // 脉冲大小
-    int _sfEnd;                 // 水表结束位置（像素）
-    int _btStart;               // 水底开始位置（像素）
-
-    float _scaleYFactor = 0.4f;
-
-
-
+    QVector<uint8_t> latestWave_;
+    const int waveWidth_ = 80;
 
 };

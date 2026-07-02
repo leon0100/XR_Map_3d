@@ -24,7 +24,7 @@ public:
     Q_PROPERTY(double  contactLat       READ getContactLat                                NOTIFY contactChanged)
     Q_PROPERTY(double  contactDepth     READ getContactDepth                              NOTIFY contactChanged)
 
-    Q_PROPERTY(float   maxLoRng         READ getMaxLoRng         WRITE setMaxLoRng        NOTIFY maxLoRngChanged)
+    Q_PROPERTY(int   maxLoRng         READ getMaxLoRng         WRITE setMaxLoRng        NOTIFY maxLoRngChanged)
 
     qPlot2D(QQuickItem* parent = nullptr);
     void paint(QPainter *painter) override;
@@ -41,12 +41,13 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override final;
     void sendSyncEvent(int epoch_index, QEvent::Type eventType) override final;
 
-    float getMaxLoRng();
-    void setMaxLoRng(float maxLoRng);
+    int getMaxLoRng();
+    void setMaxLoRng(int maxLoRng);
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
     Q_INVOKABLE void setCursorFromTo(float from, float to) { cursor_.distance.mode = AutoRangeNone; Plot2D::cursor_.distance.from = from; Plot2D::cursor_.distance.to = to; }
     Q_INVOKABLE void setIndx(int indx) { indx_ = indx; }
+    Q_INVOKABLE void resetUpLoRng(int upper, int lower);
 
 
 protected:
@@ -65,7 +66,7 @@ signals:
 protected slots:
     void timerUpdater();
     void dataUpdate();
-    void updateMinMaxLoRng(float minLoRng, float maxLoRng);
+    // void updateMinMaxLoRng(int minLoRng, int maxLoRng);
 
 public slots:
     void updater();
@@ -158,6 +159,6 @@ public slots:
 
 private:
     int indx_ = -1;
-    float maxLoRng_ = 0.0f;
+    int currentUpRng_ = 0, currentLoRng_ = 1600;
 
 };

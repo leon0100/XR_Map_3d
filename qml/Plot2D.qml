@@ -13,14 +13,16 @@ WaterFall {
     property bool is3dVisible: false
     property int  indx: 0
     property int  instruments: instrumentsGradeList.currentIndex
+    property int  plotSize: theme.screenSize * 0.35
+    property int  iconSize: plotSize * 0.08
 
     horizontal: horisontalVertical.checked
 
     function setLevels(low, high) {
-        echogramLevelsSlider.startValue     = low
-        echogramLevelsSlider.stopValue      = high
-        echogramLevelsSlider.startPointY    = echogramLevelsSlider.valueToPosition(low);
-        echogramLevelsSlider.stopPointY     = echogramLevelsSlider.valueToPosition(high);
+        echogramLevelsSlider.startValue   = low
+        echogramLevelsSlider.stopValue    = high
+        echogramLevelsSlider.startPointY  = echogramLevelsSlider.valueToPosition(low);
+        echogramLevelsSlider.stopPointY   = echogramLevelsSlider.valueToPosition(high);
         echogramLevelsSlider.update()
     }
 
@@ -39,13 +41,6 @@ WaterFall {
     }
     function doVerScrollEvent(paramX) {
         verScrollEvent(paramX)
-    }
-
-    function cmToMeterText(cmValue) {
-        if(cmValue === undefined || cmValue === null || cmValue === "") {
-            return "0.01m"
-        }
-        return Number(cmValue / 100).toLocaleString(locale, 'f', 2) + "m"
     }
 
     onEnabledChanged: {
@@ -299,8 +294,7 @@ WaterFall {
                     plotCursorChanged(indx, cursorFrom(), cursorTo())
                 }
                 else {
-                    let val = wheel.angleDelta.y
-                    plot.scaleYZoomEvent(val)
+                    plot.scaleYZoomEvent(wheel.angleDelta.y)
                 }
             }
         }
@@ -336,7 +330,7 @@ WaterFall {
 
                 CheckButton {
                     id: plotCheckButton
-                    backColor: theme.controlBackColor
+                    backColor:   theme.controlBackColor
                     borderColor: theme.controlBackColor
                     checkedBorderColor: theme.controlBorderColor
                     iconSource: "qrc:/icons/ui/settings.svg"
@@ -394,7 +388,6 @@ WaterFall {
                     Layout.bottomMargin: 0
                     // visible: chartEnable.checked // TODO
                     horizontalAlignment: Text.AlignHCenter
-
                     text: echogramLevelsSlider.startValue
                     small: true
                 }
@@ -410,23 +403,11 @@ WaterFall {
                 id: plotSettings
 
                 ParamGroup {
-                    groupName: qsTr("Plot")
+                    groupName: qsTr("Sonar Viewer")
 
                     RowLayout {
                         id: rowDataset
                         visible: instruments > 1
-                        //CCombo  {
-                        //    id: datasetCombo
-                        //    Layout.fillWidth: true
-                        //      Layout.preferredWidth: columnItem.width/3
-                        //    visible: true
-                        //    onPressedChanged: {
-                        //    }
-
-                        //    Component.onCompleted: {
-                        //        model = [qsTr("Dataset #1")]
-                        //    }
-                        //}
 
                         CText {
                             text: qsTr("Channels:")
@@ -573,8 +554,8 @@ WaterFall {
                             model: [qsTr("Raw"), qsTr("Side-Scan")]
                             currentIndex: 0
 
-                            onCurrentIndexChanged: plotEchogramCompensation(currentIndex) // TODO
-                            Component.onCompleted: plotEchogramCompensation(currentIndex) // TODO
+                            onCurrentIndexChanged: plotEchogramCompensation(currentIndex)
+                            Component.onCompleted: plotEchogramCompensation(currentIndex)
 
                             Settings {
                                 category: "Plot2D_" + plot.indx
@@ -596,8 +577,8 @@ WaterFall {
 
                         CCombo  {
                             id: bottomTrackThemeList
-                                                   Layout.fillWidth: true
-                                                   Layout.preferredWidth: 150
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 150
                             model: [qsTr("Line1"), qsTr("Line2"), qsTr("Dot1"), qsTr("Dot2"), qsTr("DotLine")]
                             currentIndex: 1
 
@@ -611,32 +592,6 @@ WaterFall {
                             }
                         }
                     }
-
-                    RowLayout {
-                        CCheck {
-                            id: rangefinderVisible
-                            Layout.fillWidth: true
-                            text: qsTr("Rangefinder")
-                            onCheckedChanged: plotRangefinderVisible(checked)
-                            Component.onCompleted: plotRangefinderVisible(checked)
-                        }
-
-                        CCombo  {
-                            id: rangefinderThemeList
-                            model: [qsTr("Text"), qsTr("Line"), qsTr("Dot")]
-                            currentIndex: 1
-
-                            onCurrentIndexChanged: plotRangefinderTheme(currentIndex)
-                            Component.onCompleted: plotRangefinderTheme(currentIndex)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-
-                                property alias rangefinderThemeList: rangefinderThemeList.currentIndex
-                            }
-                        }
-                    }
-
 
                     CCheck {
                         visible: instruments > 1
@@ -809,216 +764,86 @@ WaterFall {
 
 
                     RowLayout {
-                        RowLayout {
-                            CCheck {
-                                id: gridVisible
-                                Layout.fillWidth: true
-                                text: qsTr("Grid")
-                                onCheckedChanged: plotGridVerticalNumber(gridNumber.value*gridVisible.checked)
-                            }
-                            // CCheck {
-                            //     id: fillWidthGrid
-                            //     Layout.fillWidth: true
-                            //     text: qsTr("fill")
-                            //     onCheckedChanged: plotGridFillWidth(checked)
-                            //     visible: gridVisible.checked
-
-                            //     Component.onCompleted: {
-                            //         plotGridFillWidth(checked)
-                            //     }
-                            //     Settings {
-                            //         category: "Plot2D_" + plot.indx
-                            //         property alias fillWidthGrid: fillWidthGrid.checked
-                            //     }
-                            // }
-                            // CCheck {
-                            //     id: invertGrid
-                            //     Layout.fillWidth: true
-                            //     text: qsTr("invert")
-                            //     onCheckedChanged: plotGridInvert(checked)
-                            //     visible: gridVisible.checked
-
-                            //     Component.onCompleted: {
-                            //         plotGridInvert(checked)
-                            //     }
-                            //     Settings {
-                            //         category: "Plot2D_" + plot.indx
-                            //         property alias invertGrid: invertGrid.checked
-                            //     }
-                            // }
-
-                            TextField {
-                              id: scaleRangeMin
-                              Layout.fillWidth: true
-                              text: "0"
-                              placeholderText: qsTr("min")
-                              horizontalAlignment: TextInput.AlignHCenter
-                              font.pixelSize: 13
-                              visible: gridVisible.checked
-                              selectByMouse: true
-                              validator: DoubleValidator { bottom: -100; top: 100; decimals: 2; notation: DoubleValidator.StandardNotation }
-
-                              // function applyRange() {
-                              //     var from = parseFloat(text) || 0
-                              //     var to = parseFloat(scaleRangeMax.text) || 0
-                              //     plot.setCursorFromTo(from, to)
-                              //     plotCursorChanged(indx, from, to)
-                              // }
-                              onEditingFinished: applyRange()
-                              Component.onCompleted: applyRange()
-
-                              // Settings {
-                              //     category: "Plot2D_" + plot.indx
-                              //     property alias scaleRangeMin: scaleRangeMin.text
-                              // }
-                            }
-                            TextField {
-                                id: scaleRangeMax
-                                Layout.fillWidth: true
-                                text: cmToMeterText(plot.maxLoRng)
-                                placeholderText: qsTr("max")
-                                horizontalAlignment: TextInput.AlignHCenter
-                                font.pixelSize: 13
-                                visible: gridVisible.checked
-                                selectByMouse: true
-                                validator: DoubleValidator { bottom: -100; top: 10000; decimals: 2; notation: DoubleValidator.StandardNotation }
-
-                                // function updateFromDataset() {
-                                //     var maxLoRng = plot.getMaxLoRng()
-                                //     if (maxLoRng > 0) {
-                                //         text = (maxLoRng * 2).toString()
-                                //     }
-                                // }
-                                // function applyRange() {
-                                //     var from = parseFloat(scaleRangeMin.text) || 0
-                                //     var to = parseFloat(text) || 0
-                                //     plot.setCursorFromTo(from, to)
-                                //     plotCursorChanged(indx, from, to)
-                                // }
-                                // onEditingFinished: applyRange()
-                                // Component.onCompleted: {
-                                //     updateFromDataset()
-                                //     applyRange()
-                                //   }
-
-                              }
-                        }
-
-                        SpinBoxCustom {
-                            id: gridNumber
-                            from: 1
-                            to: 24
-                            stepSize: 1
-                            value: 5
-                            onValueChanged: plotGridVerticalNumber(gridNumber.value*gridVisible.checked)
-                            Component.onCompleted: plotGridVerticalNumber(gridNumber.value*gridVisible.checked)
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias gridNumber: gridNumber.value
-                            }
-                        }
-                    }
-
-                    RowLayout {
-                        visible: instruments > 1
-
                         CCheck {
-                            id: angleVisible
-                            Layout.fillWidth: true
-                            text: qsTr("Angle range, °")
-                            onCheckedChanged: plotAngleVisibility(checked)
-                            Component.onCompleted: plotAngleVisibility(checked)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias angleVisible: angleVisible.checked
-                            }
+                            id: rulerVisible
+                            implicitWidth: iconSize * 8
+                            text: qsTr("Ruler")
+                            onCheckedChanged: plotGridVerticalNumber(gridNumber.value*rulerVisible.checked)
                         }
 
-                        SpinBoxCustom {
-                            id: angleRange
-                            from: 1
-                            to: 360
-                            stepSize: 1
-                            value: 45
-
-                            onValueChanged: plotAngleRange(angleRange.currValue)
-                            Component.onCompleted: plotAngleRange(angleRange.currValue)
-
-                            property int currValue: value
-
-                            validator: DoubleValidator {
-                                // bottom: Math.min(angleRange.from, angleRange.to)
-                                // top:  Math.max(angleRange.from, angleRange.to)
-                            }
-
-                            textFromValue: function(value, locale) {
-                                return Number(value).toLocaleString(locale, 'f', 0)
-                            }
-
-                            valueFromText: function(text, locale) {
-                                return Number.fromLocaleString(locale, text)
-                            }
-
-                            onCurrValueChanged: plotAngleRange(currValue)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias angleRange: angleRange.value
-                            }
+                        CText {
+                            text: qsTr("upper(m)")
+                            font.pixelSize: iconSize
+                            horizontalAlignment: Text.AlignRight
+                            Layout.alignment: Qt.AlignVCenter
                         }
-                    }
-
-
-                    RowLayout {
-                        visible: instruments > 1
-                        CCheck {
-                            id: velocityVisible
-                            Layout.fillWidth: true
-                            text: qsTr("Velocity range, m/s")
-                            onCheckedChanged: plotVelocityVisible(checked)
-                            Component.onCompleted: plotVelocityVisible(checked)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias velocityVisible: velocityVisible.checked
-                            }
+                        TextField {
+                           id: upperMin
+                           text: "0"
+                           Layout.preferredWidth: iconSize * 4
+                           horizontalAlignment: TextInput.AlignHCenter
+                           font.pixelSize: iconSize
+                           selectByMouse: true
+                           validator: IntValidator { bottom: -100; top: 100;}
+                           // onEditingFinished: applyRange()
+                           // Component.onCompleted: applyRange()
                         }
 
-                        SpinBoxCustom {
-                            id: velocityRange
-                            from: 500
-                            to: 1000*8
-                            stepSize: 500
-                            value: 5
+                        Item {
+                            Layout.preferredWidth: iconSize
+                        }
 
-                            onValueChanged: plotVelocityRange(velocityRange.realValue)
-                            Component.onCompleted: plotVelocityRange(velocityRange.realValue)
+                        CText {
+                            text: qsTr("lower(m)")
+                            font.pixelSize: iconSize
+                            horizontalAlignment: Text.AlignRight
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+                        TextField {
+                            id: lowerMax
+                            text: (plot.maxLoRng / 100).toFixed(0)
+                            Layout.preferredWidth: iconSize * 4
+                            horizontalAlignment: TextInput.AlignHCenter
+                            font.pixelSize: iconSize
+                            selectByMouse: true
+                            validator: IntValidator { bottom: -100; top: 10000;}
+                            // onEditingFinished: applyRange()
+                            // Component.onCompleted: applyRange()
+                        }
 
-                            property int decimals: 1
-                            property real realValue: value / 1000
 
-                            validator: DoubleValidator {
-                                // bottom: Math.min(velocityRange.from, velocityRange.to)
-                                // top:  Math.max(velocityRange.from, velocityRange.to)
+                        Item {
+                            Layout.preferredWidth: iconSize
+                        }
+
+                        Rectangle {
+                            id: applyBtn
+                            width: iconSize * 4
+                            height: iconSize * 1.2
+                            radius: 4
+                            color: mouseArea.pressed ? "#888888" : "#555555"
+                            border.color: "#aaaaaa"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: qsTr("Apply")
+                                color: "white"
+                                font.pixelSize: iconSize
                             }
 
-                            textFromValue: function(value, locale) {
-                                return Number(value / 1000).toLocaleString(locale, 'f', decimals)
-                            }
-
-                            valueFromText: function(text, locale) {
-                                return Number.fromLocaleString(locale, text) * 1000
-                            }
-
-                            onRealValueChanged: plotVelocityRange(realValue)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias velocityRange: velocityRange.value
+                            MouseArea {
+                                id: mouseArea
+                                anchors.fill: parent
+                                onClicked: {
+                                    let upperVal = parseInt(upperMin.text)
+                                    let lowerVal = parseInt(lowerMax.text)
+                                    plot.resetUpLoRng(upperVal, lowerVal)
+                                }
                             }
                         }
                     }
+
+
 
                     RowLayout {
                         id: distanceAutoRangeRow
@@ -1045,7 +870,7 @@ WaterFall {
 
                         CCombo  {
                             id: distanceAutoRangeList
-                            model: [qsTr("Last data       "), qsTr("Last on screen"), qsTr("Max on screen")]
+                            model: [qsTr("Last data      "), qsTr("Last on screen"), qsTr("Max on screen")]
                             currentIndex: 0
                             onCurrentIndexChanged: distanceAutoRangeRow.distanceAutorangeMode()
                             Component.onCompleted: distanceAutoRangeRow.distanceAutorangeMode()
@@ -1067,11 +892,10 @@ WaterFall {
                         category: "Plot2D_" + plot.indx
 
                         property alias echogramVisible:    echogramVisible.checked
-                        property alias rangefinderVisible: rangefinderVisible.checked
                         property alias postProcVisible:    bottomTrackVisible.checked
                         property alias ahrsVisible:        ahrsVisible.checked
                         property alias temperatureVisible: temperatureVisible.checked
-                        property alias gridVisible:        gridVisible.checked
+                        property alias rulerVisible:        rulerVisible.checked
                         property alias dopplerBeamVisible: dopplerBeamVisible.checked
                         property alias dopplerInstrumentVisible: dopplerInstrumentVisible.checked
                         property alias horisontalVertical: horisontalVertical.checked
@@ -1167,7 +991,6 @@ WaterFall {
             x = mx
             y = my
             visible = true
-//            backgrn.focus = true
         }
 
         ButtonGroup { id: pencilbuttonGroup }

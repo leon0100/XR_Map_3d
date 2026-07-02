@@ -17,7 +17,7 @@ public:
 
     Q_INVOKABLE void onVisibilityChanged(bool state);
     Q_INVOKABLE void onUseFilterChanged(bool state);
-    Q_INVOKABLE void onGridVisibleChanged(bool state);
+    Q_INVOKABLE void onRulerVisibleChanged(bool state);
     Q_INVOKABLE void onMeasLineVisibleChanged(bool state);
     Q_INVOKABLE void onClearClicked();
     Q_INVOKABLE void onUpdateStateChanged(bool state);
@@ -40,7 +40,7 @@ private:
     std::function<void()> pendingLambda_;
     bool visibility_;
     bool usingFilter_;
-    bool gridVisible_;
+    bool rulerVisible_;
     bool measLineVisible_;
     float resolution_;
     bool updateState_;

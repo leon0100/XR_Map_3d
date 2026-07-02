@@ -857,7 +857,6 @@ void Dataset::resetDataset()
     angleToActiveContact_ = 0.0f;
     lastDepth_            = 0.0f;
     speed_                = 0.0f;
-    maxLoRng_             = 0.0f;
     sonarPosIndx_         = 0;
     _llaRef.isInit        = false;
 
@@ -1275,8 +1274,9 @@ void Dataset::updateEpochWithChart(const ChannelId &channelId, const ChartParame
         recParam = usingRecordParameters_[channelId];
     }
 
-    maxLoRng_ = (chartParams.loRng > maxLoRng_) ? chartParams.loRng : maxLoRng_;
-    emit updateMinMaxLoRng(0.0f, maxLoRng_);
+    // maxLoRng_ = (chartParams.loRng > maxLoRng_) ? chartParams.loRng : maxLoRng_;
+    // maxLoRng_ = 1600;
+    // emit updateMinMaxLoRng(0, maxLoRng_ * 2);
 
     epoch.setChart(channelId, data, resolution, offset);
     epoch.setRecParameters(channelId, recParam);

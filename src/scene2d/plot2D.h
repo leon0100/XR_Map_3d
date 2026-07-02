@@ -9,21 +9,21 @@
 #include <QEvent>
 
 
-#include "plot2D_aim.h"
-#include "plot2D_attitude.h"
-#include "plot2D_bottom_processing.h"
+// #include "plot2D_aim.h"
+// #include "plot2D_attitude.h"
+// #include "plot2D_bottom_processing.h"
 #include "plot2D_contact.h"
 #include "plot2D_defs.h"
-#include "plot2D_dvl_beam_velocity.h"
-#include "plot2D_dvl_solution.h"
+// #include "plot2D_dvl_beam_velocity.h"
+// #include "plot2D_dvl_solution.h"
 #include "plot2D_echogram.h"
-#include "plot2D_encoder.h"
-#include "plot2D_gnss.h"
+// #include "plot2D_encoder.h"
+// #include "plot2D_gnss.h"
 #include "plot2D_grid.h"
-#include "plot2D_quadrature.h"
-#include "plot2D_rangefinder.h"
-#include "plot2D_depth.h"
-#include "plot2D_usbl_solution.h"
+// #include "plot2D_quadrature.h"
+// #include "plot2D_rangefinder.h"
+// #include "plot2D_depth.h"
+// #include "plot2D_usbl_solution.h"
 #include "dataset.h"
 #include "data_processor.h"
 
@@ -83,14 +83,13 @@ public:
 
     float getEchogramLowLevel() const;
     float getEchogramHighLevel() const;
-    int getThemeId() const;
+    int  getThemeId() const;
     void setEchogramLowLevel(float low);
     void setEchogramHightLevel(float high);
     void setEchogramVisible(bool visible);
     void setEchogramTheme(int theme_id);
     void setEchogramCompensation(int compensation_id);
-    void setEchogramScaleYFactor(float factor);
-    float getEchogramScaleYFactor() const;
+    // float getEchogramScaleYFactor() const;
 
     void setBottomTrackVisible(bool visible);
     void setBottomTrackTheme(int theme_id);
@@ -141,26 +140,26 @@ public:
     virtual void sendSyncEvent(int epoch_index, QEvent::Type eventType);
 
 protected:
-    Canvas canvas_;
+    Canvas        canvas_;
     DatasetCursor cursor_;
 
-    Plot2DAim              aim_;
-    Plot2DAttitude         attitude_;
-    Plot2DBottomProcessing bottomProcessing_;
-    Plot2DContact          contacts_;
-    Plot2DDVLBeamVelocity  dvlBeamVelocity_;
-    Plot2DDVLSolution      dvlSolution_;
-    Plot2DEchogram         echogram_;
-    Plot2DEncoder          encoder_;
-    Plot2DGNSS             gnss_;
-    Plot2DGrid             grid_;
-    Plot2DQuadrature       quadrature_;
-    Plot2DRangefinder      rangefinder_;
-    Plot2DDepth            depth_;
-    Plot2DUSBLSolution     usblSolution_;
-    Dataset*               datasetPtr_ = nullptr;
-    DataProcessor*         dataProcessorPtr_ = nullptr;
-    std::function<void()>  pendingBtpLambda_;
+    // Plot2DAim               aim_;
+    // Plot2DAttitude          attitude_;
+    // Plot2DBottomProcessing  bottomProcessing_;
+    Plot2DContact           contacts_;
+    // Plot2DDVLBeamVelocity   dvlBeamVelocity_;
+    // Plot2DDVLSolution       dvlSolution_;
+    Plot2DEchogram          echogram_;
+    // Plot2DEncoder           encoder_;
+    // Plot2DGNSS              gnss_;
+    Plot2DGrid              grid_;
+    // Plot2DQuadrature        quadrature_;
+    // Plot2DRangefinder       rangefinder_;
+    // Plot2DDepth             depth_;
+    // Plot2DUSBLSolution      usblSolution_;
+    Dataset*                datasetPtr_ = nullptr;
+    DataProcessor*          dataProcessorPtr_ = nullptr;
+    // std::function<void()>   pendingBtpLambda_;
     bool isHorizontal_;
 
 private:

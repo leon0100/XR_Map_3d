@@ -6,17 +6,11 @@
 #include <QtGlobal>
 
 
-int Plot2DEchogram::colorScheme_surface[255] = {0};
-int Plot2DEchogram::colorScheme_fish[255]    = {0};
-int Plot2DEchogram::colorScheme_bottom[255]  = {0};
 
 Plot2DEchogram::Plot2DEchogram()
 {
     setThemeId(ClassicTheme);
     setLevels(10, 100);
-    _colorSchemeType  = 0;
-    _useCustomScheme  = false;
-    _customSchemePath = QString();
 
     QString fileName = qApp->applicationDirPath() + "/dcs_caise.tcs";
     zyColorScheme_ = new ZyColorScheme;
@@ -45,7 +39,6 @@ void Plot2DEchogram::setLevels(float low, float high)
 {
     _levels.low  = low;
     _levels.high = high;
-    updateColors();
 }
 
 void Plot2DEchogram::setColorScheme(QVector<QColor> coloros, QVector<int> levels)
@@ -73,7 +66,6 @@ void Plot2DEchogram::setColorScheme(QVector<QColor> coloros, QVector<int> levels
         }
     }
 
-    updateColors();
 }
 
 int Plot2DEchogram::getThemeId() const
@@ -133,76 +125,20 @@ void Plot2DEchogram::setCompensation(int compensation_id)
     resetCash();
 }
 
-void Plot2DEchogram::updateColors()
-{
-    _colorLevels.resize(256);
-
-    int colorOffset = ZyColorScheme::colorLine * COLOR_LINE;
-
-    for(int i = 0; i < 256; i++) {
-        if(i == 0) {
-            _colorLevels[i] = qRgb((ZyColorScheme::background[ZyColorScheme::backgroundIndex] >> 16) & 0xFF,
-                            (ZyColorScheme::background[ZyColorScheme::backgroundIndex] >> 8) & 0xFF,
-                            ZyColorScheme::background[ZyColorScheme::backgroundIndex] & 0xFF);
-        } else {
-            int colorIndex = i + colorOffset;
-
-            if(colorIndex > 254) {
-                colorIndex = 254;
-            }
-            else if(colorIndex < 0) {
-                colorIndex = 0;
-            }
-
-            if(colorIndex > 0 && colorIndex <= 30) {
-                _colorSchemeType = 0;
-            }
-            else if(colorIndex >100 && colorIndex <= 180) {
-                _colorSchemeType = 1;
-            }
-            else {
-                _colorSchemeType = 2;
-            }
-
-            int colorValue = 0;
-            // qDebug() << "_colorSchemeType........" << _colorSchemeType;
-            switch(_colorSchemeType) {
-                case 0:
-                    colorValue = ZyColorScheme::colorScheme_surface[colorIndex];
-                    break;
-                case 1:
-                    colorValue = ZyColorScheme::colorScheme_fish[colorIndex];
-                    break;
-                case 2:
-                    colorValue = ZyColorScheme::colorScheme_bottom[colorIndex];
-                    break;
-                default:
-                    break;
-            }
-
-            _colorLevels[i] = qRgb((colorValue >> 16) & 0xFF,(colorValue >> 8) & 0xFF, colorValue & 0xFF);
-        }
-    }
-
-    _flagColorChanged = true;
-
-    if(!_image.isNull()) {
-        _image.setColorTable(_colorLevels);
-    }
-}
-
 void Plot2DEchogram::resetCash()
 {
     _cashFlags.resetCash = true;
 }
 
-
-void Plot2DEchogram::setScaleYFactor(float factor)
+void Plot2DEchogram::setUpperRng(int maxUpRng)
 {
-    if (factor < 0.05f) factor = 0.05f;
-    if (factor > 5.0f)  factor = 5.0f;
-    if (qAbs(factor - _scaleYFactor) < 1e-4f) return;
-    _scaleYFactor = factor;
+    currentUpRng_ = maxUpRng;
+    resetCash();
+}
+
+void Plot2DEchogram::setLowerRng(int minLoRng)
+{
+    currentLoRng_ = minLoRng;
     resetCash();
 }
 
@@ -211,8 +147,7 @@ void Plot2DEchogram::addReRenderPlotIndxs(const QSet<int> &indxs)
     reRenderPlotIndxs_.unite(indxs);
 }
 
-
-void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale)
+void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale, int startIndx)
 {
     if(dist == nullptr || distLen <= 0 || scale < 0) {
         return;
@@ -222,16 +157,18 @@ void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t*
 
     if(scale > 1.0f) {
         for (int i = 0; i < distLen; i++) {
-            float srcPos = i / scale;
+            float srcPos = i / scale + startIndx;
             int srcIdx = (int)srcPos;
             if (srcIdx >= 0 && srcIdx < srcLen) {
                 if (srcIdx + 1 < srcLen) {
                     float coef = srcPos - floorf(srcPos);
                     dist[i] = (uint8_t)(rawDataVec[srcIdx] * (1.0f - coef) + rawDataVec[srcIdx + 1] * coef);
-                } else {
+                }
+                else {
                     dist[i] = rawDataVec[srcIdx];
                 }
-            } else {
+            }
+            else {
                 dist[i] = 0;
             }
         }
@@ -239,8 +176,8 @@ void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t*
     else {
         scale = 1.0 / scale;
         for (int i = 0; i < distLen; i++) {
-            int srcStart = (int)(i * scale);
-            int srcEnd = (int)((i + 1) * scale);
+            int srcStart = (int)(i * scale) + startIndx;
+            int srcEnd = (int)((i + 1) * scale) + startIndx;
             if (srcStart < 0) srcStart = 0;
             if (srcEnd > srcLen) srcEnd = srcLen;
             if (srcEnd <= srcStart) srcEnd = srcStart + 1;
@@ -253,6 +190,168 @@ void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t*
             dist[i] = (cnt > 0) ?  (uint8_t)(val / cnt) : 0;
         }
     }
+}
+
+
+void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, Dataset* dataset, int panelX, int panelW, int height)
+{
+    if (dataset == nullptr || panelW <= 0 || height <= 0) return;
+
+    auto& cursor = parent->cursor();
+    auto& canvas = parent->canvas();
+    QPainter* p = canvas.painter();
+
+    // 1. 获取最新帧的Epoch（取当前游标范围内最后一个有效帧）
+    int latestIdx = -1;
+    const int N = cursor.indexes.size();
+    for (int i = N - 1; i >= 0; --i) {
+        int idx = dataset->validIndex(cursor.getIndex(i));
+        if (idx >= 0) { latestIdx = idx; break; }
+    }
+
+    Epoch* epochData = dataset->fromIndex(latestIdx);
+    if (epochData == nullptr) return;
+    ChartParameters params = epochData->getChartParameters(cursor.channel1);
+    int   sfEnd    = params.sfEnd;
+    int   btStart  = params.btStart;
+    float loRng    = params.loRng;
+    if (loRng <= 0) loRng = 1500.0f;
+
+
+
+
+    const int  pingSize   =  240;
+    int frameSfEnd = params.sfEnd;
+    int  frameBtStart = params.btStart;
+
+    // 先获取原始长度的声呐数据
+    QVector<uint8_t> rawDataVec;
+    rawDataVec.resize(PING_SIZE_MAX);
+    if (cursor.channel2 == CHANNEL_NONE) {
+        epochData->getSonarFramePixel(cursor.channel1, cursor.subChannel1, rawDataVec);
+    }
+
+    /*- 灵敏度滤波 -*/
+    int sens = 5;
+    for(int i = 0; (i < frameBtStart) && (i < pingSize) && (i < height); i++)
+    {
+        if(rawDataVec[i] < sens) {
+            rawDataVec[i] = 0;
+        }
+    }
+
+    for(int i = frameBtStart; (i < pingSize) && (i < height); i++)
+    {
+        if(rawDataVec[i]<(sens/2)) {
+            rawDataVec[i] = 0;
+        }
+    }
+
+    uint8_t* cacheData = new uint8_t[height];
+    memset(cacheData, 0, height * sizeof(uint8_t));
+
+    float scaleY = (float)height / pingSize * (params.loRng/(currentLoRng_ - currentUpRng_));
+    int startIdx = pingSize * currentUpRng_ / params.loRng;
+    stretchCompressPixel(rawDataVec, cacheData, height, scaleY, startIdx);
+
+
+    // 3. 背景填充（与声呐图背景一致）
+    int bgRgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+    p->fillRect(panelX, 0, panelW, height, QColor::fromRgb(bgRgb));
+
+    // 4. 绘制分隔线
+    QPen sepPen(QColor(80, 80, 80, 180));
+    sepPen.setWidth(1);
+    p->setPen(sepPen);
+    p->drawLine(panelX, 0, panelX, height);
+
+    // _cash[column].state = CashLine::CashState::CashStateValid;
+    // _cash[column].isNeedUpdate = true;
+
+    uint32_t* img_data = (uint32_t*)_image.bits();
+    int bytesPerLine = _image.bytesPerLine() / 4;
+    for (int image_row = 0; image_row < height; image_row++) {
+        uint8_t dataValue = cacheData[image_row];
+        int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+        int rgb = bgColor;
+        // qDebug() << "dataValue....." << dataValue;
+
+        if (image_row >= 0 && image_row < frameSfEnd) {
+            // 水表
+            if(dataValue == 0) {
+                rgb = bgColor;
+            } else {
+                if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
+                    rgb = ZyColorScheme::colorScheme_surface[254];
+                } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
+                    rgb = ZyColorScheme::colorScheme_surface[0];
+                } else {
+                    rgb =  ZyColorScheme::colorScheme_surface[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+                }
+            }
+
+        }
+        else if (image_row >= frameSfEnd && image_row < frameBtStart) {
+            // 水中
+            if(dataValue == 0) {
+                rgb = bgColor;
+            } else {
+                if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
+                    rgb = ZyColorScheme::colorScheme_fish[254];
+                } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
+                    rgb = ZyColorScheme::colorScheme_fish[254];
+                } else {
+                    rgb = ZyColorScheme::colorScheme_fish[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+                }
+            }
+        }
+        else if(image_row >= frameBtStart) {
+            // 水底
+            if(dataValue == 0) {
+                rgb = bgColor;
+            } else {
+                if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
+                    rgb = ZyColorScheme::colorScheme_bottom[254];
+                } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
+                    rgb = ZyColorScheme::colorScheme_bottom[254];
+                } else {
+                    rgb = ZyColorScheme::colorScheme_bottom[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+                }
+            }
+        }
+
+    //     QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+
+
+    //     for(int column = waveWidth_/2-cacheData[image_row]/10; column <  waveWidth_/2+cacheData[image_row]/10; column++) {
+    //         img_data[image_row* bytesPerLine + column] = color;
+    //     }
+
+    // }
+
+    // delete[] cacheData;
+    // cacheData = nullptr;
+
+    // // 6. 绘制波形曲线轮廓（白色细线，按振幅包络）
+    // QPen curvePen(QColor(255, 255, 255, 200));
+    // curvePen.setWidth(1);
+    // p->setPen(curvePen);
+    // QPainterPath path;
+    // bool first = true;
+    // for (int i = 0; i < usableLen; ++i) {
+    //     int y = i * height / usableLen;
+    //     int x = panelX + (rawDataVec[i] * panelW) / 255;
+    //     if (first) { path.moveTo(x, y); first = false; }
+    //     else        path.lineTo(x, y);
+    // }
+    // p->drawPath(path);
+    }
+
+    // 7. 顶部标题
+    p->setPen(QColor(255, 255, 255, 220));
+    QFont font("Asap", 10, QFont::Normal);
+    p->setFont(font);
+    p->drawText(panelX + 4, 14, QObject::tr("Latest"));
 }
 
 
@@ -435,8 +534,7 @@ void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t*
 // }
 int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int height)
 {
-    int sfEnd, btStart;
-    // qDebug() << "::updateCash.......width:" << width << " height:" << height << " sfEnd:" << sfEnd << "  btStart:" << btStart;
+    // qDebug() << "::updateCash.......width:" << width << " height:" << height;
     DatasetCursor& cursor = parent->cursor();
     if (_cash.size() != width) {
         _cash.resize(width);
@@ -544,11 +642,10 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
                 uint8_t* cacheData = new uint8_t[height];
                 memset(cacheData, 0, height * sizeof(uint8_t));
-                float scaleY = (float)height / pingSize * (params.loRng/(1500.0 - 0.0));
-                // qDebug() << "scaleY......" << scaleY;
-                // scaleY *= 0.4;
-                scaleY *= _scaleYFactor;
-                stretchCompressPixel(rawDataVec, cacheData, height, scaleY);
+
+                float scaleY = (float)height / pingSize * (params.loRng/(currentLoRng_ - currentUpRng_));
+                int startIdx = pingSize * currentUpRng_ / params.loRng;
+                stretchCompressPixel(rawDataVec, cacheData, height, scaleY, startIdx);
 
                 _cash[column].state = CashLine::CashState::CashStateValid;
                 _cash[column].isNeedUpdate = true;
@@ -590,7 +687,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                             }
                         }
                     }
-                     else if(image_row >= frameBtStart){
+                     else if(image_row >= frameBtStart) {
                         // 水底
                         if(dataValue == 0) {
                             rgb = bgColor;
@@ -605,14 +702,12 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                         }
                     }
 
-
                     QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                     img_data[image_row* bytesPerLine + column] = color;
                 }
 
                 delete[] cacheData;
                 cacheData = nullptr;
-
             }
         }
 
@@ -684,6 +779,9 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
         canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, image_width - cash_position, image_height);
         canvas.painter()->drawPixmap(image_width - cash_position, 0, _pixmap, 0, 0, cash_position, image_height);
+
+        const int waveWidth = 80;
+        drawLatestWavePixel(parent, dataset, image_width - waveWidth, waveWidth, image_height);
     }
 
     return true;

@@ -203,10 +203,6 @@ public:
 
     int getLastBottomTrackEpoch() const;
 
-    float getMaxLoRng() {
-        return maxLoRng_;
-    }
-
     float getLastYaw() {
         return _lastYaw;
     }
@@ -338,7 +334,7 @@ signals:
     //void interpYaw(int epIndx);
     //void interpPos(int epIndx);
     void dataUpdate();
-    void updateMinMaxLoRng(float minLoRng, float maxLoRng);
+    // void updateMinMaxLoRng(int minLoRng, int maxLoRng);
     void bottomTrackUpdated(const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll);
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
@@ -429,7 +425,6 @@ private:
     float angleToActiveContact_ = 0.0f;
     float lastDepth_            = 0.0f;
     float speed_                = 0.0f;
-    float maxLoRng_             = 0.0f;
     QVector3D sonarOffset_;
     uint64_t sonarPosIndx_;
 

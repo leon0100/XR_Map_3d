@@ -59,12 +59,12 @@ Rectangle {
     }
 
     function closeMenus() {
-        if (menuSettings.active) {
-            menuSettings.active = false
-        }
-        if (menuDisplay.active) {
-            menuDisplay.active = false
-        }
+        // if (menuSettings.active) {
+        //     menuSettings.active = false
+        // }
+        // if (menuDisplay.active) {
+        //     menuDisplay.active = false
+        // }
     }
 
     function itemChangeActive(currentItem) {
