@@ -1830,13 +1830,10 @@ ApplicationWindow  {
 
                     Plot2D {
                         id: waterViewSecond
-
                         enabled: menuBar.numPlots === 2
                         visible: menuBar.numPlots === 2
-
                         Layout.fillHeight: true
                         Layout.fillWidth: true
-
                         Layout.rowSpan   : 1
                         Layout.columnSpan: 1
                         focus: true

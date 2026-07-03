@@ -20,7 +20,7 @@ Plot2D::Plot2D()
     // rangefinder_.setVisible(true);
     // depth_.setVisible(true);
     grid_.setVisible(true);
-    // aim_.setVisible(true);
+    aim_.setVisible(true);
     // quadrature_.setVisible(false);
     setDataChannel(false, CHANNEL_NONE, 0, {});
     cursor_.attitude.from = -180;
@@ -177,7 +177,7 @@ void Plot2D::draw(QPainter *painterPtr)
 
     painterPtr->setCompositionMode(QPainter::CompositionMode_Exclusion);
     grid_.draw(this, datasetPtr_);
-    // aim_.draw(this, datasetPtr_);
+    aim_.draw(this, datasetPtr_);
 
     contacts_.draw(this, datasetPtr_);
 }
@@ -195,12 +195,11 @@ void Plot2D::setHorizontal(bool is_horizontal)
 
 void Plot2D::setAimEpochEventState(bool state)
 {
-    // aim_.setEpochEventState(state);
+    aim_.setEpochEventState(state);
 }
 
 void Plot2D::setTimelinePosition(float position)
 {
-    // qDebug() << "Plot2D::setTimelinePosition.........";
     if (position > 1.0f) {
         position = 1.0f;
     }
@@ -595,7 +594,7 @@ void Plot2D::scrollDistance(float ratio)
 
 void Plot2D::setMousePosition(int x, int y, bool isSync)
 {
-    // qDebug() << "-------------------------Plot2D::setMousePosition....................." << x << "  " << y;
+    // qDebug() << "------------Plot2D::setMousePosition........." << x << "  " << y;
     const int image_width  = canvas_.width();
     const int image_height = canvas_.height();
     const int dataset_from = cursor_.getIndex(0);
@@ -1010,7 +1009,8 @@ void Plot2D::reindexingCursor()
 
     int cntZeros = 0;
     for(int i = 0; i < image_width; i++) {
-        int data_index = head_data_index + round((i - image_width)/hor_ratio) - 1;
+        // int data_index = head_data_index + round((i - image_width)/hor_ratio) - 1;
+        int data_index = head_data_index + round((i - image_width)/hor_ratio);
         if(data_index >= 0 && data_index < data_width) {
             cursor_.indexes[i] = data_index;
         } else {

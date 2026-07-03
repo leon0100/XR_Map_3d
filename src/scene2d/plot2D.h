@@ -9,7 +9,7 @@
 #include <QEvent>
 
 
-// #include "plot2D_aim.h"
+#include "plot2D_aim.h"
 // #include "plot2D_attitude.h"
 // #include "plot2D_bottom_processing.h"
 #include "plot2D_contact.h"
@@ -143,7 +143,7 @@ protected:
     Canvas        canvas_;
     DatasetCursor cursor_;
 
-    // Plot2DAim               aim_;
+    Plot2DAim               aim_;
     // Plot2DAttitude          attitude_;
     // Plot2DBottomProcessing  bottomProcessing_;
     Plot2DContact           contacts_;

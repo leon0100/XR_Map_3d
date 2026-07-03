@@ -870,7 +870,7 @@ WaterFall {
 
                         CCombo  {
                             id: distanceAutoRangeList
-                            model: [qsTr("Last data      "), qsTr("Last on screen"), qsTr("Max on screen")]
+                            model: [qsTr("Last data    "), qsTr("Last on screen"), qsTr("Max on screen")]
                             currentIndex: 0
                             onCurrentIndexChanged: distanceAutoRangeRow.distanceAutorangeMode()
                             Component.onCompleted: distanceAutoRangeRow.distanceAutorangeMode()

@@ -29,7 +29,7 @@ void qPlot2D::paint(QPainter *painter)
         return;
     }
 
-    Plot2D::getImage((int)width(), (int)height(), painter, _isHorizontal);
+    Plot2D::getImage((int)width()-WAVE_PIXEL_WIDTH, (int)height(), painter, _isHorizontal);
     Plot2D::draw(painter);
     if (Plot2D::getIsContactChanged()) {
         emit contactChanged();
@@ -146,6 +146,7 @@ void qPlot2D::setMaxLoRng(int maxLoRng)
 
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
+    qDebug() << "upper........" << upper << "  " << lower;
     currentUpRng_ = upper * 100;
     currentLoRng_ = lower * 100;
 
@@ -342,14 +343,6 @@ void qPlot2D::setOffsetZ(float value)
 
 void qPlot2D::scaleYZoomEvent(int delta)
 {
-    // float factor = getEchogramScaleYFactor();
-    // float step = 0.05f;
-    // if(delta > 0) {
-    //     factor += step * ((delta + 119) / 120);
-    // } else if(delta < 0) {
-    //     factor -= step * ((-delta + 119) / 120);
-    // }
-
     if(delta < 0) {
         currentLoRng_ /= 2;
     }

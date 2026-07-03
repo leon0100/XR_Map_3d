@@ -59,7 +59,8 @@
 #define SAVE_SOFTWARE_PAR         "cfg"      //默认保存参数的路径
 
 
-class HelpDialog : public QDialog {
+class HelpDialog : public QDialog
+{
     Q_OBJECT
 public:
     explicit HelpDialog(QWidget *parent = nullptr) : QDialog(parent)

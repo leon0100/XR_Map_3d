@@ -17,6 +17,7 @@ typedef struct
 }StructSonarInfo;
 
 #define COLOR_LINE 7   //偏移量
+#define WAVE_PIXEL_WIDTH 36
 
 class Plot2DEchogram : public PlotLayer {
 public:
@@ -68,6 +69,10 @@ protected:
         bool isNeedUpdate = true;
 
         QVector<int16_t> data;
+        QVector<uint8_t> waveData;
+        int sfEnd = 0;
+        int btStart = 0;
+        int bottomLineIdx = 0;
     };
 
     uint16_t _colorHashMap[256];
@@ -93,10 +98,6 @@ protected:
        float low = NAN, high = NAN;
     } _lastLevels;
 
-    DatasetCursor _lastCursor;
-    int _lastWidth = -1;
-    int _lastHeight = -1;
-
     bool getTriggerCashReset() {
         bool reset_cash = _cashFlags.resetCash;
         _cashFlags.resetCash = false;
@@ -106,7 +107,7 @@ protected:
 
 private:
     void stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale, int startIndx);
-    void drawLatestWavePixel(Plot2D* parent, Dataset* dataset, int panelX, int panelY, int height);
+    void drawLatestWavePixel(Plot2D* parent, int panelX, int panelY, int height);
 
 
 
@@ -119,6 +120,8 @@ private:
     int currentUpRng_ = 0, currentLoRng_ = 3200;
 
     QVector<uint8_t> latestWave_;
-    const int waveWidth_ = 80;
+    int latestWaveSfEnd_ = 0;
+    int latestWaveBtStart_ = 0;
+    int bottomLineIdx_ = 0;
 
 };

@@ -107,8 +107,7 @@ void ZyColorScheme::getColorFromColorList()
     QImage GradientImage;
 
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_surface.count(); i++)
-    {
+    for(int i = 0; i < colorList_surface.count(); i++) {
         linearGradient_Surface.setColorAt(colorList_surface.at(i).colorPosition/255.0, colorList_surface.at(i).colorValue);
     }
     painter.begin(&pixmap);
@@ -116,13 +115,11 @@ void ZyColorScheme::getColorFromColorList()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
-    {
+    for(int i = 0;i < 255; i++) {
         colorScheme_surface[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_fish.count(); i++)
-    {
+    for(int i = 0; i < colorList_fish.count(); i++) {
         linearGradient_Fish.setColorAt(colorList_fish.at(i).colorPosition/255.0, colorList_fish.at(i).colorValue);
     }
     painter.begin(&pixmap);
@@ -130,13 +127,11 @@ void ZyColorScheme::getColorFromColorList()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
-    {
+    for(int i = 0; i < 255; i++) {
         colorScheme_fish[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_bottom.count(); i++)
-    {
+    for(int i = 0; i<colorList_bottom.count(); i++) {
         linearGradient_Bottom.setColorAt(colorList_bottom.at(i).colorPosition/255.0, colorList_bottom.at(i).colorValue);
     }
     painter.begin(&pixmap);
@@ -144,8 +139,7 @@ void ZyColorScheme::getColorFromColorList()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
-    {
+    for(int i = 0; i < 255; i++) {
         colorScheme_bottom[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
 }
@@ -242,8 +236,7 @@ void ZyColorScheme::getColorFromColorList_2()
     QImage GradientImage;
 
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_surface_2.count(); i++)
-    {
+    for(int i = 0; i<colorList_surface_2.count(); i++) {
         linearGradient_Surface.setColorAt(colorList_surface_2.at(i).colorPosition/255.0, colorList_surface_2.at(i).colorValue);
     }
     painter.begin(&pixmap);
@@ -251,13 +244,11 @@ void ZyColorScheme::getColorFromColorList_2()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
-    {
+    for(int i = 0;i < 255;i++) {
         colorScheme_surface_2[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_fish_2.count(); i++)
-    {
+    for(int i = 0; i < colorList_fish_2.count(); i++) {
         linearGradient_Fish.setColorAt(colorList_fish_2.at(i).colorPosition/255.0, colorList_fish_2.at(i).colorValue);
     }
     painter.begin(&pixmap);
@@ -265,13 +256,11 @@ void ZyColorScheme::getColorFromColorList_2()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
-    {
+    for(int i = 0; i < 255; i++) {
         colorScheme_fish_2[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
     /*-颜色链表中按顺序进行渐变-*/
-    for(int i = 0; i<colorList_bottom_2.count(); i++)
-    {
+    for(int i = 0; i < colorList_bottom_2.count(); i++) {
         linearGradient_Bottom.setColorAt(colorList_bottom_2.at(i).colorPosition/255.0, colorList_bottom_2.at(i).colorValue);
     }
     painter.begin(&pixmap);
@@ -279,8 +268,7 @@ void ZyColorScheme::getColorFromColorList_2()
     painter.drawRect(0, 0, 100, 256);
     painter.end();
     GradientImage = pixmap.toImage();
-    for(int i=0;i<255;i++)
-    {
+    for(int i = 0;i < 255; i++) {
         colorScheme_bottom_2[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
 }

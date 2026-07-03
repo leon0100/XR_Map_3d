@@ -226,6 +226,55 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 
         tsl_w tslSingleStruct;
         memcpy(&tslSingleStruct, tslDataTemp, idx);
+        tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
+        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;
+        LLA lla;
+        lla.latitude  = tslSingleStruct.boat.latitude  / 100000.f;
+        lla.longitude = tslSingleStruct.boat.longitude / 100000.f;
+        lla.altitude  = tslSingleStruct.auxInfo.depth  / 100.f;
+
+        buffer.append(lla);
+        if (buffer.size() < MEDIAN_WINDOW) {
+            // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
+            if (buffer.size() <= MEDIAN_WINDOW * 0.5) {
+                minZ = std::min(minZ, lla.altitude);
+                maxZ = std::max(maxZ, lla.altitude);
+                vec_CSV.append(lla.altitude);
+                track.append(lla);
+            }
+        }
+        else {
+            // 窗口超过设定大小，移除最旧的点，让窗口滑动
+            if (buffer.size() > MEDIAN_WINDOW) {
+                buffer.removeFirst();
+            }
+
+            // 获取窗口正中间的点
+            int midIndex = MEDIAN_WINDOW * 0.5;
+            LLA targetLla = buffer[midIndex];
+
+            // 提取当前窗口内的所有深度，用于求中值
+            QVector<float> depths;
+            for (const LLA& item : buffer) {
+                depths.append(item.altitude);
+            }
+            // 排序找中位数
+            std::sort(depths.begin(), depths.end());
+            float medianDepth = depths[MEDIAN_WINDOW * 0.5];
+
+            // 异常值判断：与中位数偏差是否超过阈值
+            if (std::abs(targetLla.altitude - medianDepth) > SPIKE_THRESHOLD) {
+                targetLla.altitude = medianDepth; // 使用中值替代
+                buffer[midIndex].altitude = medianDepth;
+            }
+
+            // 将过滤后的中心点加入最终轨迹
+            minZ = std::min(minZ, targetLla.altitude);
+            maxZ = std::max(maxZ, targetLla.altitude);
+            vec_CSV.append(targetLla.altitude);
+            track.append(targetLla);
+        }
+
 
         // ----------- 将声呐数据发送到 Dataset ------------
         QVector<QVector<uint8_t>> dataVec;
@@ -282,57 +331,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.pingSize = pingSize;
         chartParams.upRng    = 0.0;
         chartParams.loRng    = loRng;
-        // 让 Dataset 接收声呐数据
         emit chartComplete(channelId, chartParams, dataVec, 0.1f, 0.0);
-
-        tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
-        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;
-        LLA lla;
-        lla.latitude  = tslSingleStruct.boat.latitude  / 100000.f;
-        lla.longitude = tslSingleStruct.boat.longitude / 100000.f;
-        lla.altitude  = tslSingleStruct.auxInfo.depth  / 100.f;
-
-        buffer.append(lla);
-        if (buffer.size() < MEDIAN_WINDOW) {
-            // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
-            if (buffer.size() <= MEDIAN_WINDOW * 0.5) {
-                minZ = std::min(minZ, lla.altitude);
-                maxZ = std::max(maxZ, lla.altitude);
-                vec_CSV.append(lla.altitude);
-                track.append(lla);
-            }
-        }
-        else {
-            // 窗口超过设定大小，移除最旧的点，让窗口滑动
-            if (buffer.size() > MEDIAN_WINDOW) {
-                buffer.removeFirst();
-            }
-
-            // 获取窗口正中间的点
-            int midIndex = MEDIAN_WINDOW * 0.5;
-            LLA targetLla = buffer[midIndex];
-
-            // 提取当前窗口内的所有深度，用于求中值
-            QVector<float> depths;
-            for (const LLA& item : buffer) {
-                depths.append(item.altitude);
-            }
-            // 排序找中位数
-            std::sort(depths.begin(), depths.end());
-            float medianDepth = depths[MEDIAN_WINDOW * 0.5];
-
-            // 异常值判断：与中位数偏差是否超过阈值
-            if (std::abs(targetLla.altitude - medianDepth) > SPIKE_THRESHOLD) {
-                targetLla.altitude = medianDepth; // 使用中值替代
-                buffer[midIndex].altitude = medianDepth;
-            }
-
-            // 将过滤后的中心点加入最终轨迹
-            minZ = std::min(minZ, targetLla.altitude);
-            maxZ = std::max(maxZ, targetLla.altitude);
-            vec_CSV.append(targetLla.altitude);
-            track.append(targetLla);
-        }
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (cnt + 1) == tslWCnt ? true : false;
@@ -342,15 +341,12 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         if (progressDialog_ && (cnt % progressInterval == 0 || cnt == (tslWCnt - 1))) {
             double progress = static_cast<double>(cnt + 1) / tslWCnt;
             QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                    .arg(cnt + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+                                .arg(cnt + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
         }
     }
-
-
-    qDebug() << "track-tslw size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));

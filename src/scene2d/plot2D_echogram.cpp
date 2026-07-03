@@ -138,6 +138,8 @@ void Plot2DEchogram::setUpperRng(int maxUpRng)
 
 void Plot2DEchogram::setLowerRng(int minLoRng)
 {
+    qDebug() << " Plot2DEchogram::setLowerRng(int minLoRng)...." << minLoRng;
+
     currentLoRng_ = minLoRng;
     resetCash();
 }
@@ -193,90 +195,28 @@ void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t*
 }
 
 
-void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, Dataset* dataset, int panelX, int panelW, int height)
+void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW, int height)
 {
-    if (dataset == nullptr || panelW <= 0 || height <= 0) return;
+     if (latestWave_.isEmpty() || panelW <= 0 || height <= 0) return;
 
-    auto& cursor = parent->cursor();
     auto& canvas = parent->canvas();
-    QPainter* p = canvas.painter();
+    QPainter* p  = canvas.painter();
 
-    // 1. 获取最新帧的Epoch（取当前游标范围内最后一个有效帧）
-    int latestIdx = -1;
-    const int N = cursor.indexes.size();
-    for (int i = N - 1; i >= 0; --i) {
-        int idx = dataset->validIndex(cursor.getIndex(i));
-        if (idx >= 0) { latestIdx = idx; break; }
-    }
-
-    Epoch* epochData = dataset->fromIndex(latestIdx);
-    if (epochData == nullptr) return;
-    ChartParameters params = epochData->getChartParameters(cursor.channel1);
-    int   sfEnd    = params.sfEnd;
-    int   btStart  = params.btStart;
-    float loRng    = params.loRng;
-    if (loRng <= 0) loRng = 1500.0f;
-
-
-
-
-    const int  pingSize   =  240;
-    int frameSfEnd = params.sfEnd;
-    int  frameBtStart = params.btStart;
-
-    // 先获取原始长度的声呐数据
-    QVector<uint8_t> rawDataVec;
-    rawDataVec.resize(PING_SIZE_MAX);
-    if (cursor.channel2 == CHANNEL_NONE) {
-        epochData->getSonarFramePixel(cursor.channel1, cursor.subChannel1, rawDataVec);
-    }
-
-    /*- 灵敏度滤波 -*/
-    int sens = 5;
-    for(int i = 0; (i < frameBtStart) && (i < pingSize) && (i < height); i++)
-    {
-        if(rawDataVec[i] < sens) {
-            rawDataVec[i] = 0;
-        }
-    }
-
-    for(int i = frameBtStart; (i < pingSize) && (i < height); i++)
-    {
-        if(rawDataVec[i]<(sens/2)) {
-            rawDataVec[i] = 0;
-        }
-    }
-
-    uint8_t* cacheData = new uint8_t[height];
-    memset(cacheData, 0, height * sizeof(uint8_t));
-
-    float scaleY = (float)height / pingSize * (params.loRng/(currentLoRng_ - currentUpRng_));
-    int startIdx = pingSize * currentUpRng_ / params.loRng;
-    stretchCompressPixel(rawDataVec, cacheData, height, scaleY, startIdx);
-
-
-    // 3. 背景填充（与声呐图背景一致）
     int bgRgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
     p->fillRect(panelX, 0, panelW, height, QColor::fromRgb(bgRgb));
 
-    // 4. 绘制分隔线
+    // 绘制分隔线
     QPen sepPen(QColor(80, 80, 80, 180));
     sepPen.setWidth(1);
     p->setPen(sepPen);
     p->drawLine(panelX, 0, panelX, height);
 
-    // _cash[column].state = CashLine::CashState::CashStateValid;
-    // _cash[column].isNeedUpdate = true;
-
-    uint32_t* img_data = (uint32_t*)_image.bits();
-    int bytesPerLine = _image.bytesPerLine() / 4;
-    for (int image_row = 0; image_row < height; image_row++) {
-        uint8_t dataValue = cacheData[image_row];
+    for (int j = 0; j < height; j++) {
+        uint8_t dataValue = latestWave_[j];
         int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
         int rgb = bgColor;
-        // qDebug() << "dataValue....." << dataValue;
 
-        if (image_row >= 0 && image_row < frameSfEnd) {
+        if (j >= 0 && j < latestWaveSfEnd_) {
             // 水表
             if(dataValue == 0) {
                 rgb = bgColor;
@@ -291,7 +231,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, Dataset* dataset, int p
             }
 
         }
-        else if (image_row >= frameSfEnd && image_row < frameBtStart) {
+        else if (j >= latestWaveSfEnd_ && j < latestWaveBtStart_) {
             // 水中
             if(dataValue == 0) {
                 rgb = bgColor;
@@ -305,7 +245,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, Dataset* dataset, int p
                 }
             }
         }
-        else if(image_row >= frameBtStart) {
+        else if(j >= latestWaveBtStart_) {
             // 水底
             if(dataValue == 0) {
                 rgb = bgColor;
@@ -320,218 +260,31 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, Dataset* dataset, int p
             }
         }
 
-    //     QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+        // 以面板中线为中心，根据振幅向两侧扩展
+        int halfWidth = (latestWave_[j] * (panelW / 2)) / 255;
+        int centerX   = panelX + panelW / 2;
+        int xStart    = centerX - halfWidth;
+        int xEnd      = centerX + halfWidth;
+        if (xStart < panelX) xStart = panelX;
+        if (xEnd > panelX + panelW) xEnd = panelX + panelW;
+        if (xEnd > xStart) {
+            p->fillRect(xStart, j, xEnd - xStart, 1, QColor::fromRgb(rgb));
+        }
 
-
-    //     for(int column = waveWidth_/2-cacheData[image_row]/10; column <  waveWidth_/2+cacheData[image_row]/10; column++) {
-    //         img_data[image_row* bytesPerLine + column] = color;
-    //     }
-
-    // }
-
-    // delete[] cacheData;
-    // cacheData = nullptr;
-
-    // // 6. 绘制波形曲线轮廓（白色细线，按振幅包络）
-    // QPen curvePen(QColor(255, 255, 255, 200));
-    // curvePen.setWidth(1);
-    // p->setPen(curvePen);
-    // QPainterPath path;
-    // bool first = true;
-    // for (int i = 0; i < usableLen; ++i) {
-    //     int y = i * height / usableLen;
-    //     int x = panelX + (rawDataVec[i] * panelW) / 255;
-    //     if (first) { path.moveTo(x, y); first = false; }
-    //     else        path.lineTo(x, y);
-    // }
-    // p->drawPath(path);
     }
 
-    // 7. 顶部标题
-    p->setPen(QColor(255, 255, 255, 220));
-    QFont font("Asap", 10, QFont::Normal);
-    p->setFont(font);
-    p->drawText(panelX + 4, 14, QObject::tr("Latest"));
+
+    if (bottomLineIdx_ >= 0 && bottomLineIdx_ < height) {
+        QPen linePen(Qt::red);
+        linePen.setWidth(2);
+        p->setPen(linePen);
+        p->drawLine(panelX, bottomLineIdx_, panelX + panelW, bottomLineIdx_);
+    }
+
 }
 
 
-// int Plot2DEchogram::updateCash(Plot2D* parent, Dataset* dataset, int width, int height)
-// {
-//     auto& cursor = parent->cursor();
 
-//     if (_cash.size() != width) {
-//         _cash.resize(width);
-//         resetCash();
-//     }
-
-//     uint8_t* image_data = (uint8_t*)_image.constBits();
-//     const int b_scanline = _image.bytesPerLine();
-
-//     bool is_cash_notvalid = getTriggerCashReset();
-//     is_cash_notvalid |= !_lastCursor.isChannelsEqual(cursor);
-//     is_cash_notvalid |= !_lastCursor.isDistanceEqual(cursor);
-//     is_cash_notvalid |=  _lastWidth != width;
-//     is_cash_notvalid |=  _lastHeight != height;
-
-//     float from = cursor.distance.from;
-//     float to = cursor.distance.to;
-//     float fullrange = to - from;
-
-//     float range1 = 0;
-//     float from1 = 0;
-//     float to1 = 0;
-
-//     float from2 = 0;
-//     float to2 = 0;
-
-//     if (to >= 0) {
-//         range1 = 0 - from;
-//         from1 = 0;
-//         to1 = -from;
-
-//         if (from >= 0) {
-//             from2 = from;
-//         }
-//         else {
-//             from2 = 0;
-//         }
-//         to2 = to;
-//     }
-//     else {
-//         range1 = to - from;
-//         from1 = -to;
-//         to1 = -from;
-//     }
-
-//     int wrap_start_pos = qAbs(cursor.getIndex(0) % width);
-
-//     for (unsigned int i = 0; i < cursor.indexes.size(); i++) {
-//         if (cursor.indexes[i] > 0) {
-//             wrap_start_pos = qAbs((cursor.indexes[i] + (width - i)) % width);
-//             break;
-//         }
-//     }
-
-
-//     for(int column = 0; column < width; column++) {
-//         if(_cash[column].data.size() != height) {
-//             _cash[column].state = CashLine::CashState::CashStateNotValid;
-//             _cash[column].data.resize(height);
-//             _cash[column].poolIndex = -1;
-//             _cash[column].state = CashLine::CashState::CashStateEraced;
-//             _cash[column].isNeedUpdate = true;
-
-//             int16_t cash_data_size = _cash[column].data.size();
-//             int16_t* cash_data = _cash[column].data.data();
-//             uint8_t * img_data = image_data + column;
-//             for (int image_row = 0; image_row < cash_data_size; image_row++) {
-//                 *img_data = *cash_data;
-//                 img_data += b_scanline;
-//                 cash_data++;
-//             }
-//         }
-
-//         int cursor_pos = column - wrap_start_pos;
-//         if(column < wrap_start_pos) {
-//             cursor_pos += width;
-//         }
-
-//         int pool_index = cursor.getIndex(cursor_pos);
-//         int pool_index_safe = dataset->validIndex(pool_index);
-//         if(pool_index_safe >= 0) {
-
-//             bool wasValidlyRendered = true;
-//             if (reRenderPlotIndxs_.contains(pool_index_safe)) {
-//                 reRenderPlotIndxs_.remove(pool_index_safe);
-//                 wasValidlyRendered = false;
-//             }
-
-//             auto* datasource = dataset->fromIndex(pool_index_safe);
-//             const int cash_index = _cash[column].poolIndex;
-
-//             if (is_cash_notvalid || pool_index_safe != cash_index || !wasValidlyRendered) {
-//                 _cash[column].poolIndex = pool_index_safe;
-
-//                 if(datasource != NULL) {
-//                     _cash[column].state = CashLine::CashState::CashStateNotValid;
-//                     int16_t* cash_data = _cash[column].data.data();
-//                     int16_t cash_data_size = _cash[column].data.size();
-
-//                     if (cursor.channel2 == CHANNEL_NONE) {
-//                         datasource->chartTo(cursor.channel1, cursor.subChannel1, from, to, cash_data, cash_data_size, _compensation_id);
-//                     }
-//                     else {
-//                         int cash_data_size_part1 = cash_data_size*(range1/fullrange);
-
-//                         if(cash_data_size_part1 > 0) {
-//                             datasource->chartTo(cursor.channel1, cursor.subChannel1, from1, to1, cash_data, cash_data_size_part1, _compensation_id, true);
-//                         }
-
-//                         if(cash_data_size_part1 < 0) {
-//                             cash_data_size_part1 = 0;
-//                         }
-
-//                         const int cash_data_size_part2 = cash_data_size - cash_data_size_part1;
-//                         if(cash_data_size_part2 > 0) {
-//                             datasource->chartTo(cursor.channel2, cursor.subChannel2, from2, to2, &cash_data[cash_data_size_part1], cash_data_size_part2, _compensation_id, false);
-//                         }
-//                     }
-
-//                     _cash[column].state = CashLine::CashState::CashStateValid;
-//                     _cash[column].isNeedUpdate = true;
-//                     uint8_t * img_data = image_data + column;
-//                     for (int image_row = 0; image_row < cash_data_size; image_row++) {
-//                         *img_data = *cash_data;
-//                         img_data += b_scanline;
-//                         cash_data++;
-//                     }
-//                 }
-//                 else {
-//                     if(_cash[column].state != CashLine::CashState::CashStateEraced) {
-//                         _cash[column].state = CashLine::CashState::CashStateNotValid;
-//                         _cash[column].data.fill(0);
-//                         _cash[column].poolIndex = -1;
-//                         _cash[column].state = CashLine::CashState::CashStateEraced;
-//                         _cash[column].isNeedUpdate = true;
-
-//                         int16_t cash_data_size = _cash[column].data.size();
-//                         int16_t* cash_data = _cash[column].data.data();
-//                         uint8_t * img_data = image_data + column;
-//                         for (int image_row = 0; image_row < cash_data_size; image_row++) {
-//                             *img_data = *cash_data;
-//                             img_data += b_scanline;
-//                             cash_data++;
-//                         }
-//                     }
-//                 }
-
-//             }
-//         } else {
-//             if(_cash[column].state != CashLine::CashState::CashStateEraced) {
-//                 _cash[column].state = CashLine::CashState::CashStateNotValid;
-//                 _cash[column].data.fill(0);
-//                 _cash[column].poolIndex = -1;
-//                 _cash[column].state = CashLine::CashState::CashStateEraced;
-//                 _cash[column].isNeedUpdate = true;
-
-//                 int16_t* cash_data = _cash[column].data.data();
-//                 int16_t cash_data_size = _cash[column].data.size();
-//                 uint8_t * img_data = image_data + column;
-//                 for (int image_row = 0; image_row < cash_data_size; image_row++) {
-//                     *img_data = *cash_data;
-//                     img_data += b_scanline;
-//                     cash_data++;
-//                 }
-//             }
-//         }
-//     }
-
-//     _lastCursor = cursor;
-//     _lastWidth = width;
-//     _lastHeight = height;
-
-//     return wrap_start_pos;
-// }
 int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int height)
 {
     // qDebug() << "::updateCash.......width:" << width << " height:" << height;
@@ -542,51 +295,23 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
     }
 
     bool isCashNotvalid = getTriggerCashReset();
-    isCashNotvalid |= !_lastCursor.isChannelsEqual(cursor);
-    isCashNotvalid |= !_lastCursor.isDistanceEqual(cursor);
-    isCashNotvalid |= _lastWidth != width;
-    isCashNotvalid |= _lastHeight != height;
-
-
-    float from = cursor.distance.from;
-    float to   = cursor.distance.to;
-    float fullrange = to - from;
-
-    float range1 = 0;
-    float from1 = 0;
-    float to1 = 0;
-
-    float from2 = 0;
-    float to2 = 0;
-
-    if (to >= 0) {
-        range1 = 0 - from;
-        from1 = 0;
-        to1 = -from;
-
-        if (from >= 0) {
-            from2 = from;
+    if (isCashNotvalid) {
+        for (int i = 0; i < _cash.size(); i++) {
+            _cash[i].poolIndex = -1;              // 触发 pool_index_safe != cacheIndex
+            _cash[i].isNeedUpdate = true;          // 触发 _image→_pixmap 复制
+            if (_cash[i].state == CashLine::CashState::CashStateEraced) {
+                _cash[i].state = CashLine::CashState::CashStateNotValid;  // 让无数据列重新填背景
+            }
         }
-        else {
-            from2 = 0;
-        }
-        to2 = to;
-    }
-    else {
-        range1 = to - from;
-        from1 = -to;
-        to1 = -from;
     }
 
     int wrapStartPos = qAbs(cursor.getIndex(0) % width);
-
-    for (unsigned int i = 0; i < cursor.indexes.size(); i++) {
+    for (int i = 0; i < cursor.indexes.size(); i++) {
         if (cursor.indexes[i] > 0) {
             wrapStartPos = qAbs((cursor.indexes[i] + (width - i)) % width);
             break;
         }
     }
-
 
     for(int column = 0; column < width; column++) {
         int cursorPos = column - wrapStartPos;
@@ -603,6 +328,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 wasValidlyRendered = false;
             }
 
+            // qDebug() << "pool_index_safe..........." << pool_index_safe;
             Epoch* epochData = dataset->fromIndex(pool_index_safe);
             if(epochData == nullptr) {
                 return -1;
@@ -610,11 +336,11 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
             const int cacheIndex = _cash[column].poolIndex;
 
             ChartParameters params = epochData->getChartParameters(cursor.channel1);
-            const int  pingSize   =  240;
-            int frameSfEnd = params.sfEnd;
-            int  frameBtStart = params.btStart;
+            const int pingSize = 240;
+            int frameSfEnd     = params.sfEnd;
+            int frameBtStart   = params.btStart;
 
-            if (isCashNotvalid || pool_index_safe != cacheIndex || !wasValidlyRendered) {
+            if (pool_index_safe != cacheIndex || !wasValidlyRendered) {
                 _cash[column].poolIndex = pool_index_safe;
 
                 // 先获取原始长度的声呐数据
@@ -647,18 +373,22 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 int startIdx = pingSize * currentUpRng_ / params.loRng;
                 stretchCompressPixel(rawDataVec, cacheData, height, scaleY, startIdx);
 
-                _cash[column].state = CashLine::CashState::CashStateValid;
+                _cash[column].waveData = QVector<uint8_t>(cacheData, cacheData + height);
+                _cash[column].sfEnd    = frameSfEnd;
+                _cash[column].btStart  = frameBtStart;
+                _cash[column].bottomLineIdx = _cash[column].btStart * scaleY;
+                _cash[column].state    = CashLine::CashState::CashStateValid;
                 _cash[column].isNeedUpdate = true;
 
                 uint32_t* img_data = (uint32_t*)_image.bits();
                 int bytesPerLine = _image.bytesPerLine() / 4;
-                for (int image_row = 0; image_row < height; image_row++) {
-                    uint8_t dataValue = cacheData[image_row];
+                for (int j = 0; j < height; j++) {
+                    uint8_t dataValue = cacheData[j];
                     int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
                     int rgb = bgColor;
                     // qDebug() << "dataValue....." << dataValue;
 
-                     if (image_row >= 0 && image_row < frameSfEnd) {
+                     if (j >= 0 && j < frameSfEnd) {
                         // 水表
                         if(dataValue == 0) {
                             rgb = bgColor;
@@ -673,7 +403,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                         }
 
                     }
-                      else if (image_row >= frameSfEnd && image_row < frameBtStart) {
+                      else if (j >= frameSfEnd && j < frameBtStart) {
                         // 水中
                         if(dataValue == 0) {
                             rgb = bgColor;
@@ -687,7 +417,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                             }
                         }
                     }
-                     else if(image_row >= frameBtStart) {
+                     else if(j >= frameBtStart) {
                         // 水底
                         if(dataValue == 0) {
                             rgb = bgColor;
@@ -703,7 +433,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     }
 
                     QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                    img_data[image_row* bytesPerLine + column] = color;
+                    img_data[j* bytesPerLine + column] = color;
                 }
 
                 delete[] cacheData;
@@ -721,19 +451,26 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 uint32_t* img_data = (uint32_t*)_image.bits();
                 int bytesPerLine = _image.bytesPerLine() / 4;
                 int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-                QRgb bgRgb = qRgb((bgColor >> 16) & 0xFF, (bgColor >> 8) & 0xFF, bgColor & 0xFF);
+                QRgb bgRgb  = qRgb((bgColor >> 16) & 0xFF, (bgColor >> 8) & 0xFF, bgColor & 0xFF);
 
-                // 直接用背景色填充整列，不依赖未初始化的 sfEnd/btStart
-                for (int image_row = 0; image_row < height; image_row++) {
-                    img_data[image_row * bytesPerLine + column] = bgRgb;
+                for (int j = 0; j < height; j++) {
+                    img_data[j * bytesPerLine + column] = bgRgb;
                 }
             }
         }
     }
 
-    _lastCursor = cursor;
-    _lastWidth = width;
-    _lastHeight = height;
+
+    int visualRightColumn = (wrapStartPos == 0) ? (width - 1) : (wrapStartPos - 1);
+    if (visualRightColumn >= 0 && visualRightColumn < _cash.size()) {
+        const CashLine& line = _cash[visualRightColumn];
+        if (!line.waveData.isEmpty()) {
+            latestWave_        = line.waveData;
+            latestWaveSfEnd_   = line.sfEnd;
+            latestWaveBtStart_ = line.btStart;
+            bottomLineIdx_     = line.bottomLineIdx;
+        }
+    }
 
     return wrapStartPos;
 }
@@ -746,12 +483,22 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
     _colorLevels.clear();
 
     if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
-        const int image_width  = canvas.width();
+        int image_width  = canvas.width();
         const int image_height = canvas.height();
 
         if(_image.width() != image_width || _image.height() != image_height) {
             _image  = QImage(image_width, image_height, QImage::Format_RGB32);
             _pixmap = QPixmap(image_width, image_height);
+
+            int bgRgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+            _image.fill(QColor::fromRgb(bgRgb));
+
+            for (int i = 0; i < _cash.size(); i++) {
+                _cash[i].isNeedUpdate = true;
+                if (_cash[i].state == CashLine::CashState::CashStateEraced) {
+                    _cash[i].state = CashLine::CashState::CashStateNotValid;
+                }
+            }
         }
 
         int cash_position = updateCache(parent, dataset, image_width, image_height);
@@ -780,8 +527,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
         canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, image_width - cash_position, image_height);
         canvas.painter()->drawPixmap(image_width - cash_position, 0, _pixmap, 0, 0, cash_position, image_height);
 
-        const int waveWidth = 80;
-        drawLatestWavePixel(parent, dataset, image_width - waveWidth, waveWidth, image_height);
+        drawLatestWavePixel(parent, image_width, WAVE_PIXEL_WIDTH, image_height);
     }
 
     return true;

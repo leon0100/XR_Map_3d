@@ -19,8 +19,7 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
     auto& canvas = parent->canvas();
     auto& cursor = parent->cursor();
 
-    if (!dataset ||
-        ((cursor.mouseX < 0 || cursor.mouseY < 0) && (cursor.selectEpochIndx == -1))) {
+    if (!dataset || ((cursor.mouseX < 0 || cursor.mouseY < 0) && (cursor.selectEpochIndx == -1))) {
         return false;
     }
 
