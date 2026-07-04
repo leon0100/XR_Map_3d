@@ -23,6 +23,8 @@ Plot2DEchogram::~Plot2DEchogram()
         delete zyColorScheme_;
         zyColorScheme_ = nullptr;
     }
+
+    _lastCursor = DatasetCursor();
 }
 
 void Plot2DEchogram::setLowLevel(float low)
@@ -284,7 +286,6 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 }
 
 
-
 int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int height)
 {
     // qDebug() << "::updateCash.......width:" << width << " height:" << height;
@@ -295,15 +296,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
     }
 
     bool isCashNotvalid = getTriggerCashReset();
-    if (isCashNotvalid) {
-        for (int i = 0; i < _cash.size(); i++) {
-            _cash[i].poolIndex = -1;              // 触发 pool_index_safe != cacheIndex
-            _cash[i].isNeedUpdate = true;          // 触发 _image→_pixmap 复制
-            if (_cash[i].state == CashLine::CashState::CashStateEraced) {
-                _cash[i].state = CashLine::CashState::CashStateNotValid;  // 让无数据列重新填背景
-            }
-        }
-    }
+    isCashNotvalid |= !_lastCursor.isChannelsEqual(cursor);
+    isCashNotvalid |= !_lastCursor.isDistanceEqual(cursor);
 
     int wrapStartPos = qAbs(cursor.getIndex(0) % width);
     for (int i = 0; i < cursor.indexes.size(); i++) {
@@ -340,7 +334,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
             int frameSfEnd     = params.sfEnd;
             int frameBtStart   = params.btStart;
 
-            if (pool_index_safe != cacheIndex || !wasValidlyRendered) {
+            if (isCashNotvalid || pool_index_safe != cacheIndex || !wasValidlyRendered) {
                 _cash[column].poolIndex = pool_index_safe;
 
                 // 先获取原始长度的声呐数据
@@ -442,8 +436,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
 
         else {
-            if(_cash[column].state != CashLine::CashState::CashStateEraced) {
-                _cash[column].data.fill(0);
+            if(isCashNotvalid || _cash[column].state != CashLine::CashState::CashStateEraced) {
                 _cash[column].poolIndex = -1;
                 _cash[column].state = CashLine::CashState::CashStateEraced;
                 _cash[column].isNeedUpdate = true;
@@ -471,6 +464,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
             bottomLineIdx_     = line.bottomLineIdx;
         }
     }
+
+    _lastCursor = cursor;
 
     return wrapStartPos;
 }

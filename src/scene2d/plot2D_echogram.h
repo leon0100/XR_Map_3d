@@ -68,7 +68,6 @@ protected:
         CashState state = CashState::CashStateNotValid;
         bool isNeedUpdate = true;
 
-        QVector<int16_t> data;
         QVector<uint8_t> waveData;
         int sfEnd = 0;
         int btStart = 0;
@@ -97,6 +96,8 @@ protected:
     struct {
        float low = NAN, high = NAN;
     } _lastLevels;
+
+    DatasetCursor _lastCursor;
 
     bool getTriggerCashReset() {
         bool reset_cash = _cashFlags.resetCash;
