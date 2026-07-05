@@ -283,6 +283,42 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
         p->drawLine(panelX, bottomLineIdx_, panelX + panelW, bottomLineIdx_);
     }
 
+
+
+    //==================== 顶部信息栏 ====================
+    const int infoBarHeight = height / 16;
+
+    // 半透明背景
+    p->fillRect(0, 0, panelX, infoBarHeight, QColor(0, 0, 0, 120));
+
+    float speed = bottomLineIdx_;
+    float lat   = 1111.123456;
+    float lon   = 22222.654321;
+    float depth = 2222.56;
+
+    QString speedStr = !qFuzzyIsNull(speed) ? QString::number(speed, 'f', 2) + " km/h" : QStringLiteral("-- km/h");
+    QString depthStr = !qFuzzyIsNull(depth) ? QString::number(depth, 'f', 2) + " m" : QStringLiteral("-- m");
+    QString latStr = !qFuzzyIsNull(lat) ? QString::number(lat, 'f', 6) + QStringLiteral("°") : QStringLiteral("--");
+    QString lonStr = !qFuzzyIsNull(lon) ? QString::number(lon, 'f', 6) + QStringLiteral("°") : QStringLiteral("--");
+
+    QString line1 = QStringLiteral("Speed : %1    Depth : %2") .arg(speedStr) .arg(depthStr);
+    QString line2 = QStringLiteral("Lat : %1    Lon : %2") .arg(latStr) .arg(lonStr);
+
+    QPen textPen(QColor(255, 255, 255, 230));
+    p->setPen(textPen);
+
+    QFont font = p->font();
+    font.setPixelSize(15);
+    font.setBold(true);
+    p->setFont(font);
+
+    QFontMetrics fm(font);
+    int lineHeight  = fm.height();
+    int textWidth = fm.horizontalAdvance(line1) > fm.horizontalAdvance(line2) ? fm.horizontalAdvance(line1)
+                                                    :fm.horizontalAdvance(line2);
+    p->drawText(panelX - 20 - textWidth, infoBarHeight/2 - lineHeight + fm.ascent(), line1);
+    p->drawText(panelX - 20 - textWidth, infoBarHeight/2 - lineHeight + lineHeight + fm.ascent(), line2);
+
 }
 
 
