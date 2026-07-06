@@ -24,7 +24,8 @@ public:
     Q_PROPERTY(double  contactLat       READ getContactLat                                NOTIFY contactChanged)
     Q_PROPERTY(double  contactDepth     READ getContactDepth                              NOTIFY contactChanged)
 
-    Q_PROPERTY(int   maxLoRng         READ getMaxLoRng         WRITE setMaxLoRng        NOTIFY maxLoRngChanged)
+    Q_PROPERTY(int  minUpRng  READ  getMinUpRng   WRITE  setMinUpRng   NOTIFY minUpRngChanged)
+    Q_PROPERTY(int  maxLoRng  READ  getMaxLoRng   WRITE  setMaxLoRng   NOTIFY maxLoRngChanged)
 
     qPlot2D(QQuickItem* parent = nullptr);
     void paint(QPainter *painter) override;
@@ -41,8 +42,11 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override final;
     void sendSyncEvent(int epoch_index, QEvent::Type eventType) override final;
 
+    int getMinUpRng();
+    void setMinUpRng(int minUpRng);
     int getMaxLoRng();
     void setMaxLoRng(int maxLoRng);
+
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
     Q_INVOKABLE void setCursorFromTo(float from, float to) { cursor_.distance.mode = AutoRangeNone; Plot2D::cursor_.distance.from = from; Plot2D::cursor_.distance.to = to; }
@@ -61,6 +65,7 @@ signals:
     void plotEnableChanged();
     void contactChanged();
     void outlineModeChanged();
+    void minUpRngChanged();
     void maxLoRngChanged();
 
 protected slots:

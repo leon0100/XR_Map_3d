@@ -131,15 +131,30 @@ bool qPlot2D::setActiveContact(int indx)
     return Plot2D::setActiveContact(indx);
 }
 
+int qPlot2D::getMinUpRng()
+{
+    return currentUpRng_;
+}
+
 int qPlot2D::getMaxLoRng()
 {
     return currentLoRng_;
+}
+
+void qPlot2D::setMinUpRng(int minUpRng)
+{
+    currentUpRng_ = minUpRng;
+    grid_.setLoRngRange(currentUpRng_, currentLoRng_);
+    echogram_.setUpperRng(minUpRng);
+    emit minUpRngChanged();
+    plotUpdate();
 }
 
 void qPlot2D::setMaxLoRng(int maxLoRng)
 {
     currentLoRng_ = maxLoRng;
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
+    echogram_.setLowerRng(maxLoRng);
     emit maxLoRngChanged();
     plotUpdate();
 }
@@ -402,14 +417,10 @@ void qPlot2D::timerUpdater()
 
 void qPlot2D::dataUpdate()
 {
+    setMinUpRng(0);
     setMaxLoRng(3200);
-    plotUpdate();
+    // plotUpdate();
 }
-
-// void qPlot2D::updateMinMaxLoRng(int minLoRng, int maxLoRng)
-// {
-//     setMaxLoRng(maxLoRng);
-// }
 
 void qPlot2D::updater()
 {

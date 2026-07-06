@@ -41,13 +41,13 @@ public:
     void setLevels(float low, float hight);
 
     void setColorScheme(QVector<QColor> coloros, QVector<int> levels);
-    int getThemeId() const;
+    int  getThemeId() const;
     void setThemeId(int theme_id);
     void setCompensation(int compensation_id);
 
 
     // int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
-    int updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
+    int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
     void setUpperRng(int maxUpRng);
     void setLowerRng(int minLoRng);
@@ -72,6 +72,13 @@ protected:
         int sfEnd = 0;
         int btStart = 0;
         int bottomLineIdx = 0;
+
+        float depth;
+        quint16  heading;
+        quint16  speed;
+        quint16  temperature;
+        double   latitude;
+        double   longitude;
     };
 
     uint16_t _colorHashMap[256];
@@ -119,10 +126,6 @@ private:
     ZyColorScheme *zyColorScheme_;
 
     int currentUpRng_ = 0, currentLoRng_ = 3200;
-
-    QVector<uint8_t> latestWave_;
-    int latestWaveSfEnd_ = 0;
-    int latestWaveBtStart_ = 0;
-    int bottomLineIdx_ = 0;
+    CashLine wavePixel_;
 
 };

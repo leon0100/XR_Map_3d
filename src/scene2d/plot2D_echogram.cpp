@@ -140,8 +140,6 @@ void Plot2DEchogram::setUpperRng(int maxUpRng)
 
 void Plot2DEchogram::setLowerRng(int minLoRng)
 {
-    qDebug() << " Plot2DEchogram::setLowerRng(int minLoRng)...." << minLoRng;
-
     currentLoRng_ = minLoRng;
     resetCash();
 }
@@ -199,13 +197,13 @@ void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t*
 
 void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW, int height)
 {
-     if (latestWave_.isEmpty() || panelW <= 0 || height <= 0) return;
-
     auto& canvas = parent->canvas();
     QPainter* p  = canvas.painter();
 
     int bgRgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
     p->fillRect(panelX, 0, panelW, height, QColor::fromRgb(bgRgb));
+
+    if (wavePixel_.waveData.isEmpty()) return;
 
     // 绘制分隔线
     QPen sepPen(QColor(80, 80, 80, 180));
@@ -213,12 +211,13 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     p->setPen(sepPen);
     p->drawLine(panelX, 0, panelX, height);
 
+    QVector<uint8_t> latestWave = wavePixel_.waveData;
     for (int j = 0; j < height; j++) {
-        uint8_t dataValue = latestWave_[j];
+        uint8_t dataValue = latestWave[j];
         int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
         int rgb = bgColor;
 
-        if (j >= 0 && j < latestWaveSfEnd_) {
+        if (j >= 0 && j < wavePixel_.sfEnd) {
             // 水表
             if(dataValue == 0) {
                 rgb = bgColor;
@@ -233,7 +232,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
             }
 
         }
-        else if (j >= latestWaveSfEnd_ && j < latestWaveBtStart_) {
+        else if (j >= wavePixel_.sfEnd && j < wavePixel_.btStart) {
             // 水中
             if(dataValue == 0) {
                 rgb = bgColor;
@@ -247,7 +246,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
                 }
             }
         }
-        else if(j >= latestWaveBtStart_) {
+        else if(j >= wavePixel_.btStart) {
             // 水底
             if(dataValue == 0) {
                 rgb = bgColor;
@@ -263,7 +262,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
         }
 
         // 以面板中线为中心，根据振幅向两侧扩展
-        int halfWidth = (latestWave_[j] * (panelW / 2)) / 255;
+        int halfWidth = (latestWave[j] * (panelW / 2)) / 255;
         int centerX   = panelX + panelW / 2;
         int xStart    = centerX - halfWidth;
         int xEnd      = centerX + halfWidth;
@@ -275,40 +274,41 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 
     }
 
-
-    if (bottomLineIdx_ >= 0 && bottomLineIdx_ < height) {
+    int bottomLineIdx = wavePixel_.bottomLineIdx;
+    if (bottomLineIdx >= 0 && bottomLineIdx < height) {
         QPen linePen(Qt::red);
         linePen.setWidth(2);
         p->setPen(linePen);
-        p->drawLine(panelX, bottomLineIdx_, panelX + panelW, bottomLineIdx_);
+        p->drawLine(panelX, bottomLineIdx, panelX + panelW, bottomLineIdx);
     }
-
 
 
     //==================== 顶部信息栏 ====================
     const int infoBarHeight = height / 16;
+    p->fillRect(0, 0, panelX, infoBarHeight, QColor(0, 0, 0, 80));
 
-    // 半透明背景
-    p->fillRect(0, 0, panelX, infoBarHeight, QColor(0, 0, 0, 120));
+    float depth   = wavePixel_.depth / 100.0f;
+    float heading = wavePixel_.heading / 10.0f;
+    float speed   = wavePixel_.speed / 100 * 0.514444f;
+    float lat     = wavePixel_.latitude;
+    float lon     = wavePixel_.longitude;
+    float temp    = (wavePixel_.temperature / 10.0f - 32) / 1.8f;
 
-    float speed = bottomLineIdx_;
-    float lat   = 1111.123456;
-    float lon   = 22222.654321;
-    float depth = 2222.56;
+    QString depthStr   = QString::number(depth, 'f', 2)  + "m";
+    QString headingStr = QString::number(heading, 'f',1) + "°";
+    QString speedStr   = QString::number(speed, 'f', 2)  + "m/s";
+    QString latStr     = QString::number(lat, 'f', 6) + "°";
+    QString lonStr     = QString::number(lon, 'f', 6) + "°";
+    QString tempStr    = QString::number(temp, 'f', 1) + QString::fromUtf8("\xE2\x84\x83");
 
-    QString speedStr = !qFuzzyIsNull(speed) ? QString::number(speed, 'f', 2) + " km/h" : QStringLiteral("-- km/h");
-    QString depthStr = !qFuzzyIsNull(depth) ? QString::number(depth, 'f', 2) + " m" : QStringLiteral("-- m");
-    QString latStr = !qFuzzyIsNull(lat) ? QString::number(lat, 'f', 6) + QStringLiteral("°") : QStringLiteral("--");
-    QString lonStr = !qFuzzyIsNull(lon) ? QString::number(lon, 'f', 6) + QStringLiteral("°") : QStringLiteral("--");
-
-    QString line1 = QStringLiteral("Speed : %1    Depth : %2") .arg(speedStr) .arg(depthStr);
-    QString line2 = QStringLiteral("Lat : %1    Lon : %2") .arg(latStr) .arg(lonStr);
+    QString line1 = QStringLiteral("Depth:%1  HDG:%2 Speed: %3") .arg(depthStr).arg(headingStr).arg(speedStr);
+    QString line2 = QStringLiteral("Lat:%1  Lon:%2  Temp:%3") .arg(latStr).arg(lonStr).arg(tempStr);;
 
     QPen textPen(QColor(255, 255, 255, 230));
     p->setPen(textPen);
 
     QFont font = p->font();
-    font.setPixelSize(15);
+    font.setPixelSize(16);
     font.setBold(true);
     p->setFont(font);
 
@@ -316,8 +316,8 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     int lineHeight  = fm.height();
     int textWidth = fm.horizontalAdvance(line1) > fm.horizontalAdvance(line2) ? fm.horizontalAdvance(line1)
                                                     :fm.horizontalAdvance(line2);
-    p->drawText(panelX - 20 - textWidth, infoBarHeight/2 - lineHeight + fm.ascent(), line1);
-    p->drawText(panelX - 20 - textWidth, infoBarHeight/2 - lineHeight + lineHeight + fm.ascent(), line2);
+    p->drawText(panelX - 32 - textWidth, infoBarHeight/2 - lineHeight + fm.ascent(), line1);
+    p->drawText(panelX - 32 - textWidth, infoBarHeight/2 - lineHeight + lineHeight + fm.ascent(), line2);
 
 }
 
@@ -366,7 +366,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
             const int cacheIndex = _cash[column].poolIndex;
 
             ChartParameters params = epochData->getChartParameters(cursor.channel1);
-            const int pingSize = 240;
+            const int pingSize = params.pingSize;
             int frameSfEnd     = params.sfEnd;
             int frameBtStart   = params.btStart;
 
@@ -382,15 +382,13 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
                 /*- 灵敏度滤波 -*/
                 int sens = 5;
-                for(int i = 0; (i < frameBtStart) && (i < pingSize) && (i < height); i++)
-                {
+                for(int i = 0; (i < frameBtStart) && (i < pingSize) && (i < height); i++) {
                     if(rawDataVec[i] < sens) {
                         rawDataVec[i] = 0;
                     }
                 }
 
-                for(int i = frameBtStart; (i < pingSize) && (i < height); i++)
-                {
+                for(int i = frameBtStart; (i < pingSize) && (i < height); i++) {
                     if(rawDataVec[i]<(sens/2)) {
                         rawDataVec[i] = 0;
                     }
@@ -409,16 +407,22 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 _cash[column].bottomLineIdx = _cash[column].btStart * scaleY;
                 _cash[column].state    = CashLine::CashState::CashStateValid;
                 _cash[column].isNeedUpdate = true;
+                _cash[column].heading  = params.heading;
+                _cash[column].depth    = params.depth;
+                _cash[column].speed    = params.speed;
+                _cash[column].temperature = params.temperature;
+                _cash[column].longitude = params.longitude;
+                _cash[column].latitude = params.latitude;
 
                 uint32_t* img_data = (uint32_t*)_image.bits();
-                int bytesPerLine = _image.bytesPerLine() / 4;
+                int bytesPerLine   = _image.bytesPerLine() / 4;
                 for (int j = 0; j < height; j++) {
                     uint8_t dataValue = cacheData[j];
                     int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
                     int rgb = bgColor;
                     // qDebug() << "dataValue....." << dataValue;
 
-                     if (j >= 0 && j < frameSfEnd) {
+                    if (j >= 0 && j < frameSfEnd) {
                         // 水表
                         if(dataValue == 0) {
                             rgb = bgColor;
@@ -431,9 +435,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                                 rgb =  ZyColorScheme::colorScheme_surface[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
                             }
                         }
-
                     }
-                      else if (j >= frameSfEnd && j < frameBtStart) {
+                    else if (j >= frameSfEnd && j < frameBtStart) {
                         // 水中
                         if(dataValue == 0) {
                             rgb = bgColor;
@@ -447,7 +450,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                             }
                         }
                     }
-                     else if(j >= frameBtStart) {
+                    else if(j >= frameBtStart) {
                         // 水底
                         if(dataValue == 0) {
                             rgb = bgColor;
@@ -492,13 +495,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
     int visualRightColumn = (wrapStartPos == 0) ? (width - 1) : (wrapStartPos - 1);
     if (visualRightColumn >= 0 && visualRightColumn < _cash.size()) {
-        const CashLine& line = _cash[visualRightColumn];
-        if (!line.waveData.isEmpty()) {
-            latestWave_        = line.waveData;
-            latestWaveSfEnd_   = line.sfEnd;
-            latestWaveBtStart_ = line.btStart;
-            bottomLineIdx_     = line.bottomLineIdx;
-        }
+        wavePixel_ = _cash[visualRightColumn];
     }
 
     _lastCursor = cursor;
@@ -546,7 +543,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
             int cashUpdateWidth = cash_col - cash_col_1;
             if(cashUpdateWidth > 0) {
-                p.drawImage(cash_col_1, 0, _image, cash_col_1, 0 , cashUpdateWidth, image_height, Qt::ThresholdDither);
+                p.drawImage(cash_col_1, 0, _image, cash_col_1, 0, cashUpdateWidth, image_height, Qt::ThresholdDither);
             }
             else {
                 cash_col++;

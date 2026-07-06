@@ -48,12 +48,14 @@ using ListLinkedChannels = QList<QPair<ChannelId, uint8_t>>;
 struct ChartParameters {
     ChartParameters()
         : boardVersion(BoardNone), version(v0), loRng(0), upRng(0), depth(0), sspd(0),
-            pingSize(0), sfEnd(0), btStart(0), draft(0)
+        pingSize(0), sfEnd(0), btStart(0), draft(0), heading(0), speed(0), temperature(0),
+        latitude(0.0), longitude(0.0)
     {};
 
     ChartParameters(BoardVersion _boardVersion, Version _version, QList<Segment> _errList)
         : boardVersion(_boardVersion), version(_version), errList(_errList),
-          loRng(0), upRng(0), depth(0), sspd(0), pingSize(0), sfEnd(0), btStart(0), draft(0)
+          loRng(0), upRng(0), depth(0), sspd(0), pingSize(0), sfEnd(0), btStart(0), draft(0),
+          heading(0), speed(0), temperature(0), latitude(0.0), longitude(0.0)
     {};
 
     BoardVersion boardVersion;
@@ -68,6 +70,11 @@ struct ChartParameters {
     int sfEnd;
     int btStart;
     int draft;
+    quint16  heading;
+    quint16  speed;
+    quint16  temperature;
+    double   latitude;
+    double   longitude;
 };
 
 class IDBin : public QObject

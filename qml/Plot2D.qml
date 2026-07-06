@@ -17,6 +17,7 @@ WaterFall {
     property int  iconSize: plotSize * 0.08
 
     horizontal: horisontalVertical.checked
+    property bool currentFrameChecked: currentFrame.checked
 
     function setLevels(low, high) {
         echogramLevelsSlider.startValue   = low
@@ -183,9 +184,12 @@ WaterFall {
                 }
 
                 if (mouse.button === Qt.LeftButton) {
-                    // menuBlock.visible = false
-                    // plot.plotMousePosition(mouse.x, mouse.y)
-                    // plotPressed(indx, mouse.x, mouse.y)
+                    menuBlock.visible = false
+                    if(plot.currentFrameChecked) {
+                        plot.plotMousePosition(mouse.x, mouse.y)
+                        // plotPressed(indx, mouse.x, mouse.y)
+                    }
+
                     isPanning = false
                     panStartX = mouse.x
                 }
@@ -206,10 +210,6 @@ WaterFall {
                 if (Qt.platform.os === "android") {
                     longPressTimer.stop()
                 }
-
-                // if (mouse.button === Qt.LeftButton) {
-                //     plot.plotMousePosition(-1, -1)
-                // }
 
                 if (mouse.button === Qt.RightButton) {
                     contactMouseX = mouse.x
@@ -312,17 +312,19 @@ WaterFall {
         }
     }
 
+
     RowLayout {
         id: settingsRow
-        anchors.left: parent.left
+        anchors.left:   parent.left
         anchors.bottom: parent.bottom
-        visible: true
+        visible:        true
 
         MenuFrame {
             id: leftPanel
             isOpacityControlled: true
-            Layout.alignment: Qt.AlignLeft
+            Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
             Layout.leftMargin: (indx === 1 && !is3dVisible && height > plot.height - 130 * theme.resCoeff) ? width : 0
+            Layout.bottomMargin: 20
 
             ColumnLayout {
                 id: plotControl
@@ -342,71 +344,29 @@ WaterFall {
                         }
                     }
                 }
-
-                // brightess slider
-                CText {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 0
-                    Layout.preferredWidth: theme.menuWidth
-                    // visible: chartEnable.checked // TODO
-                    horizontalAlignment: Text.AlignHCenter
-                    text: echogramLevelsSlider.stopValue
-                    small: true
-                }
-
-                ChartLevel {
-                    // opacity: 0.8
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: theme.menuWidth
-                    id: echogramLevelsSlider
-                    // visible: chartEnable.checked // TODO
-                    Layout.alignment: Qt.AlignHCenter
-
-                    onStartValueChanged: {
-                        plot.plotEchogramSetLevels(startValue, stopValue);
-                    }
-
-                    onStopValueChanged: {
-                        plot.plotEchogramSetLevels(startValue, stopValue);
-                    }
-
-                    Component.onCompleted: {
-                        plot.plotEchogramSetLevels(startValue, stopValue);
-                    }
-
-                    Settings {
-                        category: "Plot2D_" + plot.indx
-
-                        property alias echogramLevelsStart: echogramLevelsSlider.startValue
-                        property alias echogramLevelsStop: echogramLevelsSlider.stopValue
-                    }
-                }
-
-                CText {
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: theme.menuWidth
-                    Layout.bottomMargin: 0
-                    // visible: chartEnable.checked // TODO
-                    horizontalAlignment: Text.AlignHCenter
-                    text: echogramLevelsSlider.startValue
-                    small: true
-                }
             }
         }
+
 
         MenuScroll {
             id: settingsScroll
             visible: plotCheckButton.checked
-            Layout.preferredHeight: parent.height
+            Layout.alignment: Qt.AlignBottom
+            Layout.bottomMargin: 10
+            Layout.preferredWidth: plot.width - theme.menuWidth - 50
+            Layout.maximumWidth: plot.width - theme.menuWidth - 50
 
             MenuFrame {
                 id: plotSettings
+                width: settingsScroll.availableWidth - settingsScroll.padding * 2
 
                 ParamGroup {
                     groupName: qsTr("Sonar Viewer")
+                    width: plotSettings.width - plotSettings.horizontalMargins * 2
 
                     RowLayout {
                         id: rowDataset
+                        Layout.fillWidth: true
                         visible: instruments > 1
 
                         CText {
@@ -424,7 +384,6 @@ WaterFall {
                             property bool suppressTextSignal: false
 
                             Layout.fillWidth: true
-                            Layout.preferredWidth: rowDataset.width / 3
                             visible: true
 
                             onCurrentTextChanged: {
@@ -473,7 +432,6 @@ WaterFall {
                             property bool suppressTextSignal: false
 
                             Layout.fillWidth: true
-                            Layout.preferredWidth: rowDataset.width / 3
                             visible: true
 
                             onCurrentTextChanged: {
@@ -520,20 +478,20 @@ WaterFall {
                     }
 
                     RowLayout {
+                        Layout.fillWidth:  true
+
                         CCheck {
                             id: echogramVisible
                             Layout.fillWidth: true
-                            Layout.preferredWidth: 150
                             checked: true
                             text: qsTr("Echogram")
                             onCheckedChanged: plotEchogramVisible(checked)
                             Component.onCompleted: plotEchogramVisible(checked)
                         }
 
-                        CCombo  {
+                        CCombo {
                             id: echoTheme
                             Layout.fillWidth: true
-                            Layout.preferredWidth: 150
                             model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
                             currentIndex: 0
 
@@ -547,10 +505,10 @@ WaterFall {
                             }
                         }
 
-                        CCombo  {
+                        CCombo {
                             id: echogramTypesList
                             Layout.fillWidth: true
-                            Layout.preferredWidth: 150
+                            // Layout.preferredWidth: 120
                             model: [qsTr("Raw"), qsTr("Side-Scan")]
                             currentIndex: 0
 
@@ -566,210 +524,14 @@ WaterFall {
                     }
 
                     RowLayout {
-                        visible: instruments > 0
-                        CCheck {
-                            id: bottomTrackVisible
-                            Layout.fillWidth: true
-                            text: qsTr("Bottom-Track")
-                            onCheckedChanged: plotBottomTrackVisible(checked)
-                            Component.onCompleted: plotBottomTrackVisible(checked)
-                        }
+                        Layout.fillWidth: true
 
-                        CCombo  {
-                            id: bottomTrackThemeList
-                            Layout.fillWidth: true
-                            Layout.preferredWidth: 150
-                            model: [qsTr("Line1"), qsTr("Line2"), qsTr("Dot1"), qsTr("Dot2"), qsTr("DotLine")]
-                            currentIndex: 1
-
-                            onCurrentIndexChanged: plotBottomTrackTheme(currentIndex)
-                            Component.onCompleted: plotBottomTrackTheme(currentIndex)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-
-                                property alias bottomTrackThemeList: bottomTrackThemeList.currentIndex
-                            }
-                        }
-                    }
-
-                    CCheck {
-                        visible: instruments > 1
-                        id: ahrsVisible
-                        text: qsTr("Attitude")
-                        onCheckedChanged: plotAttitudeVisible(checked)
-                        Component.onCompleted: plotAttitudeVisible(checked)
-                    }
-
-                    CCheck {
-                        visible: instruments > 1
-                        id: temperatureVisible
-                        text: qsTr("Temperature")
-                        onCheckedChanged: plotTemperatureVisible(checked)
-                        Component.onCompleted: plotTemperatureVisible(checked)
-                    }
-
-                    RowLayout {
-                        visible: instruments > 1
-                        id: dopplerBeamVisibleGroup
-                        spacing: 0
-                        function updateDopplerBeamVisible() {
-                            var beamfilter = dopplerBeam1Visible.checked*1 + dopplerBeam2Visible.checked*2 + dopplerBeam3Visible.checked*4 + dopplerBeam4Visible.checked*8
-                            plotDopplerBeamVisible(dopplerBeamVisible.checked,
-                                                   beamfilter)
-                        }
-
-                        CCheck {
-                            id: dopplerBeamVisible
-                            Layout.fillWidth: true
-                            text: qsTr("Doppler Beams")
-                            onCheckedChanged: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                            Component.onCompleted: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                        }
-
-                        CCheck {
-                            id: dopplerBeam1Visible
-                            enabled: true
-                            checked: true
-                            text: "1"
-
-                            onCheckedChanged: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                        }
-
-                        CCheck {
-                            id: dopplerBeam2Visible
-                            leftPadding: 0
-                            enabled: true
-                            checked: true
-                            text: "2"
-                            onCheckedChanged: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                        }
-
-                        CCheck {
-                            id: dopplerBeam3Visible
-                            leftPadding: 0
-                            enabled: true
-                            checked: true
-                            text: "3"
-                            onCheckedChanged: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                        }
-
-                        CCheck {
-                            id: dopplerBeam4Visible
-                            leftPadding: 0
-                            enabled: true
-                            checked: true
-                            text: "4"
-                            onCheckedChanged: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                        }
-
-                        CCheck {
-                            id: dopplerBeamAmpVisible
-                            enabled: true
-                            checked: true
-                            text: "A"
-                            onCheckedChanged: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                        }
-
-                        CCheck {
-                            id: dopplerBeamModeVisible
-                            leftPadding: 0
-                            enabled: true
-                            checked: true
-                            text: "M"
-                            onCheckedChanged: dopplerBeamVisibleGroup.updateDopplerBeamVisible()
-                        }
-                    }
-
-                    RowLayout {
-                        visible: instruments > 1
-                        spacing: 0
-                        CCheck {
-                            id: dopplerInstrumentVisible
-                            Layout.fillWidth: true
-                            text: qsTr("Doppler Instrument")
-                            onCheckedChanged: plotDopplerInstrumentVisible(checked)
-                            Component.onCompleted: plotDopplerInstrumentVisible(checked)
-                        }
-
-                        CCheck {
-                            id: dopplerInstrumentXVisible
-                            enabled: false
-                            checked: true
-                            text: "X"
-                            //                        onCheckedChanged: setDopplerInstrumentVis(checked)
-                            //                        Component.onCompleted: setDopplerInstrumentVis(checked)
-                        }
-
-                        CCheck {
-                            id: dopplerInstrumentYVisible
-                            enabled: false
-                            checked: true
-                            text: "Y"
-                            //                        onCheckedChanged: setDopplerInstrumentVis(checked)
-                            //                        Component.onCompleted: setDopplerInstrumentVis(checked)
-                        }
-
-                        CCheck {
-                            id: dopplerInstrumentZVisible
-                            enabled: false
-                            checked: true
-                            text: "Z"
-                            //                        onCheckedChanged: setDopplerInstrumentVis(checked)
-                            //                        Component.onCompleted: setDopplerInstrumentVis(checked)
-                        }
-                    }
-
-                    RowLayout {
-                        visible: instruments > 1
-                        id: acousticAngleGroup
-                        spacing: 0
-
-                        CCheck {
-                            id: acousticAngleVisible
-                            Layout.fillWidth: true
-                            text: qsTr("Acoustic angle")
-                            onCheckedChanged: plotAcousticAngleVisible(checked);
-                            Component.onCompleted: plotAcousticAngleVisible(checked);
-                        }
-                    }
-
-                    RowLayout {
-                        visible: instruments > 1
-                        CCheck {
-                            id: adcpVisible
-                            enabled: false
-                            Layout.fillWidth: true
-                            text: qsTr("Doppler Profiler")
-                        }
-                    }
-
-                    RowLayout {
-                        visible: instruments > 1
-                        CCheck {
-                            id: gnssVisible
-                            checked: false
-                            Layout.fillWidth: true
-                            text: qsTr("GNSS data")
-
-                            onCheckedChanged:      plotGNSSVisible(checked, 1)
-                            Component.onCompleted: plotGNSSVisible(checked, 1)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias gnssVisible: gnssVisible.checked
-                            }
-                        }
-                    }
-
-
-                    RowLayout {
-                        CCheck {
-                            id: rulerVisible
-                            implicitWidth: iconSize * 8
-                            text: qsTr("Ruler")
-                            onCheckedChanged: plotGridVerticalNumber(gridNumber.value*rulerVisible.checked)
-                        }
+                        // CCheck {
+                        //     id: rulerVisible
+                        //     implicitWidth: iconSize * 2
+                        //     text: qsTr("Ruler")
+                        //     onCheckedChanged: plotGridVerticalNumber(gridNumber.value*rulerVisible.checked)
+                        // }
 
                         CText {
                             text: qsTr("upper(m)")
@@ -779,7 +541,8 @@ WaterFall {
                         }
                         TextField {
                            id: upperMin
-                           text: "0"
+                           text: (plot.minUpRng / 100).toFixed(0)
+                           Layout.fillWidth: true
                            Layout.preferredWidth: iconSize * 4
                            horizontalAlignment: TextInput.AlignHCenter
                            font.pixelSize: iconSize
@@ -802,6 +565,7 @@ WaterFall {
                         TextField {
                             id: lowerMax
                             text: (plot.maxLoRng / 100).toFixed(0)
+                            Layout.fillWidth: true
                             Layout.preferredWidth: iconSize * 4
                             horizontalAlignment: TextInput.AlignHCenter
                             font.pixelSize: iconSize
@@ -810,7 +574,6 @@ WaterFall {
                             // onEditingFinished: applyRange()
                             // Component.onCompleted: applyRange()
                         }
-
 
                         Item {
                             Layout.preferredWidth: iconSize
@@ -844,40 +607,14 @@ WaterFall {
                     }
 
 
-
-                    RowLayout {
-                        id: distanceAutoRangeRow
-                        function distanceAutorangeMode() {
-                            plotDistanceAutoRange(distanceAutoRange.checked ? distanceAutoRangeList.currentIndex : -1)
-                        }
-
-                        CCheck {
-                            id: distanceAutoRange
-                            checked: true
-                            Layout.fillWidth: true
-                            text: qsTr("Distance auto range")
-
-                            onCheckedChanged: {
-                                distanceAutoRangeRow.distanceAutorangeMode()
-                            }
-                            Component.onCompleted: distanceAutoRangeRow.distanceAutorangeMode()
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias distanceAutoRange: distanceAutoRange.checked
-                            }
-                        }
-
-                        CCombo  {
-                            id: distanceAutoRangeList
-                            model: [qsTr("Last data    "), qsTr("Last on screen"), qsTr("Max on screen")]
-                            currentIndex: 0
-                            onCurrentIndexChanged: distanceAutoRangeRow.distanceAutorangeMode()
-                            Component.onCompleted: distanceAutoRangeRow.distanceAutorangeMode()
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias distanceAutoRangeList: distanceAutoRangeList.currentIndex
+                    CCheck {
+                        id: currentFrame
+                        checked: true
+                        text: qsTr("Current Frame")
+                        onCheckedChanged: {
+                            currentFrameChecked = !currentFrameChecked
+                            if(!currentFrameChecked) {
+                                plot.plotMousePosition(-1, -1)
                             }
                         }
                     }
@@ -888,22 +625,10 @@ WaterFall {
                         text: qsTr("Horizontal")
                     }
 
-                    Settings {
-                        category: "Plot2D_" + plot.indx
-
-                        property alias echogramVisible:    echogramVisible.checked
-                        property alias postProcVisible:    bottomTrackVisible.checked
-                        property alias ahrsVisible:        ahrsVisible.checked
-                        property alias temperatureVisible: temperatureVisible.checked
-                        property alias rulerVisible:        rulerVisible.checked
-                        property alias dopplerBeamVisible: dopplerBeamVisible.checked
-                        property alias dopplerInstrumentVisible: dopplerInstrumentVisible.checked
-                        property alias horisontalVertical: horisontalVertical.checked
-                    }
                 }
-            } // menu frame
-        } // menu scrol
-    } // row layout
+            }
+        }
+    }
 
     CContact {
         id: contactDialog
@@ -991,109 +716,6 @@ WaterFall {
             x = mx
             y = my
             visible = true
-        }
-
-        ButtonGroup { id: pencilbuttonGroup }
-
-        CheckButton {
-            icon.source: "qrc:/icons/ui/direction_arrows.svg"
-            checked: true
-            backColor: theme.controlBackColor
-            implicitWidth: theme.menuWidth
-
-            onCheckedChanged: {
-                if (checked) {
-                    plot.plotMouseTool(1)
-                }
-            }
-
-            ButtonGroup.group: pencilbuttonGroup
-        }
-
-        CheckButton {
-            icon.source: "qrc:/icons/ui/arrow_bar_to_down.svg"
-            backColor: theme.controlBackColor
-            implicitWidth: theme.menuWidth
-
-            onCheckedChanged: {
-                if (checked) {
-                    plot.plotMouseTool(2)
-                }
-            }
-
-            ButtonGroup.group: pencilbuttonGroup
-        }
-
-        CheckButton {
-            icon.source: "qrc:/icons/ui/pencil.svg"
-            backColor: theme.controlBackColor
-            implicitWidth: theme.menuWidth
-
-            onCheckedChanged: {
-                if (checked) {
-                    plot.plotMouseTool(3)
-                }
-            }
-
-            ButtonGroup.group: pencilbuttonGroup
-        }
-
-        CheckButton {
-            icon.source: "qrc:/icons/ui/arrow_bar_to_up.svg"
-            backColor: theme.controlBackColor
-            implicitWidth: theme.menuWidth
-
-            onCheckedChanged: {
-                if (checked) {
-                    plot.plotMouseTool(4)
-                }
-            }
-
-            ButtonGroup.group: pencilbuttonGroup
-        }
-
-        CheckButton {
-            backColor: theme.controlBackColor
-            implicitWidth: theme.menuWidth
-
-            onCheckedChanged: {
-                if (checked) {
-                    plot.plotMouseTool(5)
-                }
-            }
-
-            ButtonGroup.group: pencilbuttonGroup
-        }
-
-        CheckButton {
-            icon.source: "qrc:/icons/ui/anchor.svg"
-            backColor: theme.controlBackColor
-            implicitWidth: theme.menuWidth
-            checkable: false
-
-            onClicked: {
-                contactDialog.x = mousearea.contactMouseX
-                contactDialog.y = mousearea.contactMouseY
-                contactDialog.visible = true;
-                contactDialog.indx = -1
-
-                menuBlock.visible = false
-            }
-
-            ButtonGroup.group: pencilbuttonGroup
-        }
-
-        CheckButton {
-            icon.source: "qrc:/icons/ui/x.svg"
-            backColor: theme.controlBackColor
-            checkable: false
-            implicitWidth: theme.menuWidth
-
-            onClicked: {
-                menuBlock.visible = false
-            }
-
-            ButtonGroup.group: pencilbuttonGroup
         }
     }
 }

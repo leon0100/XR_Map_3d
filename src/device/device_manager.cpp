@@ -331,6 +331,11 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.pingSize = pingSize;
         chartParams.upRng    = 0.0;
         chartParams.loRng    = loRng;
+        chartParams.temperature  = tslSingleStruct.auxInfo.temperature * 10.0f;
+        chartParams.heading = tslSingleStruct.boat.heading;
+        chartParams.speed = tslSingleStruct.boat.speed * 10 / 0.514444f;
+        chartParams.longitude = lla.longitude;
+        chartParams.latitude = lla.latitude;
         emit chartComplete(channelId, chartParams, dataVec, 0.1f, 0.0);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
@@ -360,6 +365,10 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 {
     tslByteArray.remove(0, 512);  /*- 把文件头64字节的文件信息去掉，只保留声呐数据 -*/
+
+    // ========== 为声呐数据创建 ChannelId ==========
+    QUuid fileUuid = QUuid::createUuid(); // 使用临时 UUID
+    ChannelId channelId(fileUuid, 0);     // 地址设为 0
 
     /*-将去掉文件头的所有剩下的声呐数据，按照一帧一帧的模式放入临时容器-*/
     QList<QByteArray> tslByteList;
@@ -415,10 +424,9 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 
     qDebug() << "tslWCnt.size()........." << tsl3Cnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
-    const float SPIKE_THRESHOLD = 10.0f;    // 跳变阈值（米），超过用中值替代
+    const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
     QList<LLA> buffer;
     int progressInterval = qMax(1, tsl3Cnt / 100);
-
 
     for(int i = 0; i < tsl3Cnt; i++)
     {
@@ -471,6 +479,69 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
             vec_CSV.append(targetLla.altitude);
             track.append(targetLla);
         }
+
+
+        // ----------- 将声呐数据发送到 Dataset ------------
+        int pingSize = tslSingleStruct.ping.size;
+        QVector<QVector<uint8_t>> dataVec;
+        QVector<uint8_t> channelData;
+        for(int i = 0; i < pingSize; i++) {
+            channelData.append((uint8_t)tslDataTemp[idx + i]);
+        }
+        for(int i = pingSize; i < PING_SIZE_MAX; i++) {
+            channelData.append((uint8_t)'\0');
+        }
+        dataVec.append(channelData);
+
+        float upRng = 0.0;
+        int sfEnd;
+        int btStart;
+        int draft;
+        float loRng    = tslSingleStruct.ping.loRng;
+        float depth    = tslSingleStruct.auxInfo.depth;
+
+        if(loRng <= 0) {
+            draft   = 0;
+            btStart = 0;
+            sfEnd   = 0;
+        }
+
+        if(loRng != 0) {
+            if(loRng == 0.0) {
+                draft    = 0;
+                btStart  = 0;
+                sfEnd    = 0;
+            }
+
+            btStart = (depth /(loRng-upRng))*pingSize;
+
+            float surfaceEnd;
+            if((depth < 100) && (depth > 30)) {
+                surfaceEnd = depth - 10;
+            } else {
+                surfaceEnd = 100;
+            }
+            sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
+        }
+        if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
+            draft   = 0;
+            btStart = 0;
+            sfEnd   = 0;
+        }
+
+        ChartParameters chartParams;
+        chartParams.sfEnd    = sfEnd;
+        chartParams.btStart  = btStart;
+        chartParams.depth    = depth;
+        chartParams.pingSize = pingSize;
+        chartParams.upRng    = 0.0;
+        chartParams.loRng    = loRng;
+        chartParams.temperature  = tslSingleStruct.auxInfo.temperature;
+        chartParams.heading = tslSingleStruct.boat.heading;
+        chartParams.speed = tslSingleStruct.boat.speed;
+        chartParams.longitude = lla.longitude;
+        chartParams.latitude = lla.latitude;
+        emit chartComplete(channelId, chartParams, dataVec, 0.1f, 0.0);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (i + 1) == tsl3Cnt ? true : false;
