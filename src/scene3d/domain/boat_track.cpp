@@ -72,11 +72,11 @@ void BoatTrack::onPositionAdded(uint64_t indx)
     for (int i = fromIndx + 1; i <= toIndx; ++i) {
         if (auto* ep = datasetPtr_->fromIndex(i); ep) {
             if (auto posNed = ep->getPositionGNSS().ned; posNed.isCoordinatesValid()) {
-                if (ep->isRegionStart_) {
+                if (ep->isRegionStart_ == 1) {
                     prepData.push_back(QVector3D(std::numeric_limits<float>::quiet_NaN(),
                                                  std::numeric_limits<float>::quiet_NaN(),
                                                  std::numeric_limits<float>::quiet_NaN()));
-                    ep->isRegionStart_ = false;
+                    ep->isRegionStart_ = 2;
                 }
                 prepData.push_back(QVector3D(posNed.n, posNed.e, 0));
                 // qDebug() << "posNed.n:  " << posNed.n << "    posNed.e:" << posNed.e;

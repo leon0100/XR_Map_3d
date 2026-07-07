@@ -329,7 +329,7 @@ public:
 
 
 public:
-    bool isRegionStart_ = false;
+    uint8_t isRegionStart_ = 0;
 
 protected:
     QMap<ChannelId, QVector<Echogram>> charts_; // key - channelId, value - echograms for all addresses

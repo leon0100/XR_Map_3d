@@ -542,7 +542,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
     lastEp->setPositionDataType(DataType::kRaw);
 
-    if (pool_.size() >= 2) {
+    if (pool_.size() >= 2 && lastEp->isRegionStart_ == 0) {
         Epoch* prevEp = fromIndex(pool_.size() - 2);
         if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
             auto curNed = lastEp->getPositionGNSS().ned;
@@ -551,7 +551,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
             double de = curNed.e - prevNed.e;
             double dist = std::sqrt(dn * dn + de * de);
             if (dist > 1000.0) {
-                lastEp->isRegionStart_ = true;
+                lastEp->isRegionStart_ = 1;
             }
         }
     }
