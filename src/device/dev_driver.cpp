@@ -56,10 +56,6 @@ DevDriver::DevDriver(QObject *parent)
 
     regID(idUSBLControl = new IDBinUsblControl(), &DevDriver::receivedUSBLControl);
 
-#ifndef SEPARATE_READING
-    connect(&m_processTimer, &QTimer::timeout, this, &DevDriver::process);
-#endif
-
     QObject::connect(idDataset, &IDBin::notifyDevDriver, this, &DevDriver::setDatasetState);
     QObject::connect(idDistSetup, &IDBin::notifyDevDriver, this, &DevDriver::setDistSetupState);
     QObject::connect(idChartSetup, &IDBin::notifyDevDriver, this, &DevDriver::setChartSetupState);
@@ -71,18 +67,6 @@ DevDriver::DevDriver(QObject *parent)
 
 DevDriver::~DevDriver()
 {
-#ifdef SEPARATE_READING
-    QList<QTimer*> timers = getChildTimers();
-    foreach (QTimer* timer, timers) {
-        if (timer->isActive()) {
-            timer->stop();
-        }
-    }
-
-    if (m_processTimer.isActive()) {
-        m_processTimer.stop();
-    }
-#endif
     m_processTimer.stop();
 }
 
@@ -90,105 +74,6 @@ ChannelId DevDriver::getChannelId() const
 {
     return ChannelId(linkUuid_, lastAddress_);
 }
-
-#ifdef SEPARATE_READING
-QTimer *DevDriver::getProcessTimer()
-{
-    return &m_processTimer;
-}
-
-QList<QTimer *> DevDriver::getChildTimers()
-{
-    QList<QTimer*> timers;
-
-    if (idTimestamp) {
-        timers.append(idTimestamp->getSetTimer());
-        timers.append(idTimestamp->getColdStartTimer());
-    }
-    if (idDist) {
-        timers.append(idDist->getSetTimer());
-        timers.append(idDist->getColdStartTimer());
-    }
-    if (idChart) {
-        timers.append(idChart->getSetTimer());
-        timers.append(idChart->getColdStartTimer());
-    }
-    if (idAtt) {
-        timers.append(idAtt->getSetTimer());
-        timers.append(idAtt->getColdStartTimer());
-    }
-    if (idTemp) {
-        timers.append(idTemp->getSetTimer());
-        timers.append(idTemp->getColdStartTimer());
-    }
-    if (idDataset) {
-        timers.append(idDataset->getSetTimer());
-        timers.append(idDataset->getColdStartTimer());
-    }
-    if (idDistSetup) {
-        timers.append(idDistSetup->getSetTimer());
-        timers.append(idDistSetup->getColdStartTimer());
-    }
-    if (idChartSetup) {
-        timers.append(idChartSetup->getSetTimer());
-        timers.append(idChartSetup->getColdStartTimer());
-    }
-    if (idDSPSetup) {
-        timers.append(idDSPSetup->getSetTimer());
-        timers.append(idDSPSetup->getColdStartTimer());
-    }
-    if (idTransc) {
-        timers.append(idTransc->getSetTimer());
-        timers.append(idTransc->getColdStartTimer());
-    }
-    if (idSoundSpeed) {
-        timers.append(idSoundSpeed->getSetTimer());
-        timers.append(idSoundSpeed->getColdStartTimer());
-    }
-    if (idUART) {
-        timers.append(idUART->getSetTimer());
-        timers.append(idUART->getColdStartTimer());
-    }
-    if (idVersion) {
-        timers.append(idVersion->getSetTimer());
-        timers.append(idVersion->getColdStartTimer());
-    }
-    if (idMark) {
-        timers.append(idMark->getSetTimer());
-        timers.append(idMark->getColdStartTimer());
-    }
-    if (idFlash) {
-        timers.append(idFlash->getSetTimer());
-        timers.append(idFlash->getColdStartTimer());
-    }
-    if (idBoot) {
-        timers.append(idBoot->getSetTimer());
-        timers.append(idBoot->getColdStartTimer());
-    }
-    if (idUpdate) {
-        timers.append(idUpdate->getSetTimer());
-        timers.append(idUpdate->getColdStartTimer());
-    }
-    if (idNav) {
-        timers.append(idNav->getSetTimer());
-        timers.append(idNav->getColdStartTimer());
-    }
-    if (idDVL) {
-        timers.append(idDVL->getSetTimer());
-        timers.append(idDVL->getColdStartTimer());
-    }
-    if (idDVLMode) {
-        timers.append(idDVLMode->getSetTimer());
-        timers.append(idDVLMode->getColdStartTimer());
-    }
-    if (idUSBL) {
-        timers.append(idUSBL->getSetTimer());
-        timers.append(idUSBL->getColdStartTimer());
-    }
-
-    return timers;
-}
-#endif
 
 void DevDriver::regID(IDBin* id_bin, ParseCallback method, bool is_setup) {
 //    hashIDParsing[id_bin->id()] = id_bin;
@@ -520,80 +405,6 @@ void DevDriver::doRequestAll()
         idVersion->requestAll();
     }
 }
-
-#ifdef SEPARATE_READING
-void DevDriver::initProcessTimerConnects()
-{
-    connect(&m_processTimer, &QTimer::timeout, this, &DevDriver::process, Qt::QueuedConnection);
-}
-
-void DevDriver::initChildsTimersConnects()
-{
-    if (idTimestamp) {
-        idTimestamp->initTimersConnects();
-    }
-    if (idDist) {
-        idDist->initTimersConnects();
-    }
-    if (idChart) {
-        idChart->initTimersConnects();
-    }
-    if (idAtt) {
-        idAtt->initTimersConnects();
-    }
-    if (idTemp) {
-        idTemp->initTimersConnects();
-    }
-    if (idDataset) {
-        idDataset->initTimersConnects();
-    }
-    if (idDistSetup) {
-        idDistSetup->initTimersConnects();
-    }
-    if (idChartSetup) {
-        idChartSetup->initTimersConnects();
-    }
-    if (idDSPSetup) {
-        idDSPSetup->initTimersConnects();
-    }
-    if (idTransc) {
-        idTransc->initTimersConnects();
-    }
-    if (idSoundSpeed) {
-        idSoundSpeed->initTimersConnects();
-    }
-    if (idUART) {
-        idUART->initTimersConnects();
-    }
-    if (idVersion) {
-        idVersion->initTimersConnects();
-    }
-    if (idMark) {
-        idMark->initTimersConnects();
-    }
-    if (idFlash) {
-        idFlash->initTimersConnects();
-    }
-    if (idBoot) {
-        idBoot->initTimersConnects();
-    }
-    if (idUpdate) {
-        idUpdate->initTimersConnects();
-    }
-    if (idNav) {
-        idNav->initTimersConnects();
-    }
-    if (idDVL) {
-        idDVL->initTimersConnects();
-    }
-    if (idDVLMode) {
-        idDVLMode->initTimersConnects();
-    }
-    if (idUSBL) {
-        idUSBL->initTimersConnects();
-    }
-}
-#endif
 
 uint32_t DevDriver::devSerialNumber() {
     return idVersion->serialNumber();
@@ -1301,9 +1112,6 @@ void DevDriver::fwUpgradeProcess() {
         emit upgradingFirmwareDone();
         emit upgradingFirmwareDoneDM();
 
-#ifndef SEPARATE_READING
-        corePtr->consoleInfo("Upgrade: done");
-#endif
         restartState();
     }
 }
@@ -1316,58 +1124,11 @@ void DevDriver::receivedUpdate(Parsers::Type type, Parsers::Version ver, Parsers
         if(ver == v0) {
             m_bootloaderLagacyMode = false;
             _timeoutUpgradeAnswerTime = 2000;
-            IDBinUpdate::ID_UPGRADE_V0 prog = idUpdate->getDeviceProgress();
-
-            if(prog.type <= 2) {
-                _lastUpgradeAnswerTime = QDateTime::currentMSecsSinceEpoch();
-
-                if(prog.type == 1) {
-#ifndef SEPARATE_READING
-                    corePtr->consoleInfo(QString("Upgrade: back offset condition error with device msg/offset %1 %2, host msg/offset %3 %4").arg(prog.lastNumMsg).arg(prog.lastOffset).arg(idUpdate->currentNumPacket()).arg(idUpdate->currentFwOffset()));
-#endif
-                }
-                else if(prog.type == 2) {
-#ifndef SEPARATE_READING
-                    corePtr->consoleInfo(QString("Upgrade: forward offset condition error with device msg/offset %1 %2, host msg/offset %3 %4").arg(prog.lastNumMsg).arg(prog.lastOffset).arg(idUpdate->currentNumPacket()).arg(idUpdate->currentFwOffset()));
-#endif
-                    idUpdate->setUpgradeNewPoint(prog.lastNumMsg, prog.lastOffset);
-                }
-
-                fwUpgradeProcess();
-            } else {
-                // if( m_state.in_boot) {
-#ifndef SEPARATE_READING
-                    corePtr->consoleInfo("Upgrade: critical error!");
-#endif
-                m_upgrade_status = failUpgrade;
-
-                    emit upgradingFirmwareDone();
-                    emit upgradingFirmwareDoneDM();
-
-                    m_state.in_update = false;
-                    m_bootloaderLagacyMode = true;
-                    restartState();
-                // }
-            }
         }
     } else {
         if(resp == respOk) {
             if( m_state.in_update && m_bootloaderLagacyMode) {
                 fwUpgradeProcess();
-            }
-        } else {
-            if( m_state.in_update && m_bootloaderLagacyMode) {
-#ifndef SEPARATE_READING
-                corePtr->consoleInfo("Upgrade: lagacy mode error");
-#endif
-                m_upgrade_status = failUpgrade;
-
-                emit upgradingFirmwareDone();
-                emit upgradingFirmwareDoneDM();
-
-                m_state.in_update = false;
-                m_bootloaderLagacyMode = true;
-                restartState();
             }
         }
     }
@@ -1385,12 +1146,6 @@ void DevDriver::receivedNav(Parsers::Type type, Parsers::Version ver, Parsers::R
 
     if(resp == respNone) {
         if(ver == v1) {
-#ifndef SEPARATE_READING
-            corePtr->consoleInfo(QString("ROV: yaw: %1, pitch: %2, roll: %3, lat: %4, lon: %5, depth: %6")
-                            .arg(idNav->yaw()).arg(idNav->pitch()).arg(idNav->roll())
-                            .arg(idNav->latitude()).arg(idNav->longitude()).arg(idNav->depth())
-            );
-#endif
             emit positionComplete(idNav->latitude(), idNav->longitude(), 0, 0);
             emit attitudeComplete(idNav->yaw(), idNav->pitch(), idNav->roll());
             emit depthComplete(idNav->depth());
@@ -1473,9 +1228,6 @@ void DevDriver::process() {
 
                 if(m_state.in_update && !m_bootloaderLagacyMode) {
                     if(curr_time - _lastUpgradeAnswerTime > _timeoutUpgradeAnswerTime && _timeoutUpgradeAnswerTime > 0) {
-#ifndef SEPARATE_READING
-                        corePtr->consoleInfo("Upgrade: timeout error!");
-#endif
                         idUpdate->putUpdate(false);
                     }
                 }

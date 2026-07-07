@@ -8,10 +8,12 @@
 #include <QVector3D>
 #include <QReadWriteLock>
 
-#include "black_stripes_processor.h"
+// #include "black_stripes_processor.h"
+#include "epoch.h"
 #include "data_interpolator.h"
 #include "usbl_view.h"
 #include "data_processor_defs.h"
+
 
 
 class Dataset : public QObject
@@ -50,6 +52,8 @@ public:
     void setState(DatasetState state);
     void setDataProcessorState(DataProcessorType dataProcessorState);
     DataProcessorType getDataProcessorState();
+    // void setIsOpeningFile(bool state);
+    // bool getIsOpeningFile() const;
 
 #if defined(FAKE_COORDS)
     void setActiveZeroing(bool state);
@@ -267,11 +271,7 @@ public slots:
     void setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
     void setSoundSpeed (const ChannelId& channelId, uint32_t soundSpeed);
     void setSonarOffset(float x, float y, float z);
-    void setFixBlackStripesState(bool state);
-    void setFixBlackStripesForwardSteps(int val);
-    void setFixBlackStripesBackwardSteps(int val);
     void addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset);
-    void rawDataRecieved(const ChannelId& channelId, RawData raw_data);
     void addDist(const ChannelId& channelId, int dist);
     void addRangefinder(const ChannelId& channelId, float distance);
     void addUsblSolution(IDBinUsblSolution::UsblSolution data);
@@ -331,10 +331,7 @@ signals:
     void chartAdded(uint64_t indx); // without ChartId
     void attitudeAdded(uint64_t indx);
     void bottomTrackAdded(uint64_t indx);
-    //void interpYaw(int epIndx);
-    //void interpPos(int epIndx);
     void dataUpdate();
-    // void updateMinMaxLoRng(int minLoRng, int maxLoRng);
     void bottomTrackUpdated(const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll);
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
@@ -410,7 +407,7 @@ private:
     int lastBottomTrackEpoch_;
     BottomTrackParam bottomTrackParam_;
     QMap<ChannelId, RecordParameters> usingRecordParameters_;
-    BlackStripesProcessor* bSProc_ = nullptr;
+    // BlackStripesProcessor* bSProc_ = nullptr;
     QMap<ChannelId, int> lastAddChartEpochIndx_;
     QSet<ChannelId> channelsToResizeEthData_;
 

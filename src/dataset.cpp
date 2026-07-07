@@ -7,7 +7,6 @@ extern Core* corePtr;
 Dataset::Dataset() :
     interpolator_(this),
     lastBottomTrackEpoch_(0),
-    bSProc_(new BlackStripesProcessor()),
     sonarPosIndx_(0)
 {
     qRegisterMetaType<ChannelId>("ChannelId");
@@ -17,7 +16,7 @@ Dataset::Dataset() :
 
 Dataset::~Dataset()
 {
-    delete bSProc_;
+
 }
 
 void Dataset::setState(DatasetState state)
@@ -48,7 +47,7 @@ Dataset::DatasetState Dataset::getState() const
 }
 
 void Dataset::getMaxDistanceRange(float *from, float *to, const ChannelId& channel1,
-                                uint8_t subAddressCh1, const ChannelId& channel2, uint8_t subAddressCh2)
+                        uint8_t subAddressCh1, const ChannelId& channel2, uint8_t subAddressCh2)
 {
     const int sz = size();
     float channel1_max = 0;
@@ -180,30 +179,13 @@ void Dataset::setChartSetup(const ChannelId& channelId, uint16_t resol, uint16_t
     channelsToResizeEthData_.insert(channelId);
 }
 
-void Dataset::setFixBlackStripesState(bool state)
-{
-    bSProc_->setState(state);
-}
-
-void Dataset::setFixBlackStripesForwardSteps(int val)
-{
-    bSProc_->setForwardSteps(val);
-}
-
-void Dataset::setFixBlackStripesBackwardSteps(int val)
-{
-    bSProc_->setBackwardSteps(val);
-}
-
 void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartParams,
                        const QVector<QVector<uint8_t>>& data, float resolution, float offset)
 {
-    // qDebug() << "void Dataset::addChart............";
     if (data.empty() || qFuzzyIsNull(resolution)) {
         return;
     }
 
-    // ! we need all channels in data !
     uint8_t numSubChannels = data.size();
     if (shouldAddNewEpoch(channelId, numSubChannels)) {
         addNewEpoch();
@@ -212,97 +194,6 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
     updateEpochWithChart(channelId, chartParams, data, resolution, offset);
     const int endIndx = endIndex();
 
-    // BLACK STRIPES PROCESSOR
-    if (bSProc_->getState()) {
-        QSet<int> updatedIndxs;
-
-        // resize eth data
-        if (channelsToResizeEthData_.contains(channelId)) {
-            channelsToResizeEthData_.remove(channelId);
-            uint16_t count = usingRecordParameters_[channelId].count;
-            bSProc_->tryResizeEthalonData(channelId, numSubChannels, BlackStripesProcessor::Direction::kForward, count);
-            bSProc_->tryResizeEthalonData(channelId, numSubChannels, BlackStripesProcessor::Direction::kBackward, count);
-        }
-
-        // FORWARD
-        if (bSProc_->getForwardSteps()) {
-            auto getPreChart = [&](int i, uint8_t subChannelId) -> const Epoch::Echogram* {
-                const int preEpIndx = std::max(0, i - 1);
-                if (auto* preEpoch = &pool_[preEpIndx]; preEpoch) {
-                    return preEpoch->chart(channelId, subChannelId);
-                }
-
-                return nullptr;
-            };
-
-            const int remainingIndx = lastAddChartEpochIndx_[channelId] + 1;
-            const uint8_t subChannelId = 0;
-
-            for (int i = remainingIndx; i <= endIndx; ++i) {
-                if (auto* iEpoch = &pool_[i]; iEpoch) {
-                    float iResolution = 0.0f;
-                    float iOffset     = 0.0f;
-
-                    if (i == endIndx) {
-                        iResolution = resolution;
-                        iOffset     = offset;
-                    }
-                    else {
-                        if (const auto* iChart = iEpoch->chart(channelId, subChannelId); iChart) {
-                            iResolution = iChart->resolution;
-                            iOffset     = iChart->offset;
-                        }
-                        else {
-                            if (auto* preChart = getPreChart(i, subChannelId); preChart) {
-                                iResolution = preChart->resolution;
-                                iOffset     = preChart->offset;
-                            }
-                        }
-                    }
-
-                    if (auto* preChart = getPreChart(i, subChannelId); preChart) {
-                        if (!qFuzzyCompare(preChart->resolution, iResolution) || !qFuzzyCompare(preChart->offset, iOffset)) {
-                            bSProc_->clearEthalonData(channelId, BlackStripesProcessor::Direction::kForward);
-                        }
-                    }
-
-                    if (bSProc_->update(channelId, iEpoch, BlackStripesProcessor::Direction::kForward, iResolution, iOffset)) {
-                        updatedIndxs.insert(i);
-                    }
-                }
-            }
-        }
-
-        // BACKWARD
-        int backSteps = bSProc_->getBackwardSteps();
-        if (backSteps) {
-            bSProc_->clearEthalonData(channelId, BlackStripesProcessor::Direction::kBackward);
-
-            const int startIndx = std::max(0, endIndx - backSteps);
-            for (int i = endIndx; i >= startIndx; --i) {
-                if (auto* iEpoch = &pool_[i]; iEpoch) {
-                    float iResolution = resolution;
-                    float iOffset = offset;
-                    if (const auto* iChart = iEpoch->chart(channelId); iChart) {
-                        iResolution = iChart->resolution;
-                        iOffset = iChart->offset;
-                        if (!qFuzzyCompare(iChart->resolution, resolution) || !qFuzzyCompare(iChart->offset, offset)) {
-                            bSProc_->clearEthalonData(channelId, BlackStripesProcessor::Direction::kBackward);
-                        }
-                    }
-
-                    if (bSProc_->update(channelId, iEpoch, BlackStripesProcessor::Direction::kBackward, iResolution, iOffset)) {
-                        updatedIndxs.insert(i);
-                    }
-                }
-            }
-        }
-
-        if (!updatedIndxs.empty()) {
-            emit redrawEpochs(updatedIndxs);
-        }
-    }
-
     lastAddChartEpochIndx_[channelId] = endIndx;
 
     for (int i = 0; i < numSubChannels; ++i) {
@@ -310,77 +201,10 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
     }
 
     // TODO:不只是迭代次数的回溯窗口，而是海图层面的最后一个未变更版本
-    int lastIndx = std::max(0, (size() - 1) - (bSProc_->getState() ? bSProc_->getBackwardSteps() : 0));
-
     emit dataUpdate();
-    emit chartAdded(lastIndx);
+    // emit chartAdded(lastIndx);
 }
 
-void Dataset::rawDataRecieved(const ChannelId& channelId, RawData raw_data) {
-    // RawData::RawDataHeader header = raw_data.header;
-    // ComplexF* compelex_data = (ComplexF*)raw_data.data.data();
-    // int16_t* real16_data = (int16_t*)raw_data.data.data();
-    // int size = raw_data.samplesPerChannel();
-
-    // Epoch* last_epoch = last();
-    // if (!last_epoch) {
-    //     return;
-    // }
-    // ComplexSignals& compex_signals = last_epoch->complexSignals();
-
-    // ChannelId dev_id(channelId.uuid, header.channelGroup); // channelId.uuid
-
-    // if(compex_signals[dev_id].contains(header.channelGroup)) {
-    //     float offset_m = 0;
-    //     float offset_db = 0;
-    //     offset_db = -20;
-
-    //     Q_UNUSED(offset_m)
-    //     Q_UNUSED(offset_db)
-
-    //     // last_epoch->moveComplexToEchogram(offset_m, offset_db);
-    //     last_epoch = addNewEpoch();
-    //     compex_signals = last_epoch->complexSignals();
-    // }
-
-    // QVector<ComplexSignal>& channels = compex_signals[dev_id][header.channelGroup];
-    // channels.resize(header.channelCount);
-
-    // for(int ich = 0; ich < header.channelCount; ich++) {
-    //     ComplexSignal& signal = channels[ich]; //??
-
-    //     signal.globalOffset = header.globalOffset;
-    //     signal.sampleRate = header.sampleRate;
-    //     signal.data.resize(size);
-
-    //     ComplexF* signal_data = signal.data.data();
-
-    //     if(header.dataType == 0) {
-    //         signal.isComplex = true;
-
-    //         for(int i  = 0; i < size; i++) {
-    //             signal_data[i] = compelex_data[i*header.channelCount + ich];
-    //         }
-    //     } else if(header.dataType == 1) {
-    //         signal.isComplex = false;
-
-    //         for(int i  = 0; i < size; i++) {
-    //             signal_data[i] = ComplexF(real16_data[i*header.channelCount + ich], 0);
-    //         }
-    //     }
-    // }
-
-    // float offset_m = 0;
-    // float offset_db = 0;
-    // offset_db = -20;
-    // last_epoch->moveComplexToEchogram(dev_id, header.channelGroup, offset_m, offset_db);
-
-    // for(int ich = 0; ich < header.channelCount; ich++) {
-    //     validateChannelList(dev_id, ich);
-    // }
-
-    // emit dataUpdate();
-}
 
 void Dataset::addDist(const ChannelId& channelId, int dist)
 {
@@ -697,29 +521,46 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
 
     Position pos;
     pos.lla = LLA(lat, lon);
-    if (pos.lla.isCoordinatesValid()) {
-        if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-            lastEp = addNewEpoch();  //不断累加帧数的下标index
-            lastEp->setDistProcesing_CSV(depth);
-        }
+    if (!pos.lla.isCoordinatesValid()) {
+        return;
+    }
 
-        // qDebug() << "pool_size().............................. " << pool_.size();
-        uint64_t lastIndx = pool_.size() - 1;
-        if (!getLlaRef().isInit) {
-            LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
-                        (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
-            setLlaRef(LLARef(pos.lla), llaState);
-        }
-        lastEp->setPositionLLA(pos);
-        lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
-        lastEp->setPositionDataType(DataType::kRaw);
+    if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
+        lastEp = addNewEpoch();  //不断累加帧数的下标index
+        lastEp->setDistProcesing_CSV(depth);
+    }
 
-        boatLatitute_  = pos.lla.latitude;
-        boatLongitude_ = pos.lla.longitude;
+    // qDebug() << "pool_size().............................. " << pool_.size();
+    uint64_t lastIndx = pool_.size() - 1;
+    if (!getLlaRef().isInit) {
+        LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
+                    (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
+        setLlaRef(LLARef(pos.lla), llaState);
+    }
 
-        if(enableRender) {
-            emit positionAdded(lastIndx);
+    lastEp->setPositionLLA(pos);
+    lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
+    lastEp->setPositionDataType(DataType::kRaw);
+
+    if (pool_.size() >= 2) {
+        Epoch* prevEp = fromIndex(pool_.size() - 2);
+        if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
+            auto curNed = lastEp->getPositionGNSS().ned;
+            auto prevNed = prevEp->getPositionGNSS().ned;
+            double dn = curNed.n - prevNed.n;
+            double de = curNed.e - prevNed.e;
+            double dist = std::sqrt(dn * dn + de * de);
+            if (dist > 1000.0) {
+                lastEp->isRegionStart_ = true;
+            }
         }
+    }
+
+    boatLatitute_  = pos.lla.latitude;
+    boatLongitude_ = pos.lla.longitude;
+
+    if(enableRender) {
+        emit positionAdded(lastIndx);
     }
 
 }
@@ -879,8 +720,7 @@ void Dataset::resetRenderBuffers()
     lastTemp_ = NAN;
     interpolator_.clear();
     _llaRef = LLARef();
-    // llaRefState_ = LlaRefState::kUndefined;
-    bSProc_->clear();
+    // bSProc_->clear();
     lastBottomTrackEpoch_ = 0;
 }
 
@@ -1005,13 +845,13 @@ void Dataset::usblProcessing() {
 }
 
 void Dataset::setRefPosition(int epoch_index) {
-    qDebug() << "Dataset::setRefPosition00000000000.................";
+    qDebug() << "Dataset::setRefPosition000000.................";
     Epoch*  ref_epoch = fromIndex(epoch_index);
     setRefPosition(ref_epoch);
 }
 
 void Dataset::setRefPosition(Epoch* epoch) {
-    qDebug() << "Dataset::setRefPosition1111111111111...............";
+    qDebug() << "Dataset::setRefPosition1111111..............";
     if(epoch == NULL) { return; }
 
     setRefPosition(epoch->getPositionGNSS());

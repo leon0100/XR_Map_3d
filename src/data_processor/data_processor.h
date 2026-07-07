@@ -17,21 +17,7 @@
 
 
 
-// enum class DataProcessorType {
-//     kUndefined = 0,
-//     kBottomTrack,
-//     kIsobaths,
-//     kMosaic,
-//     kSurface
-// };
 
-// enum WorkFlag : quint32 {
-//     WF_None     = 0,
-//     WF_Surface  = 1u << 0,
-//     WF_Mosaic   = 1u << 1,
-//     WF_Isobaths = 1u << 2,
-//     WF_All      = WF_Surface | WF_Mosaic | WF_Isobaths
-// };
 Q_DECLARE_FLAGS(WorkSet, WorkFlag)
 
 class Dataset;
@@ -56,7 +42,6 @@ public slots:
     void setUpdateBottomTrack (bool state);
     void setUpdateIsobaths (bool state);
     void setUpdateMosaic (bool state);
-    void setIsOpeningFile (bool state);
     // from DataHorizon
     void onChartsAdded(uint64_t indx); // external calling realtime
     void onBottomTrack3DAdded(const QVector<int>& epIndxs, const QVector<int> &vertIndxs, bool manual);
@@ -195,10 +180,7 @@ private:
     bool updateBottomTrack_;
     bool updateIsobaths_;
     bool updateMosaic_;
-    bool isOpeningFile_;
-    // BottomTrackProcessor
     int bottomTrackWindowCounter_;
-    // MosaicProcessor
     int mosaicCounter_;
     // Surface
     float tileResolution_;

@@ -2,7 +2,6 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQml.Models 2.15
-// import QtCore
 import Qt.labs.settings 1.1
 
 
@@ -55,23 +54,23 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
 
-            DelegateModel {
-                id: visualModel
-                model: core.consoleList
-                groups: [ DelegateModelGroup { name: "selected" } ]
-                delegate: RowLayout {
-                    TextEdit  {
-                        Layout.fillWidth: true
-                        text: time + "  " + payload
-                        height: 16
-                        font.pointSize: 10
-                        font.family: "Console"
-                        color: theme.textColor
-                        readOnly: true
-                        selectByMouse: true
-                    }
-                }
-            }
+            // DelegateModel {
+            //     id: visualModel
+            //     model: core.consoleList
+            //     groups: [ DelegateModelGroup { name: "selected" } ]
+            //     delegate: RowLayout {
+            //         TextEdit  {
+            //             Layout.fillWidth: true
+            //             text: time + "  " + payload
+            //             height: 16
+            //             font.pointSize: 10
+            //             font.family: "Console"
+            //             color: theme.textColor
+            //             readOnly: true
+            //             selectByMouse: true
+            //         }
+            //     }
+            // }
 
             ListView {
                 model: visualModel

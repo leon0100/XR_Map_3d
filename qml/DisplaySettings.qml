@@ -84,8 +84,8 @@ GridLayout {
                     checked: false
                     text: qsTr("FBS, f/b")
 
-                    onCheckedChanged: core.fixBlackStripesState = fixBlackStripesCheckButton.checked
-                    Component.onCompleted: core.fixBlackStripesState = fixBlackStripesCheckButton.checked
+                    // onCheckedChanged: core.fixBlackStripesState = fixBlackStripesCheckButton.checked
+                    // Component.onCompleted: core.fixBlackStripesState = fixBlackStripesCheckButton.checked
 
                     Settings {
                         property alias fixBlackStripesCheckButton: fixBlackStripesCheckButton.checked

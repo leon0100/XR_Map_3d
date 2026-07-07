@@ -296,6 +296,83 @@ QList<ChannelId> Epoch::chartChannels()
     return charts_.keys();
 }
 
+float Epoch::getMaxRange(const ChannelId& channel, const ChannelId& channel2)
+{
+    float maxRange = NAN;
+
+    if (channel == CHANNEL_NONE && channel2 == CHANNEL_NONE) {
+        for (auto it = charts_.cbegin(), end = charts_.cend(); it != end; ++it) {
+            const auto &echogramList = it.value();
+            for (const auto& ech : echogramList) {
+                float r = ech.range();
+                if (qIsFinite(r) && (!qIsFinite(maxRange) || r > maxRange)) {
+                    maxRange = r;
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        auto extractMaxFromChannel = [this](const ChannelId& ch) -> float {
+            float result = NAN;
+            if (charts_.contains(ch)) {
+                const auto& chChartsCRef = charts_[ch];
+                for (const auto& ech : chChartsCRef) {
+                    float r = ech.range();
+                    if (qIsFinite(r) && (!qIsFinite(result) || r > result)) {
+                        result = r;
+                        break;
+                    }
+                }
+            }
+            return result;
+        };
+
+        const float r1 = extractMaxFromChannel(channel);
+        const float r2 = extractMaxFromChannel(channel2);
+
+        if (qIsFinite(r1)) {
+            maxRange = r1;
+        }
+        if (qIsFinite(r2) && (!qIsFinite(maxRange) || r2 > maxRange)) {
+            maxRange = r2;
+        }
+    }
+
+    if (!rangefinders_.isEmpty()) {
+        float r3 = rangefinders_.first();
+        if (qIsFinite(r3) && (!qIsFinite(maxRange) || r3 > maxRange)) {
+            maxRange = r3;
+        }
+    }
+
+    return maxRange;
+}
+
+double Epoch::distProccesing(const ChannelId& channelId)
+{
+    if (channelId == CHANNEL_NONE) {
+        for (auto it = charts_.cbegin(); it != charts_.cend(); ++it) {
+            for (const auto& iEchogram : it.value()) {
+                double distance = iEchogram.bottomProcessing.getDistance();
+                if (qIsFinite(distance)) {
+                    return distance;
+                }
+            }
+        }
+    } else if (charts_.contains(channelId)) {
+        const auto& chart = charts_[channelId];
+        for (const auto& ech : chart) {
+            double distance = ech.bottomProcessing.getDistance();
+            if (qIsFinite(distance)) {
+                return distance;
+            }
+        }
+    }
+
+    return NAN;
+}
+
 Epoch::Echogram *Epoch::chart(const ChannelId &channelId, uint8_t subChannelId)
 {
     if (chartAvail(channelId, subChannelId)) {

@@ -29,6 +29,8 @@ public:
     Q_INVOKABLE int   pilotModeState();
 
     void setProgressDialog(QObject* dialog);
+    void resetChannelId();
+
 
 public slots:
     Q_INVOKABLE StreamListModel* streamsList();
@@ -36,11 +38,7 @@ public slots:
     void initStreamList();
     void openFile_CSV(QString filePath);
     void openFile_tsl(QString filePath, EnumFileType currentFileType);
-#ifdef SEPARATE_READING
-    void closeFile(bool onOpen = false);
-#else
     void closeFile();
-#endif
     void onLinkOpened(QUuid uuid, Link *link);
     void onLinkClosed(QUuid uuid, Link* link);
     void onLinkDeleted(QUuid uuid, Link* link);
@@ -51,8 +49,6 @@ public slots:
     void beaconDirectQueueAsk();
     bool isbeaconDirectQueueAsk() { return isUSBLBeaconDirectAsk; }
     void setUSBLBeaconDirectAsk(bool is_ask);
-
-    void onLoggingKlfStarted(bool started);
     void onSendRequestAll(QUuid uuid);
 
     void onStartUpgradingFirmware(QUuid linkUuid, uint8_t address, const QByteArray& firmware);
@@ -166,6 +162,7 @@ private:
     bool useGPS_{ false };
 
     QObject* progressDialog_ = nullptr;
+    ChannelId batchChannelId_{QUuid(), 0};
 
 private slots:
     void readyReadProxy(Link* link);

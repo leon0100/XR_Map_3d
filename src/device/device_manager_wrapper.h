@@ -55,9 +55,9 @@ public:
         return averageChartLosses_;
     };
 
-    DeviceManager* getWorkerDeviceManager() const {
-        return workerDeviceManager_;
-    }
+    void resetChannelId();
+    // void sendOpenFile_CSV(QString path);
+    // void sendOpenFile_tsl(QString path, EnumFileType currentFileType);
 
 public slots:
     void calcAverageChartLosses();
@@ -66,24 +66,15 @@ signals:
     void sendOpenFile(QString path);
     void sendOpenFile_CSV(QString path);
     void sendOpenFile_tsl(QString path, EnumFileType currentFileType);
-#ifdef SEPARATE_READING
-    void sendCloseFile(bool);
-#else
-    void sendCloseFile();
-#endif
 
-    // void devChanged();
+    void sendCloseFile();
+
     void streamChanged();
     void vruChanged();
     void chartLossesChanged();
 
 private:
     std::unique_ptr<DeviceManager> workerObject_;
-    DeviceManager* workerDeviceManager_ = nullptr;
-#ifdef SEPARATE_READING
-    std::unique_ptr<QThread> workerThread_;
-    QList<QMetaObject::Connection> deviceManagerConnections_;
-#endif
 
     int averageChartLosses_;
     bool protoBinConsoledState_;

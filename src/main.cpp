@@ -24,7 +24,6 @@ void messageHandler(QtMsgType type, const QMessageLogContext& context, const QSt
 {
     Q_UNUSED(type);
     Q_UNUSED(context);
-    // core.consoleInfo(msg);
 }
 
 void setApplicationDisplayName(QGuiApplication& app)
@@ -146,10 +145,6 @@ int main(int argc, char *argv[])
             corePtr->removeLinkManagerConnections();
             corePtr->stopLinkManagerTimer();
             theme.saveSoftwareParameters();
-#ifdef SEPARATE_READING
-            corePtr->removeDeviceManagerConnections();
-            corePtr->stopDeviceManagerThread();
-#endif
     });
 
     engine.load(url);

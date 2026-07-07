@@ -1941,7 +1941,6 @@ ApplicationWindow  {
         }
     }
     function handlePlotPressed(indx, mouseX, mouseY) {
-        console.log("21ewefcihiuchiuewhc")
         let r = core.getConvertedMousePos(indx, mouseX, mouseY)
 
         if (indx === 1 && waterViewSecond.enabled) {

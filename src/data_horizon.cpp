@@ -17,10 +17,6 @@ DataHorizon::DataHorizon() :
     mosaicIndx_(0),
     sonarIndx_(0)
 {
-#ifdef SEPARATE_READING
-    isSeparateReading_ = true;
-#endif
-
     qRegisterMetaType<uint64_t>("uint64_t");
 }
 
@@ -47,7 +43,7 @@ void DataHorizon::setIsFileOpening(bool state)
     // qDebug() << "DataHorizon::setIsFileOpening" << state << "positionIndx_................ " << positionIndx_;
     isFileOpening_ = state;
 
-    if (!isFileOpening_ && !isSeparateReading_ && emitChanges_) {
+    if (!state && !isSeparateReading_ && emitChanges_) {
         emit epochAdded(epochIndx_);
         emit positionAdded(positionIndx_);
         emit chartAdded(chartIndx_);

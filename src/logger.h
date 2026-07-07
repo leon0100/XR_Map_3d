@@ -19,8 +19,6 @@ public:
     Logger();
     void setDatasetPtr(Dataset* datasetPtr);
 
-signals:
-    void loggingKlfStarted(bool started);
 
 public slots:
     // .klf

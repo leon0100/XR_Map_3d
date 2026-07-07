@@ -28,11 +28,6 @@ public:
         successUpgrade = 101
     };
 
-#ifdef SEPARATE_READING
-    QTimer* getProcessTimer();
-    QList<QTimer*> getChildTimers();
-#endif
-
     ChannelId getChannelId() const;
 
     int distMax();
@@ -259,11 +254,6 @@ public slots:
     void acousticPingRequest(uint8_t address, uint32_t timeout_us = 0xFFFFFFFF);
     void acousticResponceFilter(uint8_t address);
     void acousticResponceTimeout(uint32_t timeout_us = 0xFFFFFFFF);
-
-#ifdef SEPARATE_READING
-    Q_INVOKABLE void initProcessTimerConnects();
-    Q_INVOKABLE void initChildsTimersConnects();
-#endif
 
     void doRequestAll();
 

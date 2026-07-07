@@ -9,18 +9,15 @@
 
 DeviceManager::DeviceManager()
     : mavlinkLink_(nullptr),
-      streamList_(this),
-      lastAddress_(-1),
-      progress_(0),
-      isConsoled_(false),
-      break_(false),
-      upgradeUuid_(QUuid()),
-      upgradeAddr_(0)
+    streamList_(this),
+    lastAddress_(-1),
+    progress_(0),
+    isConsoled_(false),
+    break_(false),
+    upgradeUuid_(QUuid()),
+    upgradeAddr_(0)
 {
     qRegisterMetaType<ProtoBinOut>("ProtoBinOut");
-#ifdef SEPARATE_READING
-    qRegisterMetaType<ProtoBinOut>("ProtoBinOut&");
-#endif
     qRegisterMetaType<int16_t>("int16_t");
     qRegisterMetaType<QVector<uint8_t>>("QVector<uint8_t>");
     qRegisterMetaType<QByteArray>("QByteArray");
@@ -68,6 +65,11 @@ void DeviceManager::setProgressDialog(QObject* dialog)
     if (progressDialog_ != dialog) {
         progressDialog_ = dialog;
     }
+}
+
+void DeviceManager::resetChannelId()
+{
+    batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
 }
 
 void DeviceManager::initStreamList()
@@ -131,12 +133,11 @@ void DeviceManager::openFile_CSV(QString filePath)
             double progress = static_cast<double>(currentLine) / validTotal;
 
             QString statusText = tr("Processing CSV %1 / %2 (%3%)").arg(currentLine)
-                                    .arg(validTotal).arg(static_cast<int>(progress * 100));
+                                     .arg(validTotal).arg(static_cast<int>(progress * 100));
             if (progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
                 QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             }
-
             QCoreApplication::processEvents();
         }
         bool enableRender = currentLine == validTotal ? true : false;
@@ -179,11 +180,8 @@ void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType)
 double DeviceManager::dm_to_dd(double ddmmmmmmm)
 {
     double dm = (double)ddmmmmmmm / 100.0f;
-
     int dd = (int)dm;
-
     double mm = (dm-dd) / 0.6f;
-
     return ((double)dd+mm);
 }
 
@@ -209,16 +207,12 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     QVector<float> vec_CSV;
     double minZ = 0.0, maxZ = 0.0;
 
-    // ========== 为声呐数据创建 ChannelId ==========
-    QUuid fileUuid = QUuid::createUuid(); // 使用临时 UUID
-    ChannelId channelId(fileUuid, 0);     // 地址设为 0
-
     // ============ 声呐数据参数 =============
     qDebug() << "tslWCnt.size()........." << tslWCnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
     const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
     QList<LLA> buffer;
-    int progressInterval = qMax(1, tslWCnt / 100);
+    int progressInterval = qMax(1, tslWCnt / 4);
     int idx = sizeof(pack_head_w) + sizeof(ping_info_w) + sizeof(navi_info_w) + sizeof(aux_info_w);
     for(int cnt = 0; cnt < tslWCnt; cnt++)
     {
@@ -336,7 +330,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.speed = tslSingleStruct.boat.speed * 10 / 0.514444f;
         chartParams.longitude = lla.longitude;
         chartParams.latitude = lla.latitude;
-        emit chartComplete(channelId, chartParams, dataVec, 0.1f, 0.0);
+        emit chartComplete(batchChannelId_, chartParams, dataVec, 0.1f, 0.0);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (cnt + 1) == tslWCnt ? true : false;
@@ -346,7 +340,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         if (progressDialog_ && (cnt % progressInterval == 0 || cnt == (tslWCnt - 1))) {
             double progress = static_cast<double>(cnt + 1) / tslWCnt;
             QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                .arg(cnt + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+                                     .arg(cnt + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
@@ -364,25 +358,22 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 
 void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 {
-    tslByteArray.remove(0, 512);  /*- 把文件头64字节的文件信息去掉，只保留声呐数据 -*/
-
-    // ========== 为声呐数据创建 ChannelId ==========
-    QUuid fileUuid = QUuid::createUuid(); // 使用临时 UUID
-    ChannelId channelId(fileUuid, 0);     // 地址设为 0
+    tslByteArray.remove(0, 512);  /*- 清除文件头信息，只保留声呐数据 -*/
 
     /*-将去掉文件头的所有剩下的声呐数据，按照一帧一帧的模式放入临时容器-*/
     QList<QByteArray> tslByteList;
     int nowIndex = 0;
     int byteCount = 0;
-    int maxCount = tslByteArray.count();
-    while((nowIndex) < (maxCount-100))
+    int tslWCnt = tslByteArray.count();
+    int progressInterval = qMax(1, tslWCnt / 4);
+    while((nowIndex) < (tslWCnt-100))
     {
         if('#' == tslByteArray.at(nowIndex)) {
             byteCount = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3)+
                         U8_TO_16(tslByteArray.at(nowIndex+22),tslByteArray.at(nowIndex+23))+1;
             if((byteCount >= 100) && (byteCount <= 2048)) {
                 /*- 检查一下当前序号再加上获取的像素个数是不是已经超过整体长度了，超过的话进入下个循环 -*/
-                if((nowIndex + byteCount) > maxCount) {
+                if((nowIndex + byteCount) > tslWCnt) {
                     nowIndex++;
                     continue;
                 }
@@ -426,7 +417,6 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
     const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
     QList<LLA> buffer;
-    int progressInterval = qMax(1, tsl3Cnt / 100);
 
     for(int i = 0; i < tsl3Cnt; i++)
     {
@@ -530,18 +520,18 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         }
 
         ChartParameters chartParams;
-        chartParams.sfEnd    = sfEnd;
-        chartParams.btStart  = btStart;
-        chartParams.depth    = depth;
-        chartParams.pingSize = pingSize;
-        chartParams.upRng    = 0.0;
-        chartParams.loRng    = loRng;
+        chartParams.sfEnd        = sfEnd;
+        chartParams.btStart      = btStart;
+        chartParams.depth        = depth;
+        chartParams.pingSize     = pingSize;
+        chartParams.upRng        = 0.0;
+        chartParams.loRng        = loRng;
         chartParams.temperature  = tslSingleStruct.auxInfo.temperature;
-        chartParams.heading = tslSingleStruct.boat.heading;
-        chartParams.speed = tslSingleStruct.boat.speed;
-        chartParams.longitude = lla.longitude;
-        chartParams.latitude = lla.latitude;
-        emit chartComplete(channelId, chartParams, dataVec, 0.1f, 0.0);
+        chartParams.heading      = tslSingleStruct.boat.heading;
+        chartParams.speed        = tslSingleStruct.boat.speed;
+        chartParams.longitude    = lla.longitude;
+        chartParams.latitude     = lla.latitude;
+        emit chartComplete(batchChannelId_, chartParams, dataVec, 0.1f, 0.0);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (i + 1) == tsl3Cnt ? true : false;
@@ -551,13 +541,13 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         if (progressDialog_ && (i % progressInterval == 0 || i == (tsl3Cnt - 1))) {
             double progress = static_cast<double>(i + 1) / tsl3Cnt;
             QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                     .arg(i + 1).arg(tsl3Cnt).arg(static_cast<int>(progress * 100));
+                                    .arg(i + 1).arg(tsl3Cnt).arg(static_cast<int>(progress * 100));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
         }
     }
-    qDebug() << "track-tsl3 size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
+    // qDebug() << "track-tsl3 size().............." << track.size() << "  minZ:" << minZ << "  maxZ:" << maxZ;
 
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
@@ -568,24 +558,12 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 }
 
 
-#ifdef SEPARATE_READING
-void DeviceManager::closeFile(bool onOpen)
-{
-    onOpen_ = onOpen;
-    break_ = true;
-
-    vru_.cleanVru();
-    delAllDev();
-    emit vruChanged();
-}
-#else
 void DeviceManager::closeFile()
 {
     delAllDev();
     vru_.cleanVru();
     emit vruChanged();
 }
-#endif
 
 void DeviceManager::onLinkOpened(QUuid uuid, Link *link)
 {
@@ -655,10 +633,6 @@ void DeviceManager::setUSBLBeaconDirectAsk(bool is_ask) {
             beacon_timer->stop();
         }
     }
-}
-
-void DeviceManager::onLoggingKlfStarted(bool started)
-{
 }
 
 void DeviceManager::onSendRequestAll(QUuid uuid)

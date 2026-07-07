@@ -21,10 +21,8 @@ DEPENDPATH  += $$PWD/quazip-msvc2019/include
 DEFINES += QT_DEPRECATED_WARNINGS
 
 HEADERS += \
-    src/black_stripes_processor.h \
     src/console.h \
     src/console_list_model.h \
-    src/converter_xtf.h \
     src/core.h \
     src/dataset.h \
     src/dataset_defs.h \
@@ -53,7 +51,6 @@ HEADERS += \
 
 ### SOURCES
 SOURCES += \
-    src/black_stripes_processor.cpp \
     src/console.cpp \
     src/console_list_model.cpp \
     src/core.cpp \

@@ -60,10 +60,6 @@ bool Logger::startNewKlfLog()
         corePtr->consoleInfo("Logger can't make dir");
     }
 
-    if (isOpen) {
-        emit loggingKlfStarted(true);
-    }
-
     return isOpen;
 }
 
@@ -75,8 +71,6 @@ bool Logger::stopKlfLogging()
 
     klfLogFile_->close();
     klfCurrentIteration_ = 0;
-
-    emit loggingKlfStarted(false);
 
     return true;
 }

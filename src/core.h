@@ -14,7 +14,6 @@
 #include "qPlot2D.h"
 #include "logger.h"
 #include "console.h"
-#include "converter_xtf.h"
 #include "scene3d_view.h"
 #include "boat_track_control_menu_controller.h"
 #include "navigation_arrow_control_menu_controller.h"
@@ -53,9 +52,6 @@ public:
     Q_PROPERTY(bool      isKlfLogging                 READ getKlfLogging                   NOTIFY loggingKlfChanged)
     Q_PROPERTY(bool      loggingCsv                   READ getCsvLogging                   WRITE setCsvLogging)
     Q_PROPERTY(bool      useGPS                       READ getUseGPS                       WRITE setUseGPS)
-    Q_PROPERTY(bool      fixBlackStripesState         READ getFixBlackStripesState         WRITE setFixBlackStripesState)
-    Q_PROPERTY(int       fixBlackStripesForwardSteps  READ getFixBlackStripesForwardSteps  WRITE setFixBlackStripesForwardSteps)
-    Q_PROPERTY(int       fixBlackStripesBackwardSteps READ getFixBlackStripesBackwardSteps WRITE setFixBlackStripesBackwardSteps)
     Q_PROPERTY(QString   filePath                     READ getFilePath                     NOTIFY filePathChanged)
     Q_PROPERTY(bool      isFileOpening                READ getIsFileOpening                NOTIFY sendIsFileOpening)
     Q_PROPERTY(bool      isSeparateReading            READ getIsSeparateReading            CONSTANT)
@@ -103,12 +99,6 @@ public slots:
     void upgradeChanged(int progressStatus);
     bool getKlfLogging() const;
     void setKlfLogging(bool isLogging);
-    bool getFixBlackStripesState() const;
-    int  getFixBlackStripesForwardSteps() const;
-    int  getFixBlackStripesBackwardSteps() const;
-    void setFixBlackStripesState(bool state);
-    void setFixBlackStripesForwardSteps(int val);
-    void setFixBlackStripesBackwardSteps(int val);
     bool getCsvLogging() const;
     void setCsvLogging(bool isLogging);
     bool getUseGPS() const;
@@ -235,18 +225,10 @@ private:
     DataProcessor* dataProcessor_;
     QThread* dataProcThread_;
     std::unique_ptr<DataHorizon> dataHorizon_; // this thread
-    // DataHorizon* dataHorizon2_ = nullptr;
-
-#ifdef SEPARATE_READING
-    QString tryOpenedfilePath_;
-    bool fileIsCompleteOpened_ = false;
-    QList<QMetaObject::Connection> deviceManagerWrapperConnections_;
-#endif
 
     QQmlApplicationEngine* qmlAppEnginePtr_;
     Dataset* datasetPtr_;
     QPointer<GraphicsScene3dView> scene3dViewPtr_;
-    ConverterXTF converterXtf_;
     Logger logger_;
     QList<qPlot2D*> plot2dList_;
     QList<QMetaObject::Connection> linkManagerWrapperConnections_;
@@ -262,10 +244,6 @@ private:
 
     bool isGPSAlive_;
     bool isUseGPS_;
-
-    bool fixBlackStripesState_;;
-    int  fixBlackStripesForwardSteps_;
-    int  fixBlackStripesBackwardSteps_;
 
     int currMapLevel_ = 0;
     bool isAutoRenderSpan_ = true;

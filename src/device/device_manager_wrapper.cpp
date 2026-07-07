@@ -9,54 +9,20 @@ DeviceManagerWrapper::DeviceManagerWrapper(QObject* parent) :
     USBLBeaconDirectAskState_(false)
 {
     workerObject_ = std::make_unique<DeviceManager>();
-
-#ifdef SEPARATE_READING
-    workerThread_ = std::make_unique<QThread>(this);
-    auto ct = Qt::AutoConnection;
-    deviceManagerConnections_.append(QObject::connect(this,                &DeviceManagerWrapper::sendOpenFile,  workerObject_.get(), &DeviceManager::openFile,                      ct));
-    deviceManagerConnections_.append(QObject::connect(this,                &DeviceManagerWrapper::sendCloseFile, workerObject_.get(), &DeviceManager::closeFile,                     ct));
-    deviceManagerConnections_.append(QObject::connect(workerObject_.get(), &DeviceManager::devChanged,           this,                &DeviceManagerWrapper::devChanged,             ct));
-    deviceManagerConnections_.append(QObject::connect(workerObject_.get(), &DeviceManager::streamChanged,        this,                &DeviceManagerWrapper::streamChanged,          ct));
-    deviceManagerConnections_.append(QObject::connect(workerObject_.get(), &DeviceManager::vruChanged,           this,                &DeviceManagerWrapper::vruChanged,             ct));
-    deviceManagerConnections_.append(QObject::connect(workerObject_.get(), &DeviceManager::chartLossesChanged,   this,                &DeviceManagerWrapper::calcAverageChartLosses, ct));
-
-    workerObject_->moveToThread(workerThread_.get());
-    workerThread_->setObjectName("DevManThread");
-    workerThread_->start();
-#else
     auto ct = Qt::DirectConnection;
-    // QObject::connect(this, &DeviceManagerWrapper::sendOpenFile,  workerObject_.get(), &DeviceManager::openFile,  ct);
     QObject::connect(this, &DeviceManagerWrapper::sendOpenFile_CSV,  workerObject_.get(), &DeviceManager::openFile_CSV, Qt::QueuedConnection);
     QObject::connect(this, &DeviceManagerWrapper::sendOpenFile_tsl,  workerObject_.get(), &DeviceManager::openFile_tsl, Qt::QueuedConnection);
 
 
     QObject::connect(this, &DeviceManagerWrapper::sendCloseFile, workerObject_.get(), &DeviceManager::closeFile,   ct);
-    // QObject::connect(workerObject_.get(), &DeviceManager::devChanged,  this,   &DeviceManagerWrapper::devChanged,   ct);
     QObject::connect(workerObject_.get(), &DeviceManager::streamChanged,  this, &DeviceManagerWrapper::streamChanged,  ct);
     QObject::connect(workerObject_.get(), &DeviceManager::vruChanged,   this,   &DeviceManagerWrapper::vruChanged,   ct);
     QObject::connect(workerObject_.get(), &DeviceManager::chartLossesChanged,  this,  &DeviceManagerWrapper::calcAverageChartLosses, ct);
-#endif
 }
 
 DeviceManagerWrapper::~DeviceManagerWrapper()
 {
-#ifdef SEPARATE_READING
-    if (workerObject_) {
-        QMetaObject::invokeMethod(workerObject_.get(), "shutdown", Qt::BlockingQueuedConnection);
-        QMetaObject::invokeMethod(workerObject_.get(), "deleteLater", Qt::QueuedConnection);
-    }
 
-    for (auto& itm : deviceManagerConnections_)
-        QObject::disconnect(itm);
-    deviceManagerConnections_.clear();
-
-    if (workerThread_) {
-        workerThread_->quit();
-        workerThread_->wait();
-    }
-
-    workerObject_.release();
-#endif
 }
 
 DeviceManager* DeviceManagerWrapper::getWorker()
@@ -72,12 +38,14 @@ QUuid DeviceManagerWrapper::getFileUuid() const
 
 void DeviceManagerWrapper::initStreamList()
 {
-#ifdef SEPARATE_READING
-    QMetaObject::invokeMethod(workerObject_.get(), "initStreamList", Qt::QueuedConnection);
-#else
     workerObject_->initStreamList();
-#endif
 }
+
+void DeviceManagerWrapper::resetChannelId()
+{
+    workerObject_->resetChannelId();
+}
+
 
 void DeviceManagerWrapper::calcAverageChartLosses()
 {

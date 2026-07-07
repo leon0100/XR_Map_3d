@@ -222,12 +222,6 @@ public:
 
     DateTime* time() { return &_time; }
 
-    //QVector<uint8_t> chartData(const ChannelId& channelId = CHANNEL_NONE) {
-    //    if(chartAvail(channelId)) {
-    //        return charts_[channelId].amplitude;
-    //    }
-    //    return QVector<uint8_t>();
-    //}
     int chartSize(const ChannelId& channelId = CHANNEL_NONE, uint8_t subChannelId = 0);
     bool chartAvail();
     bool chartAvail(const ChannelId& channelId, uint8_t subChannelId = 0) const;
@@ -236,100 +230,14 @@ public:
 
     QList<ChannelId> chartChannels();
 
-    // float chartsFullRange(const ChannelId& channelId = ChannelId()) {
-    //     Q_UNUSED(channelId);
-    //     QList<ChannelId> charts_channels = chartChannels();
-
-    //     float full_range  = 0;
-    //     for(uint16_t ch = 0; ch < charts_channels.size(); ch++) {
-    //         int16_t channel = charts_channels[ch];
-    //         full_range += _charts[channel].range();
-    //     }
-
-    //     return full_range;
-    // }
-
-    float getMaxRange(const ChannelId& channel = CHANNEL_NONE, const ChannelId& channel2 = CHANNEL_NONE)
-    {
-        float maxRange = NAN;
-
-        if (channel == CHANNEL_NONE && channel2 == CHANNEL_NONE) {
-            for (auto it = charts_.cbegin(), end = charts_.cend(); it != end; ++it) {
-                const auto &echogramList = it.value();
-                for (const auto& ech : echogramList) {
-                    float r = ech.range();
-                    if (qIsFinite(r) && (!qIsFinite(maxRange) || r > maxRange)) {
-                        maxRange = r;
-                        break;
-                    }
-                }
-            }
-        }
-        else {
-            auto extractMaxFromChannel = [this](const ChannelId& ch) -> float {
-                float result = NAN;
-                if (charts_.contains(ch)) {
-                    const auto& chChartsCRef = charts_[ch];
-                    for (const auto& ech : chChartsCRef) {
-                        float r = ech.range();
-                        if (qIsFinite(r) && (!qIsFinite(result) || r > result)) {
-                            result = r;
-                            break;
-                        }
-                    }
-                }
-                return result;
-            };
-
-            const float r1 = extractMaxFromChannel(channel);
-            const float r2 = extractMaxFromChannel(channel2);
-
-            if (qIsFinite(r1)) {
-                maxRange = r1;
-            }
-            if (qIsFinite(r2) && (!qIsFinite(maxRange) || r2 > maxRange)) {
-                maxRange = r2;
-            }
-        }
-
-        if (!rangefinders_.isEmpty()) {
-            float r3 = rangefinders_.first();
-            if (qIsFinite(r3) && (!qIsFinite(maxRange) || r3 > maxRange)) {
-                maxRange = r3;
-            }
-        }
-
-        return maxRange;
-    }
+    float getMaxRange(const ChannelId& channel = CHANNEL_NONE, const ChannelId& channel2 = CHANNEL_NONE);
 
     bool distAvail() const
     {
         return flags.distAvail;
     }
 
-    double distProccesing(const ChannelId& channelId = CHANNEL_NONE)
-    {
-        if (channelId == CHANNEL_NONE) {
-            for (auto it = charts_.cbegin(); it != charts_.cend(); ++it) {
-                for (const auto& iEchogram : it.value()) {
-                    double distance = iEchogram.bottomProcessing.getDistance();
-                    if (qIsFinite(distance)) {
-                        return distance;
-                    }
-                }
-            }           
-        } else if (charts_.contains(channelId)) {
-            const auto& chart = charts_[channelId];
-            for (const auto& ech : chart) {
-                double distance = ech.bottomProcessing.getDistance();
-                if (qIsFinite(distance)) {
-                    return distance;
-                }
-            }
-        }
-
-        return NAN;
-    }
+    double distProccesing(const ChannelId& channelId = CHANNEL_NONE);
 
     QVector<double> vec_CSV_;
     void setDistProcesing_CSV(double depth) {
@@ -419,6 +327,9 @@ public:
 
     uint8_t getChartsSizeByChannelId(const ChannelId& channelId) const;
 
+
+public:
+    bool isRegionStart_ = false;
 
 protected:
     QMap<ChannelId, QVector<Echogram>> charts_; // key - channelId, value - echograms for all addresses

@@ -24,7 +24,6 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     updateBottomTrack_(false),
     updateIsobaths_(false),
     updateMosaic_(false),
-    isOpeningFile_(false),
     bottomTrackWindowCounter_(0),
     mosaicCounter_(0),
     tileResolution_(defaultTileResolution),
@@ -168,20 +167,9 @@ void DataProcessor::setUpdateMosaic(bool state)
     }
 }
 
-void DataProcessor::setIsOpeningFile(bool state)
-{
-    isOpeningFile_ = state;
-}
-
 void DataProcessor::onChartsAdded(uint64_t indx)
 {
     chartsCounter_ = indx;
-
-#ifndef SEPARATE_READING
-    if (isOpeningFile_) {
-        return;
-    }
-#endif
     
     if (updateMosaic_ || updateIsobaths_ || updateBottomTrack_) {
         auto btP = datasetPtr_->getBottomTrackParam();
@@ -495,11 +483,11 @@ void DataProcessor::startTimerIfNeeded()
     // qDebug() << "DataProcessor::startTimerIfNeeded()..........";
     //确保pendingWorkTimer_只能在 DataProcessor所属线程启动，却可以从任意线程安全调用
     if (QThread::currentThread() == this->thread()) {
-        if (!pendingWorkTimer_.isActive()) pendingWorkTimer_.start();
+        if(!pendingWorkTimer_.isActive()) pendingWorkTimer_.start();
     }
     else {
         QMetaObject::invokeMethod(this, [this]() {
-            if (!pendingWorkTimer_.isActive()) pendingWorkTimer_.start();
+            if(!pendingWorkTimer_.isActive()) pendingWorkTimer_.start();
         }, Qt::QueuedConnection);
     }
 }
