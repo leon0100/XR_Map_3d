@@ -218,14 +218,14 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     {
         QByteArray tslDataTemp = tslByteList.at(cnt);
 
-        tsl_w tslSingleStruct;
-        memcpy(&tslSingleStruct, tslDataTemp, idx);
-        tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f) * 100000;
-        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude /100000.0f) * 100000;
+        tsl_w tslSingleStru;
+        memcpy(&tslSingleStru, tslDataTemp, idx);
+        tslSingleStru.boat.longitude = dm_to_dd((double)tslSingleStru.boat.longitude/100000.0f) * 100000;
+        tslSingleStru.boat.latitude  = dm_to_dd((double)tslSingleStru.boat.latitude /100000.0f) * 100000;
         LLA lla;
-        lla.latitude  = tslSingleStruct.boat.latitude  / 100000.f;
-        lla.longitude = tslSingleStruct.boat.longitude / 100000.f;
-        lla.altitude  = tslSingleStruct.auxInfo.depth  / 100.f;
+        lla.latitude  = tslSingleStru.boat.latitude  / 100000.f;
+        lla.longitude = tslSingleStru.boat.longitude / 100000.f;
+        lla.altitude  = tslSingleStru.auxInfo.depth  / 100.f;
 
         buffer.append(lla);
         if (buffer.size() < MEDIAN_WINDOW) {
@@ -285,8 +285,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         int sfEnd;
         int btStart;
         int draft;
-        float loRng = tslSingleStruct.ping.loRng;
-        float depth = tslSingleStruct.auxInfo.depth;
+        float loRng = tslSingleStru.ping.loRng;
+        float depth = tslSingleStru.auxInfo.depth;
         int pingSize = 240;
 
         if(loRng <= 0) {
@@ -325,9 +325,9 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.pingSize = pingSize;
         chartParams.upRng    = 0.0;
         chartParams.loRng    = loRng;
-        chartParams.temperature  = tslSingleStruct.auxInfo.temperature * 10.0f;
-        chartParams.heading = tslSingleStruct.boat.heading;
-        chartParams.speed = tslSingleStruct.boat.speed * 10 / 0.514444f;
+        chartParams.temperature  = tslSingleStru.auxInfo.temperature * 10.0f;
+        chartParams.heading = tslSingleStru.boat.heading;
+        chartParams.speed = tslSingleStru.boat.speed * 10 / 0.514444f;
         chartParams.longitude = lla.longitude;
         chartParams.latitude = lla.latitude;
         emit chartComplete(batchChannelId_, chartParams, dataVec, 0.1f, 0.0);
@@ -413,7 +413,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
     QVector<float> vec_CSV;
     double minZ = 0.0, maxZ = 0.0;
 
-    qDebug() << "tslWCnt.size()........." << tsl3Cnt;
+    qDebug() << "tsl3Cnt.size()........." << tsl3Cnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
     const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
     QList<LLA> buffer;
@@ -422,12 +422,12 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
     {
         QByteArray tslDataTemp = tslByteList.at(i);
 
-        tsl_3 tslSingleStruct;
-        memcpy(&tslSingleStruct, tslDataTemp, idx);
+        tsl_3 tslSingleStru;
+        memcpy(&tslSingleStru, tslDataTemp, idx);
         LLA lla;
-        lla.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
-        lla.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
-        lla.altitude = tslSingleStruct.auxInfo.depth / 100.f;
+        lla.latitude  = dm_to_dd(tslSingleStru.boat.latitude);
+        lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
+        lla.altitude  = tslSingleStru.auxInfo.depth / 100.f;
 
         buffer.append(lla);
         if (buffer.size() < MEDIAN_WINDOW) {
@@ -472,7 +472,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 
 
         // ----------- 将声呐数据发送到 Dataset ------------
-        int pingSize = tslSingleStruct.ping.size;
+        int pingSize = tslSingleStru.ping.size;
         QVector<QVector<uint8_t>> dataVec;
         QVector<uint8_t> channelData;
         for(int i = 0; i < pingSize; i++) {
@@ -487,8 +487,8 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         int sfEnd;
         int btStart;
         int draft;
-        float loRng    = tslSingleStruct.ping.loRng;
-        float depth    = tslSingleStruct.auxInfo.depth;
+        float loRng    = tslSingleStru.ping.loRng;
+        float depth    = tslSingleStru.auxInfo.depth;
 
         if(loRng <= 0) {
             draft   = 0;
@@ -526,9 +526,9 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         chartParams.pingSize     = pingSize;
         chartParams.upRng        = 0.0;
         chartParams.loRng        = loRng;
-        chartParams.temperature  = tslSingleStruct.auxInfo.temperature;
-        chartParams.heading      = tslSingleStruct.boat.heading;
-        chartParams.speed        = tslSingleStruct.boat.speed;
+        chartParams.temperature  = tslSingleStru.auxInfo.temperature;
+        chartParams.heading      = tslSingleStru.boat.heading;
+        chartParams.speed        = tslSingleStru.boat.speed;
         chartParams.longitude    = lla.longitude;
         chartParams.latitude     = lla.latitude;
         emit chartComplete(batchChannelId_, chartParams, dataVec, 0.1f, 0.0);

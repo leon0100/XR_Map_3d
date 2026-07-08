@@ -247,11 +247,8 @@ void Dataset::addUsblSolution(IDBinUsblSolution::UsblSolution data) {
         pool_index = endIndex();
     }
 
-    // tracks[data.id].data_.append(QVector3D(data.x_m, data.y_m, data.depth_m));
     tracks[-1].data_.append(QVector3D());
     tracks[-1].objectColor_ = QColor(0, 255, 255);
-
-
 
     Position pos;
     pos.lla = LLA(data.usbl_latitude, data.usbl_longitude);
@@ -262,23 +259,10 @@ void Dataset::addUsblSolution(IDBinUsblSolution::UsblSolution data) {
     Q_UNUSED(dist_save);
     Q_UNUSED(angl_save);
 
-    // float angl = qDegreesToRadians(-data.usbl_yaw - data.azimuth_deg);
     float angl_usbl = data.azimuth_deg;
     float dist = data.distance_m;
 
-    // float x_beacon = dist*cosf(angl);
-    // float y_beacon = dist*sinf(angl);
-
-    // data.azimuth_deg = (data.usbl_yaw + data.azimuth_deg);
-
-
-    if(pos.lla.isCoordinatesValid()
-        // && abs(dist_save - dist) < 0.5
-        // && (abs(angl_save - angl_usbl) < 10)
-        // && x_beacon < 0
-        ) {
-        // qDebug("usbl lat %f, lon %f", data.usbl_latitude, data.usbl_longitude);
-
+    if(pos.lla.isCoordinatesValid()) {
         setLlaRef(LLARef(pos.lla), getCurrentLlaRefState());
 
         pos.LLA2NED(&_llaRef);
@@ -299,17 +283,6 @@ void Dataset::addUsblSolution(IDBinUsblSolution::UsblSolution data) {
         tracks[-4].objectColor_ = QColor(200, 0, 0);
         tracks[-4].lineWidth_ = 5;
 
-
-        // Position pos_beacon;
-        // pos_beacon.lla = LLA(data.latitude_deg, data.longitude_deg);
-        // if(pos_beacon.lla.isCoordinatesValid()) {
-        //     pos_beacon.LLA2NED(&_llaRef);
-        //     tracks[-5].data_.append(QVector3D(pos_beacon.ned.n, pos_beacon.ned.e, 0));
-        //     tracks[-5].objectColor_ = QColor(0, 200, 0);
-        //     tracks[-5].lineWidth_ = 5;
-        // }
-
-        // _pool[endIndex()].set(data);
     } else {
          tracks[-4].data_.append(QVector3D(NAN, NAN, 0));
     }
@@ -366,24 +339,6 @@ void Dataset::addAtt(float yaw, float pitch, float roll)
     _lastYaw = yaw;
     _lastPitch = pitch;
     _lastRoll = roll;
-
-#if defined(FAKE_COORDS)
-    if (state_ == DatasetState::kConnection && activeZeroing_) {
-        ++testTime_;
-        double lat = 40.203792, lon = 44.497496;
-        Position pos;
-        pos.lla = LLA(lat, lon);
-        pos.time = DateTime(testTime_, 100);
-        if(pos.lla.isCoordinatesValid()) {
-            if(last_epoch->getPositionGNSS().lla.isCoordinatesValid()) {
-                last_epoch = addNewEpoch();
-            }
-            setLlaRef(LLARef(pos.lla), getCurrentLlaRefState());
-            last_epoch->setPositionLLA(pos);
-            last_epoch->setPositionRef(&_llaRef);
-        }
-    }
-#endif
 
     interpolator_.interpolateAtt(false);
 
@@ -531,7 +486,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     }
 
     // qDebug() << "pool_size().............................. " << pool_.size();
-    uint64_t lastIndx = pool_.size() - 1;
+    uint64_t poolCnt = pool_.size();
     if (!getLlaRef().isInit) {
         LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
                     (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
@@ -542,16 +497,17 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
     lastEp->setPositionDataType(DataType::kRaw);
 
-    if (pool_.size() >= 2 && lastEp->isRegionStart_ == 0) {
-        Epoch* prevEp = fromIndex(pool_.size() - 2);
+    if (poolCnt >= 2) {
+        Epoch* prevEp = fromIndex(poolCnt - 2);
         if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
-            auto curNed = lastEp->getPositionGNSS().ned;
+            auto curNed  = lastEp->getPositionGNSS().ned;
             auto prevNed = prevEp->getPositionGNSS().ned;
-            double dn = curNed.n - prevNed.n;
-            double de = curNed.e - prevNed.e;
-            double dist = std::sqrt(dn * dn + de * de);
+            double dn    = curNed.n - prevNed.n;
+            double de    = curNed.e - prevNed.e;
+            double dist  = dn * dn + de * de;
             if (dist > 1000.0) {
-                lastEp->isRegionStart_ = 1;
+                lastEp->isRegionStart_ = true;
+                return;
             }
         }
     }
@@ -560,7 +516,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     boatLongitude_ = pos.lla.longitude;
 
     if(enableRender) {
-        emit positionAdded(lastIndx);
+        emit positionAdded(poolCnt-1);
     }
 
 }
@@ -683,10 +639,6 @@ void Dataset::resetDataset()
     resetRenderBuffers();
     resetDistProcessing();
 
-#if defined(FAKE_COORDS)
-    testTime_ = 1740466541;
-#endif
-
     usingRecordParameters_.clear();
     lastAddChartEpochIndx_.clear();
     channelsToResizeEthData_.clear();
@@ -808,13 +760,6 @@ void Dataset::usblProcessing() {
         Epoch* epoch = fromIndex(i);
         Position boatPos = epoch->getPositionGNSS();
 
-        // if(pos.lla.isCoordinatesValid() && !pos.ned.isCoordinatesValid()) {
-        //     if(!_llaRef.isInit) {
-        //         _llaRef = LLARef(pos.lla);
-        //     }
-        //     pos.LLA2NED(&_llaRef);
-        // }
-
         if(boatPos.ned.isCoordinatesValid() && epoch->isAttAvail() && epoch->isUsblSolutionAvailable()) {
             double n = boatPos.ned.n, e = boatPos.ned.e;
             Q_UNUSED(n);
@@ -827,18 +772,6 @@ void Dataset::usblProcessing() {
             double rel_e = dist*sin(qDegreesToRadians(dir));
             Q_UNUSED(rel_n);
             Q_UNUSED(rel_e);
-            // if(i > 4000 && i < 4500) {
-            //     _beaconTrack.append(QVector3D(n+rel_n, e + rel_e, 0));
-            // }
-            // if(dist > 250 && (abs(azimuth)  > 170)) {
-            //     _beaconTrack1.append(QVector3D(n+rel_n, e + rel_e, 0));
-            // }
-            // if(dist > 50 && azimuth < 10  && azimuth > -10) {
-            //     _beaconTrack.append(QVector3D(n+rel_n, e + rel_e, 0));
-            // }
-            // if(dist > 250 && (abs(azimuth)  > 170)) {
-            //     _beaconTrack1.append(QVector3D(n+rel_n, e + rel_e, 0));
-            // }
 
         }
     }
@@ -866,7 +799,6 @@ void Dataset::setRefPosition(Position ref_pos) {
             Epoch* epoch = fromIndex(iepoch);
             if(epoch == NULL) { continue; }
             epoch->setPositionRef(&_llaRef);
-
             // qDebug() << "Dataset::setRefPosition _llaRef " << _llaRef.refLla.longitude << " " << _llaRef.refLla.latitude
             //          <<"   " << _llaRef.refLla.altitude;
         }
@@ -1113,10 +1045,6 @@ void Dataset::updateEpochWithChart(const ChannelId &channelId, const ChartParame
     if (usingRecordParameters_.contains(channelId)) {
         recParam = usingRecordParameters_[channelId];
     }
-
-    // maxLoRng_ = (chartParams.loRng > maxLoRng_) ? chartParams.loRng : maxLoRng_;
-    // maxLoRng_ = 1600;
-    // emit updateMinMaxLoRng(0, maxLoRng_ * 2);
 
     epoch.setChart(channelId, data, resolution, offset);
     epoch.setRecParameters(channelId, recParam);

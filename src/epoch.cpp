@@ -77,11 +77,6 @@ void Epoch::setChartParameters(const ChannelId& channelId, const ChartParameters
     }
 }
 
-// void Epoch::setComplexSignal16(int channel, QVector<Complex16> data) {
-//     // _complex[channel].data = QByteArray((const char*)data.constData(), data.size()*sizeof(Complex16));
-//     // _complex[channel].type = 2;
-// }
-
 void Epoch::setComplexF(const ChannelId& channelId, int group, QVector<ComplexSignal> signal)
 {
     _complex[channelId][group] = signal;

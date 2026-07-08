@@ -547,7 +547,21 @@ WaterFall {
                            horizontalAlignment: TextInput.AlignHCenter
                            font.pixelSize: iconSize
                            selectByMouse: true
-                           validator: IntValidator { bottom: -100; top: 100;}
+                           validator: IntValidator { bottom: 0; top: 511;}
+                           onTextChanged: {
+                               let value    = parseInt(text)
+                               let lowValue = parseInt(lowerMax.text)
+                               if(isNaN(value)) {
+                                   text = "0"
+                                   // value = 0
+                               }
+                               else if(value > 511) {
+                                   text = "511"
+                                   // value = 511
+                               }
+                               // plot.minUpRng = value
+                           }
+
                            // onEditingFinished: applyRange()
                            // Component.onCompleted: applyRange()
                         }
@@ -570,7 +584,26 @@ WaterFall {
                             horizontalAlignment: TextInput.AlignHCenter
                             font.pixelSize: iconSize
                             selectByMouse: true
-                            validator: IntValidator { bottom: -100; top: 10000;}
+                            validator: IntValidator { bottom: 1; top: 512;}
+                            onTextChanged: {
+                                let value = parseInt(text)
+                                let upValue = parseInt(upperMin.text)
+                                if(isNaN(value)) {
+                                    text = "1"
+                                    // value = 1
+                                }
+                                else if(value > 512) {
+                                    text = "512"
+                                    // value = 512
+                                }
+                                else if(value < 1) {
+                                    text= "1"
+                                    // value = 1
+                                }
+                                // plot.maxLoRng = value
+
+                            }
+
                             // onEditingFinished: applyRange()
                             // Component.onCompleted: applyRange()
                         }
@@ -600,6 +633,11 @@ WaterFall {
                                 onClicked: {
                                     let upperVal = parseInt(upperMin.text)
                                     let lowerVal = parseInt(lowerMax.text)
+
+                                    if(upperVal >= lowerVal) {
+                                        upperVal = lowerVal - 1
+                                    }
+
                                     plot.resetUpLoRng(upperVal, lowerVal)
                                 }
                             }

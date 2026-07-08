@@ -52,10 +52,6 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
             }
         }
     }
-    else {
-        GIF->dialogInfo(Dialog_OK, tr("Lower Limit must be greater than Upper Limit!"));
-        return false;
-    }
 
 
     pen.setWidth(2);

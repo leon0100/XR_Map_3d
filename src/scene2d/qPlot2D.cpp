@@ -162,9 +162,11 @@ void qPlot2D::setMaxLoRng(int maxLoRng)
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
     qDebug() << "upper........" << upper << "  " << lower;
+
     currentUpRng_ = upper * 100;
     currentLoRng_ = lower * 100;
-
+    setMinUpRng(currentUpRng_);
+    setMaxLoRng(currentLoRng_);
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
     echogram_.setUpperRng(currentUpRng_);
     echogram_.setLowerRng(currentLoRng_);
@@ -363,6 +365,13 @@ void qPlot2D::scaleYZoomEvent(int delta)
     }
     else if(delta > 0) {
         currentLoRng_ *= 2;
+    }
+
+    if(currentLoRng_ < 100) {
+        currentLoRng_ = 100;
+    }
+    else if(currentLoRng_ > 51200) {
+        currentLoRng_ = 51200;
     }
 
     echogram_.setLowerRng(currentLoRng_);

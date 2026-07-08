@@ -57,29 +57,24 @@ void BoatTrack::onPositionAdded(uint64_t indx)
         return;
     }
 
-    const int toIndx = indx;
+    const int toIndx   = indx;
     const int fromIndx = lastIndx_;
     if (fromIndx >= toIndx) {
-        // qDebug() << "fromIndx >= toIndx.................." << fromIndx << "  " << toIndx;
         return;
     }
 
     const int need = toIndx - fromIndx;
-    // qDebug() << "need:" << need << "   fromIndx:" << fromIndx << "  toIndx:" << toIndx;
     QVector<QVector3D> prepData;
     prepData.reserve(need);
 
     for (int i = fromIndx + 1; i <= toIndx; ++i) {
         if (auto* ep = datasetPtr_->fromIndex(i); ep) {
             if (auto posNed = ep->getPositionGNSS().ned; posNed.isCoordinatesValid()) {
-                if (ep->isRegionStart_ == 1) {
+                if (ep->isRegionStart_){
                     prepData.push_back(QVector3D(std::numeric_limits<float>::quiet_NaN(),
-                                                 std::numeric_limits<float>::quiet_NaN(),
-                                                 std::numeric_limits<float>::quiet_NaN()));
-                    ep->isRegionStart_ = 2;
+                                                 std::numeric_limits<float>::quiet_NaN(), 0));
                 }
                 prepData.push_back(QVector3D(posNed.n, posNed.e, 0));
-                // qDebug() << "posNed.n:  " << posNed.n << "    posNed.e:" << posNed.e;
             }
         }
     }

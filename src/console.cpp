@@ -10,10 +10,12 @@ GetInterface* GetInterface::getInterface()
 
 GetInterface::GetInterface(QObject* parent) : QObject(parent)
 {
+
 }
 
 
-/*------------------------------------Console-----------------------------------------------*/
+
+/*------------------------------------Console--------------------------------------------*/
 Console::Console() : m_list(new ConsoleListModel())
 {
     m_list->init();

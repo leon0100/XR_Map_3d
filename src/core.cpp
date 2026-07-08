@@ -25,9 +25,6 @@ Core::Core() : QObject(),
     isFileOpening_(false),
     isGPSAlive_(false),
     isUseGPS_(false)
-    // fixBlackStripesState_(false),
-    // fixBlackStripesForwardSteps_(0),
-    // fixBlackStripesBackwardSteps_(0)
 {
     qRegisterMetaType<uint8_t>("uint8_t");
     createControllers();
@@ -35,9 +32,6 @@ Core::Core() : QObject(),
     createDeviceManagerConnections();
     createLinkManagerConnections();
     createDatasetConnections();
-#ifdef FLASHER
-    connect(&dev_flasher_, &DeviceFlasher::sendStepInfo, this, &Core::dev_flasher_rcv);
-#endif
 
     createDataProcessor();
 }
@@ -215,7 +209,6 @@ void Core::openLogFile(const QString& filePath, bool isAppend, bool onCustomEven
             }
         }
 
-        // QMetaObject::invokeMethod(dataProcessor_, "setIsOpeningFile", Qt::QueuedConnection, Q_ARG(bool, true));
 
         datasetPtr_->setState(Dataset::DatasetState::kFile);
 
@@ -280,11 +273,6 @@ void Core::onFileOpened()
 bool Core::openXTF(const QByteArray& data)
 {
     datasetPtr_->setState(Dataset::DatasetState::kFile);
-    // converterXtf_.toDataset(data, getDatasetPtr());
-
-    // consoleInfo("XTF note:" + QString(converterXtf_.header.NoteString));
-    // consoleInfo("XTF programm name:" + QString(converterXtf_.header.RecordingProgramName));
-    // consoleInfo("XTF sonar name:" + QString(converterXtf_.header.SonarName));
 
     const QVector<DatasetChannel> channelList = datasetPtr_->channelsList();
     if (channelList.size() < 2) {
@@ -440,48 +428,6 @@ void Core::setKlfLogging(bool isLogging)
     emit loggingKlfChanged();
 }
 
-// bool Core::getFixBlackStripesState() const
-// {
-//     return fixBlackStripesState_;
-// }
-
-// int Core::getFixBlackStripesForwardSteps() const
-// {
-//     return fixBlackStripesForwardSteps_;
-// }
-
-// int Core::getFixBlackStripesBackwardSteps() const
-// {
-//     return fixBlackStripesBackwardSteps_;
-// }
-
-// void Core::setFixBlackStripesState(bool state)
-// {
-//     fixBlackStripesState_ = state;
-
-//     if (datasetPtr_) {
-//         datasetPtr_->setFixBlackStripesState(state);
-//     }
-// }
-
-// void Core::setFixBlackStripesForwardSteps(int val)
-// {
-//     fixBlackStripesForwardSteps_ = val;
-
-//     if (datasetPtr_) {
-//         datasetPtr_->setFixBlackStripesForwardSteps(val);
-//     }
-// }
-
-// void Core::setFixBlackStripesBackwardSteps(int val)
-// {
-//     fixBlackStripesBackwardSteps_ = val;
-
-//     if (datasetPtr_) {
-//         datasetPtr_->setFixBlackStripesBackwardSteps(val);
-//     }
-// }
-
 bool Core::getCsvLogging() const
 {
     return isLoggingCsv_;
@@ -565,9 +511,6 @@ bool Core::exportUSBLToCSV(QString filePath)
     QString export_file_name = isOpenedFile() ? openedfilePath_.section('/', -1).section('.', 0, 0) : QDateTime::currentDateTime().toString("yyyy.MM.dd_hh:mm:ss").replace(':', '.');
 
     logger_.creatExportStream(filePath + "/" + export_file_name + ".csv");
-    //QMap<int, DatasetChannel> ch_list = datasetPtr_->channelsList();
-    //Q_UNUSED(ch_list);
-    // _dataset->setRefPosition(1518);
 
     logger_.dataExport("epoch,yaw,pitch,roll,north,east,ping_counter,carrier_counter,snr,azimuth_deg,elevation_deg,distance_m\n");
 
@@ -873,10 +816,6 @@ bool Core::exportPlotAsXTF(QString filePath)
     auto ch2 = plot2dList_[0]->plotDatasetChannel2();
     auto subCh2 = plot2dList_[0]->plotDatasetSubChannel2();
 
-    // QByteArray data_export = converterXtf_.toXTF(getDatasetPtr(), ch1, subCh1, ch2, subCh2);
-    // logger_.dataByteExport(data_export);
-    // logger_.endExportStream();
-
     return true;
 }
 
@@ -933,7 +872,6 @@ void Core::UILoad(QObject* object, const QUrl& url)
     scene3dViewPtr_->setDataProcessorPtr(dataProcessor_);
     datasetPtr_->setScene3D(scene3dViewPtr_);
     scene3dViewPtr_->setProgressDialog(progress_);
-
 
     for (int i = 0; i < plot2dList_.size(); i++) {
         if (plot2dList_.at(i) != NULL) {
@@ -1486,13 +1424,6 @@ void Core::onSendMapTextureIdByTileIndx(const map::TileIndex &tileIndx, GLuint t
     tileManager_->getTileSetPtr()->setTextureIdByTileIndx(tileIndx, textureId);
 }
 
-#if defined(FAKE_COORDS)
-void Core::setPosZeroing(bool state)
-{
-    datasetPtr_->setActiveZeroing(state);
-}
-#endif
-
 ConsoleListModel* Core::consoleList()
 {
     return consolePtr_->listModel();
@@ -1608,11 +1539,7 @@ bool Core::isOpenedFile() const
 
 bool Core::isFactoryMode() const
 {
-#ifdef FLASHER
-        return true;
-#else
-        return false;
-#endif
+    return false;
 }
 
 QString Core::getFilePath() const
@@ -1909,7 +1836,7 @@ void Core::createScene3dConnections()
     // clear render
     QObject::connect(dataProcessor_, &DataProcessor::bottomTrackProcessingCleared,  scene3dViewPtr_->bottomTrack().get(),           &BottomTrack::clearData,                      connType);
     QObject::connect(dataProcessor_, &DataProcessor::isobathsProcessingCleared,     scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::clear,                         connType);
-    QObject::connect(dataProcessor_, &DataProcessor::mosaicProcessingCleared,       this, [](){ /*qDebug() << "TODO: mosaicProcessingCleared";*/ },                               connType); // тут тайлы не трогаем и картинку в них пока
+    QObject::connect(dataProcessor_, &DataProcessor::mosaicProcessingCleared,       this, [](){},                               connType);
     QObject::connect(dataProcessor_, &DataProcessor::surfaceProcessingCleared,      scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::clear,                          connType);
 
     QMetaObject::invokeMethod(dataProcessor_, "askColorTableForMosaic", Qt::QueuedConnection);
@@ -1936,23 +1863,3 @@ void Core::resetDataProcessorConnections()
 
     dataProcessorConnections_.clear();
 }
-
-#ifdef FLASHER
-void Core::dev_flasher_rcv(QString msg, int num) {
-    dev_flasher_msg_ = msg;
-    dev_flasher_msg_id_ = num;
-    emit dev_flasher_changed();
-}
-
-void Core::connectOpenedLinkAsFlasher(QString pn) {
-    dev_flasher_.setLinkAsFlasher(getLinkManagerWrapperPtr(), getDeviceManagerWrapperPtr()->getWorker(), pn);
-}
-
-void Core::setFlasherData(QString data) {
-    dev_flasher_.setData(data);
-}
-
-void Core::releaseFlasherLink() {
-    dev_flasher_.releaseLink();
-}
-#endif

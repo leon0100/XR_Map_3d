@@ -7,9 +7,6 @@
 #include <QQmlContext>
 #include <QThread>
 #include <QFileDialog>
-#ifdef FLASHER
-#include "flasher/deviceflasher.h"
-#endif
 #include "data_processor.h"
 #include "qPlot2D.h"
 #include "logger.h"
@@ -59,9 +56,6 @@ public:
     Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
     Q_PROPERTY(QObject*  progress       READ progress     WRITE setProgress     NOTIFY  progressChanged)
-    // Q_PROPERTY(QObject* locations READ locations CONSTANT)
-
-
 
 
     void setEngine(QQmlApplicationEngine *engine);
@@ -80,8 +74,6 @@ public:
     void removeLinkManagerConnections();
 
     QHash<QUuid, QString> getLinkNames() const;
-
-    // QObject* locations() { return &locations_; }
 
 
 
@@ -218,8 +210,6 @@ private:
     std::shared_ptr<BLEManager>  bleManager_;
     std::shared_ptr<UdpManager>  udpManager_;
     std::shared_ptr<Locations>   locations_;
-    // Locations locations_;
-
 
     // data processor
     DataProcessor* dataProcessor_;
@@ -247,22 +237,6 @@ private:
 
     int currMapLevel_ = 0;
     bool isAutoRenderSpan_ = true;
-
-#ifdef FLASHER
-    Q_PROPERTY(QString flasherTextInfo READ flasherTextInfo NOTIFY dev_flasher_changed)
-    Q_PROPERTY(int flasherIdInfo READ flasherIdInfo NOTIFY dev_flasher_changed)
-private:
-    DeviceFlasher dev_flasher_;
-    int dev_flasher_msg_id_ = 0;
-    QString dev_flasher_msg_;
-
-    QString flasherTextInfo() { return dev_flasher_msg_; }
-    int flasherIdInfo() { return dev_flasher_msg_id_; }
-private slots:
-    void dev_flasher_rcv(QString msg, int num);
-signals:
-    void dev_flasher_changed();
-#endif
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;

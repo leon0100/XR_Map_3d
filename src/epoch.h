@@ -185,7 +185,6 @@ public:
     DataType getSonarPositionDataType() const { return sonarPosition_.dataType; };
     void setComplexF(const ChannelId& channelId, int group, QVector<ComplexSignal> signal);
     ComplexSignals& complexSignals() { return _complex; }
-    //ComplexSignal complexSignal(const ChannelId& channelId) { return _complex[channelId]; }
     bool isComplexSignalAvail() { return _complex.size() > 0; }
 
     void set(IDBinUsblSolution::UsblSolution data) { _usblSolution = data;  _isUsblSolutionAvailable = true; }
@@ -327,9 +326,8 @@ public:
 
     uint8_t getChartsSizeByChannelId(const ChannelId& channelId) const;
 
-
 public:
-    uint8_t isRegionStart_ = 0;
+    bool isRegionStart_ = false;
 
 protected:
     QMap<ChannelId, QVector<Echogram>> charts_; // key - channelId, value - echograms for all addresses

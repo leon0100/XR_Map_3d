@@ -410,6 +410,7 @@ private:
     // BlackStripesProcessor* bSProc_ = nullptr;
     QMap<ChannelId, int> lastAddChartEpochIndx_;
     QSet<ChannelId> channelsToResizeEthData_;
+    int currentRegionGroup_ = 0;
 
     // for GUI
     QList<QString> channelsNames_;

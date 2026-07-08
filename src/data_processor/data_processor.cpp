@@ -87,15 +87,15 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     requestCancel();
 
     switch (procType) {
-    case DataProcessorType::kUndefined:    clearAllProcessings();                                             break;
-    case DataProcessorType::kBottomTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
-    case DataProcessorType::kIsobaths:     clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
-    case DataProcessorType::kMosaic:       clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
-    case DataProcessorType::kSurface:      clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
-    case DataProcessorType::bletoothTrack: clearAllProcessings();                                             break;
-    case DataProcessorType::wifiTrack:     clearAllProcessings();                                             break;
-    case DataProcessorType::staticTrack:   clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
-    default: break;
+     case DataProcessorType::kUndefined:    clearAllProcessings();                                             break;
+     case DataProcessorType::kBottomTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
+     case DataProcessorType::kIsobaths:     clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
+     case DataProcessorType::kMosaic:       clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
+     case DataProcessorType::kSurface:      clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
+     case DataProcessorType::bletoothTrack: clearAllProcessings();                                             break;
+     case DataProcessorType::wifiTrack:     clearAllProcessings();                                             break;
+     case DataProcessorType::staticTrack:   clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
+     default: break;
     }
 
     chartsCounter_ = 0;
