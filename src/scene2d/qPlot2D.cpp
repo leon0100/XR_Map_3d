@@ -29,7 +29,14 @@ void qPlot2D::paint(QPainter *painter)
         return;
     }
 
-    Plot2D::getImage((int)width()-WAVE_PIXEL_WIDTH, (int)height(), painter, _isHorizontal);
+    int totalWidth = static_cast<int>(width());
+    int waveWidth = totalWidth / WAVE_WIDTH_RATIO_DENOM;
+    if(waveWidth < 1) {
+        waveWidth = 1;
+    }
+
+
+    Plot2D::getImage(totalWidth - waveWidth, (int)height(), painter, _isHorizontal);
     Plot2D::draw(painter);
     if (Plot2D::getIsContactChanged()) {
         emit contactChanged();

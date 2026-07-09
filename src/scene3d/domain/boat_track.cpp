@@ -95,11 +95,13 @@ void BoatTrack::clearData()
 
 void BoatTrack::selectEpoch(int epochIndex)
 {
-    if (epochIndex < 0 || epochIndex >= datasetPtr_->size())
+    // qDebug() << "epochIndex........." << epochIndex;
+    if (!datasetPtr_ || epochIndex < 0 || epochIndex >= datasetPtr_->size()) {
         return;
+    }
 
     if (auto* epoch = datasetPtr_->fromIndex(epochIndex); epoch) {
-        North_East_Down boatPosNed = epoch->getPositionGNSS().ned;
+        North_East_Down boatPosNed  = epoch->getPositionGNSS().ned;
         North_East_Down sonarPosNed = epoch->getSonarPosition().ned;
 
         if (boatPosNed.isCoordinatesValid()) {
@@ -107,14 +109,12 @@ void BoatTrack::selectEpoch(int epochIndex)
             r->boatTrackVertice_ = QVector3D(boatPosNed.n, boatPosNed.e, 0.0f);
 
             // channel select logic from bottomTrack
-            bool beenBottomSelected{ false };
-
-            if (datasetPtr_) {
-                if (auto datasetChannels = datasetPtr_->channelsList(); !datasetChannels.isEmpty()) {
-                    if (float distance = -1.f * static_cast<float>(epoch->distProccesing(datasetChannels.first().channelId_)); qIsFinite(distance)) {
-                        r->bottomTrackVertice_ = QVector3D(sonarPosNed.n, sonarPosNed.e, distance); //
-                        beenBottomSelected = true;
-                    }
+            bool beenBottomSelected = false;
+            if (auto datasetChannels = datasetPtr_->channelsList(); !datasetChannels.isEmpty()) {
+                if (float distance = -1.f * static_cast<float>(epoch->distProccesing(datasetChannels.first().channelId_));
+                            qIsFinite(distance)) {
+                    r->bottomTrackVertice_ = QVector3D(sonarPosNed.n, sonarPosNed.e, distance);
+                    beenBottomSelected = true;
                 }
             }
             if (!beenBottomSelected) {
@@ -122,7 +122,7 @@ void BoatTrack::selectEpoch(int epochIndex)
             }
         }
         else {
-            //qDebug() << "invalid pos on boat track" << epochIndex;
+            // qDebug() << "invalid pos on boat track" << epochIndex;
         }
     }
 

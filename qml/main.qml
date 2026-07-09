@@ -918,7 +918,7 @@ ApplicationWindow  {
                 PinchArea {
                     id:    pinch3D
                     anchors.fill: parent
-                    enabled:      !extraInfoPanel.touchInteractionActive
+                    enabled: !extraInfoPanel.touchInteractionActive
 
                     onPinchStarted: {
                         menuBlock.visible = false
@@ -961,11 +961,11 @@ ApplicationWindow  {
                             }
                         }
 
-                        property int lastMouseKeyPressed: Qt.NoButton // TODO: maybe this mouseArea should be outside pinchArea
-                        property point startMousePos: Qt.point(-1, -1)
-                        property bool wasMoved: false
-                        property real mouseThreshold: 15
-                        property bool vertexMode: false
+                        property int   lastMouseKeyPressed: Qt.NoButton // TODO: maybe this mouseArea should be outside pinchArea
+                        property point startMousePos:       Qt.point(-1, -1)
+                        property bool  wasMoved:            false
+                        property real  mouseThreshold:      15
+                        property bool  vertexMode:          false
 
                         onEntered: {
                             mousearea3D.forceActiveFocus();
@@ -1067,235 +1067,6 @@ ApplicationWindow  {
                     visible: visualisationLayout.splitMode !== 1
                 }
 
-
-                // Item {
-                //     id: syncLoupeOverlay
-                //     property int previewEpochIndex: waterViewFirst.getPreferredLoupeEpochIndex(renderer.syncLoupeEpochIndex)
-                //     visible: renderer.visible && menuBar.is3DVisible
-                //              && (renderer.syncLoupeOverlayVisible || (renderer.syncLoupeZoomAdjusting && previewEpochIndex >= 0))
-                //     anchors.right: parent.right
-                //     anchors.bottom: parent.bottom
-                //     anchors.rightMargin: Math.round(12 * theme.resCoeff)
-                //     anchors.bottomMargin: Math.round(12 * theme.resCoeff)
-                //     z: 1002
-
-                //     property real sizeMultiplier: renderer.syncLoupeSize === 2 ? 1.5 : (renderer.syncLoupeSize === 3 ? 2.25 : 1.0)
-                //     property int baseSide: Math.round(180 * theme.resCoeff * sizeMultiplier)
-                //     property int maxSide: Math.max(64, Math.min(renderer.width, renderer.height) - 2 * anchors.rightMargin)
-                //     property int side: Math.max(64, Math.min(baseSide, maxSide))
-                //     property int sourceDepthReferencePx: 0
-
-                //     width: side
-                //     height: side
-
-                //     function refreshLoupePlot() {
-                //         const previewEpoch = previewEpochIndex
-                //         if (!visible || previewEpoch < 0) {
-                //             return
-                //         }
-
-                //         const zoomMultiplier = 1.0 + Math.max(0, Math.min(renderer.syncLoupeZoom, 300)) * 0.01
-                //         const previewSourceBaseSize = Math.max(8, Math.floor(syncLoupeOverlay.side))
-                //         const previewSourceSize = Math.max(4, Math.floor(previewSourceBaseSize / zoomMultiplier))
-                //         const ch1Name = waterViewFirst.plotDatasetChannelName()
-                //         const ch2Name = waterViewFirst.plotDatasetChannel2Name()
-                //         let mainDepthPxCandidate = waterViewFirst.horizontal ? Math.floor(waterViewFirst.height) : Math.floor(waterViewFirst.width)
-                //         if (mainDepthPxCandidate <= 0) {
-                //             const outerRows = Math.max(1, visualisationLayout.rows)
-                //             const outerCols = Math.max(1, visualisationLayout.columns)
-                //             const twoDCellHeight = Math.max(1, Math.floor(visualisationLayout.height / outerRows))
-                //             const twoDCellWidth = Math.max(1, Math.floor(visualisationLayout.width / outerCols))
-                //             const sliderHeight = Math.max(1, Math.floor(theme.controlHeight))
-                //             const plotsCount = menuBar.numPlots === 2 ? 2 : 1
-                //             const syntheticPlotHeight = Math.max(1, Math.floor((twoDCellHeight - sliderHeight) / plotsCount))
-                //             const syntheticPlotWidth = Math.max(1, twoDCellWidth)
-                //             mainDepthPxCandidate = waterViewFirst.horizontal ? syntheticPlotHeight : syntheticPlotWidth
-                //         }
-                //         if (mainDepthPxCandidate > 0) {
-                //             sourceDepthReferencePx = mainDepthPxCandidate
-                //         }
-                //         if (sourceDepthReferencePx <= 0) {
-                //             sourceDepthReferencePx = Math.max(1, Math.floor(syncLoupePlot3D.height))
-                //         }
-
-                //         const from2D = waterViewFirst.cursorFrom()
-                //         const to2D = waterViewFirst.cursorTo()
-                //         const has2DRange = isFinite(from2D) && isFinite(to2D) && Math.abs(to2D - from2D) > 0.0001
-                //         const cursorFrom = has2DRange ? from2D : renderer.syncLoupeDepthFrom
-                //         const cursorTo = has2DRange ? to2D : renderer.syncLoupeDepthTo
-                //         const centerDepth = waterViewFirst.getLoupeDepthForEpoch(previewEpoch)
-
-                //         syncLoupePlot3D.horizontal = waterViewFirst.horizontal
-                //         syncLoupePlot3D.plotDatasetChannelFromStrings(ch1Name, ch2Name)
-                //         syncLoupePlot3D.plotEchogramTheme(waterViewFirst.getThemeId())
-                //         syncLoupePlot3D.plotEchogramSetLevels(waterViewFirst.getLowEchogramLevel(), waterViewFirst.getHighEchogramLevel())
-                //         syncLoupePlot3D.plotEchogramCompensation(waterViewFirst.getEchogramCompensation())
-                //         syncLoupePlot3D.plotBottomTrackVisible(waterViewFirst.getBottomTrackVisible())
-                //         syncLoupePlot3D.plotBottomTrackTheme(waterViewFirst.getBottomTrackThemeId())
-                //         syncLoupePlot3D.plotRangefinderVisible(waterViewFirst.getRangefinderVisible())
-                //         syncLoupePlot3D.plotRangefinderTheme(waterViewFirst.getRangefinderThemeId())
-
-                //         syncLoupePlot3D.setCursorFromTo(cursorFrom, cursorTo)
-                //         syncLoupePlot3D.setTimelinePositionByEpochCentered(previewEpoch)
-                //         syncLoupePlot3D.setZoomPreviewSourceSize(previewSourceSize)
-                //         syncLoupePlot3D.setZoomPreviewReferenceDepthPixels(sourceDepthReferencePx)
-                //         syncLoupePlot3D.setZoomPreviewFlipY(renderer.syncLoupeFlipY)
-                //         syncLoupePlot3D.setZoomPreviewSourceByEpochDepth(previewEpoch, centerDepth)
-                //         syncLoupePlot3D.update()
-                //     }
-
-                //     onVisibleChanged: {
-                //         if (visible) {
-                //             refreshLoupePlot()
-                //         }
-                //     }
-
-                //     onWidthChanged: {
-                //         if (visible) {
-                //             refreshLoupePlot()
-                //         }
-                //     }
-
-                //     Connections {
-                //         target: renderer
-                //         function onSyncLoupeStateChanged() {
-                //             syncLoupeOverlay.refreshLoupePlot()
-                //         }
-                //     }
-
-                //     Connections {
-                //         target: waterViewFirst
-                //         function onTimelinePositionChanged() {
-                //             syncLoupeOverlay.refreshLoupePlot()
-                //         }
-                //         function onEchogramThemeChanged(themeId) {
-                //             syncLoupeOverlay.refreshLoupePlot()
-                //         }
-                //     }
-
-                //     Rectangle {
-                //         id: syncLoupeFrame
-                //         anchors.fill: parent
-                //         color: "black"
-                //         border.color: "#545E84"
-                //         border.width: Math.max(1, Math.round(2 * theme.resCoeff))
-                //         radius: Math.max(1, Math.round(2 * theme.resCoeff))
-                //         clip: true
-
-                //         WaterFall {
-                //             id: syncLoupePlot3D
-                //             objectName: "syncLoupe3DPlot"
-                //             anchors.fill: parent
-                //             anchors.margins: syncLoupeFrame.border.width
-                //             horizontal: true
-                //             enabled: false
-
-                //             Component.onCompleted: {
-                //                 core.registerSyncLoupePlot(syncLoupePlot3D)
-                //                 setZoomPreviewMode(true)
-                //                 plotAttitudeVisible(false)
-                //                 plotTemperatureVisible(false)
-                //                 plotDopplerBeamVisible(false, 0)
-                //                 plotDopplerInstrumentVisible(false)
-                //                 plotGNSSVisible(false, 0)
-                //                 plotAcousticAngleVisible(false)
-                //                 plotVelocityVisible(false)
-                //                 plotAngleVisibility(false)
-                //                 plotGridVerticalNumber(0)
-                //                 plotGridFillWidth(false)
-                //                 plotGridInvert(false)
-                //                 plotDistanceAutoRange(-1)
-                //                 plotEchogramCompensation(0)
-                //             }
-                //         }
-                //     }
-                // }
-
-                // Rectangle {
-                //     id: mosaicQualityBadge
-                //     visible: renderer.cameraPerspective &&
-                //              (dataset.spatialPreparing || (scene3DToolbar.showMosaicQualityLabel
-                //              && renderer.currentZoom > 0 && (scene3DToolbar.mosaicEnabled || renderer.updateSurface)))
-                //     readonly property int tileSidePx: 256
-                //     readonly property int heightMatrixRatio: 8
-                //     readonly property int mosaicCmPerPix: renderer.currentZoom > 0
-                //                             ? Math.pow(2, renderer.currentZoom - 1) : 0
-                //     readonly property int surfaceCmPerCell: mosaicCmPerPix > 0
-                //                        ? Math.round(mosaicCmPerPix * tileSidePx / heightMatrixRatio) : 0
-                //     color: "#00000080"
-                //     radius: 4
-                //     anchors.left: scene3DToolbar.right
-                //     anchors.verticalCenter: scene3DToolbar.verticalCenter
-                //     anchors.leftMargin: 8
-                //     z: 1000
-                //     implicitWidth: mosaicQualityText.implicitWidth + 12
-                //     implicitHeight: mosaicQualityText.implicitHeight + 8
-                //     opacity: 1.0
-
-                //     SequentialAnimation {
-                //         id: mosaicQualityPreparingAnimation
-                //         running: dataset.spatialPreparing
-                //         loops: Animation.Infinite
-                //         NumberAnimation { target: mosaicQualityBadge; property: "opacity"; to: 0.35; duration: 500 }
-                //         NumberAnimation { target: mosaicQualityBadge; property: "opacity"; to: 1.0;  duration: 500 }
-                //     }
-
-                //     onVisibleChanged: {
-                //         if (!visible) {
-                //             opacity = 1.0
-                //         }
-                //     }
-
-                //     Connections {
-                //         target: dataset
-                //         function onSpatialPreparingChanged() {
-                //             if (!dataset.spatialPreparing) {
-                //                 mosaicQualityBadge.opacity = 1.0
-                //             }
-                //         }
-                //     }
-
-                //     Text {
-                //         id: mosaicQualityText
-                //         text: {
-                //             if (dataset.spatialPreparing) {
-                //                 return qsTr("Data prepairing...")
-                //             }
-                //             var parts = [];
-                //             if (renderer.currentZoom > 0 && scene3DToolbar.mosaicEnabled) {
-                //                 parts.push(qsTr("Mosaic: ") + mosaicQualityBadge.mosaicCmPerPix + qsTr(" cm/pix"));
-                //             }
-                //             if (renderer.currentZoom > 0 && renderer.updateSurface) {
-                //                 parts.push(qsTr("Surface: ") + mosaicQualityBadge.surfaceCmPerCell + qsTr(" cm/cell"));
-                //             }
-                //             return parts.join("\n");
-                //         }
-                //         color: "#ffffff"
-                //         font: theme.textFont
-                //         anchors.centerIn: parent
-                //     }
-                // }
-                // CContact {
-                //     id: contactDialog
-                //     visible: false
-                //     offsetOpacityArea: 20
-
-                //     onInputAccepted: {
-                //         contacts.setContact(contactDialog.indx, contactDialog.inputFieldText)
-                //     }
-                //     onSetActiveButtonClicked: {
-                //         contacts.setActiveContact(contactDialog.indx)
-                //     }
-                //     onSetButtonClicked: {
-                //         contacts.setContact(contactDialog.indx, contactDialog.inputFieldText)
-                //     }
-                //     onDeleteButtonClicked: {
-                //         contacts.deleteContact(contactDialog.indx)
-                //     }
-                //     onCopyButtonClicked: {
-                //         contacts.update()
-                //     }
-                // }
 
                 Connections {
                     id: contactConnections
@@ -1723,17 +1494,17 @@ ApplicationWindow  {
                      // 正常分窗或声呐全屏模式
                      return visualisationLayout.landscapeMode ?
                             (visualisationLayout.splitMode === 0 ? visualisationLayout.handlePaneLength : 0) : 0
-                 }
-                 y: {
-                     if (visualisationLayout.splitMode === 2) {
-                         // 地图全屏模式：声呐小窗在右下角
-                         return visualisationLayout.height - visualisationLayout.cornerWindowHeight - 10
-                     }
-                     return visualisationLayout.landscapeMode ?
+                }
+                y: {
+                    if (visualisationLayout.splitMode === 2) {
+                        // 地图全屏模式：声呐小窗在右下角
+                        return visualisationLayout.height - visualisationLayout.cornerWindowHeight - 10
+                    }
+                    return visualisationLayout.landscapeMode ?
                             0 : (visualisationLayout.splitMode === 0 ? visualisationLayout.handlePaneLength : 0)
-                 }
-                 z: visualisationLayout.splitMode === 2 ? 10 : 1
-                 width: {
+                }
+                z: visualisationLayout.splitMode === 2 ? 10 : 1
+                width: {
                     if (visualisationLayout.splitMode === 2) {
                         // 地图全屏模式：声呐小窗固定宽度
                         return visualisationLayout.cornerWindowWidth
@@ -1742,8 +1513,8 @@ ApplicationWindow  {
                     return visualisationLayout.landscapeMode ? (visualisationLayout.splitMode === 0
                                ? Math.max(0, visualisationLayout.width - visualisationLayout.handlePaneLength)
                                : visualisationLayout.width) : visualisationLayout.width
-                 }
-                 height: {
+                }
+                height: {
                     if (visualisationLayout.splitMode === 2) {
                         // 地图全屏模式：声呐小窗固定高度
                         return visualisationLayout.cornerWindowHeight
@@ -1751,7 +1522,7 @@ ApplicationWindow  {
                     // 正常分窗或声呐全屏模式
                     return visualisationLayout.landscapeMode ? visualisationLayout.height : (visualisationLayout.splitMode === 0
                         ? Math.max(0, visualisationLayout.height - visualisationLayout.handlePaneLength) : visualisationLayout.height)
-                 }
+                }
 
                 GridLayout {
                     anchors.fill: parent
@@ -1873,7 +1644,6 @@ ApplicationWindow  {
                         barWidth: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
                         onMoved: core.resetAim();
-
                     }
                 }
             }
@@ -1889,10 +1659,10 @@ ApplicationWindow  {
 
 
     MainMenuBar {
-        id:                menuBar
-        objectName:        "menuBar"
+        id: menuBar
+        objectName: "menuBar"
         Layout.fillHeight: true
-        Keys.forwardTo:    [splitLayer, mousearea3D]
+        Keys.forwardTo: [splitLayer, mousearea3D]
         height: visualisationLayout.height
         Component.onCompleted: {
             menuBar.targetPlot = waterViewFirst

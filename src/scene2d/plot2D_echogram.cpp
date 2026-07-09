@@ -308,7 +308,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     p->setPen(textPen);
 
     QFont font = p->font();
-    font.setPixelSize(16);
+    font.setPixelSize(infoBarHeight * 0.2);
     font.setBold(true);
     p->setFont(font);
 
@@ -555,7 +555,11 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
         canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, image_width - cash_position, image_height);
         canvas.painter()->drawPixmap(image_width - cash_position, 0, _pixmap, 0, 0, cash_position, image_height);
 
-        drawLatestWavePixel(parent, image_width, WAVE_PIXEL_WIDTH, image_height);
+        int wavePanelWidth = image_width / (WAVE_WIDTH_RATIO_DENOM - 1);
+        if(wavePanelWidth < 1) {
+            wavePanelWidth = 1;
+        }
+        drawLatestWavePixel(parent, image_width, wavePanelWidth, image_height);
     }
 
     return true;

@@ -17,8 +17,7 @@ typedef struct
 }StructSonarInfo;
 
 #define COLOR_LINE 7   //偏移量
-#define WAVE_PIXEL_WIDTH 36
-
+#define WAVE_WIDTH_RATIO_DENOM 25
 class Plot2DEchogram : public PlotLayer {
 public:
     enum ThemeId {

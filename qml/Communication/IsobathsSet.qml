@@ -1073,7 +1073,10 @@ Item {
 
                                     onClicked: {
                                         flashAnim11.restart()
-                                        core.location(1)
+                                        if(switchControl.isOn) {
+                                            core.location(1)
+                                        }
+
                                     }
 
                                     onEntered: parent.color = "#d6e6ff"

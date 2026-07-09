@@ -457,13 +457,6 @@ void Plot2D::setGridVetricalNumber(int grids)
     plotUpdate();
 }
 
-void Plot2D::setGridFillWidth(bool state)
-{
-    // qDebug() << "Plot2D::setGridFillWidth.........";
-    grid_.setFillWidth(state);
-    plotUpdate();
-}
-
 void Plot2D::setGridInvert(bool state)
 {
     // qDebug() << "Plot2D::setGridInvert.........";
@@ -483,13 +476,6 @@ void Plot2D::setAngleRange(int angleRange)
     // qDebug() << "Plot2D::setAngleRange.........";
     cursor_.attitude.from = static_cast<float>(-angleRange);
     cursor_.attitude.to = static_cast<float>(angleRange);
-    plotUpdate();
-}
-
-void Plot2D::setVelocityVisible(bool visible)
-{
-    // qDebug() << "Plot2D::setVelocityVisible.........";
-    grid_.setVelocityVisible(visible);
     plotUpdate();
 }
 

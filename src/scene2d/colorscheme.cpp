@@ -20,12 +20,14 @@ ZyColorScheme::~ZyColorScheme(){}
 void ZyColorScheme::loadColorScheme(QString fileName)
 {
     /*--文件是否存在--*/
-    if(!fileName.isEmpty())
-    {
-        readColorToColorList(fileName);
+    // if(!fileName.isEmpty())
+    // {
+    //     readColorToColorList(fileName);
 
-        getColorFromColorList();
-    }
+    //     getColorFromColorList();
+    // }
+
+    initDefaultColorList();
 }
 void ZyColorScheme::saveColorScheme()
 {
@@ -70,27 +72,33 @@ void ZyColorScheme::readColorToColorList(QString fileName)
     /*-自定义配色表读取-*/
     colorList_surface.clear();
     selfColor.beginGroup("surface");
+    qDebug() << "11111111111111111selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
     for(int i=0;i<selfColor.value("count",0).toInt();i++) {
         tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
         tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
+        qDebug() << "tmp.colorPosition:" << tmp.colorPosition  << "  tmp.colorValue" << tmp.colorValue;
         colorList_surface.append(tmp);
     }
     selfColor.endGroup();
 
     colorList_fish.clear();
     selfColor.beginGroup("fish");
+    qDebug() << "22222222222222222selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
     for(int i=0;i<selfColor.value("count",0).toInt();i++) {
         tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
         tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
+        qDebug() << "tmp.colorPosition:" << tmp.colorPosition  << "  tmp.colorValue" << tmp.colorValue;
         colorList_fish.append(tmp);
     }
     selfColor.endGroup();
 
     colorList_bottom.clear();
     selfColor.beginGroup("bottom");
+    qDebug() << "3333333333333333selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
     for(int i=0;i<selfColor.value("count",0).toInt();i++) {
         tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
         tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
+        qDebug() << "tmp.colorPosition:" << tmp.colorPosition  << "  tmp.colorValue" << tmp.colorValue;
         colorList_bottom.append(tmp);
     }
     selfColor.endGroup();
@@ -271,6 +279,113 @@ void ZyColorScheme::getColorFromColorList_2()
     for(int i = 0;i < 255; i++) {
         colorScheme_bottom_2[i] = GradientImage.pixel(99,i+1)&0x00FFFFFF;
     }
+}
+
+void ZyColorScheme::initDefaultColorList()
+{
+    StructColorList tmp;
+
+    //==============================
+    // surface
+    //==============================
+    colorList_surface.clear();
+
+    tmp.colorPosition = 0;
+    tmp.colorValue = 2908582;
+    colorList_surface.append(tmp);
+
+    tmp.colorPosition = 207;
+    tmp.colorValue = 16711680;
+    colorList_surface.append(tmp);
+
+    tmp.colorPosition = 110;
+    tmp.colorValue = 16776960;
+    colorList_surface.append(tmp);
+
+    tmp.colorPosition = 50;
+    tmp.colorValue = 65280;
+    colorList_surface.append(tmp);
+
+    tmp.colorPosition = 255;
+    tmp.colorValue = 0;
+    colorList_surface.append(tmp);
+
+
+    //==============================
+    // fish
+    //==============================
+    colorList_fish.clear();
+
+    tmp.colorPosition = 0;
+    tmp.colorValue = 671120;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 0;
+    tmp.colorValue = 0;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 14;
+    tmp.colorValue = 8289918;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 41;
+    tmp.colorValue = 3249152;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 64;
+    tmp.colorValue = 4376576;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 102;
+    tmp.colorValue = 16766730;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 153;
+    tmp.colorValue = 8026746;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 251;
+    tmp.colorValue = 16711680;
+    colorList_fish.append(tmp);
+
+    tmp.colorPosition = 255;
+    tmp.colorValue = 0;
+    colorList_fish.append(tmp);
+
+
+
+    //==============================
+    // bottom
+    //==============================
+    colorList_bottom.clear();
+
+    tmp.colorPosition = 0;
+    tmp.colorValue = 2934783;
+    colorList_bottom.append(tmp);
+
+    tmp.colorPosition = 1;
+    tmp.colorValue = 0;
+    colorList_bottom.append(tmp);
+
+    tmp.colorPosition = 31;
+    tmp.colorValue = 4932869;
+    colorList_bottom.append(tmp);
+
+    tmp.colorPosition = 69;
+    tmp.colorValue = 9073930;
+    colorList_bottom.append(tmp);
+
+    tmp.colorPosition = 104;
+    tmp.colorValue = 16768826;
+    colorList_bottom.append(tmp);
+
+    tmp.colorPosition = 255;
+    tmp.colorValue = 0;
+    colorList_bottom.append(tmp);
+
+
+    //重新生成255级颜色表
+    getColorFromColorList();
 }
 
 

@@ -234,6 +234,7 @@ public:
     void updateProjection();
     void setNeedToResetStartPos(bool state);
     void forceUpdateDatasetLlaRef();
+    void ensureInView(const QVector3D& worldPos);
 
     Q_INVOKABLE void switchToBottomTrackVertexComboSelectionMode(qreal x, qreal y);
     Q_INVOKABLE void mousePressTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);

@@ -14,6 +14,7 @@ Item {
     property int  layoutHeight:    bleSize * 0.1
     property int  iconSize:        bleSize * 0.06
     property bool isShowDataPanel: false
+    property bool isOn:            false
 
     onVisibleChanged: {
         BleManager.setBleLiveScanningVisible(visible)
@@ -22,7 +23,7 @@ Item {
     Connections {
         target: BleManager
         function onConnectedChanged(connected) {
-            switchControl.isOn = connected
+            isOn = connected
             readControl.isReading  = connected
             root.isShowDataPanel = true
             // root.visible = false
@@ -127,11 +128,14 @@ Item {
 
                             onClicked: {
                                 flashAnim1.restart()
-                                core.location(1)
+
+                                if(isOn) {
+                                    core.location(1)
+                                }
                             }
 
                             onEntered: parent.color = "#d6e6ff"
-                            onExited: parent.color = "#f9f9fb"
+                            onExited:  parent.color = "#f9f9fb"
                         }
                     }
 
@@ -237,9 +241,8 @@ Item {
                             width:  layoutHeight * 2.2
                             height: layoutHeight
                             radius: layoutHeight * 0.3
-                            color:  hovered ? (switchControl.isOn ? "#36D85A" : "#D6E6FF")
-                                            : (switchControl.isOn?  "#66E07A" : "#D0D0D2")
-                            property bool isOn: false
+                            color:  hovered ? (isOn ? "#36D85A" : "#D6E6FF") : (isOn?  "#66E07A" : "#D0D0D2")
+
                             property bool hovered: false
 
                             // 滑块
@@ -249,7 +252,7 @@ Item {
                                 height: layoutHeight * 0.9
                                 radius: layoutHeight * 0.45
                                 anchors.verticalCenter: parent.verticalCenter
-                                x: switchControl.isOn ? parent.width-width-2 : 2
+                                x: isOn ? parent.width-width-2 : 2
                                 color: "#FAFAFA"
                                 scale: mouse1Area.pressed ? 0.9 : 1.0
 
@@ -270,7 +273,7 @@ Item {
                                 text: qsTr("ON")
                                 font.pixelSize: iconSize * 0.8
                                 font.bold: true
-                                visible: switchControl.isOn
+                                visible: isOn
                                 Behavior on opacity { NumberAnimation { duration: 150 } }
                             }
 
@@ -283,7 +286,7 @@ Item {
                                 text: qsTr("OFF")
                                 font.pixelSize: iconSize * 0.8
                                 font.bold: true
-                                visible: !switchControl.isOn
+                                visible: !isOn
                                 Behavior on opacity { NumberAnimation { duration: 150 } }
                             }
 
@@ -292,8 +295,8 @@ Item {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 onClicked: {
-                                    if(switchControl.isOn) {
-                                        switchControl.isOn = false;
+                                    if(isOn) {
+                                        isOn = false;
                                         BleManager.operateBleOnOff(false)
                                     } else {
                                         BleManager.operateBleOnOff(true)
@@ -430,9 +433,9 @@ Item {
 
                         readonly property bool noDevices: (modelData === qsTr("No Devices Found"))
 
-                        border.width: noDevices ? 1 : (switchControl.isOn ? 2 : 1)
-                        border.color: noDevices ? "#ecf0f1" : (switchControl.isOn ? "#3498db" : "#ecf0f1")
-                        color: noDevices ? "white" : (switchControl.isOn ? "#d6eaf8" : (mouseArea2.containsMouse ? "#d6e6ff" : "white"))
+                        border.width: noDevices ? 1 : (isOn ? 2 : 1)
+                        border.color: noDevices ? "#ecf0f1" : (isOn ? "#3498db" : "#ecf0f1")
+                        color: noDevices ? "white" : (isOn ? "#d6eaf8" : (mouseArea2.containsMouse ? "#d6e6ff" : "white"))
 
                         RowLayout {
                             anchors.fill: parent
@@ -448,8 +451,8 @@ Item {
                             }
                             Text {
                                 visible: !noDevices
-                                text: switchControl.isOn ? qsTr("Connected") : qsTr("Disconnected")
-                                color: switchControl.isOn ? "#36D85A" : "#7f8c8d"
+                                text: isOn ? qsTr("Connected") : qsTr("Disconnected")
+                                color: isOn ? "#36D85A" : "#7f8c8d"
                                 font.pixelSize: iconSize * 0.6
                                 verticalAlignment: Text.AlignVCenter
                             }

@@ -1,6 +1,5 @@
 #include "plot2D_grid.h"
 #include "plot2D.h"
-#include "console.h"
 
 Plot2DGrid::Plot2DGrid() : angleVisibility_(false)
 {}
@@ -12,33 +11,31 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
 
     if (!isVisible())  return false;
 
+    const int imageHeight = canvas.height();
+    const int imageWidth  = canvas.width();
+    const int linesCount  = 6;
+    const int minorPerMajor = 5;
+
     QPen pen(Qt::white);
     QPainter* p = canvas.painter();
     p->setPen(pen);
     QFont font = p->font();
-    font.setPixelSize(10);
+    font.setPixelSize(imageHeight * 0.02);
     QFontMetrics fm(font);
-
-    const int imageHeight = canvas.height();
-    const int imageWidth  = canvas.width();
-    const int linesCount  = 6;
-    const int textXOffset = 25;
-    const int minorPerMajor = 5;
 
     float distFrom = 0.0f, distTo = 0.0f;
     bool rangeValid = false;
     if(cursor.distance.isValid()) {
-        distFrom   = loRngMin_ / 100.0;
-        distTo     = loRngMax_ / 100.0;
+        distFrom = loRngMin_ / 100.0;
+        distTo   = loRngMax_ / 100.0;
         rangeValid = distTo > distFrom;
     }
 
-    // ====== 小刻度（先画，避免被大刻度覆盖） ======
+    // ========== 小刻度（先画，避免被大刻度覆盖） ============
     if (rangeValid) {
-        pen.setWidth(1);
-        const int minorLen = 8;   //小刻度线长度
-
-        for (int i = 0; i < linesCount; ++i) {
+        pen.setWidth(2);
+        const int minorLen = imageHeight * 0.01;   //小刻度线长度
+        for(int i = 0; i < linesCount; ++i) {
             int majorY1 = i * imageHeight / linesCount;
             int majorY2 = (i + 1) * imageHeight / linesCount;
             for (int j = 1; j < minorPerMajor; ++j) {
@@ -46,7 +43,8 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
                 if (posY <= 0 || posY >= imageHeight) continue;
                 if (invert_) {
                     p->drawLine(0, posY, minorLen, posY);
-                } else {
+                }
+                else {
                     p->drawLine(imageWidth - minorLen, posY, imageWidth, posY);
                 }
             }
@@ -54,39 +52,39 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
     }
 
 
-    pen.setWidth(2);
+    pen.setWidth(3);
     p->setPen(pen);
-    for (int i = 0; i <= linesCount; ++i) {
+    for(int i = 0; i <= linesCount; ++i) {
         const int posY = i * imageHeight / linesCount;
 
         QString lineText;
-        if (rangeValid) {
-            const float distRange{ distTo - distFrom };
-            const float rangeVal{ distRange * i / linesCount + distFrom };
+        if(rangeValid) {
+            const float distRange{distTo - distFrom};
+            const float rangeVal{distRange * i / linesCount + distFrom};
             lineText = QString::number(rangeVal, 'f', 1) + "m";
         }
 
-        const int textW = fm.horizontalAdvance(lineText);
+        const int textW = fm.horizontalAdvance(lineText) * 0.8;
 
-        if (isFillWidth()) {
-            p->drawLine(0, posY, imageWidth, posY);
-        } else {
-            if (invert_) {
-                p->drawLine(0, posY, textW + textXOffset, posY);
-            } else {
-                p->drawLine(imageWidth - textW - textXOffset, posY, imageWidth, posY);
-            }
+        if(invert_) {
+            p->drawLine(0, posY, textW, posY);
+        }
+        else {
+            p->drawLine(imageWidth-textW, posY, imageWidth, posY);
         }
 
-        if (!lineText.isEmpty()) {
+        if(!lineText.isEmpty()) {
             int textY = posY - 4;
-            if (i == 0)             textY = posY + fm.ascent() + 2;        // 顶部刻度文本往下偏移
-            if (i == linesCount)    textY = posY - fm.descent() - 2;       // 底部刻度文本往上偏移
-            const int textX = invert_ ? textXOffset : (imageWidth - textW - textXOffset);
+            if(i == 0)           textY = posY + fm.ascent() + 2;        //顶部刻度文本往下偏移
+            if(i == linesCount)  textY = posY - fm.descent() - 2;       //底部刻度文本往上偏移
+            const int textX = invert_ ? textW * 0.1 : (imageWidth-textW);
             p->drawText(textX, textY, lineText);
         }
     }
 
+    if (!invert_) {
+        p->drawLine(imageWidth, 0, imageWidth, imageHeight);
+    }
 
     // // 图像深度
     // if (cursor.distance.isValid()) {

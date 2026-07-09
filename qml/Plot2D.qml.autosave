@@ -673,8 +673,6 @@ WaterFall {
 
                     }
 
-
-
                     CCheck {
                         id: horisontalVertical
                         checked: true

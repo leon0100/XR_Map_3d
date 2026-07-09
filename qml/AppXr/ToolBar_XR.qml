@@ -490,7 +490,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: theme.batteryValue * 100.0 + "%"
+                    text: Math.floor(theme.batteryValue * 100.0) + "%"
                     color: "white"
                     font.pixelSize: toolBar_XR.iconSize * 0.55
                     verticalAlignment: Text.AlignVCenter

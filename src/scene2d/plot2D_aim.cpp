@@ -60,52 +60,48 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
         p->drawLine(cursor.mouseX, 0, cursor.mouseX, canvas.height());
     }
 
-    float canvas_height  = static_cast<float>(canvas.height());
-    float value_range    = cursor.distance.to - cursor.distance.from;
-    float value_scale    = float(cursor.mouseY) / canvas_height;
-    float cursor_distance = value_scale * value_range + cursor.distance.from;
+    // float canvas_height  = static_cast<float>(canvas.height());
+    // float value_range    = cursor.distance.to - cursor.distance.from;
+    // float value_scale    = float(cursor.mouseY) / canvas_height;
+    // float cursor_distance = value_scale * value_range + cursor.distance.from;
 
     p->setCompositionMode(QPainter::CompositionMode_SourceOver);
 
-    QString distanceText = QString(QObject::tr("%1 m")).arg(cursor_distance, 0, 'g', 4);
-    QString text = distanceText;
-
+    // QString distanceText = QString(QObject::tr("%1 m")).arg(cursor_distance, 0, 'g', 4);
+    // QString text = distanceText;
+    QString text;
     auto [channelId, subIndx, name] = parent->getSelectedChannelId();
 
-    if (channelId != CHANNEL_NONE) {
-        text += "\n" + QObject::tr("Channel: ") + QString("%1").arg(name);
-    }
+    // if (channelId != CHANNEL_NONE) {
+    //     text += "\n" + QObject::tr("Channel: ") + QString("%1").arg(name);
+    // }
 
     if (cursor.currentEpochIndx != -1) {
-        text += "\n" + QObject::tr("Epoch: ") + QString::number(cursor.currentEpochIndx);
-
-        if (auto* ep = dataset->fromIndex(cursor.currentEpochIndx); ep) {
-            if (auto* echogram = ep->chart(channelId, subIndx); echogram) {
-                //qDebug() << "errs[" << cursor.currentEpochIndx << "]:"<< echogram->chartParameters_.errList;
-                //qDebug() << "size[" << cursor.currentEpochIndx << "]:"<< echogram->amplitude.size();
-                //qDebug() << "RES[" << cursor.currentEpochIndx << "]:" << echogram->resolution;
-
-                if (!echogram->recordParameters_.isNull()) {
-                    auto& recParams = echogram->recordParameters_;
-                    QString boostStr = recParams.boost ? QObject::tr("ON") : QObject::tr("OFF");
-                    text += "\n" + QObject::tr("Resolution, mm: ")      + QString::number(recParams.resol);
-                    //text += "\n" + QObject::tr("Number of Samples: ") + QString::number(recParams.count);
-                    //text += "\n" + QObject::tr("Offset of samples: ")     + QString::number(recParams.offset);
-                    text += "\n" + QObject::tr("Frequency, kHz: ")      + QString::number(recParams.freq);
-                    text += "\n" + QObject::tr("Pulse count: ")         + QString::number(recParams.pulse);
-                    text += "\n" + QObject::tr("Booster: ")             + boostStr;
-                    text += "\n" + QObject::tr("Speed of sound, m/s: ") + QString::number(recParams.soundSpeed / 1000);
-                }
+        // text += "\n" + QObject::tr("Epoch: ") + QString::number(cursor.currentEpochIndx);
+        if (Epoch* ep = dataset->fromIndex(cursor.currentEpochIndx); ep) {
+            if (Epoch::Echogram* echogram = ep->chart(channelId, subIndx); echogram) {
+                float depth   = echogram->chartParameters_.depth / 100.0f;
+                float heading = echogram->chartParameters_.heading / 10.0f;
+                // float speed   = echogram->chartParameters_.speed / 100 * 0.514444f;
+                float lat     = echogram->chartParameters_.latitude;
+                float lon     = echogram->chartParameters_.longitude;
+                float temp    = (echogram->chartParameters_.temperature / 10.0f - 32) / 1.8f;
+                text += QObject::tr("Depth: ") + QString::number(depth, 'f', 2)  + "m";
+                text += "\n" + QObject::tr("E: ") + QString::number(lon, 'f', 6) + "°";
+                text += "\n" + QObject::tr("N: ") + QString::number(lat, 'f', 6) + "°";
+                text += "\n" + QObject::tr("Heading: ") + QString::number(heading, 'f',1) + "°";
+                // text += "\n" + QObject::tr("Speed: ") + QString::number(speed, 'f', 2)  + "m/s";
+                text += "\n" + QObject::tr("Tempture: ") + QString::number(temp, 'f', 1) + QString::fromUtf8("\xE2\x84\x83");
             }
         }
     }
 
     QRect textRect = p->fontMetrics().boundingRect(QRect(0, 0, 9999, 9999), Qt::AlignLeft | Qt::AlignTop, text);
 
-    int xShift    = 50 * scaleFactor_;
-    int yShift    = 40 * scaleFactor_;
-    int xCheck    = xShift + 15 * scaleFactor_;
-    int yCheck    = yShift + 15 * scaleFactor_;
+    int xShift = 50 * scaleFactor_;
+    int yShift = 40 * scaleFactor_;
+    int xCheck = 65 * scaleFactor_;
+    int yCheck = 55 * scaleFactor_;
 
     bool onTheRight = (p->window().width() - cursor.mouseX - xCheck) < textRect.width();
 
@@ -119,26 +115,22 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
 
     QPoint shiftedPoint;
     if (!placeAbove) {
-        shiftedPoint = onTheRight
-                           ? QPoint(cursor.mouseX - xShift - textRect.width(), cursor.mouseY - yShift - textRect.height())
-                           : QPoint(cursor.mouseX + xShift, cursor.mouseY - yShift - textRect.height());
+        shiftedPoint = onTheRight ? QPoint(cursor.mouseX-xShift-textRect.width(), cursor.mouseY-yShift-textRect.height())
+                        : QPoint(cursor.mouseX+xShift, cursor.mouseY-yShift-textRect.height());
     }
     else {
-        shiftedPoint = onTheRight
-                           ? QPoint(cursor.mouseX - xShift - textRect.width(), cursor.mouseY + yShift)
-                           : QPoint(cursor.mouseX + xShift, cursor.mouseY + yShift);
+        shiftedPoint = onTheRight ? QPoint(cursor.mouseX-xShift-textRect.width(), cursor.mouseY+yShift)
+                        : QPoint(cursor.mouseX+xShift, cursor.mouseY+yShift);
     }
 
     textRect.moveTopLeft(shiftedPoint);
 
-    // back
     p->setPen(Qt::NoPen);
     p->setBrush(QColor(45, 45, 45));
     int margin = 5 * scaleFactor_;
     QRect backgroundRect = textRect.adjusted(-margin, -margin, margin, margin);
     p->drawRect(backgroundRect);
 
-    // text
     p->setPen(QColor(255,255,255));
     p->drawText(textRect, Qt::AlignLeft | Qt::AlignTop, text);
 

@@ -818,6 +818,33 @@ void GraphicsScene3dView::forceUpdateDatasetLlaRef()
     QQuickFramebufferObject::update();
 }
 
+
+void GraphicsScene3dView::ensureInView(const QVector3D& worldPos)
+{
+    if (!m_camera) {
+        return;
+    }
+
+    const QVector3D lookAt = m_camera->m_lookAt;
+    const float dx = worldPos.x() - lookAt.x();
+    const float dy = worldPos.y() - lookAt.y();
+    const float dist = std::sqrt(dx * dx + dy * dy);
+
+    float viewRadius;
+    if (m_camera->getIsPerspective()) {
+        const float halfFovRad = m_camera->fov() * 0.5f * M_PI / 180.0f;
+        viewRadius = m_camera->distToFocusPoint() * std::tan(halfFovRad);
+    } else {
+        viewRadius = m_camera->distToFocusPoint() * 0.5f;
+    }
+
+    if ((viewRadius > 0) && (dist >= viewRadius)) {
+        m_camera->focusOnPosition(QVector3D(worldPos.x(), worldPos.y(), lookAt.z()));
+        QQuickFramebufferObject::update();
+        emit cameraIsMoved();
+    }
+}
+
 void GraphicsScene3dView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickFramebufferObject::geometryChanged(newGeometry, oldGeometry);
@@ -839,7 +866,7 @@ void GraphicsScene3dView::fitAllInView()
 {
     auto maxSize = std::max(m_bounds.width(), std::max(m_bounds.height(), m_bounds.length()));
 
-    auto d = (maxSize/2.0f)/(std::tan(m_camera->fov()/2.0f)) * 2.0f;
+    auto d = (maxSize/2.0f)/(std::tan(m_camera->fov() * 0.5f)) * 2.0f;
 
     if(d>0) m_camera->setDistance(d);
 

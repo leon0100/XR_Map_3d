@@ -126,11 +126,9 @@ public slots:
     void plotAcousticAngleVisible(bool visible) { setAcousticAngleVisible(visible); }
 
     void plotGridVerticalNumber(int grids) { setGridVetricalNumber(grids); }
-    void plotGridFillWidth(bool state) { setGridFillWidth(state); };
     void plotGridInvert(bool state) { setGridInvert(state); };
     void plotAngleVisibility(bool state)   { setAngleVisibility(state); }
     void plotAngleRange(int angleRange) { setAngleRange(angleRange); }
-    void plotVelocityVisible(bool visible) { setVelocityVisible(visible); }
     void plotVelocityRange(float velocity) { setVelocityRange(velocity); }
 
     void plotDistanceAutoRange(int auto_range_type) { setDistanceAutoRange(auto_range_type); }

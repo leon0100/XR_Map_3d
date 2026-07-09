@@ -106,12 +106,10 @@ public:
     void setAcousticAngleVisible(bool visible);
 
     void setGridVetricalNumber(int grids);
-    void setGridFillWidth(bool state);
     void setGridInvert(bool state);
     void setAngleVisibility(bool state);
     void setAngleRange(int angleRange);
 
-    void setVelocityVisible(bool visible);
     void setVelocityRange(float velocity);
     void setDistanceAutoRange(int auto_range_type);
 

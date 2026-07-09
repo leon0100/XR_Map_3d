@@ -842,6 +842,37 @@ void Core::setTimelinePosition(double position)
         if (plot2dList_.at(i) != NULL)
             plot2dList_.at(i)->setTimelinePosition(position);
     }
+
+    if(scene3dViewPtr_ && datasetPtr_ && datasetPtr_->size() > 0) {
+        int dataSize = datasetPtr_->size();
+        int epochIndex = qRound(position * (dataSize - 1));
+        if(epochIndex < 0) {
+            epochIndex = 0;
+        }
+        if(epochIndex >= dataSize)  {
+            epochIndex = dataSize - 1;
+        }
+
+        if(auto navArrow = scene3dViewPtr_->getNavigationArrowPtr()) {
+            if(Epoch* ep = datasetPtr_->fromIndex(epochIndex); ep) {
+                const Position boatPos = ep->getPositionGNSS();
+                if(boatPos.ned.isCoordinatesValid()) {
+                    float yawDeg = ep->yaw();
+                    if(!std::isfinite(yawDeg)) {
+                        yawDeg = datasetPtr_->getLastYaw();
+                    }
+                    if(std::isfinite(yawDeg)) {
+                        navArrow->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e,
+                                   !std::isfinite(boatPos.ned.d) ? 0.0f : boatPos.ned.d), yawDeg - 90.0f);
+                        if(navArrow->isVisible()) {
+                            scene3dViewPtr_->ensureInView(QVector3D(boatPos.ned.n, boatPos.ned.e, 0.0f));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 void Core::resetAim()

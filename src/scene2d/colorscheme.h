@@ -32,6 +32,7 @@ public:
 
     void loadColorScheme(QString fileName);
     void saveColorScheme();
+
     void readColorToColorList(QString fileName);
     void getColorFromColorList();
 
@@ -39,6 +40,8 @@ public:
     void saveColorScheme_2();
     void readColorToColorList_2(QString fileName);
     void getColorFromColorList_2();
+
+    void initDefaultColorList();
 
 
     /*---------------------------------*色表*---------------------------------*/
