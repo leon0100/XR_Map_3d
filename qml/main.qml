@@ -16,10 +16,11 @@ import AppXr 1.0
 ApplicationWindow  {
     id:            mainview
     visible:       true
-    width:         1024 // 21:9
+    width:         theme.screenSize * 2
     minimumWidth:  512
-    height:        512
+    height:        theme.screenSize
     minimumHeight: 256
+    visibility: Window.FullScreen
     color:         "black"
     title:         qsTr("XR-Viewer")
 
@@ -32,7 +33,7 @@ ApplicationWindow  {
 
     Settings {
         id: appSettings
-        property bool isFullScreen: false
+        property bool isFullScreen: trues
         property real sceneSplitRatio: 0.5
     }
 
