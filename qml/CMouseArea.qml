@@ -1,6 +1,7 @@
 import QtQuick 2.15
-
 import AppXr 1.0
+
+
 
 MouseArea {
     id: hoverArea

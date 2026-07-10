@@ -229,6 +229,8 @@ public:
     Q_PROPERTY(bool googleExist     READ getGoogleExist      WRITE setGoogleExist      NOTIFY bootConfigChanged);
     Q_PROPERTY(int mapSourceLoadVisible  READ getMapSourceLoadVisible  WRITE setMapSourceLoadVisible
                    NOTIFY mapSourceLoadVisibleChanged);
+    Q_PROPERTY(bool exportAsDataVisible  READ getExportAsDataVisible  WRITE setExportAsDataVisible
+                   NOTIFY exportAsDataVisibleChanged);
 
     Q_PROPERTY(double batteryValue       READ batteryValue       NOTIFY sysytemToolBarChanged)
     Q_PROPERTY(QString updateSystemTime  READ updateSysytemTime  NOTIFY sysytemToolBarChanged)
@@ -267,6 +269,8 @@ public:
     void setGoogleExist(bool googleExist);
     bool getMapSourceLoadVisible();
     void setMapSourceLoadVisible(bool visible);
+    bool getExportAsDataVisible();
+    void setExportAsDataVisible(bool visible);
 
     double batteryValue() const;
     QString updateSysytemTime() const;
@@ -321,6 +325,7 @@ signals:
     void instrumentsGradeChanged();
     void bootConfigChanged();
     void mapSourceLoadVisibleChanged();
+    void exportAsDataVisibleChanged();
     void sysytemToolBarChanged();
 
 
@@ -360,6 +365,7 @@ private:
     SoftwareParametersStru softwareParameters_;
 
     bool mapSourceLoadVisible_ = false;
+    bool exportAsDataVisible_ = false;
     QTimer m_batteryTimer;
     double m_batteryValue;
     QString m_currentTime;

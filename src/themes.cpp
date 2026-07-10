@@ -394,6 +394,21 @@ void Themes::setMapSourceLoadVisible(bool visible)
     emit mapSourceLoadVisibleChanged();
 }
 
+bool Themes::getExportAsDataVisible()
+{
+    return exportAsDataVisible_;
+}
+
+void Themes::setExportAsDataVisible(bool visible)
+{
+    if(exportAsDataVisible_ == visible) {
+        return;
+    }
+    exportAsDataVisible_ = visible;
+
+    emit exportAsDataVisibleChanged();
+}
+
 double Themes::batteryValue() const
 {
     return m_batteryValue;

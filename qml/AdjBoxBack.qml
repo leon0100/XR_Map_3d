@@ -1,5 +1,7 @@
 import QtQuick 2.15
 
+
+
 BackStyle {
     id: control
     property real titleWidth: 100

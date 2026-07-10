@@ -329,9 +329,6 @@ ColumnLayout
                             linkManagerWrapper.sendUpdateDestinationPort(Uuid, ipPort2Text.text)
                         }
 
-                        //Settings {
-                        //    property alias ipPortText: ipPort2Text.text
-                        //}
                     }
 
                     CButton {
@@ -403,24 +400,8 @@ ColumnLayout
             focus: true
 
             onCountChanged: {
-                // qDebug("sasa");
-                // console.log(filesList.count)
                 Qt.callLater( positionViewAtEnd )
             }
-
-            //                flickableDirection: Flickable.AutoFlickDirection
-
-            //                onCurrentIndexChanged: {
-            //                    console.log(filesList.currentIndex);
-            //                }
-
-            //                highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
-
-            //                onCountChanged: {
-            //                    if(consScrollEnable.checked) {
-            //                        Qt.callLater( positionViewAtEnd )
-            //                    }
-            //                }
 
             ScrollBar.vertical: ScrollBar { }
         }
@@ -486,9 +467,6 @@ ColumnLayout
             }
 
             icon.source: checked ? "qrc:/icons/ui/record_fill.svg": "qrc:/icons/ui/record.svg"
-
-            // ToolTip.visible: hovered
-            // ToolTip.text: "Recording"
         }
 
         CheckButton {
@@ -538,7 +516,6 @@ ColumnLayout
 
     ParamGroup {
         groupName: "CSV import"
-        // visible: importCheck.checked
         visible: true
         Layout.margins: 24
 
@@ -549,7 +526,6 @@ ColumnLayout
 
                 CCombo  {
                     id: separatorCombo
-                    //                    Layout.fillWidth: true
                     model: ["Comma", "Tab", "Space", "SemiColon"]
                     Settings {
                         property alias separatorCombo: separatorCombo.currentIndex
@@ -580,8 +556,6 @@ ColumnLayout
         RowLayout {
             CCheck {
                 id: timeEnable
-                //                    Layout.fillWidth: true
-                //                        Layout.preferredWidth: 150
                 checked: true
                 text: "Time"
 
@@ -589,14 +563,6 @@ ColumnLayout
                     property alias importCSVtimeEnable: timeEnable.checked
                 }
             }
-
-            //                CTextField {
-            //                    id: timeFormater
-            //                    text: "yyyy-MM-dd hh:mm:ss,zzz"
-            //                    Settings {
-            //                        property alias importCSVtimeFormater: timeFormater.text
-            //                    }
-            //                }
 
             SpinBoxCustom {
                 id:timeColumn
@@ -613,7 +579,6 @@ ColumnLayout
 
             CCombo  {
                 id: utcGpsCombo
-                //                    Layout.fillWidth: true
                 model: ["UTC time", "GPS time"]
 
                 Settings {
@@ -627,7 +592,6 @@ ColumnLayout
             CCheck {
                 id: latLonEnable
                 Layout.fillWidth: true
-                //                        Layout.preferredWidth: 150
                 checked: true
                 text: "Lat/Lon/Alt"
 
@@ -680,7 +644,6 @@ ColumnLayout
             CCheck {
                 id: xyzEnable
                 Layout.fillWidth: true
-                //                        Layout.preferredWidth: 150
                 checked: true
                 text: "NEU"
 
@@ -734,8 +697,6 @@ ColumnLayout
                 id: importPathText
                 hoverEnabled: true
                 Layout.fillWidth: true
-                //                    visible: connectionTypeCombo.currentText === "File"
-
                 text: ""
                 placeholderText: qsTr("Enter path")
 
@@ -753,7 +714,6 @@ ColumnLayout
             CButton {
                 text: ".."
                 Layout.fillWidth: false
-                //visible: true // connectionTypeCombo.currentText === "File"
                 implicitHeight: theme.menuWidth
                 implicitWidth: implicitHeight*1.1
                 onClicked: importTrackFileDialog.open()
@@ -767,11 +727,11 @@ ColumnLayout
 
                     function openCSV() {
                         core.openCSV(importPathText.text, separatorCombo.currentIndex, firstRow.value,
-                                     timeColumn.value, utcGpsCombo.currentIndex === 0,
-                                     latColumn.value*latLonEnable.checked, lonColumn.value*latLonEnable.checked,
-                                     altColumn.value*latLonEnable.checked,
-                                     northColumn.value*xyzEnable.checked, eastColumn.value*xyzEnable.checked,
-                                     upColumn.value*xyzEnable.checked);
+                                timeColumn.value, utcGpsCombo.currentIndex === 0,
+                                latColumn.value*latLonEnable.checked, lonColumn.value*latLonEnable.checked,
+                                altColumn.value*latLonEnable.checked,
+                                northColumn.value*xyzEnable.checked, eastColumn.value*xyzEnable.checked,
+                                upColumn.value*xyzEnable.checked);
                     }
 
                     onAccepted: {
@@ -921,16 +881,12 @@ ColumnLayout
             backColor: theme.controlSolidBackColor
             borderWidth: 0
             implicitWidth: theme.menuWidth
-
             onClicked: newFileDialog.open()
 
             FileDialog {
                 id: newFileDialog
                 title: qsTr("Please choose a file")
-                // currentFolder: StandardPaths.writableLocation(StandardPaths.HomeLocation)
-
                 nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Toslon log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
-
                 onAccepted: {
                     const file = newFileDialog.selectedFile
                     if (!file) {
@@ -947,10 +903,6 @@ ColumnLayout
                 onRejected: {
                 }
             }
-
-            // Settings {
-            //     property alias logFolder: newFileDialog.currentFolder
-            // }
         }
 
         CheckButton {
@@ -967,25 +919,15 @@ ColumnLayout
             FileDialog {
                 id: appendFileDialog
                 title: qsTr("Please choose a file")
-                // currentFolder: StandardPaths.writableLocation(StandardPaths.HomeLocation)
-
                 nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Kogger log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
-
                 onAccepted: {
                     pathText.text = appendFileDialog.selectedFile.toString().replace("file:///", Qt.platform.os === "windows" ? "" : "/")
-
                     var name_parts = appendFileDialog.selectedFile.toString().split('.')
-
-                    //deviceManagerWrapper.sendOpenFile(pathText.text, true)
                     core.openLogFile(pathText.text, true, false);
                 }
                 onRejected: {
                 }
             }
-
-            // Settings {
-            //     property alias logFolder: appendFileDialog.currentFolder
-            // }
         }
 
         CheckButton {

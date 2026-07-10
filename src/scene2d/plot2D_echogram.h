@@ -35,14 +35,16 @@ public:
 
     float getLowLevel() const;
     float getHighLevel() const;
-    void setLowLevel(float low);
-    void setHightLevel(float high);
-    void setLevels(float low, float hight);
+    void  setLowLevel(float low);
+    void  setHightLevel(float high);
+    void  setLevels(float low, float hight);
 
     void setColorScheme(QVector<QColor> coloros, QVector<int> levels);
     int  getThemeId() const;
     void setThemeId(int theme_id);
     void setCompensation(int compensation_id);
+
+    void setBottomLineVisible(bool isVisible);
 
 
     // int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
@@ -115,6 +117,7 @@ protected:
 private:
     void stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale, int startIndx);
     void drawLatestWavePixel(Plot2D* parent, int panelX, int panelY, int height);
+    void drawBottomLine(Canvas canvas, int width, int cash_position, bool isVisible);
 
 
 
@@ -126,5 +129,6 @@ private:
 
     int currentUpRng_ = 0, currentLoRng_ = 3200;
     CashLine wavePixel_;
+    bool bottomLineVisible_ = false;
 
 };

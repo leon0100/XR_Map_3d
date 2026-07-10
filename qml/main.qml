@@ -111,17 +111,21 @@ ApplicationWindow  {
     }
 
     BleDataPanel {
-        visible: bleLivedataScaning.isShowDataPanel
+       visible: bleLivedataScaning.isShowDataPanel
     }
 
     MapTileLoad {
-        id: mapTileLoad
+       id: mapTileLoad
+    }
+
+    ExportAsData {
+
     }
 
     IsobathsSet {
         id: isobathsSet
         visible: true
-        x: Screen.width - isobathsSet.width
+        x: 2
         y: expandToolBar.iconSize * 4
         targetPlot: toolBarXR.targetPlot
     }

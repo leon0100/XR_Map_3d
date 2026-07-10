@@ -392,6 +392,18 @@ Rectangle {
         }
     }
 
+
+    Timer {
+        id: collapseTimer
+        interval: 5000
+        repeat: false
+        onTriggered: {
+            if(root.expanded) {
+                root.expanded = false
+            }
+        }
+    }
+
     MenuButton {
         id: handleBtn
         icon.source: root.expanded ? "qrc:/icons/ui/arrow_bar_to_down.svg" : "qrc:/XR/content.svg"
@@ -408,6 +420,12 @@ Rectangle {
 
         onPressed: {
             root.expanded = !root.expanded
+            if(root.expanded) {
+                collapseTimer.restart()
+            }
+            else {
+                collapseTimer.stop()
+            }
         }
 
     }
@@ -464,6 +482,7 @@ Rectangle {
                 onPressed: {
                     screenMode = !screenMode
                     renderer.setScreenMode(screenMode)
+                    collapseTimer.restart()
                 }
 
                 Connections {
@@ -496,6 +515,7 @@ Rectangle {
                 onPressed: {
                     measureMode = !measureMode
                     renderer.setDistMeasureMode(measureMode)
+                    collapseTimer.restart()
                 }
             }
 
@@ -520,6 +540,7 @@ Rectangle {
                 onPressed: {
                     locationMode = !locationMode
                     Locations.signalShowLocation(locationMode)
+                    collapseTimer.restart()
                 }
             }
 
@@ -544,6 +565,7 @@ Rectangle {
                 onPressed: {
                     landMarkMode = !landMarkMode
                     renderer.setLandMarkMode(landMarkMode)
+                    collapseTimer.restart()
                 }
             }
 
@@ -566,7 +588,10 @@ Rectangle {
                     color:  backColor
                 }
 
-                onPressed: core.clearRouteData()
+                onPressed: {
+                    core.clearRouteData()
+                    collapseTimer.restart()
+                }
             }
         }
     }
@@ -576,7 +601,6 @@ Rectangle {
         anchors.fill: bgRect
         hoverEnabled: true
         acceptedButtons: Qt.NoButton
-
         cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
 
         // onEntered: {

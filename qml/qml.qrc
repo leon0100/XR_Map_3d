@@ -17,7 +17,6 @@
         <file>CSlider.qml</file>
         <file>UpgradeBox.qml</file>
         <file>AdjBoxBack.qml</file>
-        <file>TitleMeasurement.qml</file>
         <file>CRButton.qml</file>
         <file>CProgressButton.qml</file>
         <file>TitleSetup.qml</file>
@@ -49,8 +48,6 @@
         <file>RecorderBox.qml</file>
         <file>DopplerBox.qml</file>
         <file>CalcMethodTINSettings.qml</file>
-        <file>SmoothMethodUGINSettings.qml</file>
-        <file>SmoothMethodTriDivideSettings.qml</file>
         <file>Scene3DToolbar.qml</file>
         <file>tool.svg</file>
         <file>QmlCommon/MenuBlockEx.qml</file>
@@ -119,5 +116,7 @@
         <file>Communication/loading.qml</file>
         <file>Communication/qmldir</file>
         <file>Communication/SerialPort.qml</file>
+        <file>AppXr/ExportAsData.qml</file>
+        <file>AppXr/XRCheckBox.qml</file>
     </qresource>
 </RCC>

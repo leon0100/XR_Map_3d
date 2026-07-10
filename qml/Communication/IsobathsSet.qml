@@ -13,15 +13,14 @@ Item {
 
     width: toggleButton.width
     height: toggleButton.height
-
     z: 9999
 
     property bool isobathsDrawOpen:  false
     property bool bluetoothDrawOpen: false
-    property int  isobathSize: theme.screenSize * 0.35
-    property int  layoutHeight:  isobathSize * 0.1
-    property var  targetPlot:  null
-    property int  iconSize:    isobathSize * 0.05
+    property int  isobathSize:  theme.screenSize * 0.35
+    property int  layoutHeight: isobathSize * 0.1
+    property var  targetPlot:   null
+    property int  iconSize:     isobathSize * 0.05
 
     property int currentCommPage: 0
 
@@ -155,8 +154,10 @@ Item {
         width:  isobathSize
         height: isobathSize * 1.2
         anchors.top: toggleButton.top
-        anchors.right: toggleButton.left
-        anchors.rightMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width)
+        // anchors.right: toggleButton.left
+        // anchors.rightMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width)
+        anchors.left: toggleButton.right
+        anchors.leftMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
 
         color: "#f0f0f0"
         border.color: "#3498db"
@@ -911,8 +912,10 @@ Item {
         width:  isobathSize
         height: isobathSize * 0.8
         anchors.top:   toggleButton.top
-        anchors.right: toggleButton.left
-        anchors.rightMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width)
+        // anchors.right: toggleButton.left
+        // anchors.rightMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width)
+        anchors.left: toggleButton.right
+        anchors.leftMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
 
         color: "#f0f0f0"
         border.color: "#3498db"

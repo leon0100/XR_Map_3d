@@ -6,7 +6,6 @@ import Qt.labs.settings 1.1
 
 import WaterFall 1.0
 
-
 WaterFall {
     id: plot
 
@@ -333,18 +332,15 @@ WaterFall {
 
                 CheckButton {
                     id: plotCheckButton
-                    backColor:   theme.controlBackColor
-                    borderColor: theme.controlBackColor
-                    checkedBorderColor: theme.controlBorderColor
                     iconSource: "qrc:/icons/ui/settings.svg"
                     implicitWidth: theme.menuWidth
-
                     onCheckedChanged: {
                         if (checked) {
                             settingsClicked()
                         }
                     }
                 }
+
             }
         }
 
@@ -649,7 +645,7 @@ WaterFall {
 
                         CCheck {
                             id: currentFrame
-                            checked: true
+                            checked: false
                             text: qsTr("Current Frame")
                             onCheckedChanged: {
                                 currentFrameChecked = !currentFrameChecked
@@ -661,19 +657,15 @@ WaterFall {
 
                         CCheck {
                             id: bottomLine
-                            checked: true
+                            checked: false
                             text: qsTr("Bottom Line")
                             onCheckedChanged: {
                                 bottomLineChecked = !bottomLineChecked
-                                if(!bottomLineChecked) {
-                                    plot.plotMousePosition(-1, -1)
-                                }
+                                plot.setBottomLineVisible(bottomLineChecked)
                             }
                         }
 
                     }
-
-
 
                     CCheck {
                         id: horisontalVertical

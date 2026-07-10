@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 
+
+
 Popup {
     id: mainMenuPopup
 
@@ -99,6 +101,27 @@ Popup {
                     background: Rectangle {
                         color: save.pressed ? menuPressColor : menuBackColor
                     }
+
+                    Image {
+                        source: "qrc:/icons/ui/file_export.svg"
+                        width: itemFontSize * 0.75
+                        height: itemFontSize * 0.75
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 5
+                    }
+                }
+
+
+                MenuItem {
+                    id: exportAsData
+                    text: qsTr("Export as Data")
+                    font.pixelSize: itemFontSize
+                    background: Rectangle {
+                        color: exportAsData.pressed ? menuPressColor : menuBackColor
+                    }
+
+                    onClicked: theme.exportAsDataVisible = true
 
                     Image {
                         source: "qrc:/icons/ui/file_export.svg"

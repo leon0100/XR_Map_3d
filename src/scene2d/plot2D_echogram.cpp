@@ -127,6 +127,11 @@ void Plot2DEchogram::setCompensation(int compensation_id)
     resetCash();
 }
 
+void Plot2DEchogram::setBottomLineVisible(bool isVisible)
+{
+    bottomLineVisible_ = isVisible;
+}
+
 void Plot2DEchogram::resetCash()
 {
     _cashFlags.resetCash = true;
@@ -321,6 +326,35 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 
 }
 
+void Plot2DEchogram::drawBottomLine(Canvas canvas, int width, int cash_position, bool isVisible)
+{
+    if(isVisible) {
+        if(_cash.size() == width && width > 1) {
+            QPainter* cp = canvas.painter();
+            QPen profilePen(QColor(255, 0, 0));
+            profilePen.setWidth(1);
+            cp->setPen(profilePen);
+            QPolygonF profilePts;
+            profilePts.reserve(width);
+            for(int x = 0; x < width; ++x) {
+                int col = (cash_position + x) % width;
+                int idx = _cash[col].bottomLineIdx;
+                if (_cash[col].state == CashLine::CashState::CashStateValid) {
+                    profilePts.append(QPointF(x, idx));
+                }
+                else if (profilePts.size() > 1) {
+                    cp->drawPolyline(profilePts);
+                    profilePts.clear();
+                }
+            }
+            if(profilePts.size() > 1) {
+                cp->drawPolyline(profilePts);
+            }
+        }
+    }
+
+}
+
 
 int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int height)
 {
@@ -505,8 +539,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
 bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 {
-    auto& canvas = parent->canvas();
-    auto& cursor = parent->cursor();
+    Canvas& canvas = parent->canvas();
+    DatasetCursor& cursor = parent->cursor();
 
     _colorLevels.clear();
 
@@ -560,6 +594,8 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
             wavePanelWidth = 1;
         }
         drawLatestWavePixel(parent, image_width, wavePanelWidth, image_height);
+
+        drawBottomLine(canvas, image_width, cash_position, bottomLineVisible_);
     }
 
     return true;

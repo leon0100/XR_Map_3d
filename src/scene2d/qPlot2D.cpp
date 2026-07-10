@@ -192,6 +192,12 @@ void qPlot2D::updateContact()
     Plot2D::updateContact();
 }
 
+void qPlot2D::setBottomLineVisible(bool isVisible)
+{
+    echogram_.setBottomLineVisible(isVisible);
+    plotUpdate();
+}
+
 float qPlot2D::getLowEchogramLevel() const
 {
     return Plot2D::getEchogramLowLevel();
