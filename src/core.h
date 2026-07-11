@@ -32,6 +32,7 @@
 #include "data_horizon.h"
 #include "blemanager.h"
 #include "udpmanager.h"
+#include "serialportmanager.h"
 #include "location.h"
 
 class Core : public QObject
@@ -209,6 +210,7 @@ private:
 
     std::shared_ptr<BLEManager>  bleManager_;
     std::shared_ptr<UdpManager>  udpManager_;
+    std::shared_ptr<SerialPortManager> serialPortManager_;
     std::shared_ptr<Locations>   locations_;
 
     // data processor

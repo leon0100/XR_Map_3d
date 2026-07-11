@@ -63,6 +63,7 @@ void Core::setEngine(QQmlApplicationEngine *engine)
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",      bleManager_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",      udpManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("SerialPort",      serialPortManager_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("Locations",       locations_.get());
 
     // ── 注册 dataProcessor ──
@@ -1479,6 +1480,7 @@ void Core::createControllers()
 
     bleManager_                           = std::make_shared<BLEManager>();
     udpManager_                           = std::make_shared<UdpManager>();
+    serialPortManager_                    = std::make_shared<SerialPortManager>();
     locations_                            = std::make_shared<Locations>();
 }
 
