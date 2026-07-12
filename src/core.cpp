@@ -1136,6 +1136,19 @@ void Core::openFileFromMenu()
     QFileInfo fi = QFileInfo(fileNames.last());
     lastOpenFilePath_ = fi.absolutePath();
 
+    if(datasetPtr_ && datasetPtr_->size() > 0) {
+        resetDataProcessorConnections();
+        bleManager_->clearRealData();
+        udpManager_->clearRealData();
+        datasetPtr_->resetDataset();
+        dataHorizon_->clear();
+        if (scene3dViewPtr_) {
+            scene3dViewPtr_->clear(true);
+            scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+        }
+        QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool, true));
+    }
+
     if (progress_) {
         QMetaObject::invokeMethod(progress_, "open");
     }
@@ -1302,8 +1315,7 @@ void Core::clearRouteData()
                         scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
                     }
                 }
-                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2",
-                                          Qt::QueuedConnection, Q_ARG(bool,clearTrack));
+                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool,clearTrack));
             }
         }, tr("Clear Track Data"));
     }
