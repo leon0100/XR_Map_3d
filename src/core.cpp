@@ -1473,6 +1473,7 @@ void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double max
     datasetPtr_->vec_CSV_  = depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
+    datasetPtr_->setAutoBounadry();
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
 }

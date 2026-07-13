@@ -497,11 +497,18 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     lastEp->setPositionRef(&_llaRef); //在这里将LLA坐标转化成本地NED坐标
     lastEp->setPositionDataType(DataType::kRaw);
 
+    North_East_Down curNed = lastEp->getPositionGNSS().ned;
+    QVector3D new3DData = QVector3D(curNed.n, curNed.e, 0);
+    minX_ = std::min(minX_, new3DData.x());
+    maxX_ = std::max(maxX_, new3DData.x());
+    minY_ = std::min(minY_, new3DData.y());
+    maxY_ = std::max(maxY_, new3DData.y());
+
     if (poolCnt >= 2) {
         Epoch* prevEp = fromIndex(poolCnt - 2);
         if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
-            auto curNed  = lastEp->getPositionGNSS().ned;
-            auto prevNed = prevEp->getPositionGNSS().ned;
+            // North_East_Down curNed  = lastEp->getPositionGNSS().ned;
+            North_East_Down prevNed = prevEp->getPositionGNSS().ned;
             double dn    = curNed.n - prevNed.n;
             double de    = curNed.e - prevNed.e;
             double dist  = dn * dn + de * de;
@@ -651,6 +658,11 @@ void Dataset::resetDataset()
     lastDepth_            = 0.0f;
     speed_                = 0.0f;
     sonarPosIndx_         = 0;
+    minX_ = std::numeric_limits<float>::max();
+    maxX_ = std::numeric_limits<float>::lowest();
+    minY_ = std::numeric_limits<float>::max();
+    maxY_ = std::numeric_limits<float>::lowest();
+
     _llaRef.isInit        = false;
 
     emit lastDepthChanged();

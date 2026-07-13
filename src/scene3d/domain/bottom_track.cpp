@@ -201,10 +201,10 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
                     float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
                     QVector3D new3DData = QVector3D(pos.n, pos.e, dist);
                     prepData.push_back(new3DData);
-                    minX_ = std::min(minX_, new3DData.x());
-                    maxX_ = std::max(maxX_, new3DData.x());
-                    minY_ = std::min(minY_, new3DData.y());
-                    maxY_ = std::max(maxY_, new3DData.y());
+                    // minX_ = std::min(minX_, new3DData.x());
+                    // maxX_ = std::max(maxX_, new3DData.x());
+                    // minY_ = std::min(minY_, new3DData.y());
+                    // maxY_ = std::max(maxY_, new3DData.y());
 
                     epIndxUpdated_.push_back(epIndx);
                     vertIndxUpdated_.push_back(rSize);
@@ -218,13 +218,13 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
         }
     }
 
-    QVector<QVector3D> box;
-    box.append(QVector3D(minY_, minX_, 0));
-    box.append(QVector3D(maxY_, minX_, 0));
-    box.append(QVector3D(maxY_, maxX_, 0));
-    box.append(QVector3D(minY_, maxX_, 0));
-    box.append(QVector3D(minY_, minX_, 0));
-    datasetPtr_->setAutoBounadry(box);
+    // QVector<QVector3D> box;
+    // box.append(QVector3D(minY_, minX_, 0));
+    // box.append(QVector3D(maxY_, minX_, 0));
+    // box.append(QVector3D(maxY_, maxX_, 0));
+    // box.append(QVector3D(minY_, maxX_, 0));
+    // box.append(QVector3D(minY_, minX_, 0));
+    // datasetPtr_->setAutoBounadry(box);
 
     // qDebug() << "epIndxUpdated_.size():" << epIndxUpdated_.size() << "  " << vertIndxUpdated_.size();
     emit updatedPoints(epIndxUpdated_, vertIndxUpdated_, manual);  //这句绘制等高线
@@ -291,10 +291,10 @@ void BottomTrack::clearData()
 
     epIndxUpdated_.clear();
     vertIndxUpdated_.clear();
-    minX_ = std::numeric_limits<float>::max();
-    maxX_ = std::numeric_limits<float>::lowest();
-    minY_ = std::numeric_limits<float>::max();
-    maxY_ = std::numeric_limits<float>::lowest();
+    // minX_ = std::numeric_limits<float>::max();
+    // maxX_ = std::numeric_limits<float>::lowest();
+    // minY_ = std::numeric_limits<float>::max();
+    // maxY_ = std::numeric_limits<float>::lowest();
 
     auto r = RENDER_IMPL(BottomTrack);
     r->selectedVertexIndices_.clear();

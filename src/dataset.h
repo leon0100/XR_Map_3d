@@ -243,6 +243,15 @@ public:
     bool polygonNEDEmpty() {
         return polygonOutlineNED_.isEmpty();
     }
+
+    void setAutoBounadry() {
+        autoBoundary_.clear();
+        autoBoundary_.append(QVector3D(minY_, minX_, 0));
+        autoBoundary_.append(QVector3D(maxY_, minX_, 0));
+        autoBoundary_.append(QVector3D(maxY_, maxX_, 0));
+        autoBoundary_.append(QVector3D(minY_, maxX_, 0));
+        autoBoundary_.append(QVector3D(minY_, minX_, 0));
+    }
     void setAutoBounadry(QVector<QVector3D>& autoBoundary) {
         autoBoundary_ = autoBoundary;
     }
@@ -440,4 +449,9 @@ public:
     double minDepth_, maxDepth_;
     QVector<QVector3D> autoBoundary_;
     DataProcessorType dataProcessorState_;
+
+    float minX_ = std::numeric_limits<float>::max();
+    float maxX_ = std::numeric_limits<float>::lowest();
+    float minY_ = std::numeric_limits<float>::max();
+    float maxY_ = std::numeric_limits<float>::lowest();
 };
