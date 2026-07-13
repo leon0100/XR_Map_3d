@@ -164,13 +164,12 @@ void Themes::bootConfig()
 
 
     /*-statusBar-*/
-    QString lonDirection = softwareParameters_.currentLon >= 0 ? "°E" : "°W";
-    QString latiDirection = softwareParameters_.currentLati >= 0 ? "°N" : "°S";
-    double lonDou = qAbs(softwareParameters_.currentLon);
-    double latiDou = qAbs(softwareParameters_.currentLati);
-    QString coor = "Coordinate: " + QString::number(lonDou, 'f', 6) + lonDirection + ","
-                   + QString::number(latiDou, 'f', 6) + latiDirection;
-
+    // QString lonDirection  = softwareParameters_.currentLon >= 0 ? "°E" : "°W";
+    // QString latiDirection = softwareParameters_.currentLati >= 0 ? "°N" : "°S";
+    // double lonDou = qAbs(softwareParameters_.currentLon);
+    // double latiDou = qAbs(softwareParameters_.currentLati);
+    // QString coor = "Coordinate: " + QString::number(lonDou, 'f', 6) + lonDirection + ","
+    //                + QString::number(latiDou, 'f', 6) + latiDirection;
 
     if(softwareParameters_.inChina) {
         qDebug() <<"inChina........." << softwareParameters_.inChina;
@@ -311,6 +310,12 @@ void Themes::saveSoftwareParameters()
         }
     }
 #endif
+}
+
+void Themes::setCurrentMapLocation(double lat, double lon)
+{
+    softwareParameters_.currentLati = lat;
+    softwareParameters_.currentLon  = lon;
 }
 
 

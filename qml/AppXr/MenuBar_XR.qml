@@ -83,7 +83,6 @@ Popup {
                     }
                     onClicked: core.openFileFromMenu()
 
-
                     Image {
                         source: "qrc:/icons/ui/file_import.svg"
                         width: itemFontSize * 0.75
@@ -115,7 +114,7 @@ Popup {
 
                 MenuItem {
                     id: exportAsData
-                    text: qsTr("Export as Data")
+                    text: qsTr("Export")
                     font.pixelSize: itemFontSize
                     background: Rectangle {
                         color: exportAsData.pressed ? menuPressColor : menuBackColor

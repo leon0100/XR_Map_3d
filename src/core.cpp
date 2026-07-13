@@ -121,6 +121,21 @@ void Core::refreshMap(LLA lla)
     scene3dViewPtr_->updateMapView();
 }
 
+void Core::saveCurrentMapState(std::function<void(double lat, double lon)>writer)
+{
+    if(!scene3dViewPtr_ || !writer) {
+        return;
+    }
+
+    std::weak_ptr<GraphicsScene3dView::Camera> camera = scene3dViewPtr_->camera();
+    if(auto cam = camera.lock(); cam){
+        double lat = cam->viewLlaRef_.refLla.latitude;
+        double lon = cam->viewLlaRef_.refLla.longitude;
+        qDebug() << "lat........" << lat << "  " << lon;
+        writer(lat, lon);
+    }
+}
+
 void Core::consoleInfo(QString msg)
 {
     getConsolePtr()->put(QtMsgType::QtInfoMsg, msg);
@@ -172,7 +187,6 @@ void Core::consoleProto(FrameParser &parser, bool isIn)
 
     QString str_dir;
     isIn ? str_dir = "-->> " : str_dir = "<<-- ";
-
 }
 
 

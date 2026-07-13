@@ -217,9 +217,9 @@ void GraphicsScene3dRenderer::drawObjects()
         m_polygonGroupRenderImpl.render(this, m_projection * view * m_model, m_shaderProgramMap);
         usblViewRenderImpl_.render(this, m_projection * view * m_model, m_shaderProgramMap);
     }
-    else {
-        return;
-    }
+    // else {
+    //     return;
+    // }
     glDisable(GL_DEPTH_TEST);
 
     m_boatTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap); //船轨迹
@@ -233,7 +233,7 @@ void GraphicsScene3dRenderer::drawObjects()
 
     surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
     isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
-    m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
+    // m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
 
     // // navigation arrow - 应用相同的 zOffset, 保持与等值线同一高度
     // // {
@@ -266,6 +266,9 @@ void GraphicsScene3dRenderer::drawObjects()
         float factor = 2.0f * distance * std::tan(perspFixFovRad * 0.5f) / m_viewSize.height();
         float worldScale = factor * 10.f * scaleFactor_;
         worldScale  = (worldScale < 0.7) ? 0.7 : worldScale;
+        if(distance > 1500.0f) {
+            worldScale = 18.0;
+        }
         nModel.scale(worldScale);
         navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
         glDisable(GL_DEPTH_TEST);

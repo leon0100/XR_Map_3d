@@ -407,7 +407,7 @@ void Dataset::addPosition(double lat, double lon, uint32_t unix_time, int32_t na
 
         //qDebug() << "add pos for" << lastIndx;
 
-        boatLatitute_ = pos.lla.latitude;
+        boatLatitute_  = pos.lla.latitude;
         boatLongitude_ = pos.lla.longitude;
 
         if (isValidActiveContactIndx()) {

@@ -63,11 +63,11 @@ public:
     LLARef getLlaRef() const;
     void setLlaRef(const LLARef& val, LlaRefState state);
 
-    QVector<Epoch>& getPool(){
+    QVector<Epoch>& getPool() {
         return pool_;
     }
 
-    QVector<Epoch>& getPolygonOutline(){
+    QVector<Epoch>& getPolygonOutline() {
         return polygonOutline_;
     }
 
@@ -254,34 +254,34 @@ public:
 public slots:
     friend class DataProcessor;
     void  onSonarPosCanCalc(uint64_t indx);
-    bool  isValidActiveContactIndx() const { return activeContactIndx_ != -1;  };
-    bool  isValidBoatCoordinate() const    { return !qFuzzyIsNull(boatLatitute_) || !qFuzzyIsNull(boatLongitude_); };
-    bool  isValidLastDepth() const         { return !qFuzzyIsNull(lastDepth_); };
-    bool  isValidSpeed() const              { return qFuzzyIsNull(speed_);      };
-    float getBoatLatitude() const          { return boatLatitute_;             };
-    float getBoatLongitude() const         { return boatLongitude_;            };
-    float getDistToContact() const         { return distToActiveContact_;      };
-    float getAngleToContact() const        { return angleToActiveContact_;     };
-    float getLastDepth() const             { return lastDepth_;                };
-    float getSpeed() const                 { return speed_;                    };
+    bool  isValidActiveContactIndx() const  { return activeContactIndx_ != -1;  };
+    bool  isValidBoatCoordinate()    const  { return !qFuzzyIsNull(boatLatitute_) || !qFuzzyIsNull(boatLongitude_); };
+    bool  isValidLastDepth()         const  { return !qFuzzyIsNull(lastDepth_); };
+    bool  isValidSpeed()             const  { return qFuzzyIsNull(speed_);      };
+    float getBoatLatitude()          const  { return boatLatitute_;             };
+    float getBoatLongitude()         const  { return boatLongitude_;            };
+    float getDistToContact()         const  { return distToActiveContact_;      };
+    float getAngleToContact()        const  { return angleToActiveContact_;     };
+    float getLastDepth()             const  { return lastDepth_;                };
+    float getSpeed()                 const  { return speed_;                    };
     void  addEvent(int timestamp, int id, int unixt = 0);
     void  addEncoder(float angle1_deg, float angle2_deg = NAN, float angle3_deg = NAN);
     void  addTimestamp(int timestamp);
-    void setChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
-    void setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
-    void setSoundSpeed (const ChannelId& channelId, uint32_t soundSpeed);
-    void setSonarOffset(float x, float y, float z);
-    void addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset);
-    void addDist(const ChannelId& channelId, int dist);
-    void addRangefinder(const ChannelId& channelId, float distance);
-    void addUsblSolution(IDBinUsblSolution::UsblSolution data);
-    void addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
-    void addDVLSolution(IDBinDVL::DVLSolution dvlSolution);
-    void addAtt(float yaw, float pitch, float roll);
-    void addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
-    void addPosition_realTime(double lat, double lon, double depth, bool isRead);
-    void addPosition_file(double lat, double lon, int depth, bool enableRender);
-    void addPositionRTK(Position position);
+    void  setChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
+    void  setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
+    void  setSoundSpeed (const ChannelId& channelId, uint32_t soundSpeed);
+    void  setSonarOffset(float x, float y, float z);
+    void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset);
+    void  addDist(const ChannelId& channelId, int dist);
+    void  addRangefinder(const ChannelId& channelId, float distance);
+    void  addUsblSolution(IDBinUsblSolution::UsblSolution data);
+    void  addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
+    void  addDVLSolution(IDBinDVL::DVLSolution dvlSolution);
+    void  addAtt(float yaw, float pitch, float roll);
+    void  addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
+    void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
+    void  addPosition_file(double lat, double lon, int depth, bool enableRender);
+    void  addPositionRTK(Position position);
 
     void addDepth(float depth);
 

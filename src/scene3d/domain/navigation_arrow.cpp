@@ -170,10 +170,10 @@ void NavigationArrow::NavigationArrowRenderImplementation::render(QOpenGLFunctio
     // }
 
     if (litShaderProgram && litShaderProgram->bind()) {
-        const int posLoc = litShaderProgram->attributeLocation("position");
+        const int posLoc    = litShaderProgram->attributeLocation("position");
         const int normalLoc = litShaderProgram->attributeLocation("normal");
         const int matrixLoc = litShaderProgram->uniformLocation("matrix");
-        const int colorLoc = litShaderProgram->uniformLocation("color");
+        const int colorLoc  = litShaderProgram->uniformLocation("color");
         // const int lightDirLoc = litShaderProgram->uniformLocation("lightDir");
         // const int ambientLoc = litShaderProgram->uniformLocation("ambient");
         // const int intensityLoc = litShaderProgram->uniformLocation("intensity");
@@ -219,7 +219,6 @@ void NavigationArrow::NavigationArrowRenderImplementation::render(QOpenGLFunctio
         lineShaderProgram->enableAttributeArray(posLoc);
         // lineShaderProgram->setAttributeArray(posLoc, arrowVertices_.constData());
         // ctx->glDrawArrays(GL_TRIANGLES, 0, arrowVertices_.size());
-
 
 
         QVector<GLfloat> vertices;

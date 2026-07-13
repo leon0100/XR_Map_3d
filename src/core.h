@@ -67,6 +67,7 @@ public:
     LinkManagerWrapper* getLinkManagerWrapperPtr() const;
     void stopLinkManagerTimer() const;
     void refreshMap(LLA lla);
+    void saveCurrentMapState(std::function<void(double lat, double lon)>writer);
 
     void consoleInfo(QString msg);
     void consoleWarning(QString msg);

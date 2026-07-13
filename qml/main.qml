@@ -15,10 +15,11 @@ import AppXr 1.0
 
 ApplicationWindow  {
     id:        mainview
-    visible:   true
-    width: Screen.width
-    minimumWidth:  512
-    height: Screen.height * 0.95
+
+    visible: true
+    width:  Screen.width * 0.5
+    minimumWidth: 512
+    height: Screen.height * 0.5
     minimumHeight: 256
     visibility: Window.FullScreen
     color:      "black"
@@ -29,17 +30,16 @@ ApplicationWindow  {
     readonly property int _sceneObjectsListHeight:       300
     readonly property int screenSize: theme.screenSize
     readonly property int footHeight: screenSize * 0.02
-    readonly property int iconSize: footHeight * 0.5
+    readonly property int iconSize:   footHeight * 0.5
 
     Settings {
         id: appSettings
-        property bool isFullScreen: true
-        property real sceneSplitRatio: 0.5
+        property bool isFullScreen: false
     }
 
     Loader {
         id: stateGroupLoader
-        active: (Qt.platform.os === "windows")
+        active: Qt.platform.os === "windows"
         sourceComponent: stateGroupComp
     }
 

@@ -225,6 +225,9 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         LLA lla;
         lla.latitude  = tslSingleStru.boat.latitude  / 100000.f;
         lla.longitude = tslSingleStru.boat.longitude / 100000.f;
+        if(lla.latitude < 0.000001f && lla.longitude < 0.000001f) {
+            continue;
+        }
         lla.altitude  = tslSingleStru.auxInfo.depth  / 100.f;
 
         buffer.append(lla);
@@ -427,20 +430,25 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         LLA lla;
         lla.latitude  = dm_to_dd(tslSingleStru.boat.latitude);
         lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
+        if(lla.latitude < 0.000001f && lla.longitude < 0.000001f) {
+            continue;
+        }
         lla.altitude  = tslSingleStru.auxInfo.depth / 100.f;
 
         buffer.append(lla);
-        if (buffer.size() < MEDIAN_WINDOW) {
+        int bufSize = buffer.size();
+        if (bufSize < MEDIAN_WINDOW) {
             // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
-            if (buffer.size() <= MEDIAN_WINDOW / 2) {
+            if (bufSize <= MEDIAN_WINDOW / 2) {
                 minZ = std::min(minZ, lla.altitude);
                 maxZ = std::max(maxZ, lla.altitude);
                 vec_CSV.append(lla.altitude);
                 track.append(lla);
             }
-        } else {
+        }
+        else {
             // 窗口超过设定大小，移除最旧的点，让窗口滑动
-            if (buffer.size() > MEDIAN_WINDOW) {
+            if (bufSize > MEDIAN_WINDOW) {
                 buffer.removeFirst();
             }
 

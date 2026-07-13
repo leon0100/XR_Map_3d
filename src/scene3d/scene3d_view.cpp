@@ -934,7 +934,7 @@ void GraphicsScene3dView::setLastEpochFocusView(bool useAngle, bool useNavigator
 
             if (!m_camera->navYawInited_) {
                 m_camera->navYawFilteredRad_ = targetYaw;
-                m_camera->navYawInited_ = true;
+                m_camera->navYawInited_      = true;
                 m_camera->navYawTmr_.restart();
             }
 
@@ -1134,7 +1134,7 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
             }
 
             m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
-        }, Qt::DirectConnection);
+    }, Qt::DirectConnection);
 
     QObject::connect(datasetPtr_, &Dataset::updatedLlaRef, this,      [this]() -> void {
             surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
@@ -1343,8 +1343,8 @@ void GraphicsScene3dView::updateMapView()
     QVector<QPair<float, float>> cornerMultipliers = {
         {       reductorFactor,         reductorFactor },   // lt
         {       reductorFactor,  1.0f - reductorFactor },   // lb
-        {1.0f - reductorFactor , 1.0f - reductorFactor },   // rb
-        {1.0f - reductorFactor ,        reductorFactor }    // rt
+        {1.0f - reductorFactor,  1.0f - reductorFactor },   // rb
+        {1.0f - reductorFactor,         reductorFactor }    // rt
     };
 
     updateProjection();
@@ -2360,13 +2360,13 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
         North_East_Down datasetNed(&datasetLla, &viewLlaRef_, !isPerspective_);
         m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
         viewLlaRef_ = datasetLlaRef_;
-        m_rotAngle = { 0.0f, 0.0f };
+        m_rotAngle = {0.0f, 0.0f};
     }
     else if ((isPerspective_ && projectionChanged) || (!isPerspective_ && !projectionChanged)) { // 透视投影切换到正交投影
         viewPtr_->setNeedToResetStartPos(true);
         viewLlaRef_ = lookAtLlaRef;
         m_lookAt = QVector3D(0.0f, 0.0f, 0.0f);
-        m_rotAngle = { 0.0f, 0.0f };
+        m_rotAngle = {0.0f, 0.0f};
     }
 
     updateCameraParams();

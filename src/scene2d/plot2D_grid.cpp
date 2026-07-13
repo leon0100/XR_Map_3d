@@ -40,7 +40,9 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
             int majorY2 = (i + 1) * imageHeight / linesCount;
             for (int j = 1; j < minorPerMajor; ++j) {
                 int posY = majorY1 + (majorY2 - majorY1) * j / minorPerMajor;
-                if (posY <= 0 || posY >= imageHeight) continue;
+                if (posY <= 0 || posY >= imageHeight) {
+                    continue;
+                }
                 if (invert_) {
                     p->drawLine(0, posY, minorLen, posY);
                 }
@@ -64,7 +66,7 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
             lineText = QString::number(rangeVal, 'f', 1) + "m";
         }
 
-        const int textW = fm.horizontalAdvance(lineText) * 0.8;
+        const int textW = fm.horizontalAdvance(lineText);
 
         if(invert_) {
             p->drawLine(0, posY, textW, posY);
@@ -75,9 +77,14 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
 
         if(!lineText.isEmpty()) {
             int textY = posY - 4;
-            if(i == 0)           textY = posY + fm.ascent() + 2;        //顶部刻度文本往下偏移
-            if(i == linesCount)  textY = posY - fm.descent() - 2;       //底部刻度文本往上偏移
-            const int textX = invert_ ? textW * 0.1 : (imageWidth-textW);
+            if(i == 0) {
+               textY = posY + fm.ascent() + 2;   //顶部刻度文本往下偏移
+            }
+
+            if(i == linesCount) {
+               textY = posY - fm.descent() - 2;  //底部刻度文本往上偏移
+            }
+            const int textX = invert_ ? textW * 0.15 : (imageWidth-textW * 1.2);
             p->drawText(textX, textY, lineText);
         }
     }

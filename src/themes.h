@@ -237,24 +237,24 @@ public:
     Q_PROPERTY(int systemNetStatus       READ systemNetStatus    NOTIFY sysytemToolBarChanged)
 
 
-    bool getIsFakeCoords() const { return isFakeCoords_; };
-    qreal getResolutionCoeff() const { return resolutionCoeff_; };
-    QColor textColor() { return *_textColor; }
-    QColor textErrorColor() { return *_textErrorColor; }
-    QColor disabledTextColor() { return *_disabledTextColor; }
-    QColor disabledBackColor() {return *_disabledBackColor;}
-    QColor hoveredBackColor() { return *_hoveredBackColor; }
-    QColor textSolidColor() { return *_textSolidColor; }
-    QFont textFont() { return *_textFont; }
-    QFont textFontS() { return *_textFontS; }
+    bool   getIsFakeCoords()    const { return isFakeCoords_; };
+    qreal  getResolutionCoeff() const { return resolutionCoeff_; };
+    QColor textColor()                { return *_textColor; }
+    QColor textErrorColor()           { return *_textErrorColor; }
+    QColor disabledTextColor()        { return *_disabledTextColor; }
+    QColor disabledBackColor()        {return *_disabledBackColor;}
+    QColor hoveredBackColor()         { return *_hoveredBackColor; }
+    QColor textSolidColor()           { return *_textSolidColor; }
+    QFont  textFont()                 { return *_textFont; }
+    QFont  textFontS()                { return *_textFontS; }
 
-    QColor menuBackColor()  { return *_menuBackColor; }
-    QColor frameBackColor() { return *_frameBackColor; }
+    QColor menuBackColor()            { return *_menuBackColor; }
+    QColor frameBackColor()           { return *_frameBackColor; }
 
-    QColor controlBackColor()        { return *_controlBackColor; }
-    QColor controlBorderColor()      { return *_controlBorderColor; }
-    QColor controlSolidBackColor()   { return *_controlSolidBackColor; }
-    QColor controlSolidBorderColor() { return *_controlSolidBorderColor; }
+    QColor controlBackColor()         { return *_controlBackColor; }
+    QColor controlBorderColor()       { return *_controlBorderColor; }
+    QColor controlSolidBackColor()    { return *_controlSolidBackColor; }
+    QColor controlSolidBorderColor()  { return *_controlSolidBorderColor; }
     int screenSize()   { return screenSize_; }
     int screenWidth()  { return screenWidth_; }
     int screenHeight() { return screenHeight_; }
@@ -306,14 +306,18 @@ public:
     SoftwareParametersStru getSoftwareParameters();
     void loadSoftwareParameters();
     void saveSoftwareParameters();
+    void setCurrentMapLocation(double lat, double lon);
     void refreshLanguage();
 
 
     Q_INVOKABLE void updateResCoeff();
     Q_INVOKABLE void openGoogleHelpDocument();
 
+
 private:
     u8 XorCheckSum(u8* input, u8 length);
+
+
 
 private slots:
     void updateSystemToolBarStatus();

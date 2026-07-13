@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 {
 #ifdef Q_OS_ANDROID
     qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "0");  // TODO: use qt scaling!
-    qputenv("QT_SCALE_FACTOR", "0.5");            //
+    qputenv("QT_SCALE_FACTOR", "0.5");
 #endif
 
 #if defined(Q_OS_LINUX)
@@ -119,15 +119,21 @@ int main(int argc, char *argv[])
     //qDebug() << "SQL drivers =" << QSqlDatabase::drivers(); // тут должен появиться QSQLITE
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &app,[url](QObject *obj, const QUrl &objUrl) {
+        if (!obj && url == objUrl) {
+            QCoreApplication::exit(-1);
+            return;
+        }
+
+        QWindow* window = qobject_cast<QWindow*>(obj);
+        if(window){
+            window->showMaximized();
+        }
+
         theme.refreshLanguage();
         SoftwareParametersStru softPar = theme.getSoftwareParameters();
         LLA lla(softPar.currentLati, softPar.currentLon, 0.0f);
         corePtr->refreshMap(lla);
         corePtr->switchMapType(softPar.mapSourceType);
-
-        if (!obj && url == objUrl) {
-            QCoreApplication::exit(-1);
-        }
     }, Qt::QueuedConnection);
 
 
@@ -141,10 +147,13 @@ int main(int argc, char *argv[])
 #endif
 
     QObject::connect(&app,  &QGuiApplication::aboutToQuit, corePtr, [&]() {
-            // corePtr->saveLLARefToSettings();
-            corePtr->removeLinkManagerConnections();
-            corePtr->stopLinkManagerTimer();
-            theme.saveSoftwareParameters();
+        // corePtr->saveLLARefToSettings();
+        corePtr->removeLinkManagerConnections();
+        corePtr->stopLinkManagerTimer();
+        corePtr->saveCurrentMapState([](double lat, double lon) {
+            theme.setCurrentMapLocation(lat, lon);
+        });
+        theme.saveSoftwareParameters();
     });
 
     engine.load(url);

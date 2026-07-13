@@ -84,6 +84,7 @@ public:
         bool  getIsFarAwayFromOriginLla() const;
         map::CameraTilt getCameraTilt() const;
         QVector3D getEyePosition() const;
+        LLARef viewLlaRef_ = LLARef(yerevanLla);
 
     private:
         void updateCameraParams();
@@ -126,7 +127,7 @@ public:
         GraphicsScene3dView* viewPtr_;
         LLARef datasetLlaRef_;
         LLA yerevanLla = LLA(32.262781f, 118.702785f, 0.0f);
-        LLARef viewLlaRef_ = LLARef(yerevanLla);
+
 
         // 偏航滤波器
         float navYawFilteredRad_        = 0.f;
