@@ -67,9 +67,11 @@ void DeviceManager::setProgressDialog(QObject* dialog)
     }
 }
 
-void DeviceManager::resetChannelId()
+void DeviceManager::resetFileAndChannelId()
 {
     batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
+    minZ_ = 0.0;
+    maxZ_ = 0.0;
 }
 
 void DeviceManager::initStreamList()
@@ -93,8 +95,8 @@ void DeviceManager::openFile_CSV(QString filePath)
 
     delAllDev();
 
+    QVector<float> vec_CSV;
     QList<Position> track;
-
     QTextStream counter(&file);
     int totalLines = 0;
     while(!counter.atEnd()) {
@@ -103,17 +105,15 @@ void DeviceManager::openFile_CSV(QString filePath)
     }
     file.seek(0);
     QTextStream in(&file);
-    int skip_rows = 2;
+    int skipRows = 2;
     int currentLine = 0;
 
-    int validTotal = qMax(1, totalLines - skip_rows);
+    int validTotal = qMax(1, totalLines - skipRows);
     int progressInterval = qMax(1, validTotal / 100);
-    QVector<float> vec_CSV;
-    double minZ = 0.0, maxZ = 0.0;
     while (!in.atEnd()) {
         QString row = in.readLine();
-        if (skip_rows > 0) {
-            skip_rows--;
+        if (skipRows > 0) {
+            skipRows--;
             continue;
         }
         currentLine++;
@@ -125,8 +125,8 @@ void DeviceManager::openFile_CSV(QString filePath)
         pos.lla.altitude  = columns[6].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
         track.append(pos);
 
-        minZ = std::min(minZ, pos.lla.altitude);
-        maxZ = std::max(maxZ, pos.lla.altitude);
+        minZ_ = std::min(minZ_, pos.lla.altitude);
+        maxZ_ = std::max(maxZ_, pos.lla.altitude);
         vec_CSV.append(pos.lla.altitude);
         if (currentLine > 0 && (currentLine % progressInterval == 0 || currentLine == validTotal))
         {
@@ -153,7 +153,7 @@ void DeviceManager::openFile_CSV(QString filePath)
         QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
     }
 
-    emit fileStopsOpening2(vec_CSV, minZ, maxZ);  //这一步使得最后将读取到的轨迹内容绘制到scene3d_view上
+    emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);  //这一步使得最后将读取到的轨迹内容绘制到scene3d_view上
 }
 
 void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType)
@@ -202,11 +202,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
     if(tslByteList.isEmpty()) return;
 
     int tslWCnt = tslByteList.count();
-
-    QList<LLA> track;
     QVector<float> vec_CSV;
-    double minZ = 0.0, maxZ = 0.0;
-
+    QList<LLA> track;
     // ============ 声呐数据参数 =============
     qDebug() << "tslWCnt.size()........." << tslWCnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
@@ -234,8 +231,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         if (buffer.size() < MEDIAN_WINDOW) {
             // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
             if (buffer.size() <= MEDIAN_WINDOW * 0.5) {
-                minZ = std::min(minZ, lla.altitude);
-                maxZ = std::max(maxZ, lla.altitude);
+                minZ_ = std::min(minZ_, lla.altitude);
+                maxZ_ = std::max(maxZ_, lla.altitude);
                 vec_CSV.append(lla.altitude);
                 track.append(lla);
             }
@@ -266,8 +263,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
             }
 
             // 将过滤后的中心点加入最终轨迹
-            minZ = std::min(minZ, targetLla.altitude);
-            maxZ = std::max(maxZ, targetLla.altitude);
+            minZ_ = std::min(minZ_, targetLla.altitude);
+            maxZ_ = std::max(maxZ_, targetLla.altitude);
             vec_CSV.append(targetLla.altitude);
             track.append(targetLla);
         }
@@ -322,17 +319,17 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         }
 
         ChartParameters chartParams;
-        chartParams.sfEnd    = sfEnd;
-        chartParams.btStart  = btStart;
-        chartParams.depth    = depth;
-        chartParams.pingSize = pingSize;
-        chartParams.upRng    = 0.0;
-        chartParams.loRng    = loRng;
-        chartParams.temperature  = tslSingleStru.auxInfo.temperature * 10.0f;
-        chartParams.heading = tslSingleStru.boat.heading;
-        chartParams.speed = tslSingleStru.boat.speed * 10 / 0.514444f;
-        chartParams.longitude = lla.longitude;
-        chartParams.latitude = lla.latitude;
+        chartParams.sfEnd       = sfEnd;
+        chartParams.btStart     = btStart;
+        chartParams.depth       = depth;
+        chartParams.pingSize    = pingSize;
+        chartParams.upRng       = 0.0;
+        chartParams.loRng       = loRng;
+        chartParams.temperature = tslSingleStru.auxInfo.temperature * 10.0f;
+        chartParams.heading     = tslSingleStru.boat.heading;
+        chartParams.speed       = tslSingleStru.boat.speed * 10 / 0.514444f;
+        chartParams.longitude   = lla.longitude;
+        chartParams.latitude    = lla.latitude;
         emit chartComplete(batchChannelId_, chartParams, dataVec, 0.1f, 0.0);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
@@ -355,7 +352,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
     }
 
-    emit fileStopsOpening2(vec_CSV, minZ, maxZ);
+    emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);
 }
 
 
@@ -368,7 +365,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
     int nowIndex = 0;
     int byteCount = 0;
     int tslWCnt = tslByteArray.count();
-    int progressInterval = qMax(1, tslWCnt / 4);
+    int progressInterval = qMax(1, tslWCnt / 3);
     while((nowIndex) < (tslWCnt-100))
     {
         if('#' == tslByteArray.at(nowIndex)) {
@@ -411,14 +408,11 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 
     int tsl3Cnt = tslByteList.count();
     int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
-
-    QList<LLA> track;
     QVector<float> vec_CSV;
-    double minZ = 0.0, maxZ = 0.0;
-
+    QList<LLA> track;
     qDebug() << "tsl3Cnt.size()........." << tsl3Cnt;
-    const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
-    const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
+    const int   MEDIAN_WINDOW   = 13;     // 窗口大小（奇数）
+    const float SPIKE_THRESHOLD = 10.0f;  // 跳变阈值（米），超过用中值替代
     QList<LLA> buffer;
 
     for(int i = 0; i < tsl3Cnt; i++)
@@ -439,9 +433,9 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         int bufSize = buffer.size();
         if (bufSize < MEDIAN_WINDOW) {
             // 窗口还没满的时候：为了保证轨迹点数量一致，将前 (W/2) 个点直接推入 track
-            if (bufSize <= MEDIAN_WINDOW / 2) {
-                minZ = std::min(minZ, lla.altitude);
-                maxZ = std::max(maxZ, lla.altitude);
+            if (bufSize <= MEDIAN_WINDOW * 0.5) {
+                minZ_ = std::min(minZ_, lla.altitude);
+                maxZ_ = std::max(maxZ_, lla.altitude);
                 vec_CSV.append(lla.altitude);
                 track.append(lla);
             }
@@ -472,8 +466,8 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
             }
 
             // 将过滤后的中心点加入最终轨迹
-            minZ = std::min(minZ, targetLla.altitude);
-            maxZ = std::max(maxZ, targetLla.altitude);
+            minZ_ = std::min(minZ_, targetLla.altitude);
+            maxZ_ = std::max(maxZ_, targetLla.altitude);
             vec_CSV.append(targetLla.altitude);
             track.append(targetLla);
         }
@@ -562,7 +556,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
     }
 
-    emit fileStopsOpening2(vec_CSV, minZ, maxZ);
+    emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);
 }
 
 
@@ -717,10 +711,6 @@ void DeviceManager::shutdown()
 
 void DeviceManager::onPositionUpdated(const QGeoPositionInfo &info)
 {
-    if (!useGPS_) {
-        return;
-    }
-
     IDBinNav::SimpleNav smplNav;
     smplNav.latitude = info.coordinate().latitude();
     smplNav.longitude = info.coordinate().longitude();
@@ -731,20 +721,6 @@ void DeviceManager::onPositionUpdated(const QGeoPositionInfo &info)
 
     emit positionComplete(smplNav.latitude, smplNav.longitude, info.timestamp().toSecsSinceEpoch(), info.timestamp().toMSecsSinceEpoch());
     emit attitudeComplete(smplNav.yaw, 0.0, 0.0);
-
-    if (loggingStarted_) {
-        ProtoBinOut req_out;
-        req_out.create(Parsers::CONTENT, IDBinNav::SimpleNav::getVer(), IDBinNav::SimpleNav::getId(), 0);
-        req_out.write<IDBinNav::SimpleNav>(smplNav);
-        req_out.end();
-
-        emit sendFrameInputToLogger(QUuid(), nullptr, req_out);
-    }
-}
-
-void DeviceManager::setUseGPS(bool state)
-{
-    useGPS_ = state;
 }
 
 void DeviceManager::delAllDev()

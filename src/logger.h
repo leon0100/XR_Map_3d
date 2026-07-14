@@ -24,7 +24,6 @@ public slots:
     // .klf
     bool startNewKlfLog();
     bool stopKlfLogging();
-    void loggingKlfStream(const QByteArray &data);
     bool isOpenKlf();
     void onFrameParserReceiveKlf(QUuid uuid, Link* link, FrameParser frame);
 

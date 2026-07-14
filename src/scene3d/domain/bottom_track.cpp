@@ -153,7 +153,7 @@ void BottomTrack::actionEvent(ActionEvent actionEvent)
 
 void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redrawAll)
 {
-    // qDebug() << "BottomTrack::isEpochsChanged lEpoch..." << lEpoch << "  " << rEpoch;
+    qDebug() << "BottomTrack::isEpochsChanged lEpoch..." << lEpoch << "  " << rEpoch;
     if(!datasetPtr_) {
         return;
     }

@@ -1,12 +1,13 @@
 #include "qPlot2D.h"
 
-#include <time.h>
 #include <QMutex>
 #include <QPixmap>
 #include <QPainter>
 #include <QSGSimpleTextureNode>
 #include <QQuickWindow>
 #include "epoch_event.h"
+#include "console.h"
+
 
 
 qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(new QTimer(this))
@@ -34,7 +35,6 @@ void qPlot2D::paint(QPainter *painter)
     if(waveWidth < 1) {
         waveWidth = 1;
     }
-
 
     Plot2D::getImage(totalWidth - waveWidth, (int)height(), painter, _isHorizontal);
     Plot2D::draw(painter);
@@ -221,8 +221,8 @@ void qPlot2D::drawPolygonOutline(bool outlineMode)
 }
 
 
-void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max, float gain_slope,
-                            float threshold, float offsetx, float offsety, float offsetz, bool manual) {
+void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max,
+                        float gain_slope, float threshold, float offsetx, float offsety, float offsetz, bool manual) {
     // qDebug() << "开始绘制等高线 qPlot2D::doDistProcessing.........";
     if (datasetPtr_ != nullptr) {
         QVector<Epoch> pool = datasetPtr_->getPool();

@@ -804,14 +804,6 @@ GridLayout {
 
                 RowLayout {
                     CButton {
-                        text: qsTr("Complex signal to CSV")
-                        Layout.fillWidth: true
-                        onClicked: core.exportComplexToCSV(exportPathText.text);
-                    }
-                }
-
-                RowLayout {
-                    CButton {
                         text: qsTr("USBL to CSV")
                         Layout.fillWidth: true
                         onClicked: core.exportUSBLToCSV(exportPathText.text);
@@ -891,7 +883,7 @@ GridLayout {
                     }
                 }
             }
-    }
+        }
 
         ParamGroup {
             visible: instruments > 1

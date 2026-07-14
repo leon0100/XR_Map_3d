@@ -29,7 +29,7 @@ public:
     Q_INVOKABLE int   pilotModeState();
 
     void setProgressDialog(QObject* dialog);
-    void resetChannelId();
+    void resetFileAndChannelId();
 
 
 public slots:
@@ -60,12 +60,7 @@ public slots:
 
     void onPositionUpdated(const QGeoPositionInfo& info);
 
-    void setUseGPS(bool state);
-
-
 signals:
-    void sendFrameInputToLogger(QUuid uuid, Link* link, Parsers::FrameParser frame);
-
     void sendChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
     void sendTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
     void sendSoundSpeeed(const ChannelId& channelId, uint32_t soundSpeed);
@@ -157,12 +152,11 @@ private:
     QUuid upgradeUuid_;
     uint8_t upgradeAddr_;
     QByteArray upgradeData_;
-    bool loggingStarted_ = false;
     LocationReader* locReader_;
-    bool useGPS_{ false };
 
     QObject* progressDialog_ = nullptr;
     ChannelId batchChannelId_{QUuid(), 0};
+    double minZ_ = 0.0, maxZ_ = 0.0;
 
 private slots:
     void readyReadProxy(Link* link);

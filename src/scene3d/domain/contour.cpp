@@ -1,7 +1,6 @@
 #include "contour.h"
 
-Contour::Contour(QObject* parent)
-: SceneObject(parent)
+Contour::Contour(QObject* parent) : SceneObject(parent)
 {}
 
 Contour::~Contour()

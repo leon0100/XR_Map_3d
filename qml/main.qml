@@ -1310,18 +1310,6 @@ ApplicationWindow  {
                         }
                     }
 
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/timeline_event_x.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        implicitWidth: theme.controlHeight
-                        visible: !renderer.rulerDrawing && renderer.rulerSelected
-
-                        onClicked: {
-                            renderer.rulerDeleteSelected()
-                            rulerMenuBlock.visible = false
-                        }
-                    }
                 }
 
 

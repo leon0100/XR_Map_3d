@@ -452,33 +452,12 @@ ColumnLayout
         }
 
         CheckButton {
-            id: loggingCheck
-            text: qsTr("KLF")
-            checkedColor: "red"
-            color: "red"
-
-            Layout.alignment: Qt.AlignRight
-
-            onCheckedChanged: core.loggingKlf = loggingCheck.checked
-            Component.onCompleted: core.loggingKlf = loggingCheck.checked
-
-            Settings {
-                property alias loggingCheck: loggingCheck.checked
-            }
-
-            icon.source: checked ? "qrc:/icons/ui/record_fill.svg": "qrc:/icons/ui/record.svg"
-        }
-
-        CheckButton {
             id: loggingCheck2
             text: qsTr("CSV")
             checkedColor: "red"
             color: "red"
 
             Layout.alignment: Qt.AlignRight
-
-            onCheckedChanged: core.loggingCsv = loggingCheck2.checked
-            Component.onCompleted: core.loggingCsv = loggingCheck2.checked
 
             Settings {
                 property alias loggingCheck2: loggingCheck2.checked
@@ -500,13 +479,6 @@ ColumnLayout
             checkedBackColor: core.isGPSAlive ? "green" : "red"
 
             Layout.alignment: Qt.AlignRight
-            onCheckedChanged: {
-                core.useGPS = checked
-            }
-
-            Component.onCompleted: {
-                core.useGPS = checked
-            }
 
             Settings {
                 property alias gpsCheckButton: gpsCheckButton.checked

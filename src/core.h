@@ -46,10 +46,6 @@ public:
     Q_PROPERTY(bool      isGPSAlive                   READ getIsGPSAlive                   NOTIFY isGPSAliveChanged)
     Q_PROPERTY(bool      isFactoryMode                READ isFactoryMode                   CONSTANT)
     Q_PROPERTY(ConsoleListModel* consoleList          READ consoleList                     CONSTANT)
-    Q_PROPERTY(bool      loggingKlf                   READ getKlfLogging                   WRITE setKlfLogging)
-    Q_PROPERTY(bool      isKlfLogging                 READ getKlfLogging                   NOTIFY loggingKlfChanged)
-    Q_PROPERTY(bool      loggingCsv                   READ getCsvLogging                   WRITE setCsvLogging)
-    Q_PROPERTY(bool      useGPS                       READ getUseGPS                       WRITE setUseGPS)
     Q_PROPERTY(QString   filePath                     READ getFilePath                     NOTIFY filePathChanged)
     Q_PROPERTY(bool      isFileOpening                READ getIsFileOpening                NOTIFY sendIsFileOpening)
     Q_PROPERTY(bool      isSeparateReading            READ getIsSeparateReading            CONSTANT)
@@ -91,13 +87,6 @@ public slots:
     bool closeProxy();
     bool upgradeFW(const QString& name, QObject* dev);
     void upgradeChanged(int progressStatus);
-    bool getKlfLogging() const;
-    void setKlfLogging(bool isLogging);
-    bool getCsvLogging() const;
-    void setCsvLogging(bool isLogging);
-    bool getUseGPS() const;
-    void setUseGPS(bool state);
-    bool exportComplexToCSV(QString filePath);
     bool exportUSBLToCSV(QString filePath);
     bool exportPlotAsCVS(QString filePath, const ChannelId& channelId, float decimation = 0);
     bool exportPlotAsXTF(QString filePath);
@@ -140,7 +129,6 @@ signals:
     void sendIsFileOpening();
     void channelListUpdated();
     void isGPSAliveChanged();
-    void loggingKlfChanged();
 
     void scrrenModeChanged();
     void currentMapLevelChanged();
@@ -160,7 +148,6 @@ private slots:
     void onFileStopsOpening2(QVector<float>& depthVec, double minZ, double maxZ);
     void onSendMapTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId); // TODO: maybe store map texture id in mapView
     void onDataProcesstorStateChanged(const DataProcessorType& state);
-    void onSendFrameInputToLogger(QUuid uuid, Link* link, const Parsers::FrameParser& frame);
 
     void onZoomLevelChanged(int level);
 
@@ -227,8 +214,6 @@ private:
     QList<QMetaObject::Connection> linkManagerWrapperConnections_;
     QString openedfilePath_, lastOpenFilePath_;
     EnumFileType currentFileType_;
-    bool isLoggingKlf_;
-    bool isLoggingCsv_;
     QString filePath_;
     QString fChName_;
     QString sChName_;
@@ -236,9 +221,8 @@ private:
     bool isFileOpening_;
 
     bool isGPSAlive_;
-    bool isUseGPS_;
 
-    int currMapLevel_ = 0;
+    int  currMapLevel_ = 0;
     bool isAutoRenderSpan_ = true;
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;

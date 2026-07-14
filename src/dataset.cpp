@@ -649,6 +649,8 @@ void Dataset::resetDataset()
     usingRecordParameters_.clear();
     lastAddChartEpochIndx_.clear();
     channelsToResizeEthData_.clear();
+    polygonOutlineNED_.clear();
+    autoBoundary_.clear();
 
     activeContactIndx_    = -1;
     boatLatitute_         = 0.0f;
@@ -676,8 +678,12 @@ void Dataset::resetRenderBuffers()
 {
     tracks.clear();
     vec_CSV_.clear();
-    pool_.clear();
-    pool_.shrink_to_fit();
+    {
+        //加poolMtx_写锁，等待ComputeWorker读完再清空
+        QWriteLocker wl(&poolMtx_);
+        pool_.clear();
+        pool_.shrink_to_fit();
+    }
     _lastYaw = 0;
     _lastPitch = 0;
     _lastRoll = 0;
@@ -918,7 +924,7 @@ void Dataset::onDistCompleted(int epIndx, const ChannelId& channelId, float dist
 
 void Dataset::onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll)
 {
-    // qDebug() << "Dataset::onLastBottomTrackEpochChanged.............";
+    qDebug() << "Dataset::onLastBottomTrackEpochChanged.............";
     bottomTrackParam_     = btP;
     lastBottomTrackEpoch_ = val;
 
@@ -934,12 +940,11 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
         QWriteLocker locker(&lock_);
 
         if (channelsSetup_.empty()) {
-            firstChannelId_ = DatasetChannel(channelId, subChannelId); //
+            firstChannelId_ = DatasetChannel(channelId, subChannelId);
         }
 
         for (int16_t i = 0; i < channelsSetup_.size(); ++i) {
-            if (channelsSetup_.at(i).channelId_ == channelId &&
-                channelsSetup_.at(i).subChannelId_ == subChannelId) {
+            if (channelsSetup_.at(i).channelId_ == channelId && channelsSetup_.at(i).subChannelId_ == subChannelId) {
                 indx = i;
                 break;
             }
@@ -974,6 +979,7 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
         emit channelsUpdated();
     }
 }
+
 
 Epoch *Dataset::addNewEpoch()
 {

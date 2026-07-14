@@ -75,21 +75,6 @@ bool Logger::stopKlfLogging()
     return true;
 }
 
-void Logger::loggingKlfStream(const QByteArray &data)
-{
-    if (isOpenKlf()) {
-        klfLogFile_->write(data);
-
-        if (klfCurrentIteration_ > klfFlushInterval_) {
-            klfLogFile_->flush();
-            klfCurrentIteration_ = 0;
-        }
-        else {
-            ++klfCurrentIteration_;
-        }
-    }
-}
-
 bool Logger::isOpenKlf()
 {
     return klfLogFile_->isOpen();
@@ -104,7 +89,6 @@ void Logger::onFrameParserReceiveKlf(QUuid uuid, Link* linkPtr, FrameParser fram
         return;
     }
 
-    loggingKlfStream(QByteArray((const char*)frame.frame(), frame.frameLen()));
 }
 
 bool Logger::startNewCsvLog()
@@ -135,9 +119,8 @@ bool Logger::startNewCsvLog()
         if (isOpen) {
             corePtr->consoleInfo("Logger csv dir: " + dir.path());
             corePtr->consoleInfo("Logger csv make file: " + csvLogFile_->fileName());
-
-            // connects
-            csvData_.csvConnections.append(QObject::connect(datasetPtr_, &Dataset::dataUpdate, this, &Logger::loggingCsvStream, Qt::AutoConnection));
+            csvData_.csvConnections.append(QObject::connect(datasetPtr_, &Dataset::dataUpdate, this,
+                                                            &Logger::loggingCsvStream, Qt::AutoConnection));
         }
         else {
             corePtr->consoleInfo("Logger csv can't make file: " + csvLogFile_->fileName());

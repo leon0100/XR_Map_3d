@@ -316,7 +316,7 @@ private:
     std::shared_ptr<Camera>       m_camera;
     std::shared_ptr<Camera>       m_axesThumbnailCamera;
     QPointF m_startMousePos = {0.0f, 0.0f};
-    QPointF m_lastMousePos = {0.0f, 0.0f};
+    QPointF m_lastMousePos  = {0.0f, 0.0f};
     std::shared_ptr<RayCaster>    m_rayCaster;
     std::shared_ptr<IsobathsView> isobathsView_;
     std::shared_ptr<SurfaceView>  surfaceView_;

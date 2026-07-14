@@ -55,7 +55,7 @@ public:
         return averageChartLosses_;
     };
 
-    void resetChannelId();
+    void resetFileAndChannelId();
     // void sendOpenFile_CSV(QString path);
     // void sendOpenFile_tsl(QString path, EnumFileType currentFileType);
 

@@ -70,6 +70,7 @@ public slots:
 protected:
     friend class GraphicsScene3dView;
 
+
 private:
     Dataset* datasetPtr_;
     QObject* qmlRootObject_;
@@ -79,8 +80,9 @@ private:
     bool isDrawOutlineMode_ = false;
     bool isDraggingPoint_ = false;
 
+
 public:
-    int draggingPtIndex_ = -1;        //当前拖动的点索引，-1表示无
+    int  draggingPtIndex_ = -1;        //当前拖动的点索引，-1表示无
     bool isVisible_ = true;
 
 };

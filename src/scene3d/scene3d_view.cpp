@@ -209,11 +209,11 @@ void GraphicsScene3dView::setCursorShape(Qt::CursorShape shape)
 
 void GraphicsScene3dView::clear(bool isClearTrack, bool cleanMap)
 {
-    qDebug() << "bool isClearTrack..." << isClearTrack;
     if(isClearTrack) {
         boatTrack_->clearData();
         m_bottomTrack->clearData();
         navigationArrow_->clearData();
+        polygonOutline_->clearData();
     }
 
     isobathsView_->clear();
@@ -472,9 +472,9 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 
     // ray for marker
     auto toOrig = QVector3D(x, height() - y, -1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-    auto toEnd = QVector3D(x, height() - y, 1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-    auto toDir = (toEnd - toOrig).normalized();
-    auto to = calculateIntersectionPoint(toOrig, toDir, 0);
+    auto toEnd  = QVector3D(x, height() - y, 1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
+    auto toDir  = (toEnd - toOrig).normalized();
+    auto to     = calculateIntersectionPoint(toOrig, toDir, 0);
     m_ray.setOrigin(toOrig);
     m_ray.setDirection(toDir);
 
@@ -1121,6 +1121,7 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
         this,  [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll) -> void {
+        qDebug() << "connect&Dataset::bottomTrackUpdated,...........";
             //暂时注释
             // auto chList = datasetPtr_->channelsList();
             // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {

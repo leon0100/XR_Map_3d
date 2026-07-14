@@ -40,11 +40,10 @@ public:
     {
     public:
         virtual void render(QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
-                            const QMap <QString, std::shared_ptr <QOpenGLShaderProgram>>& shaderProgramMap) const override final;
+                    const QMap <QString, std::shared_ptr <QOpenGLShaderProgram>>& shaderProgramMap) const override final;
     private:
         virtual void updateBounds() override final;
         friend class UsblView;
-        // data
         QMap<int, UsblObjectParams> tracks_;
     };
 

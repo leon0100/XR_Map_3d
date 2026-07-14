@@ -104,32 +104,6 @@ Item {
                 mainLayout.opacity = 0.5
             }
 
-            // MenuButton {
-            //     id: menuSettings
-            //     icon.source: "qrc:/icons/ui/plug.svg"
-            //     Layout.fillWidth: true
-            //     isKlfLogging: core.isKlfLogging
-            //     CMouseOpacityArea {
-            //         toolTipText: qsTr("Connections")
-            //         onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
-            //     }
-
-            //     onPressed: itemChangeActive(menuSettings)
-            // }
-
-            // MenuButton {
-            //     id: menuDisplay
-            //     Layout.fillWidth: true
-            //     icon.source: "./settings-outline.svg"
-
-            //     CMouseOpacityArea {
-            //         toolTipText: qsTr("Settings")
-            //         onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
-            //     }
-
-            //     onPressed: itemChangeActive(menuDisplay)
-            // }
-
         //     CheckButton {
         //         id: visible3DButton
         //         implicitWidth: theme.menuWidth

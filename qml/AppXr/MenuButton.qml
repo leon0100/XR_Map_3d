@@ -5,7 +5,6 @@ import QtQuick.Layouts 1.15
 
 
 Button {
-    property bool isKlfLogging: false
     property bool active: false
     property int  borderWidth: 0
     property real klfTint: 1.0

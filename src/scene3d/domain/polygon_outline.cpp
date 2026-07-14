@@ -203,7 +203,6 @@ void PolygonOutline::autoGenerateBoundary(bool generate)
     if(generate) {
         QVector<QVector3D>& boundary = datasetPtr_->getAutoBounadry();
         for (const auto& pt : boundary) {
-            qDebug() << "pt...." << pt.x() << "   " << pt.y();
             QVector<QVector3D> prepData;
             North_East_Down posNed = North_East_Down(pt.y(), pt.x(), 0);
             prepData.push_back(QVector3D(posNed.n, posNed.e, 0));

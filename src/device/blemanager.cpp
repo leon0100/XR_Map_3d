@@ -481,6 +481,7 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
     if(bleCount_++ % 5 != 0) {
         return;
     }
+
     // qDebug() << "trackIndex_....." << trackIndex_;
     // qDebug() << "pt..........." << pt.latitude << "  " << pt.longitude;
 

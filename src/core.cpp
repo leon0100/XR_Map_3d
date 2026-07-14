@@ -19,12 +19,9 @@ Core::Core() : QObject(),
     datasetPtr_(new Dataset),
     scene3dViewPtr_(nullptr),
     openedfilePath_(),
-    isLoggingKlf_(false),
-    isLoggingCsv_(false),
     filePath_(),
     isFileOpening_(false),
-    isGPSAlive_(false),
-    isUseGPS_(false)
+    isGPSAlive_(false)
 {
     qRegisterMetaType<uint8_t>("uint8_t");
     createControllers();
@@ -259,13 +256,9 @@ bool Core::closeLogFile()
     dataHorizon_->clear();
     QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
 
-
-
     if (!isOpenedFile()) {
         return false;
     }
-
-
 
     if (datasetPtr_) {
         datasetPtr_->resetDataset();
@@ -348,15 +341,6 @@ bool Core::openCSV(QString name, int separatorType, int firstRow, int colTime,
 
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-        if (!isAppend) {
-            resetDataProcessorConnections();
-            datasetPtr_->resetDataset();
-            dataHorizon_->clear();
-            QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
-            setDataProcessorConnections();
-            dataHorizon_->setIsFileOpening(isFileOpening_);
-        }
-
         if (scene3dViewPtr_) {
             if (!isAppend) {
                 scene3dViewPtr_->clear(true);
@@ -426,99 +410,6 @@ void Core::upgradeChanged(int progressStatus)
     // if(progressStatus == DevDriver::successUpgrade) {
     //     //        restoreBaudrate();
     // }
-}
-
-bool Core::getKlfLogging() const
-{
-    return isLoggingKlf_;
-}
-
-void Core::setKlfLogging(bool isLogging)
-{
-    if (isLogging == this->getKlfLogging())
-        return;
-    this->getKlfLogging() ? logger_.stopKlfLogging() : logger_.startNewKlfLog();
-    isLoggingKlf_ = isLogging;
-
-    emit loggingKlfChanged();
-}
-
-bool Core::getCsvLogging() const
-{
-    return isLoggingCsv_;
-}
-
-void Core::setCsvLogging(bool isLogging)
-{
-    if (isLogging == this->getCsvLogging())
-        return;
-    this->getCsvLogging() ? logger_.stopCsvLogging() : logger_.startNewCsvLog();
-    isLoggingCsv_ = isLogging;
-}
-
-bool Core::getUseGPS() const
-{
-    return isUseGPS_;
-}
-
-void Core::setUseGPS(bool state)
-{
-    //qDebug() << "Core::setUseGPS" << state;
-    isUseGPS_ = state;
-    QMetaObject::invokeMethod(deviceManagerWrapperPtr_->getWorker(), "setUseGPS", Qt::QueuedConnection, Q_ARG(bool, isUseGPS_));
-}
-
-bool Core::exportComplexToCSV(QString file_path) {
-    QString export_file_name = isOpenedFile() ? openedfilePath_.section('/', -1).section('.', 0, 0) : QDateTime::currentDateTime().toString("yyyy.MM.dd_hh:mm:ss").replace(':', '.');
-    logger_.creatExportStream(file_path + "/" + export_file_name + ".csv");
-
-    auto ch_list = datasetPtr_->channelsList();
-    // _dataset->setRefPosition(1518);
-
-    for(int i = 0; i < datasetPtr_->size(); i++) {
-        Epoch* epoch = datasetPtr_->fromIndex(i);
-
-        if(epoch == NULL) { continue; }
-
-        if(epoch->isComplexSignalAvail()) {
-            ComplexSignals& sigs = epoch->complexSignals();
-
-            for (auto dev_i = sigs.cbegin(), end = sigs.cend(); dev_i != end; ++dev_i) {
-                QMap<int, QVector<ComplexSignal>> dev = dev_i.value();
-
-                for (auto group_i = dev.cbegin(), end = dev.cend(); group_i != end; ++group_i) {
-                    int group_id  = group_i.key();
-                    QVector<ComplexSignal> sig = group_i.value();
-                    int ch_size = sig.size();
-
-                    for(int ch_i = 0; ch_i < ch_size; ch_i++) {
-                        int ch_num = ch_i + group_id*32;
-
-                        ComplexF* data = sig[ch_i].data.data();
-                        int data_size = sig[ch_i].data.size();
-
-                        QString row_data;
-                        row_data.append(QString("%1,%2").arg(i).arg(ch_num));
-                        row_data.append(QString(",%1").arg(sig[ch_i].globalOffset));
-                        row_data.append(QString(",%1").arg(sig[ch_i].sampleRate));
-
-                        if(data != NULL && data_size > 0) {
-                            for(int ci = 0; ci < data_size; ci++) {
-                                row_data.append(QString(",%1,%2").arg(data[ci].real).arg(data[ci].imag));
-                            }
-                        }
-
-                        row_data.append("\n");
-                        logger_.dataExport(row_data);
-                    }
-                }
-            }
-        }
-    }
-
-    logger_.endExportStream();
-
-    return true;
 }
 
 bool Core::exportUSBLToCSV(QString filePath)
@@ -1151,7 +1042,6 @@ void Core::openFileFromMenu()
     lastOpenFilePath_ = fi.absolutePath();
 
     if(datasetPtr_ && datasetPtr_->size() > 0) {
-        resetDataProcessorConnections();
         bleManager_->clearRealData();
         udpManager_->clearRealData();
         datasetPtr_->resetDataset();
@@ -1248,12 +1138,11 @@ void Core::openFileFromMenu()
             return;
         }
 
-        deviceManagerWrapperPtr_->resetChannelId();
+        deviceManagerWrapperPtr_->resetFileAndChannelId();
 
         //读取内容并调用相应的处理函数
         fileNames.sort();
-        for(int i = 0;i < fileCnt; i++)
-        {
+        for(int i = 0; i < fileCnt; i++) {
             /*-按照已选择的文件名路径打开文件，给下一步做铺垫-*/
             QString nowFileName = fileNames.at(i);
 
@@ -1469,8 +1358,8 @@ void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double max
             isobathsViewControlMenuController_->setEdgeLimitChanged(40);
         }
     }
-    // qDebug() << "onFileStopsOpening2..............";
-    datasetPtr_->vec_CSV_  = depthVec;
+    // qDebug() << "onFileStopsOpening2.............." << minZ << "    " << maxZ;
+    datasetPtr_->vec_CSV_  += depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
     datasetPtr_->setAutoBounadry();
@@ -1514,7 +1403,6 @@ void Core::createControllers()
 void Core::createDeviceManagerConnections()
 {
     Qt::ConnectionType directionConnection = Qt::ConnectionType::DirectConnection;
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendFrameInputToLogger, this, &Core::onSendFrameInputToLogger, directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendChartSetup, datasetPtr_,  &Dataset::setChartSetup,         directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendTranscSetup, datasetPtr_, &Dataset::setTranscSetup,        directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendSoundSpeeed, datasetPtr_, &Dataset::setSoundSpeed,         directionConnection);
@@ -1716,14 +1604,6 @@ void Core::onDataProcesstorStateChanged(const DataProcessorType& state)
 {
     dataProcessorState_ = state;
     dataProcessor_->setDataProcessType(state);
-}
-
-void Core::onSendFrameInputToLogger(QUuid uuid, Link *link, const Parsers::FrameParser& frame)
-{
-    // qDebug() << "Core::onSendFrameInputToLogger" << frame.availContext();
-    if (getKlfLogging()) {
-        logger_.onFrameParserReceiveKlf(uuid, link, frame);
-    }
 }
 
 void Core::onZoomLevelChanged(int level)

@@ -337,8 +337,8 @@ void BottomTrackProcessor::bottomTrackProcessing(const DatasetChannel &channel1,
 void BottomTrackProcessor::bottomTrackProcessing_file(const DatasetChannel &channel1,
                                 const BottomTrackParam& btP, bool manual, bool redrawAll)
 {
-    // qDebug() << "bottomTrackProcessing_file......channel1.channelId_" <<
-        // channel1.channelId_.address << "   " << btP.indexTo;
+    qDebug() << "bottomTrackProcessing_file......channel1.channelId_" <<
+        channel1.channelId_.address << "   " << btP.indexTo;
     QMetaObject::invokeMethod(dataProcessor_, "postLastBottomTrackEpochChanged", Qt::QueuedConnection,
                               Q_ARG(ChannelId, channel1.channelId_), Q_ARG(int, btP.indexTo),
                               Q_ARG(BottomTrackParam, btP),Q_ARG(bool, manual), Q_ARG(bool, redrawAll));

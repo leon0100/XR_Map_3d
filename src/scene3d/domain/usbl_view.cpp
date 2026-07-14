@@ -18,21 +18,19 @@ SceneObject::SceneObjectType UsblView::type() const
 }
 
 void UsblView::UsblViewRenderImplementation::render(QOpenGLFunctions *ctx, const QMatrix4x4 &mvp,
-                                                    const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
+                        const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const
 {
     if (!m_isVisible) {
         return;
     }
 
     auto shaderProgram = shaderProgramMap.value("static", nullptr);
-
     if (!shaderProgram) {
         qWarning() << "Shader program 'static' not found!";
         return;
     }
 
     shaderProgram->bind();
-
     int posLoc     = shaderProgram->attributeLocation ("position");
     int matrixLoc  = shaderProgram->uniformLocation   ("matrix");
     int colorLoc   = shaderProgram->uniformLocation   ("color");

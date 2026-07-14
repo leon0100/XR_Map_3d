@@ -6,7 +6,6 @@
 #include <dataset.h>
 #include <QTimer>
 #include "plot2D.h"
-#include "console.h"
 
 
 class qPlot2D : public QQuickPaintedItem, public Plot2D
