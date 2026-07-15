@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.3
 import Qt.labs.settings 1.1
 
 import WaterFall 1.0
+import AppXr 1.0
 
 WaterFall {
     id: plot
@@ -13,7 +14,7 @@ WaterFall {
     property int  indx: 0
     property int  instruments: instrumentsGradeList.currentIndex
     property int  plotSize: theme.screenSize * 0.35
-    property int  iconSize: plotSize * 0.08
+    property int  plotIconSize: theme.iconSize * 1.5
 
     // horizontal: horisontalVertical.checked
     horizontal: menuToolBar.layoutHorizontal
@@ -320,8 +321,8 @@ WaterFall {
         iconSource: "qrc:/icons/ui/settings.svg"
         implicitWidth: theme.menuWidth
         anchors.left: parent.left
-        anchors.bottomMargin: theme.menuWidth * 0.5 - theme.iconSize
-        anchors.leftMargin: iconSize * 0.5
+        anchors.bottomMargin: theme.menuWidth * 0.5 - plotIconSize
+        anchors.leftMargin: plotIconSize * 0.5
         anchors.bottom: parent.bottom
     }
 
@@ -330,26 +331,27 @@ WaterFall {
         id: settingsScroll
         visible: plotCheckButton.checked
         anchors.left: parent.left
-        anchors.leftMargin: iconSize * 0.5 + theme.menuWidth
+        anchors.leftMargin: plotIconSize * 0.5 + theme.menuWidth
         anchors.bottom: parent.bottom
         width: plot.width * 0.8
 
         MenuFrame {
             id: plotSettings
             width: parent.width
+            anchors.margins: plotIconSize * 0.5
 
             ColumnLayout {
-                spacing: iconSize
+                spacing: plotIconSize
 
                 RowLayout {
-                    Layout.fillWidth:  true
+                    // Layout.fillWidth:  true
 
                     CCheck {
                         id: echogramVisible
                         Layout.fillWidth: true
                         checked: true
                         text: qsTr("Color Scheme")
-                        height: iconSize
+                        height: plotIconSize
                         onCheckedChanged: plotEchogramVisible(checked)
                         Component.onCompleted: plotEchogramVisible(checked)
                     }
@@ -359,7 +361,7 @@ WaterFall {
                         Layout.fillWidth: true
                         model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
                         currentIndex: 0
-                        height: iconSize
+                        height: plotIconSize
 
                         onCurrentIndexChanged: plotEchogramTheme(currentIndex)
                         Component.onCompleted: plotEchogramTheme(currentIndex)
@@ -370,27 +372,11 @@ WaterFall {
                         }
                     }
 
-                    CCombo {
-                        id: echogramTypesList
-                        Layout.fillWidth: true
-                        model: [qsTr("Raw"), qsTr("Side-Scan")]
-                        currentIndex: 0
-                        height: iconSize
-
-                        onCurrentIndexChanged: plotEchogramCompensation(currentIndex)
-                        Component.onCompleted: plotEchogramCompensation(currentIndex)
-
-                        Settings {
-                            category: "Plot2D_" + plot.indx
-                            property alias echogramTypesList: echogramTypesList.currentIndex
-                        }
-                    }
                 }
 
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
-
                     color: "#555555"
                 }
 
@@ -399,14 +385,14 @@ WaterFall {
 
                     // CCheck {
                     //     id: rulerVisible
-                    //     implicitWidth: iconSize * 2
+                    //     implicitWidth: plotIconSize * 2
                     //     text: qsTr("Ruler")
                     //     onCheckedChanged: plotGridVerticalNumber(gridNumber.value*rulerVisible.checked)
                     // }
 
                     CText {
                         text: qsTr("upper(m)")
-                        font.pixelSize: iconSize
+                        font.pixelSize: plotIconSize
                         horizontalAlignment: Text.AlignRight
                         Layout.alignment: Qt.AlignVCenter
                     }
@@ -414,9 +400,9 @@ WaterFall {
                        id: upperMin
                        text: (plot.minUpRng / 100).toFixed(0)
                        Layout.fillWidth: true
-                       Layout.preferredWidth: iconSize * 4
+                       Layout.preferredWidth: plotIconSize * 4
                        horizontalAlignment: TextInput.AlignHCenter
-                       font.pixelSize: iconSize
+                       font.pixelSize: plotIconSize
                        selectByMouse: true
                        validator: IntValidator { bottom: 0; top: 511;}
                        onTextChanged: {
@@ -438,12 +424,12 @@ WaterFall {
                     }
 
                     Item {
-                        Layout.preferredWidth: iconSize
+                        Layout.preferredWidth: plotIconSize
                     }
 
                     CText {
                         text: qsTr("lower(m)")
-                        font.pixelSize: iconSize
+                        font.pixelSize: plotIconSize
                         horizontalAlignment: Text.AlignRight
                         Layout.alignment: Qt.AlignVCenter
                     }
@@ -451,9 +437,9 @@ WaterFall {
                         id: lowerMax
                         text: (plot.maxLoRng / 100).toFixed(0)
                         Layout.fillWidth: true
-                        Layout.preferredWidth: iconSize * 4
+                        Layout.preferredWidth: plotIconSize * 4
                         horizontalAlignment: TextInput.AlignHCenter
-                        font.pixelSize: iconSize
+                        font.pixelSize: plotIconSize
                         selectByMouse: true
                         validator: IntValidator { bottom: 1; top: 512;}
                         onTextChanged: {
@@ -480,13 +466,13 @@ WaterFall {
                     }
 
                     Item {
-                        Layout.preferredWidth: iconSize
+                        Layout.preferredWidth: plotIconSize
                     }
 
                     Rectangle {
                         id: applyBtn
-                        width: iconSize * 4
-                        height: iconSize * 1.2
+                        width: plotIconSize * 4
+                        height: plotIconSize * 1.2
                         radius: 4
                         color: mouseArea.pressed ? "#888888" : "#555555"
                         border.color: "#aaaaaa"
@@ -495,7 +481,7 @@ WaterFall {
                             anchors.centerIn: parent
                             text: qsTr("Apply")
                             color: "white"
-                            font.pixelSize: iconSize
+                            font.pixelSize: plotIconSize
                         }
 
                         MouseArea {
@@ -527,14 +513,32 @@ WaterFall {
                     Text {
                         id: sensitivity
                         text: "Sensitivity"
-                        font.pixelSize: iconSize
+                        font.pixelSize: plotIconSize
+                    }
+
+
+                    XRSlider {
+                        title: "Sensitivity"
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: plotIconSize * 8
+                        Layout.alignment: Qt.AlignVCenter
+
+                        from: 1
+                        to: 7
+
+                        value: 3
+
+                        onValueChanged: {
+
+                            plot.setSensitivity(value)
+                        }
                     }
 
                     CCheck {
                         id: bottomLine
                         checked: false
                         text: qsTr("Bottom Line")
-                        height: iconSize
+                        height: plotIconSize
                         onCheckedChanged: {
                             bottomLineChecked = !bottomLineChecked
                             plot.setBottomLineVisible(bottomLineChecked)
@@ -556,7 +560,7 @@ WaterFall {
                         id: currentFrame
                         checked: false
                         text: qsTr("Current Frame")
-                        height: iconSize
+                        height: plotIconSize
                         onCheckedChanged: {
                             currentFrameChecked = !currentFrameChecked
                             if(!currentFrameChecked) {
@@ -569,7 +573,7 @@ WaterFall {
                         id: addMarks
                         checked: false
                         text: qsTr("Add Marks")
-                        height: iconSize
+                        height: plotIconSize
                         onCheckedChanged: {
                             currentFrameChecked = !currentFrameChecked
                             if(!currentFrameChecked) {
@@ -578,18 +582,18 @@ WaterFall {
                         }
                     }
 
-                    // CCheck {
-                    //     id: deleteFrame
-                    //     checked: false
-                    //     text: qsTr("Delete Frame")
-                    //     height: iconSize
-                    //     onCheckedChanged: {
-                    //         currentFrameChecked = !currentFrameChecked
-                    //         if(!currentFrameChecked) {
-                    //             plot.plotMousePosition(-1, -1)
-                    //         }
-                    //     }
-                    // }
+                    CCheck {
+                        id: deleteFrame
+                        checked: false
+                        text: qsTr("Delete Frame")
+                        height: plotIconSize
+                        onCheckedChanged: {
+                            currentFrameChecked = !currentFrameChecked
+                            if(!currentFrameChecked) {
+                                plot.plotMousePosition(-1, -1)
+                            }
+                        }
+                    }
 
                 }
 

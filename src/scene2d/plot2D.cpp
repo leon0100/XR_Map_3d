@@ -365,14 +365,6 @@ void Plot2D::setEchogramTheme(int theme_id)
     plotUpdate();
 }
 
-void Plot2D::setEchogramCompensation(int compensation_id)
-{
-    // qDebug() << "Plot2D::setEchogramCompensation.........";
-    echogram_.setCompensation(compensation_id);
-    echogram_.resetCash();
-    plotUpdate();
-}
-
 // float Plot2D::getEchogramScaleYFactor() const
 // {
 //     return echogram_.getScaleYFactor();

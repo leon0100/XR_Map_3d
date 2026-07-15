@@ -6,6 +6,7 @@ import QtQuick.Controls 2.15
 CheckBox {
      id: control
      text: qsTr("Check")
+     // implicitWidth: iconSize * 1.2
      implicitHeight: iconSize * 1.2
 
      property int iconSize: theme.iconSize * 1.5
@@ -24,7 +25,7 @@ CheckBox {
          Rectangle {
              width:  backRect.width * 0.5
              height: backRect.height * 0.5
-             x: backRect.width * 0.5
+             x: backRect.width * 0.25
              y: backRect.height * 0.25
              radius: 1
              color: theme.textColor
@@ -34,7 +35,7 @@ CheckBox {
 
      contentItem: CText {
          text: control.text
-         font.pixelSize: theme.iconSize
+         font.pixelSize: iconSize
          verticalAlignment: Text.AlignVCenter
          leftPadding: control.indicator.width + control.spacing
      }

@@ -118,5 +118,6 @@
         <file>Communication/SerialPort.qml</file>
         <file>AppXr/ExportAsData.qml</file>
         <file>AppXr/XRCheckBox.qml</file>
+        <file>AppXr/XRSlider.qml</file>
     </qresource>
 </RCC>
