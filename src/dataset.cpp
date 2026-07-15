@@ -180,9 +180,9 @@ void Dataset::setChartSetup(const ChannelId& channelId, uint16_t resol, uint16_t
 }
 
 void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartParams,
-                       const QVector<QVector<uint8_t>>& data, float resolution, float offset)
+                       const QVector<QVector<uint8_t>>& data, bool enableRender)
 {
-    if (data.empty() || qFuzzyIsNull(resolution)) {
+    if (data.empty()) {
         return;
     }
 
@@ -191,7 +191,7 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
         addNewEpoch();
     }
 
-    updateEpochWithChart(channelId, chartParams, data, resolution, offset);
+    updateEpochWithChart(channelId, chartParams, data, 0.2, 0.1);
     const int endIndx = endIndex();
 
     lastAddChartEpochIndx_[channelId] = endIndx;
@@ -201,7 +201,9 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
     }
 
     // TODO:不只是迭代次数的回溯窗口，而是海图层面的最后一个未变更版本
-    emit dataUpdate();
+    if(enableRender) {
+        emit dataUpdate();
+    }
     // emit chartAdded(lastIndx);
 }
 
@@ -684,10 +686,14 @@ void Dataset::resetRenderBuffers()
         pool_.clear();
         pool_.shrink_to_fit();
     }
-    _lastYaw = 0;
+    minX_ = std::numeric_limits<float>::max();
+    maxX_ = std::numeric_limits<float>::lowest();
+    minY_ = std::numeric_limits<float>::max();
+    maxY_ = std::numeric_limits<float>::lowest();
+    _lastYaw   = 0;
     _lastPitch = 0;
-    _lastRoll = 0;
-    lastTemp_ = NAN;
+    _lastRoll  = 0;
+    lastTemp_  = NAN;
     interpolator_.clear();
     _llaRef = LLARef();
     // bSProc_->clear();
@@ -924,7 +930,7 @@ void Dataset::onDistCompleted(int epIndx, const ChannelId& channelId, float dist
 
 void Dataset::onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll)
 {
-    qDebug() << "Dataset::onLastBottomTrackEpochChanged.............";
+    // qDebug() << "Dataset::onLastBottomTrackEpochChanged.............";
     bottomTrackParam_     = btP;
     lastBottomTrackEpoch_ = val;
 

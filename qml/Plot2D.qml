@@ -15,7 +15,8 @@ WaterFall {
     property int  plotSize: theme.screenSize * 0.35
     property int  iconSize: plotSize * 0.08
 
-    horizontal: horisontalVertical.checked
+    // horizontal: horisontalVertical.checked
+    horizontal: menuToolBar.layoutHorizontal
     property bool currentFrameChecked: currentFrame.checked
     property bool bottomLineChecked:   bottomLine.checked
 
@@ -313,370 +314,299 @@ WaterFall {
     }
 
 
-    RowLayout {
-        id: settingsRow
-        anchors.left:   parent.left
+
+    CheckButton {
+        id: plotCheckButton
+        iconSource: "qrc:/icons/ui/settings.svg"
+        implicitWidth: theme.menuWidth
+        anchors.left: parent.left
+        anchors.bottomMargin: theme.menuWidth * 0.5 - theme.iconSize
+        anchors.leftMargin: iconSize * 0.5
         anchors.bottom: parent.bottom
-        visible:        true
+    }
+
+
+    MenuScroll {
+        id: settingsScroll
+        visible: plotCheckButton.checked
+        anchors.left: parent.left
+        anchors.leftMargin: iconSize * 0.5 + theme.menuWidth
+        anchors.bottom: parent.bottom
+        width: plot.width * 0.8
 
         MenuFrame {
-            id: leftPanel
-            isOpacityControlled: true
-            Layout.alignment: Qt.AlignLeft | Qt.AlignBottom
-            Layout.leftMargin: (indx === 1 && !is3dVisible && height > plot.height - 130 * theme.resCoeff) ? width : 0
-            Layout.bottomMargin: 20
+            id: plotSettings
+            width: parent.width
 
             ColumnLayout {
-                id: plotControl
-                spacing: 4
+                spacing: iconSize
 
-                CheckButton {
-                    id: plotCheckButton
-                    iconSource: "qrc:/icons/ui/settings.svg"
-                    implicitWidth: theme.menuWidth
-                    onCheckedChanged: {
-                        if (checked) {
-                            settingsClicked()
+                RowLayout {
+                    Layout.fillWidth:  true
+
+                    CCheck {
+                        id: echogramVisible
+                        Layout.fillWidth: true
+                        checked: true
+                        text: qsTr("Color Scheme")
+                        height: iconSize
+                        onCheckedChanged: plotEchogramVisible(checked)
+                        Component.onCompleted: plotEchogramVisible(checked)
+                    }
+
+                    CCombo {
+                        id: echoTheme
+                        Layout.fillWidth: true
+                        model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
+                        currentIndex: 0
+                        height: iconSize
+
+                        onCurrentIndexChanged: plotEchogramTheme(currentIndex)
+                        Component.onCompleted: plotEchogramTheme(currentIndex)
+
+                        Settings {
+                            category: "Plot2D_" + plot.indx
+                            property alias waterfallThemeId: echoTheme.currentIndex
+                        }
+                    }
+
+                    CCombo {
+                        id: echogramTypesList
+                        Layout.fillWidth: true
+                        model: [qsTr("Raw"), qsTr("Side-Scan")]
+                        currentIndex: 0
+                        height: iconSize
+
+                        onCurrentIndexChanged: plotEchogramCompensation(currentIndex)
+                        Component.onCompleted: plotEchogramCompensation(currentIndex)
+
+                        Settings {
+                            category: "Plot2D_" + plot.indx
+                            property alias echogramTypesList: echogramTypesList.currentIndex
                         }
                     }
                 }
 
-            }
-        }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
 
+                    color: "#555555"
+                }
 
-        MenuScroll {
-            id: settingsScroll
-            visible: plotCheckButton.checked
-            Layout.alignment: Qt.AlignBottom
-            Layout.bottomMargin: 10
-            Layout.preferredWidth: plot.width - theme.menuWidth - 50
-            Layout.maximumWidth: plot.width - theme.menuWidth - 50
+                RowLayout {
+                    Layout.fillWidth: true
 
-            MenuFrame {
-                id: plotSettings
-                width: settingsScroll.availableWidth - settingsScroll.padding * 2
+                    // CCheck {
+                    //     id: rulerVisible
+                    //     implicitWidth: iconSize * 2
+                    //     text: qsTr("Ruler")
+                    //     onCheckedChanged: plotGridVerticalNumber(gridNumber.value*rulerVisible.checked)
+                    // }
 
-                ParamGroup {
-                    groupName: qsTr("Sonar Viewer")
-                    width: plotSettings.width - plotSettings.horizontalMargins * 2
-
-                    RowLayout {
-                        id: rowDataset
-                        Layout.fillWidth: true
-                        visible: instruments > 1
-
-                        CText {
-                            text: qsTr("Channels:")
-                        }
-
-                        function setChannelNamesToBackend() {
-                            plotDatasetChannelFromStrings(channel1Combo.currentText, channel2Combo.currentText)
-                            plotCursorChanged(indx, cursorFrom(), cursorTo())
-                        }
-
-                        CCombo  {
-                            id: channel1Combo
-
-                            property bool suppressTextSignal: false
-
-                            Layout.fillWidth: true
-                            visible: true
-
-                            onCurrentTextChanged: {
-                                if (suppressTextSignal) {
-                                    return
-                                }
-
-                                rowDataset.setChannelNamesToBackend()
-                            }
-
-                            Component.onCompleted: {
-                                model = dataset.channelsNameList()
-
-                                let index = model.indexOf(core.ch1Name)
-                                if (index >= 0) {
-                                    channel1Combo.currentIndex = index
-                                }
-                            }
-
-                            Connections {
-                                target: core
-                                function onChannelListUpdated() {
-                                    let list = dataset.channelsNameList()
-
-                                    channel1Combo.suppressTextSignal = true
-
-                                    channel1Combo.model = []
-                                    channel1Combo.model = list
-
-                                    let newIndex = list.indexOf(core.ch1Name)
-                                    if (newIndex >= 0) {
-                                        channel1Combo.currentIndex = newIndex
-                                    }
-                                    else {
-                                        channel1Combo.currentIndex = 0
-                                    }
-
-                                    channel1Combo.suppressTextSignal = false
-                                }
-                            }
-                        }
-
-                        CCombo  {
-                            id: channel2Combo
-
-                            property bool suppressTextSignal: false
-
-                            Layout.fillWidth: true
-                            visible: true
-
-                            onCurrentTextChanged: {
-                                if (suppressTextSignal) {
-                                    return
-                                }
-
-                                rowDataset.setChannelNamesToBackend()
-                            }
-
-
-                            Component.onCompleted: {
-                                model = dataset.channelsNameList()
-
-                                let index = model.indexOf(core.ch2Name)
-                                if (index >= 0) {
-                                    channel2Combo.currentIndex = index
-                                }
-                            }
-
-                            Connections {
-                                target: core
-                                function onChannelListUpdated() {
-                                    let list = dataset.channelsNameList()
-
-                                    channel2Combo.suppressTextSignal = true
-
-                                    channel2Combo.model = []
-                                    channel2Combo.model = list
-
-                                    let newIndex = list.indexOf(core.ch2Name)
-
-                                    if (newIndex >= 0) {
-                                        channel2Combo.currentIndex = newIndex
-                                    }
-                                    else {
-                                        channel2Combo.currentIndex = 0
-                                    }
-
-                                    channel2Combo.suppressTextSignal = false
-                                }
-                            }
-                        }
+                    CText {
+                        text: qsTr("upper(m)")
+                        font.pixelSize: iconSize
+                        horizontalAlignment: Text.AlignRight
+                        Layout.alignment: Qt.AlignVCenter
                     }
-
-                    RowLayout {
-                        Layout.fillWidth:  true
-
-                        CCheck {
-                            id: echogramVisible
-                            Layout.fillWidth: true
-                            checked: true
-                            text: qsTr("Color Scheme")
-                            onCheckedChanged: plotEchogramVisible(checked)
-                            Component.onCompleted: plotEchogramVisible(checked)
-                        }
-
-                        CCombo {
-                            id: echoTheme
-                            Layout.fillWidth: true
-                            model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
-                            currentIndex: 0
-
-                            onCurrentIndexChanged: plotEchogramTheme(currentIndex)
-                            Component.onCompleted: plotEchogramTheme(currentIndex)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-                                property alias waterfallThemeId: echoTheme.currentIndex
-                            }
-                        }
-
-                        CCombo {
-                            id: echogramTypesList
-                            Layout.fillWidth: true
-                            // Layout.preferredWidth: 120
-                            model: [qsTr("Raw"), qsTr("Side-Scan")]
-                            currentIndex: 0
-
-                            onCurrentIndexChanged: plotEchogramCompensation(currentIndex)
-                            Component.onCompleted: plotEchogramCompensation(currentIndex)
-
-                            Settings {
-                                category: "Plot2D_" + plot.indx
-
-                                property alias echogramTypesList: echogramTypesList.currentIndex
-                            }
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-
-                        // CCheck {
-                        //     id: rulerVisible
-                        //     implicitWidth: iconSize * 2
-                        //     text: qsTr("Ruler")
-                        //     onCheckedChanged: plotGridVerticalNumber(gridNumber.value*rulerVisible.checked)
-                        // }
-
-                        CText {
-                            text: qsTr("upper(m)")
-                            font.pixelSize: iconSize
-                            horizontalAlignment: Text.AlignRight
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-                        TextField {
-                           id: upperMin
-                           text: (plot.minUpRng / 100).toFixed(0)
-                           Layout.fillWidth: true
-                           Layout.preferredWidth: iconSize * 4
-                           horizontalAlignment: TextInput.AlignHCenter
-                           font.pixelSize: iconSize
-                           selectByMouse: true
-                           validator: IntValidator { bottom: 0; top: 511;}
-                           onTextChanged: {
-                               let value    = parseInt(text)
-                               let lowValue = parseInt(lowerMax.text)
-                               if(isNaN(value)) {
-                                   text = "0"
-                                   // value = 0
-                               }
-                               else if(value > 511) {
-                                   text = "511"
-                                   // value = 511
-                               }
-                               // plot.minUpRng = value
+                    TextField {
+                       id: upperMin
+                       text: (plot.minUpRng / 100).toFixed(0)
+                       Layout.fillWidth: true
+                       Layout.preferredWidth: iconSize * 4
+                       horizontalAlignment: TextInput.AlignHCenter
+                       font.pixelSize: iconSize
+                       selectByMouse: true
+                       validator: IntValidator { bottom: 0; top: 511;}
+                       onTextChanged: {
+                           let value    = parseInt(text)
+                           let lowValue = parseInt(lowerMax.text)
+                           if(isNaN(value)) {
+                               text = "0"
+                               // value = 0
                            }
+                           else if(value > 511) {
+                               text = "511"
+                               // value = 511
+                           }
+                           // plot.minUpRng = value
+                       }
 
-                           // onEditingFinished: applyRange()
-                           // Component.onCompleted: applyRange()
-                        }
+                       // onEditingFinished: applyRange()
+                       // Component.onCompleted: applyRange()
+                    }
 
-                        Item {
-                            Layout.preferredWidth: iconSize
-                        }
+                    Item {
+                        Layout.preferredWidth: iconSize
+                    }
 
-                        CText {
-                            text: qsTr("lower(m)")
-                            font.pixelSize: iconSize
-                            horizontalAlignment: Text.AlignRight
-                            Layout.alignment: Qt.AlignVCenter
-                        }
-                        TextField {
-                            id: lowerMax
-                            text: (plot.maxLoRng / 100).toFixed(0)
-                            Layout.fillWidth: true
-                            Layout.preferredWidth: iconSize * 4
-                            horizontalAlignment: TextInput.AlignHCenter
-                            font.pixelSize: iconSize
-                            selectByMouse: true
-                            validator: IntValidator { bottom: 1; top: 512;}
-                            onTextChanged: {
-                                let value = parseInt(text)
-                                let upValue = parseInt(upperMin.text)
-                                if(isNaN(value)) {
-                                    text = "1"
-                                    // value = 1
-                                }
-                                else if(value > 512) {
-                                    text = "512"
-                                    // value = 512
-                                }
-                                else if(value < 1) {
-                                    text= "1"
-                                    // value = 1
-                                }
-                                // plot.maxLoRng = value
-
+                    CText {
+                        text: qsTr("lower(m)")
+                        font.pixelSize: iconSize
+                        horizontalAlignment: Text.AlignRight
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+                    TextField {
+                        id: lowerMax
+                        text: (plot.maxLoRng / 100).toFixed(0)
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: iconSize * 4
+                        horizontalAlignment: TextInput.AlignHCenter
+                        font.pixelSize: iconSize
+                        selectByMouse: true
+                        validator: IntValidator { bottom: 1; top: 512;}
+                        onTextChanged: {
+                            let value = parseInt(text)
+                            let upValue = parseInt(upperMin.text)
+                            if(isNaN(value)) {
+                                text = "1"
+                                // value = 1
                             }
-
-                            // onEditingFinished: applyRange()
-                            // Component.onCompleted: applyRange()
-                        }
-
-                        Item {
-                            Layout.preferredWidth: iconSize
-                        }
-
-                        Rectangle {
-                            id: applyBtn
-                            width: iconSize * 4
-                            height: iconSize * 1.2
-                            radius: 4
-                            color: mouseArea.pressed ? "#888888" : "#555555"
-                            border.color: "#aaaaaa"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: qsTr("Apply")
-                                color: "white"
-                                font.pixelSize: iconSize
+                            else if(value > 512) {
+                                text = "512"
+                                // value = 512
                             }
+                            else if(value < 1) {
+                                text= "1"
+                                // value = 1
+                            }
+                            // plot.maxLoRng = value
 
-                            MouseArea {
-                                id: mouseArea
-                                anchors.fill: parent
-                                onClicked: {
-                                    let upperVal = parseInt(upperMin.text)
-                                    let lowerVal = parseInt(lowerMax.text)
-                                    if(upperVal >= lowerVal) {
-                                        upperVal = lowerVal - 1
-                                    }
+                        }
 
-                                    plot.resetUpLoRng(upperVal, lowerVal)
+                        // onEditingFinished: applyRange()
+                        // Component.onCompleted: applyRange()
+                    }
+
+                    Item {
+                        Layout.preferredWidth: iconSize
+                    }
+
+                    Rectangle {
+                        id: applyBtn
+                        width: iconSize * 4
+                        height: iconSize * 1.2
+                        radius: 4
+                        color: mouseArea.pressed ? "#888888" : "#555555"
+                        border.color: "#aaaaaa"
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: qsTr("Apply")
+                            color: "white"
+                            font.pixelSize: iconSize
+                        }
+
+                        MouseArea {
+                            id: mouseArea
+                            anchors.fill: parent
+                            onClicked: {
+                                let upperVal = parseInt(upperMin.text)
+                                let lowerVal = parseInt(lowerMax.text)
+                                if(upperVal >= lowerVal) {
+                                    upperVal = lowerVal - 1
                                 }
+
+                                plot.resetUpLoRng(upperVal, lowerVal)
                             }
                         }
                     }
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: "#555555"
+                }
 
 
-                    RowLayout {
-                        Layout.fillWidth:  true
+                RowLayout {
+                    Layout.fillWidth:  true
 
-                        CCheck {
-                            id: currentFrame
-                            checked: false
-                            text: qsTr("Current Frame")
-                            onCheckedChanged: {
-                                currentFrameChecked = !currentFrameChecked
-                                if(!currentFrameChecked) {
-                                    plot.plotMousePosition(-1, -1)
-                                }
-                            }
-                        }
-
-                        CCheck {
-                            id: bottomLine
-                            checked: false
-                            text: qsTr("Bottom Line")
-                            onCheckedChanged: {
-                                bottomLineChecked = !bottomLineChecked
-                                plot.setBottomLineVisible(bottomLineChecked)
-                            }
-                        }
-
+                    Text {
+                        id: sensitivity
+                        text: "Sensitivity"
+                        font.pixelSize: iconSize
                     }
 
                     CCheck {
-                        id: horisontalVertical
-                        checked: true
-                        text: qsTr("Horizontal")
+                        id: bottomLine
+                        checked: false
+                        text: qsTr("Bottom Line")
+                        height: iconSize
+                        onCheckedChanged: {
+                            bottomLineChecked = !bottomLineChecked
+                            plot.setBottomLineVisible(bottomLineChecked)
+                        }
                     }
 
                 }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: "#555555"
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    CCheck {
+                        id: currentFrame
+                        checked: false
+                        text: qsTr("Current Frame")
+                        height: iconSize
+                        onCheckedChanged: {
+                            currentFrameChecked = !currentFrameChecked
+                            if(!currentFrameChecked) {
+                                plot.plotMousePosition(-1, -1)
+                            }
+                        }
+                    }
+
+                    CCheck {
+                        id: addMarks
+                        checked: false
+                        text: qsTr("Add Marks")
+                        height: iconSize
+                        onCheckedChanged: {
+                            currentFrameChecked = !currentFrameChecked
+                            if(!currentFrameChecked) {
+                                plot.plotMousePosition(-1, -1)
+                            }
+                        }
+                    }
+
+                    // CCheck {
+                    //     id: deleteFrame
+                    //     checked: false
+                    //     text: qsTr("Delete Frame")
+                    //     height: iconSize
+                    //     onCheckedChanged: {
+                    //         currentFrameChecked = !currentFrameChecked
+                    //         if(!currentFrameChecked) {
+                    //             plot.plotMousePosition(-1, -1)
+                    //         }
+                    //     }
+                    // }
+
+                }
+
+                // CCheck {
+                //     id: horisontalVertical
+                //     checked: true
+                //     text: qsTr("Horizontal")
+                // }
+
             }
         }
     }
+
+
+
+
+
 
     CContact {
         id: contactDialog

@@ -171,7 +171,7 @@ void ComputeWorker::setMaxZ(float v)
 
 void ComputeWorker::bottomTrackProcessing(const DatasetChannel& ch1, const DatasetChannel& ch2, const BottomTrackParam& p, bool manual, bool redrawAll)
 {
-    qDebug() << "ComputeWorker::bottomTrackProcessing............";
+    // qDebug() << "ComputeWorker::bottomTrackProcessing............";
     emit bottomTrackStarted();
 
     // bottom_.bottomTrackProcessing(ch1, ch2, p, manual, redrawAll);

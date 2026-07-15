@@ -26,13 +26,12 @@
 
 /*
  * 在大多数平台上，渲染将在专用线程上进行。因此，QQuickFramebufferObject 类在 QML Item实现和FBO呈现之间强制执行严格的分离。
- * QML所需的所有Item逻辑，例如属性和与 UI相关的辅助函数，都应该位于QQuickFramebufferObject类的子类中;
- * 与渲染相关的所有内容都必须位于QQuickFramebufferObject::Renderer类中。
+ * QML所需的所有Item逻辑，例如属性和与 UI相关的辅助函数，都应该位于QQuickFramebufferObject类的子类GraphicsScene3dView中;
+ * 与渲染相关的所有内容都必须位于QQuickFramebufferObject::Renderer类的子类InFboRenderer中。
  */
 
 class Dataset;
 class GraphicsScene3dRenderer;
-//与UI相关的逻辑放在QQuickFramebufferObject的子类GraphicsScene3dView中
 class GraphicsScene3dView : public QQuickFramebufferObject
 {
     Q_OBJECT
@@ -236,6 +235,7 @@ public:
     void setNeedToResetStartPos(bool state);
     void forceUpdateDatasetLlaRef();
     void ensureInView(const QVector3D& worldPos);
+    void focusTrackBounds();
 
     Q_INVOKABLE void switchToBottomTrackVertexComboSelectionMode(qreal x, qreal y);
     Q_INVOKABLE void mousePressTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);
@@ -389,11 +389,7 @@ public:  //截图模块
     QMutex screenshotMutex_;
     int mapLevel_;
 
-    QMutex screenshotQueueMutex_;//要定义为成员变量，而不是局部变量（会导致每个线程都有自己的mutex，没有互斥效果）
-    bool isProcessingScreenshot_ = false;
-
-    // 当前处理的截图任务
-    ScreenshotTask screenshotTask_;
+    ScreenshotTask screenshotTask_;  // 当前处理的截图任务
 
     bool tilesRenderComplete_ = false; //当前瓦片渲染完成标志
     QObject* progressDialog_ = nullptr;
@@ -404,7 +400,6 @@ public:  //截图模块
 public: //测距模块
     Q_INVOKABLE void setDistMeasureMode(bool isDist);
     Q_INVOKABLE void setLandMarkMode(bool mark);
-
 
 
 };

@@ -11,7 +11,7 @@ Slider {
     snapMode: Slider.SnapAlways
 
     property real backHandleX: slider.horizontal ? slider.leftPadding + slider.visualPosition * (slider.width - slider.leftPadding - slider.rightPadding - handleControl.width): slider.leftPadding
-    property real backHandleY: slider.horizontal ? slider.topPadding + slider.availableHeight / 2 - handleControl.height / 2 : -slider.topPadding / 2 + slider.visualPosition * (slider.height) - handleControl.height / 2
+    property real backHandleY: slider.horizontal ? slider.topPadding + slider.availableHeight * 0.5 - handleControl.height * 0.5 : -slider.topPadding * 0.5 + slider.visualPosition * (slider.height) - handleControl.height * 0.5
     property int barWidth: 10
 
     handle: Rectangle {

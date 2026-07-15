@@ -6,7 +6,7 @@ Button {
     id: control
     checkable: true    
     property bool   active: checked || down
-    property int    borderWidth: 1
+    property int    borderWidth: 0
     property color  color: theme.textColor
     property color  checkedColor: "black"
     property color  checkedBackColor: "white"

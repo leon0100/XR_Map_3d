@@ -41,9 +41,9 @@ void DeviceManagerWrapper::initStreamList()
     workerObject_->initStreamList();
 }
 
-void DeviceManagerWrapper::resetFileAndChannelId()
+void DeviceManagerWrapper::resetFileAndChannelId(int fileCnt)
 {
-    workerObject_->resetFileAndChannelId();
+    workerObject_->resetFileAndChannelId(fileCnt);
 }
 
 

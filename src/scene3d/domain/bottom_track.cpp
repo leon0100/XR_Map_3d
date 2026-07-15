@@ -153,7 +153,7 @@ void BottomTrack::actionEvent(ActionEvent actionEvent)
 
 void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redrawAll)
 {
-    qDebug() << "BottomTrack::isEpochsChanged lEpoch..." << lEpoch << "  " << rEpoch;
+    // qDebug() << "BottomTrack::isEpochsChanged lEpoch..." << lEpoch << "  " << rEpoch;
     if(!datasetPtr_) {
         return;
     }
@@ -199,32 +199,17 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
                 if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
                     // float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
                     float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
-                    QVector3D new3DData = QVector3D(pos.n, pos.e, dist);
-                    prepData.push_back(new3DData);
-                    // minX_ = std::min(minX_, new3DData.x());
-                    // maxX_ = std::max(maxX_, new3DData.x());
-                    // minY_ = std::min(minY_, new3DData.y());
-                    // maxY_ = std::max(maxY_, new3DData.y());
-
+                    prepData.push_back(QVector3D(pos.n, pos.e, dist));
                     epIndxUpdated_.push_back(epIndx);
                     vertIndxUpdated_.push_back(rSize);
 
                     vertex2Epoch_.insert(rSize, epIndx);
                     epoch2Vertex_.insert(epIndx, rSize);
-
                     rSize++;
                 }
             }
         }
     }
-
-    // QVector<QVector3D> box;
-    // box.append(QVector3D(minY_, minX_, 0));
-    // box.append(QVector3D(maxY_, minX_, 0));
-    // box.append(QVector3D(maxY_, maxX_, 0));
-    // box.append(QVector3D(minY_, maxX_, 0));
-    // box.append(QVector3D(minY_, minX_, 0));
-    // datasetPtr_->setAutoBounadry(box);
 
     // qDebug() << "epIndxUpdated_.size():" << epIndxUpdated_.size() << "  " << vertIndxUpdated_.size();
     emit updatedPoints(epIndxUpdated_, vertIndxUpdated_, manual);  //这句绘制等高线

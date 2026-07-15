@@ -29,7 +29,7 @@ public:
     Q_INVOKABLE int   pilotModeState();
 
     void setProgressDialog(QObject* dialog);
-    void resetFileAndChannelId();
+    void resetFileAndChannelId(int fileCnt);
 
 
 public slots:
@@ -66,7 +66,7 @@ signals:
     void sendSoundSpeeed(const ChannelId& channelId, uint32_t soundSpeed);
 
     void dataSend(QByteArray data);
-    void chartComplete(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset);
+    void chartComplete(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void rawDataRecieved(const ChannelId& channelId, RawData rawData);
     void distComplete(const ChannelId& channelId, int dist);
     void usblSolutionComplete(IDBinUsblSolution::UsblSolution data);
@@ -157,6 +157,7 @@ private:
     QObject* progressDialog_ = nullptr;
     ChannelId batchChannelId_{QUuid(), 0};
     double minZ_ = 0.0, maxZ_ = 0.0;
+
 
 private slots:
     void readyReadProxy(Link* link);

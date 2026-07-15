@@ -33,16 +33,7 @@
 #include <QDateTime>
 
 
-
 #include "dataset_defs.h"
-// #include "console.h"
-
-
-
-
-
-
-
 
 
 

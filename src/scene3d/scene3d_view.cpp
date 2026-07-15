@@ -845,6 +845,49 @@ void GraphicsScene3dView::ensureInView(const QVector3D& worldPos)
     }
 }
 
+void GraphicsScene3dView::focusTrackBounds()
+{
+    if (!m_camera || !datasetPtr_) {
+        return;
+    }
+
+    float minX = datasetPtr_->minX_;
+    float maxX = datasetPtr_->maxX_;
+    float minY = datasetPtr_->minY_;
+    float maxY = datasetPtr_->maxY_;
+    if(minX >= maxX || minY >= maxY) {
+        return;
+    }
+
+    QVector3D center((minX + maxX) * 0.5f, (minY + maxY) * 0.5f, 0);
+
+    float width  = maxX - minX;
+    float height = maxY - minY;
+    float maxSize = std::max(width, height);
+
+    // 轨迹区域占70%
+    constexpr float VIEW_RATIO = 0.70f;
+    float targetViewSize = maxSize / VIEW_RATIO;
+
+
+    //正交模式
+    if(!m_camera->getIsPerspective()) {
+        float orthV = targetViewSize * 0.5f;
+        m_camera->setDistance(orthV);
+    }
+    else {
+    //透视模式，根据FOV计算距离
+        float fov = qDegreesToRadians(m_camera->fov());
+        float distance = (targetViewSize*0.5f) / tan(fov*0.5f);
+        m_camera->setDistance(distance);
+    }
+
+    m_camera->focusOnPosition(center);
+    updateProjection();
+    QQuickFramebufferObject::update();
+    emit cameraIsMoved();
+}
+
 void GraphicsScene3dView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickFramebufferObject::geometryChanged(newGeometry, oldGeometry);
@@ -1120,8 +1163,8 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
     forceUpdateDatasetLlaRef();
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
-        this,  [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll) -> void {
-        qDebug() << "connect&Dataset::bottomTrackUpdated,...........";
+        this, [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll)->void {
+        // qDebug() << "connect&Dataset::bottomTrackUpdated...........";
             //暂时注释
             // auto chList = datasetPtr_->channelsList();
             // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {

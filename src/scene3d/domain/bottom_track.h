@@ -79,7 +79,6 @@ private:
 
     QVector3D convertLLAToNED(const LLA& lla);
     double calculateDistance(const LLA& lla1, const LLA& lla2);
-
     double calculateAzimuth(const LLA& lla1, const LLA& lla2);
 
     using EpochIndex = int;
@@ -88,16 +87,10 @@ private:
     QHash<VerticeIndex, EpochIndex> vertex2Epoch_;
     QHash<VerticeIndex, EpochIndex> epoch2Vertex_;
 
-    DatasetChannel visibleChannel_; // ?!
+    DatasetChannel visibleChannel_;
     Dataset* datasetPtr_;
     DataProcessor* dataProcessorPtr_;
 
-
-    QVector<int>       epIndxUpdated_;
-    QVector<int>       vertIndxUpdated_;
-    // 边界框成员变量
-    // float minX_ = std::numeric_limits<float>::max();
-    // float maxX_ = std::numeric_limits<float>::lowest();
-    // float minY_ = std::numeric_limits<float>::max();
-    // float maxY_ = std::numeric_limits<float>::lowest();
+    QVector<int>  epIndxUpdated_;
+    QVector<int>  vertIndxUpdated_;
 };

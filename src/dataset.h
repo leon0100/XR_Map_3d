@@ -280,7 +280,7 @@ public slots:
     void  setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
     void  setSoundSpeed (const ChannelId& channelId, uint32_t soundSpeed);
     void  setSonarOffset(float x, float y, float z);
-    void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset);
+    void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void  addDist(const ChannelId& channelId, int dist);
     void  addRangefinder(const ChannelId& channelId, float distance);
     void  addUsblSolution(IDBinUsblSolution::UsblSolution data);

@@ -803,23 +803,23 @@ ApplicationWindow  {
             }
         }
 
-        handle: Rectangle {
-            implicitHeight: theme.controlHeight/2
-            color:          SplitHandle.pressed ? "#A0A0A0" : "#707070"
+        // handle: Rectangle {
+        //     implicitHeight: theme.controlHeight/2
+        //     color:          SplitHandle.pressed ? "#A0A0A0" : "#707070"
 
-            Rectangle {
-                width:  parent.width
-                height: 1
-                color:  "#A0A0A0"
-            }
+        //     Rectangle {
+        //         width:  parent.width
+        //         height: 1
+        //         color:  "#A0A0A0"
+        //     }
 
-            Rectangle {
-                y:      parent.height
-                width:  parent.width
-                height: 1
-                color:  "#A0A0A0"
-            }
-        }
+        //     Rectangle {
+        //         y:      parent.height
+        //         width:  parent.width
+        //         height: 1
+        //         color:  "#A0A0A0"
+        //     }
+        // }
 
         Item {
             id:  visualisationLayout
@@ -1068,7 +1068,7 @@ ApplicationWindow  {
                     id: scene3DToolbar
                     x: renderer.width * 0.5
                     y: renderer.height - scene3DToolbar.height * 1.5
-                    Keys.forwardTo:    [mousearea3D]
+                    Keys.forwardTo: [mousearea3D]
                     visible: visualisationLayout.splitMode !== 1
                 }
 
@@ -1121,7 +1121,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/arrow_bar_to_down.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.MinDistProc)
@@ -1135,7 +1135,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/arrow_bar_to_up.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.MaxDistProc)
@@ -1149,7 +1149,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/eraser.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.ClearDistProc)
@@ -1163,7 +1163,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/x.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
 
                         onClicked: {
                             renderer.bottomTrackActionEvent(BottomTrack.Undefined)
@@ -1209,7 +1209,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/plus.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
                         visible: geoMenuBlock.geo && geoMenuBlock.geo.drawing
 
                         onClicked: {
@@ -1222,7 +1222,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/stack_backward.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
                         visible: geoMenuBlock.geo && geoMenuBlock.geo.drawing
 
                         onClicked: {
@@ -1235,7 +1235,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/x.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
                         visible: geoMenuBlock.geo && geoMenuBlock.geo.drawing
 
                         onClicked: {
@@ -1248,7 +1248,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/timeline_event_x.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
                         visible: geoMenuBlock.geo && !geoMenuBlock.geo.drawing && geoMenuBlock.geo.selectedFeatureId !== ""
 
                         onClicked: {
@@ -1286,7 +1286,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/file-check.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
                         visible: renderer.rulerEnabled && renderer.rulerDrawing
 
                         onClicked: {
@@ -1299,7 +1299,7 @@ ApplicationWindow  {
                         icon.source: "qrc:/icons/ui/x.svg"
                         backColor: theme.controlBackColor
                         checkable: false
-                        implicitWidth: theme.controlHeight
+                        // implicitWidth: theme.controlHeight
                         visible: renderer.rulerEnabled || renderer.rulerSelected
 
                         onClicked: {
@@ -1629,7 +1629,7 @@ ApplicationWindow  {
                         Layout.margins: 0
                         Layout.fillWidth: true
                         Layout.columnSpan: parent.columns
-                        Layout.preferredHeight: theme.controlHeight * 2
+                        Layout.preferredHeight: theme.iconSize
                         value: waterViewFirst.timelinePosition
                         stepSize: 0.0001
                         from: 0
@@ -1642,12 +1642,6 @@ ApplicationWindow  {
             }
         }
 
-        Console {
-            id:                      console_vis
-            visible:                 theme.consoleVisible
-            SplitView.minimumHeight: 150
-            SplitView.maximumHeight: mainview.height - theme.controlHeight/2 - theme.controlHeight
-        }
     }
 
 

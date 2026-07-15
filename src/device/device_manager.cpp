@@ -1,9 +1,10 @@
 #include "device_manager.h"
 #include "location_reader.h"
-#include "core.h"
 
 #include <QTimeZone>
 #include <QDateTime>
+#include <QUrl>
+#include <QCoreApplication>
 
 
 
@@ -67,7 +68,7 @@ void DeviceManager::setProgressDialog(QObject* dialog)
     }
 }
 
-void DeviceManager::resetFileAndChannelId()
+void DeviceManager::resetFileAndChannelId(int fileCnt)
 {
     batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
     minZ_ = 0.0;
@@ -330,10 +331,11 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.speed       = tslSingleStru.boat.speed * 10 / 0.514444f;
         chartParams.longitude   = lla.longitude;
         chartParams.latitude    = lla.latitude;
-        emit chartComplete(batchChannelId_, chartParams, dataVec, 0.1f, 0.0);
+        emit chartComplete(batchChannelId_, chartParams, dataVec, true);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (cnt + 1) == tslWCnt ? true : false;
+
         emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
 
         // 更新进度条
@@ -533,17 +535,18 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         chartParams.speed        = tslSingleStru.boat.speed;
         chartParams.longitude    = lla.longitude;
         chartParams.latitude     = lla.latitude;
-        emit chartComplete(batchChannelId_, chartParams, dataVec, 0.1f, 0.0);
+        emit chartComplete(batchChannelId_, chartParams, dataVec, true);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (i + 1) == tsl3Cnt ? true : false;
+
         emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
 
         // 更新进度条
         if (progressDialog_ && (i % progressInterval == 0 || i == (tsl3Cnt - 1))) {
             double progress = static_cast<double>(i + 1) / tsl3Cnt;
             QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                    .arg(i + 1).arg(tsl3Cnt).arg(static_cast<int>(progress * 100));
+                                    .arg(i+1).arg(tsl3Cnt).arg(static_cast<int>(progress*100));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();

@@ -33,6 +33,7 @@ Popup {
     property int itemFontSize: menuSize * 0.16
     property int itemHeight: menuSize * 0.2
     property int start: 2
+    property bool layoutHorizontal: true
 
     property color menuBackColor: "#d6e6ff"
     property color menuPressColor: "#bfefff"
@@ -480,6 +481,79 @@ Popup {
                         }
                     }
                 }
+
+
+                MenuItem {
+                    id: sonarLayout
+                    text: qsTr("Layout")
+                    font.pixelSize: itemFontSize
+                    background: Rectangle {
+                        color: sonarLayout.pressed ? menuPressColor : menuBackColor
+                    }
+                    onClicked: sonarLayoutSubMenu.open()
+
+                    Image {
+                        source: "qrc:/XR/triangle.svg"
+                        rotation: 90
+                        width: itemFontSize/2
+                        height: itemFontSize/2
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 5
+                    }
+
+                    Menu {
+                        id: sonarLayoutSubMenu
+                        background: menuBackground.createObject(fileSubMenu)
+                        width: parent.width
+                        x: 0
+
+                        // property int checkIndex: 0
+
+                        MenuItem {
+                            id: horizontal
+                            text: qsTr("Horiz")
+                            font.pixelSize: itemFontSize
+                            background: Rectangle {
+                                color: horizontal.pressed ? menuPressColor : menuBackColor
+                            }
+                            onClicked: layoutHorizontal = true
+
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                visible: layoutHorizontal === true
+                                width: itemFontSize
+                                height: itemFontSize
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: 5
+                            }
+                        }
+
+                        MenuItem {
+                            id: vertical
+                            text: qsTr("Vertical")
+                            font.pixelSize: itemFontSize
+                            background: Rectangle {
+                                color: vertical.pressed ? menuPressColor : menuBackColor
+                            }
+                            onClicked: layoutHorizontal = false
+
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                visible: layoutHorizontal === false
+                                width: itemFontSize
+                                height: itemFontSize
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.right: parent.right
+                                anchors.rightMargin: 5
+                            }
+                        }
+                    }
+                }
+
+
+
             }
 
         }

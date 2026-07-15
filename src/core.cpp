@@ -755,8 +755,8 @@ void Core::setTimelinePosition(double position)
         if(epochIndex < 0) {
             epochIndex = 0;
         }
-        if(epochIndex >= dataSize)  {
-            epochIndex = dataSize - 1;
+        if(epochIndex >= dataSize) {
+           epochIndex = dataSize - 1;
         }
 
         if(auto navArrow = scene3dViewPtr_->getNavigationArrowPtr()) {
@@ -1042,6 +1042,7 @@ void Core::openFileFromMenu()
     lastOpenFilePath_ = fi.absolutePath();
 
     if(datasetPtr_ && datasetPtr_->size() > 0) {
+        resetDataProcessorConnections();
         bleManager_->clearRealData();
         udpManager_->clearRealData();
         datasetPtr_->resetDataset();
@@ -1051,6 +1052,7 @@ void Core::openFileFromMenu()
             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
         }
         QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool, true));
+        setDataProcessorConnections();
     }
 
     if (progress_) {
@@ -1138,7 +1140,7 @@ void Core::openFileFromMenu()
             return;
         }
 
-        deviceManagerWrapperPtr_->resetFileAndChannelId();
+        deviceManagerWrapperPtr_->resetFileAndChannelId(fileCnt);
 
         //读取内容并调用相应的处理函数
         fileNames.sort();
@@ -1359,12 +1361,13 @@ void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double max
         }
     }
     // qDebug() << "onFileStopsOpening2.............." << minZ << "    " << maxZ;
-    datasetPtr_->vec_CSV_  += depthVec;
+    datasetPtr_->vec_CSV_ += depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
     datasetPtr_->setAutoBounadry();
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
+    scene3dViewPtr_->focusTrackBounds();
 }
 
 void Core::onSendMapTextureIdByTileIndx(const map::TileIndex &tileIndx, GLuint textureId)

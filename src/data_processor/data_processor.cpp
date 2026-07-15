@@ -242,7 +242,7 @@ void DataProcessor::onMosaicCanCalc(uint64_t indx)
 
 void DataProcessor::bottomTrackProcessing(const DatasetChannel &ch1, const DatasetChannel &ch2, const BottomTrackParam &p, bool manual, bool redrawAll)
 {
-    qDebug() << "DataProcessor::bottomTrackProcessing.............." << btBusy_;
+    // qDebug() << "DataProcessor::bottomTrackProcessing.............." << btBusy_;
     if (btBusy_) {
         return;
     }
