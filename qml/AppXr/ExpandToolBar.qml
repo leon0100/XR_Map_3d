@@ -354,7 +354,7 @@ Rectangle {
     id: root
     x: iconSize * 0.5
     y: iconSize * 0.5
-    z: 999
+    z: 9999
 
     // 让 root 的宽度始终等于展开后的总宽度，背景透明，靠内部组件来撑开视觉
     width: iconSize * 1.1

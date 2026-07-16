@@ -510,27 +510,16 @@ WaterFall {
                 RowLayout {
                     Layout.fillWidth:  true
 
-                    Text {
-                        id: sensitivity
-                        text: "Sensitivity"
-                        font.pixelSize: plotIconSize
-                    }
-
-
                     XRSlider {
                         title: "Sensitivity"
-                        Layout.fillWidth: true
                         Layout.preferredWidth: plotIconSize * 8
                         Layout.alignment: Qt.AlignVCenter
 
                         from: 1
                         to: 7
-
                         value: 3
-
                         onValueChanged: {
-
-                            plot.setSensitivity(value)
+                            // plot.setSensitivity(value)
                         }
                     }
 

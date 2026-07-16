@@ -6,3 +6,4 @@ BleLivedataScanning  1.0  BleLivedataScanning.qml
 SerialPort           1.0  SerialPort.qml
 loading              1.0  loading.qml
 IsobathsSet          1.0  IsobathsSet.qml
+LiveData             1.0  LiveData.qml

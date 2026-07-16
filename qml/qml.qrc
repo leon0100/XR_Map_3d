@@ -119,5 +119,6 @@
         <file>AppXr/ExportAsData.qml</file>
         <file>AppXr/XRCheckBox.qml</file>
         <file>AppXr/XRSlider.qml</file>
+        <file>Communication/LiveData.qml</file>
     </qresource>
 </RCC>

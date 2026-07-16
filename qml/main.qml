@@ -43,10 +43,8 @@ ApplicationWindow  {
         sourceComponent: stateGroupComp
     }
 
-
     MenuBar_XR {
         id: menuToolBar
-        visible: false
     }
 
     header: Item {
@@ -117,6 +115,10 @@ ApplicationWindow  {
 
     MapTileLoad {
        id: mapTileLoad
+    }
+
+    LiveData {
+
     }
 
     ExportAsData {

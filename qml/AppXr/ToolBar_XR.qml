@@ -8,7 +8,6 @@ Rectangle {
     id: toolBar_XR
     objectName:  "toolBar_XR"
     height: iconSize + 3
-    // color:  Qt.platform.os === "android" ? "#828282" : "#eeeeee"
     color: "#828282"
     border.color: "#c0c0c0"
 
@@ -121,7 +120,8 @@ Rectangle {
                 onPressed: {
                     if(menuPopup) {
                         if (menuPopup.visible) {
-                            menuPopup.close()
+                            // menuPopup.close()
+                            menuPopup.resuqestColoseMenu()
                         }
                         else {
                             menuPopup.open()
@@ -425,7 +425,7 @@ Rectangle {
 
                 onPressed: {
                     if(menuPopup) {
-                        if (menuPopup.visible) {
+                        if (menuPopup.menuVisible) {
                             menuPopup.close()
                         }
                         else {
@@ -530,7 +530,7 @@ Rectangle {
                     width:  toolBar_XR.iconSize * 3
                     height: toolBar_XR.iconSize
                     anchors.verticalCenter: parent.verticalCenter
-                    ToolTip.visible: containsMouse
+                    ToolTip.visible: toslonLogo.containsMouse
                     ToolTip.text: qsTr("TOSLON")
 
                     MouseArea {

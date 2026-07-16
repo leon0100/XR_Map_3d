@@ -222,6 +222,7 @@ public:
                    NOTIFY mapSourceLoadVisibleChanged);
     Q_PROPERTY(bool exportAsDataVisible  READ getExportAsDataVisible  WRITE setExportAsDataVisible
                    NOTIFY exportAsDataVisibleChanged);
+    Q_PROPERTY(bool liveDataVisible   READ getLiveDataVisible   WRITE setLiveDataVisible   NOTIFY liveDataVisibleChanged)
 
     Q_PROPERTY(double batteryValue       READ batteryValue       NOTIFY sysytemToolBarChanged)
     Q_PROPERTY(QString updateSystemTime  READ updateSysytemTime  NOTIFY sysytemToolBarChanged)
@@ -262,6 +263,9 @@ public:
     void setMapSourceLoadVisible(bool visible);
     bool getExportAsDataVisible();
     void setExportAsDataVisible(bool visible);
+    bool getLiveDataVisible();
+    void setLiveDataVisible(bool visible);
+
 
     double batteryValue() const;
     QString updateSysytemTime() const;
@@ -322,6 +326,7 @@ signals:
     void mapSourceLoadVisibleChanged();
     void exportAsDataVisibleChanged();
     void sysytemToolBarChanged();
+    void liveDataVisibleChanged();
 
 
 protected:
@@ -361,6 +366,7 @@ private:
 
     bool mapSourceLoadVisible_ = false;
     bool exportAsDataVisible_ = false;
+    bool liveDataVisible_ = false;
     QTimer m_batteryTimer;
     double m_batteryValue;
     QString m_currentTime;

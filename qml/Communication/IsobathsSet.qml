@@ -6,6 +6,7 @@ import Qt.labs.settings 1.1
 import QtQuick.Window   2.15
 
 import "../"
+import AppXr 1.0
 
 
 Item {
@@ -48,15 +49,15 @@ Item {
     // ------------------ 侧边按钮 -------------------
     ColumnLayout {
         id: toggleButton
-        width: iconSize * 1.6
+        width: iconSize * 2
         spacing: 2
 
         Rectangle {
             id: isobathsToggleBtn
-            width: iconSize * 1.2
+            width: iconSize * 1.4
             height: iconSize * 6
             color: "#879fc6"
-            opacity: 0.6
+            opacity: 0.75
 
             MouseArea {
                 anchors.fill: parent
@@ -65,8 +66,13 @@ Item {
                     if(isobathsDrawOpen) {
                         bluetoothDrawOpen = false
                         bluetoothToggleBtn.color = "#879fc6"
+                        parent.color = "#4a5f82"
+                        isobathsToggleBtn.opacity = 0.95
                     }
-                    parent.color = isobathsDrawOpen ? "white" : "#879fc6"
+                    else {
+                        parent.color = "#879fc6"
+                        isobathsToggleBtn.opacity = 0.75
+                    }
                 }
             }
 
@@ -89,7 +95,7 @@ Item {
                         anchors.centerIn: parent
                         text: qsTr("Isobaths")
                         color: "white"
-                        font.pixelSize: iconSize * 0.9
+                        font.pixelSize: iconSize
                         rotation: 90
                         transformOrigin: Item.Center
                     }
@@ -99,10 +105,10 @@ Item {
 
         Rectangle {
             id: bluetoothToggleBtn
-            width: iconSize * 1.2
+            width: iconSize * 1.4
             height: iconSize * 6
             color: "#879fc6"
-            opacity: 0.6
+            opacity: 0.75
 
             MouseArea {
                 anchors.fill: parent
@@ -111,8 +117,13 @@ Item {
                     if(bluetoothDrawOpen) {
                         isobathsDrawOpen = false
                         isobathsToggleBtn.color = "#879fc6"
+                        parent.color = "#4a5f82"
+                        bluetoothToggleBtn.opacity = 0.95
                     }
-                    parent.color = bluetoothDrawOpen ? "white" : "#879fc6"
+                    else {
+                        parent.color = "#879fc6"
+                        bluetoothToggleBtn.opacity = 0.75
+                    }
                 }
             }
 
@@ -133,9 +144,9 @@ Item {
                     Layout.preferredHeight: iconSize * 3
                     Text {
                         anchors.centerIn: parent
-                        text: qsTr("Transmit")
+                        text: qsTr("Bathymetry")
                         color: "white"
-                        font.pixelSize: iconSize * 0.9
+                        font.pixelSize: iconSize
                         rotation: 90
                         transformOrigin: Item.Center
                     }
@@ -148,7 +159,7 @@ Item {
 
 
 
-    // --------------------- 抽屉 --------------------
+    // ------------------------- 抽屉 -------------------------
     Rectangle {
         id: isobathsContent
         width:  isobathSize
@@ -906,6 +917,245 @@ Item {
 
 
 
+
+
+
+
+    // ----------------- Bathymetry Config 面板------------------
+    Rectangle {
+        id: bathymetryConfigContent
+        width:  isobathSize * 1.5
+        height: isobathSize * 0.5
+        anchors.top:   toggleButton.top
+        anchors.left: toggleButton.right
+        anchors.leftMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
+
+        color: "#f0f0f0"
+        border.color: "#3498db"
+        border.width: 1
+        radius: 5
+
+        // 拦截鼠标事件，防止点击穿透到地图
+        MouseArea {
+            anchors.fill: parent
+            enabled: bluetoothDrawOpen
+            preventStealing: true
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#dbe3f2"
+        }
+
+        Behavior on anchors.rightMargin {
+            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+        }
+
+
+
+        Rectangle {
+            id: bathymetryConfigTitle
+            anchors.top: parent.top
+            anchors.left: parent.left
+            height: iconSize * 1.5
+            color: "#3498db"
+
+            Text {
+                anchors.left: parent.left
+                anchors.leftMargin: 3
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Bathymetry Config")
+                font.pixelSize: iconSize
+            }
+        }
+
+        ColumnLayout {
+            anchors.top: bathymetryConfigTitle.bottom
+            anchors.topMargin: iconSize
+            anchors.left: parent.left
+            anchors.leftMargin: iconSize
+            anchors.right: parent.right
+            anchors.rightMargin: iconSize
+            spacing: 12
+
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                Text {
+                    text: qsTr("Device Parameter")
+                    font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Text {
+                    text: qsTr("Sound Velocity")
+                    font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                TextField {
+                    id: soundSpeedField
+                    Layout.preferredWidth: iconSize * 4
+                    Layout.preferredHeight: iconSize * 1.2
+                    text: "1500"
+                    font.pixelSize: iconSize * 0.9
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    validator: IntValidator {
+                        bottom: 1
+                        top: 3000
+                    }
+                }
+
+                Text {
+                    text: "m/s"
+                    font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+            }
+
+
+
+            // 第二行：姿态修正 + 分割线
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+
+                CheckBox {
+                    id: attitudeCorrectCheck
+                    text: qsTr("Attitude Correct")
+                    font.pixelSize: iconSize
+                    checked: false
+                    onCheckedChanged: {
+                        console.log("Attitude Correct......", checked)
+                        // attitudeCorrectionEnable = checked
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 1
+                    color: "#888888"
+                }
+
+                XRSlider {
+                    title: "Outline Correction"
+                    Layout.preferredWidth: plotIconSize * 5
+                    Layout.alignment: Qt.AlignVCenter
+
+                    from: 1
+                    to: 4
+                    value: 1
+                    onValueChanged: {
+                        // plot.setSensitivity(value)
+                    }
+                }
+
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+
+                XRSlider {
+                    title: qsTr("Depth Filter")
+                    Layout.preferredWidth: plotIconSize * 5
+                    Layout.alignment: Qt.AlignVCenter
+
+                    from: 1
+                    to: 4
+                    value: 1
+                    onValueChanged: {
+                        console.log("深度滤波:", checked)
+                        // plot.setSensitivity(value)
+                    }
+                }
+
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 1
+                    color: "#888888"
+                }
+
+                CheckBox {
+                    id: batchCorrectionCheck
+                    text: qsTr("Batch Correct")
+                    font.pixelSize: iconSize
+                    checked: false
+                    onCheckedChanged: {
+                        console.log("批量校正:", checked)
+                        // attitudeCorrectionEnable = checked
+                    }
+                }
+
+                CheckBox {
+                    id: depthCorrectionCheck
+                    text: qsTr("Depth Correct")
+                    font.pixelSize: iconSize
+                    checked: false
+                    onCheckedChanged: {
+                        console.log("深度校正:", checked)
+                        // attitudeCorrectionEnable = checked
+                    }
+                }
+
+
+            }
+
+
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
     // ----------------- Bluetooth Live Data 抽屉 ------------------
     Rectangle {
         id: bluetoothContent
@@ -2098,21 +2348,7 @@ Item {
 
         }
 
-
-
-
-
-
-
-
-
-
-
-
     }
 
-
-
-
-
+    */
 }

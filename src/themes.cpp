@@ -388,7 +388,6 @@ bool Themes::getMapSourceLoadVisible()
 {
     return mapSourceLoadVisible_;
 }
-
 void Themes::setMapSourceLoadVisible(bool visible)
 {
     if(mapSourceLoadVisible_ == visible) {
@@ -403,7 +402,6 @@ bool Themes::getExportAsDataVisible()
 {
     return exportAsDataVisible_;
 }
-
 void Themes::setExportAsDataVisible(bool visible)
 {
     if(exportAsDataVisible_ == visible) {
@@ -413,6 +411,21 @@ void Themes::setExportAsDataVisible(bool visible)
 
     emit exportAsDataVisibleChanged();
 }
+
+bool Themes::getLiveDataVisible()
+{
+    return liveDataVisible_;
+}
+void Themes::setLiveDataVisible(bool visible)
+{
+    if(liveDataVisible_ == visible) {
+        return;
+    }
+    liveDataVisible_ = visible;
+
+    emit liveDataVisibleChanged();
+}
+
 
 double Themes::batteryValue() const
 {

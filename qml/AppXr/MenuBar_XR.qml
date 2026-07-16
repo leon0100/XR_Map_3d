@@ -6,12 +6,13 @@ import QtQuick.Window 2.15
 
 Popup {
     id: mainMenuPopup
-
     width:  menuSize
     height: contentItem.childrenRect.height + topPadding + bottomPadding
     x: start
     y: start
     padding: 10
+    closePolicy: Popup.NoAutoClose
+
 
     background: Rectangle {
         color: menuBackColor
@@ -29,17 +30,29 @@ Popup {
     }
 
 
-    property int menuSize: Math.min(Screen.width, Screen.height) * 0.2
-    property int itemFontSize: menuSize * 0.16
-    property int itemHeight: menuSize * 0.2
-    property int start: 2
-    property bool layoutHorizontal: true
+    property alias menuVisible: mainMenuPopup.visible
+    property int   menuSize: Math.min(Screen.width, Screen.height) * 0.2
+    property int   itemFontSize: menuSize * 0.16
+    property int   itemHeight: menuSize * 0.2
+    property int   start: 2
+    property bool  layoutHorizontal: true
 
     property color menuBackColor: "#d6e6ff"
     property color menuPressColor: "#bfefff"
 
     function receiveMapCheck(value) {
         mapSubsubMenu.checkIndex = value
+    }
+
+    function closeMenu() {
+        fileSubMenu.close()
+        settingsSubMenu.close()
+        helpSubMenu.close()
+        langSubsubMenu.close()
+        mapSubsubMenu.close()
+        unitsSubsubMenu.close()
+
+        mainMenuPopup.close()
     }
 
     contentItem: Column {
@@ -485,72 +498,52 @@ Popup {
 
                 MenuItem {
                     id: sonarLayout
-                    text: qsTr("Layout")
+                    text: qsTr("Vertical")
                     font.pixelSize: itemFontSize
                     background: Rectangle {
                         color: sonarLayout.pressed ? menuPressColor : menuBackColor
                     }
-                    onClicked: sonarLayoutSubMenu.open()
+                    onClicked: {
+                        layoutHorizontal = !layoutHorizontal
+                    }
 
                     Image {
-                        source: "qrc:/XR/triangle.svg"
-                        rotation: 90
-                        width: itemFontSize/2
-                        height: itemFontSize/2
+                        source: "qrc:/XR/check.svg"
+                        visible: layoutHorizontal === false
+                        width: itemFontSize
+                        height: itemFontSize
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: parent.right
                         anchors.rightMargin: 5
                     }
+                }
 
-                    Menu {
-                        id: sonarLayoutSubMenu
-                        background: menuBackground.createObject(fileSubMenu)
-                        width: parent.width
-                        x: 0
+                MenuItem {
+                    id: liveData
+                    text: qsTr("Live Data")
+                    font.pixelSize: itemFontSize
+                    background: Rectangle {
+                        color: about.pressed ? menuPressColor : menuBackColor
+                    }
+                    onClicked: {
+                        mainMenuPopup.closeMenu()
+                        // if(theme.liveDataVisible === false) {
 
-                        // property int checkIndex: 0
+                        // }
+                        theme.liveDataVisible = (theme.liveDataVisible === false) ? true : false
+                    }
 
-                        MenuItem {
-                            id: horizontal
-                            text: qsTr("Horiz")
-                            font.pixelSize: itemFontSize
-                            background: Rectangle {
-                                color: horizontal.pressed ? menuPressColor : menuBackColor
-                            }
-                            onClicked: layoutHorizontal = true
-
-                            Image {
-                                source: "qrc:/XR/check.svg"
-                                visible: layoutHorizontal === true
-                                width: itemFontSize
-                                height: itemFontSize
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.right: parent.right
-                                anchors.rightMargin: 5
-                            }
-                        }
-
-                        MenuItem {
-                            id: vertical
-                            text: qsTr("Vertical")
-                            font.pixelSize: itemFontSize
-                            background: Rectangle {
-                                color: vertical.pressed ? menuPressColor : menuBackColor
-                            }
-                            onClicked: layoutHorizontal = false
-
-                            Image {
-                                source: "qrc:/XR/check.svg"
-                                visible: layoutHorizontal === false
-                                width: itemFontSize
-                                height: itemFontSize
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.right: parent.right
-                                anchors.rightMargin: 5
-                            }
-                        }
+                    Image {
+                        source: "qrc:/XR/check.svg"
+                        visible: theme.liveDataVisible === true
+                        width: itemFontSize
+                        height: itemFontSize
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: parent.right
+                        anchors.rightMargin: 5
                     }
                 }
+
 
 
 
@@ -594,6 +587,9 @@ Popup {
                     background: Rectangle {
                         color: registration.pressed ? menuPressColor : menuBackColor
                     }
+                    onClicked: {
+                        mainMenuPopup.closeMenu()
+                    }
                 }
 
                 MenuItem {
@@ -602,6 +598,10 @@ Popup {
                     font.pixelSize: itemFontSize
                     background: Rectangle {
                         color: about.pressed ? menuPressColor : menuBackColor
+                    }
+
+                    onClicked: {
+                        mainMenuPopup.closeMenu()
                     }
                 }
 
@@ -617,7 +617,10 @@ Popup {
             background: Rectangle {
                 color: exit.pressed ? menuPressColor : menuBackColor
             }
-            onClicked: core.exitApp()
+            onClicked: {
+                core.exitApp()
+                mainMenuPopup.closeMenu()
+            }
         }
 
     }
