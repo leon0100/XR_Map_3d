@@ -159,7 +159,7 @@ Item {
 
 
 
-    // ------------------------- 抽屉 -------------------------
+    // ------------------------- isobaths抽屉 -------------------------
     Rectangle {
         id: isobathsContent
         width:  isobathSize
@@ -170,21 +170,16 @@ Item {
         anchors.left: toggleButton.right
         anchors.leftMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
 
-        color: "#f0f0f0"
-        border.color: "#3498db"
+        color: "#dbe3f2"
+        border.color: "#d8e0ef"
         border.width: 1
-        radius: 5
+        radius: iconSize * 0.25
 
         // 拦截鼠标事件，防止点击穿透到地图
         MouseArea {
             anchors.fill: parent
             enabled: isobathsDrawOpen
             preventStealing: true
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            color: "#dbe3f2"
         }
 
         Behavior on anchors.rightMargin {
@@ -921,19 +916,19 @@ Item {
 
 
 
-    // ----------------- Bathymetry Config 面板------------------
+    // ----------------- Bathymetry Config 抽屉面板------------------
     Rectangle {
         id: bathymetryConfigContent
-        width:  isobathSize * 1.5
-        height: isobathSize * 0.5
-        anchors.top:   toggleButton.top
+        width:  isobathSize * 1.6
+        height: isobathSize * 0.6
+        anchors.top:  toggleButton.top
         anchors.left: toggleButton.right
         anchors.leftMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
 
-        color: "#f0f0f0"
-        border.color: "#3498db"
+        color: "#dbe3f2"
+        border.color: "#d8e0ef"
         border.width: 1
-        radius: 5
+        radius: iconSize * 0.25
 
         // 拦截鼠标事件，防止点击穿透到地图
         MouseArea {
@@ -942,15 +937,9 @@ Item {
             preventStealing: true
         }
 
-        Rectangle {
-            anchors.fill: parent
-            color: "#dbe3f2"
-        }
-
         Behavior on anchors.rightMargin {
             NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
         }
-
 
 
         Rectangle {
@@ -958,7 +947,6 @@ Item {
             anchors.top: parent.top
             anchors.left: parent.left
             height: iconSize * 1.5
-            color: "#3498db"
 
             Text {
                 anchors.left: parent.left
@@ -968,6 +956,7 @@ Item {
                 font.pixelSize: iconSize
             }
         }
+
 
         ColumnLayout {
             anchors.top: bathymetryConfigTitle.bottom
@@ -984,9 +973,11 @@ Item {
                 spacing: 8
 
                 Text {
-                    text: qsTr("Device Parameter")
+                    text: qsTr("Parameter:")
                     font.pixelSize: iconSize
                     verticalAlignment: Text.AlignVCenter
+                    // width: 200 //布局中，width不起效果xxx
+                    // implicitWidth: 200  //Text在布局中implicitWidth仅读不能赋值xxx
                 }
 
                 Text {
@@ -995,10 +986,11 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                 }
 
+
                 TextField {
                     id: soundSpeedField
-                    Layout.preferredWidth: iconSize * 4
-                    Layout.preferredHeight: iconSize * 1.2
+                    Layout.preferredWidth: iconSize * 3
+                    Layout.preferredHeight: iconSize * 1.5
                     text: "1500"
                     font.pixelSize: iconSize * 0.9
                     horizontalAlignment: Text.AlignHCenter
@@ -1015,8 +1007,77 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                 }
 
+
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 1
+                    color: "#888888"
+                }
+
+                Text {
+                    text: "Draft"
+                    font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                TextField {
+                    id: draftField
+                    Layout.preferredWidth: iconSize * 3
+                    Layout.preferredHeight: iconSize * 1.5
+                    text: "0"
+                    font.pixelSize: iconSize * 0.9
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    validator: IntValidator {
+                        bottom: 1
+                        top: 3000
+                    }
+                }
+
+                Text {
+                    text: "cm"
+                    font.pixelSize: iconSize
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Rectangle {
+                    id: applyBtn
+                    width: iconSize * 3
+                    height: iconSize * 1.2
+                    radius: 4
+                    color: mouseArea.pressed ? "#888888" : "#555555"
+                    border.color: "#aaaaaa"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: qsTr("Apply")
+                        color: "white"
+                        font.pixelSize: iconSize
+                    }
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        onClicked: {
+                            // let upperVal = parseInt(upperMin.text)
+                            // let lowerVal = parseInt(lowerMax.text)
+                            // if(upperVal >= lowerVal) {
+                            //     upperVal = lowerVal - 1
+                            // }
+
+                            // plot.resetUpLoRng(upperVal, lowerVal)
+                        }
+                    }
+                }
+
             }
 
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: "#555555"
+            }
 
 
             // 第二行：姿态修正 + 分割线
@@ -1042,9 +1103,12 @@ Item {
                 }
 
                 XRSlider {
-                    title: "Outline Correction"
-                    Layout.preferredWidth: plotIconSize * 5
+                    title: "Outline Correct"
+                    Layout.preferredWidth: plotIconSize * 6
                     Layout.alignment: Qt.AlignVCenter
+                    fontSize: iconSize
+                    spacing: iconSize * 0.1
+                    sliderLen: iconSize * 5
 
                     from: 1
                     to: 4
@@ -1056,20 +1120,29 @@ Item {
 
             }
 
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: "#555555"
+            }
+
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 10
 
                 XRSlider {
                     title: qsTr("Depth Filter")
-                    Layout.preferredWidth: plotIconSize * 5
+                    Layout.preferredWidth: plotIconSize * 6
                     Layout.alignment: Qt.AlignVCenter
+                    fontSize: iconSize
+                    spacing: iconSize * 0.3
+                    sliderLen: iconSize * 5
 
                     from: 1
                     to: 4
                     value: 1
                     onValueChanged: {
-                        console.log("深度滤波:", checked)
+                        console.log("深度滤波:")
                         // plot.setSensitivity(value)
                     }
                 }

@@ -120,5 +120,6 @@
         <file>AppXr/XRCheckBox.qml</file>
         <file>AppXr/XRSlider.qml</file>
         <file>Communication/LiveData.qml</file>
+        <file>QmlCommon/ExpandCheckBox.qml</file>
     </qresource>
 </RCC>

@@ -1260,60 +1260,6 @@ ApplicationWindow  {
                     }
                 }
 
-                RowLayout {
-                    id: rulerMenuBlock
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 1
-                    visible: false
-                    Layout.margins: 0
-
-                    function position(mx, my) {
-                        var oy = renderer.height - (my + implicitHeight)
-                        if (oy < 0) {
-                            my = my + oy
-                        }
-                        if (my < 0) {
-                            my = 0
-                        }
-                        var ox = renderer.width - (mx - implicitWidth)
-                        if (ox < 0) {
-                            mx = mx + ox
-                        }
-                        x = mx
-                        y = my
-                        visible = true
-                    }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/file-check.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-                        visible: renderer.rulerEnabled && renderer.rulerDrawing
-
-                        onClicked: {
-                            renderer.rulerFinishDrawing()
-                            rulerMenuBlock.visible = false
-                        }
-                    }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/x.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-                        visible: renderer.rulerEnabled || renderer.rulerSelected
-
-                        onClicked: {
-                            if (renderer.rulerDrawing) {
-                                renderer.rulerCancelDrawing()
-                            }
-                            rulerMenuBlock.visible = false
-                        }
-                    }
-
-                }
-
 
                 Rectangle {
                     anchors.left:   parent.left

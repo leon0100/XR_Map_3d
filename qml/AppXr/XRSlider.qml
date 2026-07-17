@@ -15,13 +15,14 @@ RowLayout {
     property  color  inactiveColor: "#cdc9c9"
     property  int    fontSize: theme.iconSize * 1.5
     property  real   handleWidth: fontSize * 0.5
+    property  int    sliderLen: fontSize * 10
 
 
     spacing: fontSize * 0.3
 
     //---------------- 标题 ----------------//
     Text {
-        Layout.fillWidth: true
+        Layout.preferredWidth: implicitWidth
         text: title
         font.pixelSize: fontSize
         verticalAlignment: Text.AlignVCenter
@@ -30,7 +31,7 @@ RowLayout {
 
     Slider {
         id: slider
-        Layout.preferredWidth: fontSize * 10
+        Layout.preferredWidth: sliderLen
         Layout.preferredHeight: fontSize
         from: xrSlider.from
         to:   xrSlider.to

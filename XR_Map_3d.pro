@@ -11,6 +11,7 @@ TARGET = XR-Viewer
 # INCLUDEPATH += $$PWD/quazip
 # LIBS += -L$$PWD/lib -lquazipd
 
+#暂时注释掉
 # win32:CONFIG(release, debug|release):    LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazip
 # else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/quazip-msvc2019/lib/ -lquazipd
 

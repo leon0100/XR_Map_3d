@@ -6,6 +6,7 @@ import Qt.labs.settings 1.1
 
 import WaterFall 1.0
 import AppXr 1.0
+import QmlCommon 1.0
 
 WaterFall {
     id: plot
@@ -558,7 +559,20 @@ WaterFall {
                         }
                     }
 
-                    CCheck {
+                    // CCheck {
+                    //     id: addMarks
+                    //     checked: false
+                    //     text: qsTr("Add Marks")
+                    //     height: plotIconSize
+                    //     onCheckedChanged: {
+                    //         currentFrameChecked = !currentFrameChecked
+                    //         if(!currentFrameChecked) {
+                    //             plot.plotMousePosition(-1, -1)
+                    //         }
+                    //     }
+                    // }
+
+                    ExpandCheckBox {
                         id: addMarks
                         checked: false
                         text: qsTr("Add Marks")
@@ -570,6 +584,8 @@ WaterFall {
                             }
                         }
                     }
+
+
 
                     CCheck {
                         id: deleteFrame

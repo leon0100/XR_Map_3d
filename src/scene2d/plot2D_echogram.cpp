@@ -194,7 +194,7 @@ void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t*
                 val += rawDataVec[j];
                 cnt++;
             }
-            dist[i] = (cnt > 0) ?  (uint8_t)(val / cnt) : 0;
+            dist[i] = (cnt > 0) ? (uint8_t)(val / cnt) : 0;
         }
     }
 }
@@ -265,6 +265,11 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
                 }
             }
         }
+
+
+
+
+
 
         // 以面板中线为中心，根据振幅向两侧扩展
         int halfWidth = (latestWave[j] * (panelW / 2)) / 255;
@@ -428,14 +433,137 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     }
                 }
 
-                uint8_t* cacheData = new uint8_t[height];
-                memset(cacheData, 0, height * sizeof(uint8_t));
+
 
                 float scaleY = (float)height / pingSize * (params.loRng/(currentLoRng_ - currentUpRng_));
                 int startIdx = pingSize * currentUpRng_ / params.loRng;
-                stretchCompressPixel(rawDataVec, cacheData, height, scaleY, startIdx);
 
-                _cash[column].waveData = QVector<uint8_t>(cacheData, cacheData + height);
+
+
+                QVector<uint8_t> cacheData;
+                int draft = 0;
+                for(int i = 0;((i < draft)&&(i < height));i++) {
+                    cacheData.append(0);
+                }
+                for(int i = draft;((i < (pingSize+draft))&&(i < height));i++) {
+                    cacheData.append((quint8)rawDataVec[i-draft]);
+                }
+                for(int i = (pingSize+draft);i < height; i++) {
+                    cacheData.append(0);
+                }
+
+
+                QList<int> colorData;
+                colorData.clear();
+
+                int colorNum = 1;
+                if(colorNum == 1) {
+                    /*-水表-*/
+                    for(int j = 0; (j<frameSfEnd)&&(j<frameBtStart)&&(j<height); j++) {
+                        if(cacheData[j] == 0) {
+                            colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+                        } else {
+                            if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
+                                colorData.append(ZyColorScheme::colorScheme_surface[254]);
+                            } else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
+                                colorData.append(ZyColorScheme::colorScheme_surface[0]);
+                            } else {
+                                colorData.append(ZyColorScheme::colorScheme_surface[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                            }
+                        }
+                    }
+                    /*-水中-*/
+                    for(int j = frameSfEnd; ((j<frameBtStart)&&(j<height)); j++)
+                    {
+                        if(cacheData[j] == 0) {
+                            colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+                        }
+                        else
+                        {
+                            if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
+                            {
+                                colorData.append(ZyColorScheme::colorScheme_fish[254]);
+                            }
+                            else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
+                            {
+                                colorData.append(ZyColorScheme::colorScheme_fish[0]);
+                            }
+                            else
+                            {
+                                colorData.append(ZyColorScheme::colorScheme_fish[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                            }
+                        }
+
+                    }
+                    /*-水底-*/
+                    for(int j = frameBtStart; j < height; j++)
+                    {
+                        if(cacheData[j] == 0)
+                        {
+                            colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+                        }
+                        else
+                        {
+                            if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
+                            {
+                                colorData.append(ZyColorScheme::colorScheme_bottom[254]);
+                            }
+                            else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
+                            {
+                                colorData.append(ZyColorScheme::colorScheme_bottom[0]);
+                            }
+                            else
+                            {
+                                colorData.append(ZyColorScheme::colorScheme_bottom[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                            }
+                        }
+                    }
+                }
+
+
+                uint32_t* img_data = (uint32_t*)_image.bits();
+                int bytesPerLine   = _image.bytesPerLine() / 4;
+
+                if(scaleY < 1 && scaleY > 0) {
+                    scaleY = 1 / scaleY;
+
+                    int j = 0;
+                    for(; (((int)(j*scaleY)+startIdx) < cacheData.count()); j++) {
+                        int rgb = colorData[startIdx+(int)(j*scaleY)];
+                        QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                        img_data[j* bytesPerLine + column] = color;
+                    }
+                    /*-自动补齐-*/
+                    for(; j<height; j++) {
+                        /*-底层的部分设置成1不使用透明模式-*/
+                        int rgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+                        img_data[j* bytesPerLine + column] = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                    }
+                }
+                else if(scaleY >= 1){
+                    for (int j = 0; j < height; j++) {
+                        int rgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+                        QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                        img_data[j* bytesPerLine + column] = color;
+                    }
+
+                    for(int j = 0; ((j<height)&&(frameBtStart+(int)(j/scaleY)<colorData.count())); j++)
+                    {
+                        int rgb = colorData[startIdx+(int)(j/scaleY)];
+                        QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                        img_data[j* bytesPerLine + column] = color;
+                    }
+                }
+
+
+
+
+                // uint8_t* cacheData = new uint8_t[height];
+                // memset(cacheData, 0, height * sizeof(uint8_t));
+                // stretchCompressPixel(rawDataVec, cacheData, height, scaleY, startIdx);
+
+                // _cash[column].waveData = QVector<uint8_t>(cacheData, cacheData + height);
+                _cash[column].waveData = cacheData;
                 _cash[column].sfEnd    = frameSfEnd;
                 _cash[column].btStart  = frameBtStart;
                 _cash[column].bottomLineIdx = _cash[column].btStart * scaleY;
@@ -448,63 +576,66 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 _cash[column].longitude = params.longitude;
                 _cash[column].latitude = params.latitude;
 
-                uint32_t* img_data = (uint32_t*)_image.bits();
-                int bytesPerLine   = _image.bytesPerLine() / 4;
-                for (int j = 0; j < height; j++) {
-                    uint8_t dataValue = cacheData[j];
-                    int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-                    int rgb = bgColor;
-                    // qDebug() << "dataValue....." << dataValue;
 
-                    if (j >= 0 && j < frameSfEnd) {
-                        // 水表
-                        if(dataValue == 0) {
-                            rgb = bgColor;
-                        } else {
-                            if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                                rgb = ZyColorScheme::colorScheme_surface[254];
-                            } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                                rgb = ZyColorScheme::colorScheme_surface[0];
-                            } else {
-                                rgb =  ZyColorScheme::colorScheme_surface[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
-                            }
-                        }
-                    }
-                    else if (j >= frameSfEnd && j < frameBtStart) {
-                        // 水中
-                        if(dataValue == 0) {
-                            rgb = bgColor;
-                        } else {
-                            if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                                rgb = ZyColorScheme::colorScheme_fish[254];
-                            } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                                rgb = ZyColorScheme::colorScheme_fish[254];
-                            } else {
-                                rgb = ZyColorScheme::colorScheme_fish[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
-                            }
-                        }
-                    }
-                    else if(j >= frameBtStart) {
-                        // 水底
-                        if(dataValue == 0) {
-                            rgb = bgColor;
-                        } else {
-                            if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                                rgb = ZyColorScheme::colorScheme_bottom[254];
-                            } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                                rgb = ZyColorScheme::colorScheme_bottom[254];
-                            } else {
-                                rgb = ZyColorScheme::colorScheme_bottom[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
-                            }
-                        }
-                    }
 
-                    QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                    img_data[j* bytesPerLine + column] = color;
-                }
 
-                delete[] cacheData;
-                cacheData = nullptr;
+                // uint32_t* img_data = (uint32_t*)_image.bits();
+                // int bytesPerLine   = _image.bytesPerLine() / 4;
+                // for (int j = 0; j < height; j++) {
+                //     uint8_t dataValue = cacheData[j];
+                //     int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+                //     int rgb = bgColor;
+                //     // qDebug() << "dataValue....." << dataValue;
+
+                //     if (j >= 0 && j < frameSfEnd) {
+                //         // 水表
+                //         if(dataValue == 0) {
+                //             rgb = bgColor;
+                //         } else {
+                //             if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
+                //                 rgb = ZyColorScheme::colorScheme_surface[254];
+                //             } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
+                //                 rgb = ZyColorScheme::colorScheme_surface[0];
+                //             } else {
+                //                 rgb =  ZyColorScheme::colorScheme_surface[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+                //             }
+                //         }
+                //     }
+                //     else if (j >= frameSfEnd && j < frameBtStart) {
+                //         // 水中
+                //         if(dataValue == 0) {
+                //             rgb = bgColor;
+                //         } else {
+                //             if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
+                //                 rgb = ZyColorScheme::colorScheme_fish[254];
+                //             } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
+                //                 rgb = ZyColorScheme::colorScheme_fish[254];
+                //             } else {
+                //                 rgb = ZyColorScheme::colorScheme_fish[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+                //             }
+                //         }
+                //     }
+                //     else if(j >= frameBtStart) {
+                //         // 水底
+                //         if(dataValue == 0) {
+                //             rgb = bgColor;
+                //         } else {
+                //             if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
+                //                 rgb = ZyColorScheme::colorScheme_bottom[254];
+                //             } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
+                //                 rgb = ZyColorScheme::colorScheme_bottom[254];
+                //             } else {
+                //                 rgb = ZyColorScheme::colorScheme_bottom[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+                //             }
+                //         }
+                //     }
+
+                //     QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
+                //     img_data[j* bytesPerLine + column] = color;
+                // }
+
+                // delete[] cacheData;
+                // cacheData = nullptr;
             }
         }
 

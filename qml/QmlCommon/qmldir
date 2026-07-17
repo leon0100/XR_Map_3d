@@ -21,3 +21,6 @@ KText 		  1.0   KText.qml
 KTextField 	  1.0   KTextField.qml
 KSpinBox 	  1.0   KSpinBox.qml
 KWaitProgressBar  1.0   KWaitProgressBar.qml
+ExpandCheckBox    1.0   ExpandCheckBox.qml
+
+

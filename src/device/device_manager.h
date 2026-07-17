@@ -11,8 +11,6 @@
 #include "stream_list.h"
 #include "id_binnary.h"
 
-
-
 class LocationReader;
 class DeviceManager : public QObject
 {

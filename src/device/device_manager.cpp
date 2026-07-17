@@ -487,12 +487,20 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         }
         dataVec.append(channelData);
 
-        float upRng = 0.0;
+        float upRng = tslSingleStru.ping.upRng;
+        float loRng = tslSingleStru.ping.loRng;
+        float depth = tslSingleStru.auxInfo.depth;
         int sfEnd;
         int btStart;
         int draft;
-        float loRng    = tslSingleStru.ping.loRng;
-        float depth    = tslSingleStru.auxInfo.depth;
+        if(tslSingleStru.ping.frequency == snrFrq455) {
+            if(depth > 10000) {
+                depth = 0;
+            }
+            else if(depth > 30000) {
+                depth = 0;
+            }
+        }
 
         if(loRng <= 0) {
             draft   = 0;
@@ -539,7 +547,6 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (i + 1) == tsl3Cnt ? true : false;
-
         emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
 
         // 更新进度条
