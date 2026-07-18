@@ -121,6 +121,7 @@ public slots:
     Q_INVOKABLE void setAutoRenderSpan(bool isAuto);
     Q_INVOKABLE void exitApp();
     Q_INVOKABLE void switchMapType(int sourceType);
+    Q_INVOKABLE void bathyMetryConfigApply(int soundVelocity, int draftOffset);
 
 signals:
     void connectionChanged(bool duplex = false);
@@ -177,23 +178,23 @@ private:
     /*data*/
     Console* consolePtr_;
     // 3d scene controllers
-    std::shared_ptr<BoatTrackControlMenuController>    boatTrackControlMenuController_;
+    std::shared_ptr<BoatTrackControlMenuController>       boatTrackControlMenuController_;
     std::shared_ptr<NavigationArrowControlMenuController> navigationArrowControlMenuController_;
-    std::shared_ptr<BottomTrackControlMenuController>  bottomTrackControlMenuController_;
-    std::shared_ptr<MpcFilterControlMenuController>    mpcFilterControlMenuController_;
-    std::shared_ptr<NpdFilterControlMenuController>    npdFilterControlMenuController_;
-    std::shared_ptr<IsobathsViewControlMenuController> isobathsViewControlMenuController_;
-    std::shared_ptr<MosaicViewControlMenuController>   mosaicViewControlMenuController_;
-    std::shared_ptr<ImageViewControlMenuController>    imageViewControlMenuController_;
-    std::shared_ptr<MapViewControlMenuController>      mapViewControlMenuController_;
-    std::shared_ptr<PointGroupControlMenuController>   pointGroupControlMenuController_;
-    std::shared_ptr<PolygonGroupControlMenuController> polygonGroupControlMenuController_;
-    std::shared_ptr<Scene3DControlMenuController>      scene3dControlMenuController_;
-    std::shared_ptr<Scene3dToolBarController>          scene3dToolBarController_;
-    std::shared_ptr<UsblViewControlMenuController>     usblViewControlMenuController_;
-    std::unique_ptr<DeviceManagerWrapper>              deviceManagerWrapperPtr_;
-    std::unique_ptr<LinkManagerWrapper>                linkManagerWrapperPtr_;
-    std::unique_ptr<map::TileManager>                  tileManager_;
+    std::shared_ptr<BottomTrackControlMenuController>     bottomTrackControlMenuController_;
+    std::shared_ptr<MpcFilterControlMenuController>       mpcFilterControlMenuController_;
+    std::shared_ptr<NpdFilterControlMenuController>       npdFilterControlMenuController_;
+    std::shared_ptr<IsobathsViewControlMenuController>    isobathsViewControlMenuController_;
+    std::shared_ptr<MosaicViewControlMenuController>      mosaicViewControlMenuController_;
+    std::shared_ptr<ImageViewControlMenuController>       imageViewControlMenuController_;
+    std::shared_ptr<MapViewControlMenuController>         mapViewControlMenuController_;
+    std::shared_ptr<PointGroupControlMenuController>      pointGroupControlMenuController_;
+    std::shared_ptr<PolygonGroupControlMenuController>    polygonGroupControlMenuController_;
+    std::shared_ptr<Scene3DControlMenuController>         scene3dControlMenuController_;
+    std::shared_ptr<Scene3dToolBarController>             scene3dToolBarController_;
+    std::shared_ptr<UsblViewControlMenuController>        usblViewControlMenuController_;
+    std::unique_ptr<DeviceManagerWrapper>                 deviceManagerWrapperPtr_;
+    std::unique_ptr<LinkManagerWrapper>                   linkManagerWrapperPtr_;
+    std::unique_ptr<map::TileManager>                     tileManager_;
 
     std::shared_ptr<BLEManager>  bleManager_;
     std::shared_ptr<UdpManager>  udpManager_;

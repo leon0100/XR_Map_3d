@@ -459,7 +459,6 @@ WaterFall {
                                 // value = 1
                             }
                             // plot.maxLoRng = value
-
                         }
 
                         // onEditingFinished: applyRange()
@@ -517,10 +516,10 @@ WaterFall {
                         Layout.alignment: Qt.AlignVCenter
 
                         from: 1
-                        to: 7
-                        value: 3
+                        to: 9
+                        value: 7
                         onValueChanged: {
-                            // plot.setSensitivity(value)
+                            plot.setSensitivity(value)
                         }
                     }
 

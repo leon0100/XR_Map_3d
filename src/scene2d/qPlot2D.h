@@ -41,16 +41,18 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override final;
     void sendSyncEvent(int epoch_index, QEvent::Type eventType) override final;
 
-    int getMinUpRng();
+    int  getMinUpRng();
     void setMinUpRng(int minUpRng);
-    int getMaxLoRng();
+    int  getMaxLoRng();
     void setMaxLoRng(int maxLoRng);
+    void setSoundVelocity(int soundVelocity, int draftOffset);
 
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
     Q_INVOKABLE void setCursorFromTo(float from, float to) { cursor_.distance.mode = AutoRangeNone; Plot2D::cursor_.distance.from = from; Plot2D::cursor_.distance.to = to; }
     Q_INVOKABLE void setIndx(int indx) { indx_ = indx; }
     Q_INVOKABLE void resetUpLoRng(int upper, int lower);
+    Q_INVOKABLE void setSensitivity(int sensitive);
 
 
 protected:

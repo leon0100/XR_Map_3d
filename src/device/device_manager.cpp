@@ -282,46 +282,46 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         }
         dataVec.append(channelData);
 
-        float upRng = 0.0;
-        int sfEnd;
-        int btStart;
-        int draft;
         float loRng = tslSingleStru.ping.loRng;
         float depth = tslSingleStru.auxInfo.depth;
         int pingSize = 240;
+        float upRng = 0.0;
+        // int sfEnd;
+        // int btStart;
+        // int draft;
 
-        if(loRng <= 0) {
-            draft   = 0;
-            btStart = 0;
-            sfEnd   = 0;
-        }
+        // if(loRng <= 0) {
+        //     draft   = 0;
+        //     btStart = 0;
+        //     sfEnd   = 0;
+        // }
 
-        if(loRng != 0) {
-            if(loRng == 0.0) {
-                draft    = 0;
-                btStart  = 0;
-                sfEnd    = 0;
-            }
+        // if(loRng != 0) {
+        //     if(loRng == 0.0) {
+        //         draft    = 0;
+        //         btStart  = 0;
+        //         sfEnd    = 0;
+        //     }
 
-            btStart = (depth /(loRng-upRng))*pingSize;
+        //     btStart = (depth /(loRng-upRng))*pingSize;
 
-            float surfaceEnd;
-            if((depth < 100) && (depth > 30)) {
-                surfaceEnd = depth - 10;
-            } else {
-                surfaceEnd = 100;
-            }
-            sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
-        }
-        if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
-            draft   = 0;
-            btStart = 0;
-            sfEnd   = 0;
-        }
+        //     float surfaceEnd;
+        //     if((depth < 100) && (depth > 30)) {
+        //         surfaceEnd = depth - 10;
+        //     } else {
+        //         surfaceEnd = 100;
+        //     }
+        //     sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
+        // }
+        // if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
+        //     draft   = 0;
+        //     btStart = 0;
+        //     sfEnd   = 0;
+        // }
 
         ChartParameters chartParams;
-        chartParams.sfEnd       = sfEnd;
-        chartParams.btStart     = btStart;
+        // chartParams.sfEnd       = sfEnd;
+        // chartParams.btStart     = btStart;
         chartParams.depth       = depth;
         chartParams.pingSize    = pingSize;
         chartParams.upRng       = 0.0;
@@ -490,53 +490,53 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         float upRng = tslSingleStru.ping.upRng;
         float loRng = tslSingleStru.ping.loRng;
         float depth = tslSingleStru.auxInfo.depth;
-        int sfEnd;
-        int btStart;
-        int draft;
-        if(tslSingleStru.ping.frequency == snrFrq455) {
-            if(depth > 10000) {
-                depth = 0;
-            }
-            else if(depth > 30000) {
-                depth = 0;
-            }
-        }
+        // int sfEnd;
+        // int btStart;
+        // int draft;
+        // if(tslSingleStru.ping.frequency == snrFrq455) {
+        //     if(depth > 10000) {
+        //         depth = 0;
+        //     }
+        //     else if(depth > 30000) {
+        //         depth = 0;
+        //     }
+        // }
 
-        if(loRng <= 0) {
-            draft   = 0;
-            btStart = 0;
-            sfEnd   = 0;
-        }
+        // if(loRng <= 0) {
+        //     draft   = 0;
+        //     btStart = 0;
+        //     sfEnd   = 0;
+        // }
 
-        if(loRng != 0) {
-            if(loRng == 0.0) {
-                draft    = 0;
-                btStart  = 0;
-                sfEnd    = 0;
-            }
+        // if(loRng != 0) {
+        //     if(loRng == 0.0) {
+        //         draft    = 0;
+        //         btStart  = 0;
+        //         sfEnd    = 0;
+        //     }
 
-            btStart = (depth /(loRng-upRng))*pingSize;
+        //     btStart = (depth / (loRng - upRng)) * pingSize;
 
-            float surfaceEnd;
-            if((depth < 100) && (depth > 30)) {
-                surfaceEnd = depth - 10;
-            } else {
-                surfaceEnd = 100;
-            }
-            sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
-        }
-        if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
-            draft   = 0;
-            btStart = 0;
-            sfEnd   = 0;
-        }
+        //     float surfaceEnd;
+        //     if((depth < 100) && (depth > 30)) {
+        //         surfaceEnd = depth - 10;
+        //     } else {
+        //         surfaceEnd = 100;
+        //     }
+        //     sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
+        // }
+        // if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
+        //     draft   = 0;
+        //     btStart = 0;
+        //     sfEnd   = 0;
+        // }
 
         ChartParameters chartParams;
-        chartParams.sfEnd        = sfEnd;
-        chartParams.btStart      = btStart;
+        // chartParams.sfEnd        = sfEnd;
+        // chartParams.btStart      = btStart;
         chartParams.depth        = depth;
         chartParams.pingSize     = pingSize;
-        chartParams.upRng        = 0.0;
+        chartParams.upRng        = upRng;
         chartParams.loRng        = loRng;
         chartParams.temperature  = tslSingleStru.auxInfo.temperature;
         chartParams.heading      = tslSingleStru.boat.heading;

@@ -149,6 +149,24 @@ void Plot2DEchogram::setLowerRng(int minLoRng)
     resetCash();
 }
 
+int  Plot2DEchogram::getSoundVelocity()
+{
+    return soundVelocity_;
+}
+
+void Plot2DEchogram::setSoundVelocity(int soundVelocity, int draftOffset)
+{
+    soundVelocity_ = soundVelocity;
+    draftOffset_ = draftOffset;
+    resetCash();
+}
+
+void Plot2DEchogram::setSensitivity(int sensitive)
+{
+    sensLevel_ = sensitive;
+    resetCash();
+}
+
 void Plot2DEchogram::addReRenderPlotIndxs(const QSet<int> &indxs)
 {
     reRenderPlotIndxs_.unite(indxs);
@@ -235,7 +253,6 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
                     rgb =  ZyColorScheme::colorScheme_surface[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
                 }
             }
-
         }
         else if (j >= wavePixel_.sfEnd && j < wavePixel_.btStart) {
             // 水中
@@ -268,9 +285,6 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 
 
 
-
-
-
         // 以面板中线为中心，根据振幅向两侧扩展
         int halfWidth = (latestWave[j] * (panelW / 2)) / 255;
         int centerX   = panelX + panelW / 2;
@@ -283,6 +297,8 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
         }
 
     }
+
+
 
     int bottomLineIdx = wavePixel_.bottomLineIdx;
     if (bottomLineIdx >= 0 && bottomLineIdx < height) {
@@ -403,16 +419,51 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 return -1;
             }
             const int cacheIndex = _cash[column].poolIndex;
-
-            ChartParameters params = epochData->getChartParameters(cursor.channel1);
-            const int pingSize = params.pingSize;
-            int frameSfEnd     = params.sfEnd;
-            int frameBtStart   = params.btStart;
-
             if (isCashNotvalid || pool_index_safe != cacheIndex || !wasValidlyRendered) {
                 _cash[column].poolIndex = pool_index_safe;
 
-                // 先获取原始长度的声呐数据
+
+                ChartParameters params = epochData->getChartParameters(cursor.channel1);
+                const int pingSize = params.pingSize;
+
+                int sfEnd = 0, btStart = 0, draft = 0;
+
+                float upRng = params.upRng;
+                float loRng = params.loRng;
+                float depth = params.depth;
+                if((upRng < 0) || (loRng < 0) || (pingSize <= 0) || (upRng == loRng)) {
+                    draft = 0;
+                    btStart = 0;
+                    sfEnd = 0;
+                }
+
+                int startIdx = 0;
+
+                if(loRng != 0) {
+                    // if(loRng == upRng) {
+                    //     draft   = 0;
+                    //     btStart  = 0;
+                    //     sfEnd    = 0;
+                    //     startIdx = 0;
+                    // }
+                    draft = (1500.0/soundVelocity_) * (draftOffset_ / (loRng + upRng)) * pingSize;
+
+                    btStart = (1500.0/soundVelocity_) * (depth / (loRng - upRng)) * pingSize;
+
+                    float surfaceEnd;
+                    if((depth < 100) && (depth > 30)) {
+                        surfaceEnd = depth - 10 + draftOffset_;
+                    } else {
+                        surfaceEnd = 100 + draftOffset_;
+                    }
+                    sfEnd = (1500.0/soundVelocity_) * (surfaceEnd / (loRng - upRng)) * pingSize;
+                }
+                if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
+                    draft   = 0;
+                    btStart = 0;
+                    sfEnd   = 0;
+                }
+
                 QVector<uint8_t> rawDataVec;
                 rawDataVec.resize(PING_SIZE_MAX);
                 if (cursor.channel2 == CHANNEL_NONE) {
@@ -420,37 +471,33 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 }
 
                 /*- 灵敏度滤波 -*/
-                int sens = 5;
-                for(int i = 0; (i < frameBtStart) && (i < pingSize) && (i < height); i++) {
+                int sens = 95 - sensLevel_ * 10;
+                for(int i = 0; (i < btStart) && (i < pingSize) && (i < height); i++) {
                     if(rawDataVec[i] < sens) {
                         rawDataVec[i] = 0;
                     }
                 }
 
-                for(int i = frameBtStart; (i < pingSize) && (i < height); i++) {
-                    if(rawDataVec[i]<(sens/2)) {
+                for(int i = btStart; (i < pingSize) && (i < height); i++) {
+                    if(rawDataVec[i] < (sens * 0.5)) {
                         rawDataVec[i] = 0;
                     }
                 }
 
-
-
-                float scaleY = (float)height / pingSize * (params.loRng/(currentLoRng_ - currentUpRng_));
-                int startIdx = pingSize * currentUpRng_ / params.loRng;
-
-
-
                 QVector<uint8_t> cacheData;
-                int draft = 0;
-                for(int i = 0;((i < draft)&&(i < height));i++) {
+                for(int i = 0;((i < draft) && (i < height)); i++) {
                     cacheData.append(0);
                 }
-                for(int i = draft;((i < (pingSize+draft))&&(i < height));i++) {
+                for(int i = draft;((i < (pingSize + draft)) && (i < height)); i++) {
                     cacheData.append((quint8)rawDataVec[i-draft]);
                 }
-                for(int i = (pingSize+draft);i < height; i++) {
+                for(int i = (pingSize+draft); i < height; i++) {
                     cacheData.append(0);
                 }
+
+
+                float scaleY = (float)height / pingSize * (loRng/(currentLoRng_ - currentUpRng_));
+                startIdx = pingSize * currentUpRng_ / loRng;
 
 
                 QList<int> colorData;
@@ -459,7 +506,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 int colorNum = 1;
                 if(colorNum == 1) {
                     /*-水表-*/
-                    for(int j = 0; (j<frameSfEnd)&&(j<frameBtStart)&&(j<height); j++) {
+                    for(int j = 0; (j<sfEnd)&&(j<btStart)&&(j<height); j++) {
                         if(cacheData[j] == 0) {
                             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
                         } else {
@@ -473,7 +520,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                         }
                     }
                     /*-水中-*/
-                    for(int j = frameSfEnd; ((j<frameBtStart)&&(j<height)); j++)
+                    for(int j = sfEnd; ((j<btStart)&&(j<height)); j++)
                     {
                         if(cacheData[j] == 0) {
                             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
@@ -496,7 +543,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
                     }
                     /*-水底-*/
-                    for(int j = frameBtStart; j < height; j++)
+                    for(int j = btStart; j < height; j++)
                     {
                         if(cacheData[j] == 0)
                         {
@@ -540,18 +587,17 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                         img_data[j* bytesPerLine + column] = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                     }
                 }
-                else if(scaleY >= 1){
+                else if(scaleY >= 1) {
                     for (int j = 0; j < height; j++) {
                         int rgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
                         QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                         img_data[j* bytesPerLine + column] = color;
                     }
 
-                    for(int j = 0; ((j<height)&&(frameBtStart+(int)(j/scaleY)<colorData.count())); j++)
-                    {
+                    for(int j = 0; ((j<height)&&(btStart+(int)(j/scaleY)<colorData.count())); j++) {
                         int rgb = colorData[startIdx+(int)(j/scaleY)];
                         QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                        img_data[j* bytesPerLine + column] = color;
+                        img_data[j * bytesPerLine + column] = color;
                     }
                 }
 
@@ -564,8 +610,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
                 // _cash[column].waveData = QVector<uint8_t>(cacheData, cacheData + height);
                 _cash[column].waveData = cacheData;
-                _cash[column].sfEnd    = frameSfEnd;
-                _cash[column].btStart  = frameBtStart;
+                _cash[column].sfEnd    = sfEnd;
+                _cash[column].btStart  = btStart;
                 _cash[column].bottomLineIdx = _cash[column].btStart * scaleY;
                 _cash[column].state    = CashLine::CashState::CashStateValid;
                 _cash[column].isNeedUpdate = true;

@@ -1280,6 +1280,15 @@ void Core::switchMapType(int sourceType)
     }
 }
 
+void Core::bathyMetryConfigApply(int soundVelocity, int draftOffset)
+{
+    const int numPlots = plot2dList_.size();
+    for (int i = 0; i < numPlots; i++) {
+        qPlot2D* plot2d = plot2dList_[i];
+        plot2d->setSoundVelocity(soundVelocity, draftOffset);
+    }
+}
+
 void Core::onTileSetChanged(std::shared_ptr<map::TileSet> tileSet)
 {
     if(!tileSet) {
@@ -1708,7 +1717,6 @@ QObject* Core::progress() const
 {
     return progress_;
 }
-
 void Core::setProgress(QObject* dialog)
 {
     if (progress_ != dialog) {

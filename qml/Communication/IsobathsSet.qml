@@ -993,12 +993,10 @@ Item {
                     Layout.preferredHeight: iconSize * 1.5
                     text: "1500"
                     font.pixelSize: iconSize * 0.9
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: TextInput.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    validator: IntValidator {
-                        bottom: 1
-                        top: 3000
-                    }
+                    selectByMouse: true
+                    validator: IntValidator { bottom: 1; top: 3000 }
                 }
 
                 Text {
@@ -1021,17 +1019,15 @@ Item {
                 }
 
                 TextField {
-                    id: draftField
+                    id: draftOffsetField
                     Layout.preferredWidth: iconSize * 3
                     Layout.preferredHeight: iconSize * 1.5
                     text: "0"
                     font.pixelSize: iconSize * 0.9
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: TextInput.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    validator: IntValidator {
-                        bottom: 1
-                        top: 3000
-                    }
+                    selectByMouse: true
+                    validator: IntValidator { bottom: 1; top: 3000 }
                 }
 
                 Text {
@@ -1059,13 +1055,9 @@ Item {
                         id: mouseArea
                         anchors.fill: parent
                         onClicked: {
-                            // let upperVal = parseInt(upperMin.text)
-                            // let lowerVal = parseInt(lowerMax.text)
-                            // if(upperVal >= lowerVal) {
-                            //     upperVal = lowerVal - 1
-                            // }
-
-                            // plot.resetUpLoRng(upperVal, lowerVal)
+                            let soundVelocity = parseInt(soundSpeedField.text)
+                            let draftOffset   = parseInt(draftOffsetField.text)
+                            core.bathyMetryConfigApply(soundVelocity, draftOffset)
                         }
                     }
                 }

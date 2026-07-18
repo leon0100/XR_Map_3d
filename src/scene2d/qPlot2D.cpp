@@ -20,7 +20,6 @@ qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(
     setAcceptedMouseButtons(Qt::AllButtons);
 
     _isHorizontal = false;
-
 }
 
 void qPlot2D::paint(QPainter *painter)
@@ -166,6 +165,12 @@ void qPlot2D::setMaxLoRng(int maxLoRng)
     plotUpdate();
 }
 
+void qPlot2D::setSoundVelocity(int soundVelocity, int draftOffset)
+{
+    echogram_.setSoundVelocity(soundVelocity, draftOffset);
+    plotUpdate();
+}
+
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
     qDebug() << "upper........" << upper << "  " << lower;
@@ -179,6 +184,13 @@ void qPlot2D::resetUpLoRng(int upper, int lower)
     echogram_.setLowerRng(currentLoRng_);
 
     plotUpdate();
+}
+
+void qPlot2D::setSensitivity(int sensitive)
+{
+    echogram_.setSensitivity(sensitive);
+    plotUpdate();
+
 }
 
 

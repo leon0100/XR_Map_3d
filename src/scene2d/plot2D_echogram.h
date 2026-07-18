@@ -52,6 +52,9 @@ public:
     void resetCash();
     void setUpperRng(int maxUpRng);
     void setLowerRng(int minLoRng);
+    int  getSoundVelocity();
+    void setSoundVelocity(int soundVelocity, int draftOffset);
+    void setSensitivity(int sensitive);
 
     void addReRenderPlotIndxs(const QSet<int>& indxs);
 
@@ -130,5 +133,10 @@ private:
     int currentUpRng_ = 0, currentLoRng_ = 3200;
     CashLine wavePixel_;
     bool bottomLineVisible_ = false;
+    int soundVelocity_ = 1500;
+    int draftOffset_ = 0;
+    int sensLevel_ = 7;
+    int depthLevel_ = 9;
+    int filterLevel_ = 1;
 
 };
