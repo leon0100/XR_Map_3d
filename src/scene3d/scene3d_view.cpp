@@ -1341,9 +1341,9 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
 QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
 {
     QVector3D rayOrigin = QVector3D(x, height() - y, -1.0f) .unproject(m_camera->m_view * m_model,
-                                                                      m_projection,boundingRect().toRect());
+                                                                m_projection,boundingRect().toRect());
     QVector3D rayEnd = QVector3D(x, height() - y, 1.0f) .unproject(m_camera->m_view * m_model,
-                                                                  m_projection, boundingRect().toRect());
+                                                                m_projection, boundingRect().toRect());
     QVector3D rayDir = (rayEnd - rayOrigin).normalized();
 
     float groundZ = 0.0f;

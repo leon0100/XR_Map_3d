@@ -133,10 +133,11 @@ private:
     int currentUpRng_ = 0, currentLoRng_ = 3200;
     CashLine wavePixel_;
     bool bottomLineVisible_ = false;
-    int soundVelocity_ = 1500;
-    int draftOffset_ = 0;
-    int sensLevel_ = 7;
-    int depthLevel_ = 9;
-    int filterLevel_ = 1;
+    int  soundVelocity_ = 1500;
+    int  draftOffset_ = 0;
+    int  sensLevel_ = 7;
+    int  depthLevel_ = 9;
+    int  filterLevel_ = 1;
+
 
 };

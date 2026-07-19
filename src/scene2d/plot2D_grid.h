@@ -16,6 +16,7 @@ public:
     void setInvert(bool state) { invert_ = state; }
 
     void setLoRngRange(int minLoRng, int maxLoRng);
+    int getLoRngMax();
 
 protected:
     bool angleVisibility_;

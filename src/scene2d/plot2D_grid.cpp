@@ -169,3 +169,8 @@ void Plot2DGrid::setLoRngRange(int minLoRng, int maxLoRng)
     loRngMin_ = minLoRng;
     loRngMax_ = maxLoRng;
 }
+
+int Plot2DGrid::getLoRngMax()
+{
+    return loRngMax_;
+}

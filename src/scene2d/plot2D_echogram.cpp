@@ -398,6 +398,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
     }
 
+    float currentViewMaxBtStart = -1.0;
+
     for(int column = 0; column < width; column++) {
         int cursorPos = column - wrapStartPos;
         if(column < wrapStartPos) {
@@ -463,6 +465,9 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     btStart = 0;
                     sfEnd   = 0;
                 }
+
+                currentViewMaxBtStart = qMax(currentViewMaxBtStart, loRng);
+
 
                 QVector<uint8_t> rawDataVec;
                 rawDataVec.resize(PING_SIZE_MAX);
@@ -702,6 +707,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
             }
         }
     }
+
+    parent->currentViewMaxBtStart_ = currentViewMaxBtStart;
 
 
     int visualRightColumn = (wrapStartPos == 0) ? (width - 1) : (wrapStartPos - 1);

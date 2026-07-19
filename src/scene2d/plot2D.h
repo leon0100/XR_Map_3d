@@ -136,6 +136,10 @@ public:
     virtual void plotUpdate();
     virtual void sendSyncEvent(int epoch_index, QEvent::Type eventType);
 
+
+public:
+    float  currentViewMaxBtStart_ = -1.0f;
+
 protected:
     Canvas        canvas_;
     DatasetCursor cursor_;

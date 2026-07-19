@@ -72,7 +72,18 @@ void qPlot2D::plotUpdate()
     }
     emit timelinePositionChanged();
 
+
     update();
+
+    int loRngMax = grid_.getLoRngMax();
+    qDebug() << "currentViewMaxBtStart_..." << currentViewMaxBtStart_ << "  " << loRngMax;
+
+    const float targetRatio = 0.7f;
+    float currentRatio = currentViewMaxBtStart_ / loRngMax;
+    const float tolerance = 0.3f;
+    if(fabs(currentRatio - targetRatio) > tolerance  && (currentViewMaxBtStart_ != -1.0f)) {
+        setMaxLoRng(currentViewMaxBtStart_ / 0.7f);
+    }
 
     mutex.unlock();
 }
