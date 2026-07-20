@@ -837,7 +837,7 @@ ApplicationWindow  {
             property int  lastKeyPressed: Qt.Key_unknown
             property real splitRatio: 0.5
 
-            property int splitMode: 0  // 0: 正常分窗,  1: 声呐全屏(地图小窗),  2: 地图全屏(声呐小窗)
+            property int           splitMode: 0  // 0: 正常分窗,  1: 声呐全屏(地图小窗),  2: 地图全屏(声呐小窗)
             readonly property real edgeThreshold: 0.1  // 边缘阈值（10%）
             readonly property int  cornerWindowWidth:  screenSize * 0.3
             readonly property int  cornerWindowHeight: screenSize * 0.2
@@ -990,16 +990,16 @@ ApplicationWindow  {
                                         wasMoved = true;
                                     }
                                 }
-                                if (renderer.longPressTriggered && !wasMoved) {
-                                    if (renderer.geoJsonEnabled || renderer.rulerEnabled || renderer.rulerHasGeometry) {
-                                        vertexMode = true
-                                    } else {
-                                        if (!vertexMode) {
-                                            renderer.switchToBottomTrackVertexComboSelectionMode(mouse.x, mouse.y)
-                                        }
-                                        vertexMode = true
-                                    }
-                                }
+                                // if (renderer.longPressTriggered && !wasMoved) {
+                                //     if (renderer.geoJsonEnabled || renderer.rulerEnabled || renderer.rulerHasGeometry) {
+                                        // vertexMode = true
+                                //     } else {
+                                //         if (!vertexMode) {
+                                //             renderer.switchToBottomTrackVertexComboSelectionMode(mouse.x, mouse.y)
+                                //         }
+                                //         vertexMode = true
+                                //     }
+                                // }
                             }
 
                             const activeButtons = (Qt.platform.os === "android" && lastMouseKeyPressed !== Qt.NoButton)

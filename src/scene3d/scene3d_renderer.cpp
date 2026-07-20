@@ -284,7 +284,8 @@ void GraphicsScene3dRenderer::drawObjects()
     //-----------Draw axes-------------
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
-    glViewport(viewport[2]-120,0,90,90);
+    // glViewport(viewport[2]-120,0,90,90);
+    glViewport(0, 0, 90, 90);
 
     QMatrix4x4 axesView;
     QMatrix4x4 axesProjection;

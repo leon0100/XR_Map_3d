@@ -2,8 +2,7 @@
 #include "draw_utils.h"
 #include "text_renderer.h"
 
-CoordinateAxes::CoordinateAxes(QObject *parent)
-    : SceneObject(new CoordinateAxesRenderImplementation,parent)
+CoordinateAxes::CoordinateAxes(QObject *parent) : SceneObject(new CoordinateAxesRenderImplementation,parent)
 {}
 
 CoordinateAxes::CoordinateAxesRenderImplementation::CoordinateAxesRenderImplementation()
@@ -14,10 +13,10 @@ CoordinateAxes::CoordinateAxesRenderImplementation::~CoordinateAxesRenderImpleme
 
 void CoordinateAxes::setPosition(const QVector3D &pos)
 {
-    m_position = pos;
-    RENDER_IMPL(CoordinateAxes)->m_position = pos;
+    // m_position = pos;
+    // RENDER_IMPL(CoordinateAxes)->m_position = pos;
 
-    Q_EMIT changed();
+    // Q_EMIT changed();
 }
 
 void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions *ctx, const QMatrix4x4 &mvp,
@@ -83,7 +82,7 @@ void CoordinateAxes::CoordinateAxesRenderImplementation::render(QOpenGLFunctions
     int colorLoc  = shaderProgram->uniformLocation("color");
     int matrixLoc = shaderProgram->uniformLocation("matrix");
 
-    shaderProgram->setUniformValue(matrixLoc, projection * view * model );
+    shaderProgram->setUniformValue(matrixLoc, projection * view * model);
     shaderProgram->enableAttributeArray(posLoc);
 
     QVector<QVector3D> axis_x{{0.0f, 0.0f, 0.0f}, {m_position.x()+8.0f,  m_position.y(),      m_position.z()}};

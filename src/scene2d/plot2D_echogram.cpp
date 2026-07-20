@@ -167,6 +167,108 @@ void Plot2DEchogram::setSensitivity(int sensitive)
     resetCash();
 }
 
+
+double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,double MeasureNoise_R,double InitialPrediction,int isFirst)
+{
+    double R = MeasureNoise_R;
+    double Q = ProcessNiose_Q;
+
+    static double x_last = ResrcData;
+    if(-1 == isFirst)
+    {
+        x_last = ResrcData;
+    }
+    double x_mid = x_last;
+    double x_now;
+    static double p_last = InitialPrediction;
+    if(-1 == isFirst)
+    {
+        p_last = InitialPrediction;
+    }
+    double p_mid;
+    double p_now;
+    double kg;
+
+    x_mid = x_last;           //x_last=x(k-1|k-1),x_mid=x(k|k-1)
+    p_mid = p_last + Q;       //p_mid=p(k|k-1),p_last=p(k-1|k-1),Q=噪声
+    kg = p_mid / (p_mid + R); //kg为kalman filter，R为噪声
+    x_now = x_mid + kg * (  ResrcData - x_mid); //估计出的最优值
+    p_now = (1 - kg) * p_mid;                                 //最优值对应的covariance
+
+    p_last = p_now; //更新covariance值
+    x_last = x_now; //更新系统状态值
+
+    return x_now;
+}
+
+double KQ = 1,KR = 10,KP0 = 4000.00;
+#define KALMAN_Q   KQ
+#define KALMAN_R   KR
+#define KALMAN_P0  KP0
+int diffCount = 20,diffValue = 30,R_small = 5,R_big = 20;
+QList<int> Plot2DEchogram::getDepthListKF()
+{
+    QList<int> list_kf;
+    int depth = 0;
+    float mark_dif = 0;
+    int mark_count = 0;
+    int mark_last = depth;
+    int isFirst = -1;
+    if(dataset_ == nullptr) {
+        return list_kf;
+    }
+
+    DatasetCursor& cursor = plot2d_->cursor();
+    int dataSize = dataset_->size();
+    for(int i = 0; i < dataSize; i++) {
+        Epoch* epochData = dataset_->fromIndex(i);
+        if(epochData == nullptr) {
+            continue;
+        }
+
+        ChartParameters params = epochData->getChartParameters(cursor.channel1);
+        float depth = params.depth;
+        if(mark_count > diffCount) {
+            mark_dif = (depth-mark_last)/diffValue;
+            mark_count = 0;
+            mark_last = depth;
+        } else {
+            mark_count++;
+        }
+
+        if(mark_dif != 0) {
+            if(0 == depth) {
+                if(list_kf.isEmpty()) {
+                    list_kf.append(0);
+                } else {
+                    list_kf.append(list_kf.last());
+                }
+            } else {
+                list_kf.append(KalmanFilter(depth, KALMAN_Q, R_small*filterLevel_, KALMAN_P0,isFirst));
+            }
+            //list_midCount.append(3);
+        } else {
+            //list_kfR.append(100);
+            if(0 == depth) {
+                if(list_kf.isEmpty()) {
+                    list_kf.append(0);
+                } else {
+                    list_kf.append(list_kf.last());
+                }
+            }else {
+                list_kf.append(KalmanFilter(depth, KALMAN_Q, R_big*filterLevel_*filterLevel_, KALMAN_P0,isFirst));
+            }
+            //list_midCount.append(21);
+        }
+
+        isFirst = 0;
+    }
+
+    qDebug() << "list_kf.count().........." << list_kf.count();
+
+    return list_kf;
+}
+
 void Plot2DEchogram::addReRenderPlotIndxs(const QSet<int> &indxs)
 {
     reRenderPlotIndxs_.unite(indxs);
@@ -723,6 +825,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
 bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 {
+    plot2d_ = parent;
+    dataset_ = dataset;
     Canvas& canvas = parent->canvas();
     DatasetCursor& cursor = parent->cursor();
 

@@ -34,7 +34,7 @@ QVector3D PointObject::position() const
 
 void PointObject::setPosition(float x, float y, float z)
 {
-    RENDER_IMPL(PointObject)->setPosition(x,y,z);
+    RENDER_IMPL(PointObject)->setPosition(x, y, z);
 
     Q_EMIT changed();
 }
@@ -62,9 +62,9 @@ PointObject::PointObjectRenderImplementation::~PointObjectRenderImplementation()
 {}
 
 void PointObject::PointObjectRenderImplementation::render(QOpenGLFunctions *ctx,
-                                                          const QMatrix4x4 &mvp,
-                                                          const QMap<QString
-                                                          , std::shared_ptr<QOpenGLShaderProgram> > &shaderProgramMap) const
+                                          const QMatrix4x4 &mvp,
+                                          const QMap<QString,
+                                          std::shared_ptr<QOpenGLShaderProgram> > &shaderProgramMap) const
 {
     if(!m_isVisible)
         return;

@@ -55,6 +55,7 @@ public:
     int  getSoundVelocity();
     void setSoundVelocity(int soundVelocity, int draftOffset);
     void setSensitivity(int sensitive);
+    QList<int> getDepthListKF();
 
     void addReRenderPlotIndxs(const QSet<int>& indxs);
 
@@ -122,6 +123,8 @@ private:
     void drawLatestWavePixel(Plot2D* parent, int panelX, int panelY, int height);
     void drawBottomLine(Canvas canvas, int width, int cash_position, bool isVisible);
 
+    double KalmanFilter(double ResrcData, double ProcessNiose_Q, double MeasureNoise_R, double InitialPrediction, int isFirst);
+
 
 
 private:
@@ -138,6 +141,7 @@ private:
     int  sensLevel_ = 7;
     int  depthLevel_ = 9;
     int  filterLevel_ = 1;
-
+    Dataset* dataset_;
+    Plot2D *plot2d_;
 
 };

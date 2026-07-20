@@ -571,18 +571,22 @@ WaterFall {
                     //     }
                     // }
 
+
+
+
                     ExpandCheckBox {
                         id: addMarks
-                        checked: false
                         text: qsTr("Add Marks")
-                        height: plotIconSize
+                        expandUp: true
                         onCheckedChanged: {
                             currentFrameChecked = !currentFrameChecked
                             if(!currentFrameChecked) {
-                                plot.plotMousePosition(-1, -1)
+                                plot.plotMousePosition(-1,-1)
                             }
                         }
+
                     }
+
 
 
 

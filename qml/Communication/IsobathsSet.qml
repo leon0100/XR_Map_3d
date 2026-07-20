@@ -915,8 +915,7 @@ Item {
 
 
 
-
-    // ----------------- Bathymetry Config 抽屉面板------------------
+    // ----------------- Bathymetry Config抽屉面板------------------
     Rectangle {
         id: bathymetryConfigContent
         width:  isobathSize * 1.6
@@ -989,12 +988,13 @@ Item {
 
                 TextField {
                     id: soundSpeedField
-                    Layout.preferredWidth: iconSize * 3
+                    Layout.preferredWidth: iconSize * 3.2
                     Layout.preferredHeight: iconSize * 1.5
                     text: "1500"
                     font.pixelSize: iconSize * 0.9
                     horizontalAlignment: TextInput.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+                    topPadding: 0
+                    bottomPadding: 0
                     selectByMouse: true
                     validator: IntValidator { bottom: 1; top: 3000 }
                 }
@@ -1008,7 +1008,7 @@ Item {
 
                 Rectangle {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: 1
+                    Layout.preferredWidth: 2
                     color: "#888888"
                 }
 
@@ -1025,7 +1025,8 @@ Item {
                     text: "0"
                     font.pixelSize: iconSize * 0.9
                     horizontalAlignment: TextInput.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+                    topPadding: 0
+                    bottomPadding: 0
                     selectByMouse: true
                     validator: IntValidator { bottom: 1; top: 3000 }
                 }
@@ -1072,25 +1073,41 @@ Item {
             }
 
 
-            // 第二行：姿态修正 + 分割线
+            // 第二行:
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: 8
 
                 CheckBox {
-                    id: attitudeCorrectCheck
-                    text: qsTr("Attitude Correct")
+                    id: depthFilterCheck
                     font.pixelSize: iconSize
+                    rightPadding: 0
                     checked: false
                     onCheckedChanged: {
-                        console.log("Attitude Correct......", checked)
+                        console.log("Depth Filter......", checked)
                         // attitudeCorrectionEnable = checked
+                    }
+                }
+                XRSlider {
+                    title: qsTr("Depth Filter")
+                    Layout.preferredWidth: plotIconSize * 6
+                    Layout.alignment: Qt.AlignVCenter
+                    fontSize: iconSize
+                    spacing: iconSize * 0.3
+                    sliderLen: iconSize * 5
+
+                    from: 1
+                    to: 4
+                    value: 1
+                    onValueChanged: {
+                        console.log("深度滤波:")
+                        // plot.setSensitivity(value)
                     }
                 }
 
                 Rectangle {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: 1
+                    Layout.preferredWidth: 2
                     color: "#888888"
                 }
 
@@ -1122,26 +1139,20 @@ Item {
                 Layout.fillWidth: true
                 spacing: 10
 
-                XRSlider {
-                    title: qsTr("Depth Filter")
-                    Layout.preferredWidth: plotIconSize * 6
-                    Layout.alignment: Qt.AlignVCenter
-                    fontSize: iconSize
-                    spacing: iconSize * 0.3
-                    sliderLen: iconSize * 5
-
-                    from: 1
-                    to: 4
-                    value: 1
-                    onValueChanged: {
-                        console.log("深度滤波:")
-                        // plot.setSensitivity(value)
+                CheckBox {
+                    id: attitudeCorrectCheck
+                    text: qsTr("Attitude Correct")
+                    font.pixelSize: iconSize
+                    checked: false
+                    onCheckedChanged: {
+                        console.log("Attitude Correct......", checked)
+                        // attitudeCorrectionEnable = checked
                     }
                 }
 
                 Rectangle {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: 1
+                    Layout.preferredWidth: 2
                     color: "#888888"
                 }
 
@@ -1154,6 +1165,12 @@ Item {
                         console.log("批量校正:", checked)
                         // attitudeCorrectionEnable = checked
                     }
+                }
+
+                Rectangle {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: 2
+                    color: "#888888"
                 }
 
                 CheckBox {

@@ -3,19 +3,21 @@ import QtQuick.Controls 2.15
 
 
 
-
 Item {
     id: root
     property string text: qsTr("Check")
-    property bool checked: false
-    property bool expanded: false
+    property bool   checked:  false
+    property bool   expanded: false
+
+    property bool expandUp: false
 
     property int iconSize: theme.iconSize * 1.5
 
     property color panelColor: "#eeeeee"
 
+    default property alias content: contentContainer.data
 
-    width: theme.iconSize * 10
+    width: theme.iconSize * 12
     height: checkbox.height + (expanded ? panel.height : 0)
 
 
@@ -69,18 +71,12 @@ Item {
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.LeftButton
-
             onClicked: {
-
-                // 判断点击位置
-                if(mouseX > checkbox.indicator.width)
-                {
+                if(mouseX > checkbox.indicator.width) {
                     root.expanded = !root.expanded
-
                     root.expandedChanged(root.expanded)
                 }
-                else
-                {
+                else {
                     checkbox.checked = !checkbox.checked
                 }
             }
@@ -88,72 +84,36 @@ Item {
     }
 
 
-
-    //=========================
     // 抽屉面板
-    //=========================
     Rectangle {
-        id: panel
+       id: panel
+       width: parent.width
 
-        anchors.top: checkbox.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: root.expanded ? implicitHeight : 0
-        implicitHeight: 120
-        clip:true
+       color: panelColor
+       clip: true
 
-        color: panelColor
+       // 根据方向决定位置
+       anchors.left: parent.left
+       anchors.right: parent.right
+       anchors.top: root.expandUp ? undefined : checkbox.bottom
+       anchors.bottom: root.expandUp ? checkbox.top : undefined
 
+       height: root.expanded ? implicitHeight : 0
+       implicitHeight: contentContainer.childrenRect.height +  contentContainer.anchors.margins * 2
 
-        // Column {
-        //     anchors.fill: parent
-        //     anchors.margins: 10
-        //     spacing: 8
+       Item {
+           id: contentContainer
+           anchors.fill: parent
+           anchors.margins: 10
+       }
 
-        //     Button {
-        //         text:"Setting 1"
-        //         width:100
-        //         height:35
-
-        //         onClicked: {
-        //             console.log("Setting 1")
-        //         }
-        //     }
-
-
-        //     Button {
-        //         text:"Setting 2"
-        //         width:100
-        //         height:35
-
-        //         onClicked: {
-        //             console.log("Setting 2")
-        //         }
-        //     }
+       Behavior on height {
+           NumberAnimation {
+               duration: 200
+               easing.type: Easing.OutCubic
+           }
+       }
+   }
 
 
-        //     Row {
-        //         spacing:10
-
-        //         Button {
-        //             text:"Apply"
-        //         }
-
-        //         Button {
-        //             text:"Reset"
-
-        //         }
-        //     }
-        // }
-
-
-
-        Behavior on height {
-            NumberAnimation {
-                duration:250
-                easing.type:
-                    Easing.OutCubic
-            }
-        }
-    }
 }
