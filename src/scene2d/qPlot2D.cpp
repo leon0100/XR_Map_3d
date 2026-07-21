@@ -83,7 +83,9 @@ void qPlot2D::plotUpdate()
     // if(fabs(currentRatio - targetRatio) > tolerance  && (currentViewMaxBtStart_ != -1.0f)) {
     //     setMaxLoRng(currentViewMaxBtStart_ / 0.7f);
     // }
-    setMaxLoRng(currentViewMaxBtStart_ * 1.5);
+    if(currentViewMaxLoRng_ != 1.0f && dataset_ && !dataset_->vec_CSV_.empty()) {
+        setMaxLoRng((int)(currentViewMaxLoRng_ * 1.5f));
+    }
 
     mutex.unlock();
 }

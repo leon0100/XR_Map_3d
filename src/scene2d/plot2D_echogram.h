@@ -45,9 +45,10 @@ public:
     void setCompensation(int compensation_id);
 
     void setBottomLineVisible(bool isVisible);
+    void setDepthFilterVisible(bool isVisible);
+    void setDepthFilterValue(int value);
 
 
-    // int updateCash(Plot2D* parent, Dataset* dataset, int width, int height);
     int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
     void setUpperRng(int maxUpRng);
@@ -78,12 +79,14 @@ protected:
         int btStart = 0;
         int bottomLineIdx = 0;
 
-        float depth;
+        float    depth;
         quint16  heading;
         quint16  speed;
         quint16  temperature;
         double   latitude;
         double   longitude;
+        float    nowScaleY;
+        int      startIdx;
     };
 
     uint16_t _colorHashMap[256];
@@ -124,7 +127,7 @@ private:
     void drawBottomLine(Canvas canvas, int width, int cash_position, bool isVisible);
 
     double KalmanFilter(double ResrcData, double ProcessNiose_Q, double MeasureNoise_R, double InitialPrediction, int isFirst);
-
+    void drawDepthFilter(Canvas canvas, int width, int cash_position, bool isVisible);
 
 
 private:
@@ -143,5 +146,6 @@ private:
     int  filterLevel_ = 1;
     Dataset* dataset_;
     Plot2D *plot2d_;
+    QList<int> depthFilterList_;
 
 };

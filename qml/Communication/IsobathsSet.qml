@@ -54,8 +54,8 @@ Item {
 
         Rectangle {
             id: isobathsToggleBtn
-            width: iconSize * 1.4
-            height: iconSize * 6
+            width: iconSize * 1.6
+            height: iconSize * 6.4
             color: "#879fc6"
             opacity: 0.75
 
@@ -82,15 +82,15 @@ Item {
 
                 Image {
                     source: "qrc:/XR/contour.png"
-                    Layout.preferredWidth: iconSize
-                    Layout.preferredHeight: iconSize
+                    Layout.preferredWidth: iconSize * 1.1
+                    Layout.preferredHeight: iconSize * 1.1
                     Layout.alignment: Qt.AlignHCenter
                     fillMode: Image.PreserveAspectFit
                 }
 
                 Item {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: iconSize * 3
+                    Layout.preferredHeight: iconSize * 3.2
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Isobaths")
@@ -105,8 +105,8 @@ Item {
 
         Rectangle {
             id: bluetoothToggleBtn
-            width: iconSize * 1.4
-            height: iconSize * 6
+            width: iconSize * 1.6
+            height: iconSize * 7.2
             color: "#879fc6"
             opacity: 0.75
 
@@ -132,16 +132,16 @@ Item {
                 spacing: 2
 
                 Image {
-                    source: "qrc:/XR/bluetooth.png"
-                    Layout.preferredWidth: iconSize
-                    Layout.preferredHeight: iconSize
+                    source: "qrc:/icons/ui/focus_2.svg"
+                    Layout.preferredWidth: iconSize * 1.1
+                    Layout.preferredHeight: iconSize * 1.1
                     Layout.alignment: Qt.AlignHCenter
                     fillMode: Image.PreserveAspectFit
                 }
 
                 Item {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: iconSize * 3
+                    Layout.preferredHeight: iconSize * 4
                     Text {
                         anchors.centerIn: parent
                         text: qsTr("Bathymetry")

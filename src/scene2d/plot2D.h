@@ -138,7 +138,7 @@ public:
 
 
 public:
-    float  currentViewMaxBtStart_ = -1.0f;
+    float currentViewMaxLoRng_ = -1.0f;
 
 protected:
     Canvas        canvas_;

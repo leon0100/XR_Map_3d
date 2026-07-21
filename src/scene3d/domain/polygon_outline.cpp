@@ -69,7 +69,6 @@ void PolygonOutline::polygonAddPoint(double latitude, double longitude)
     if (pos.lla.isCoordinatesValid()) {
         if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
             lastEp = datasetPtr_->addNewEpochPolygonOutline();  //不断累加帧数的下标index
-            // lastEp->setDistProcesing_CSV(depth);
         }
         LLARef llaRef = datasetPtr_->getLlaRef();
         lastEp->setPositionLLA(pos);

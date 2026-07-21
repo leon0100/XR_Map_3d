@@ -132,6 +132,21 @@ void Plot2DEchogram::setBottomLineVisible(bool isVisible)
     bottomLineVisible_ = isVisible;
 }
 
+void Plot2DEchogram::setDepthFilterVisible(bool isVisible)
+{
+    depthFilterList_.clear();
+    if(isVisible) {
+        depthFilterList_ = getDepthListKF();
+    }
+}
+
+void Plot2DEchogram::setDepthFilterValue(int value)
+{
+    depthFilterList_.clear();
+    filterLevel_ = value;
+    depthFilterList_ = getDepthListKF();
+}
+
 void Plot2DEchogram::resetCash()
 {
     _cashFlags.resetCash = true;
@@ -170,9 +185,6 @@ void Plot2DEchogram::setSensitivity(int sensitive)
 
 double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,double MeasureNoise_R,double InitialPrediction,int isFirst)
 {
-    double R = MeasureNoise_R;
-    double Q = ProcessNiose_Q;
-
     static double x_last = ResrcData;
     if(-1 == isFirst)
     {
@@ -190,8 +202,8 @@ double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,doubl
     double kg;
 
     x_mid = x_last;           //x_last=x(k-1|k-1),x_mid=x(k|k-1)
-    p_mid = p_last + Q;       //p_mid=p(k|k-1),p_last=p(k-1|k-1),Q=噪声
-    kg = p_mid / (p_mid + R); //kg为kalman filter，R为噪声
+    p_mid = p_last + ProcessNiose_Q;       //p_mid=p(k|k-1),p_last=p(k-1|k-1),Q=噪声
+    kg = p_mid / (p_mid + MeasureNoise_R); //kg为kalman filter，R为噪声
     x_now = x_mid + kg * (  ResrcData - x_mid); //估计出的最优值
     p_now = (1 - kg) * p_mid;                                 //最优值对应的covariance
 
@@ -201,11 +213,80 @@ double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,doubl
     return x_now;
 }
 
-double KQ = 1,KR = 10,KP0 = 4000.00;
-#define KALMAN_Q   KQ
-#define KALMAN_R   KR
-#define KALMAN_P0  KP0
-int diffCount = 20,diffValue = 30,R_small = 5,R_big = 20;
+
+void Plot2DEchogram::drawDepthFilter(Canvas canvas, int width, int cash_position, bool isVisible)
+{
+    if(!isVisible) {
+        return;
+    }
+
+    qDebug() << "depthFilterList_.size().........." << depthFilterList_.size();
+
+    if(_cash.size() != width || width <= 1 || depthFilterList_.isEmpty()) {
+        return;
+    }
+
+    QPainter* cp = canvas.painter();
+
+    QPen depthFilterPen(QColor(0,255,0));
+    depthFilterPen.setWidth(2);
+
+    cp->setPen(depthFilterPen);
+
+    QPoint lastPoint;
+    bool hasLast = false;
+
+    for(int x = 0; x < width; x++) {
+        // 与drawBottomLine保持一致
+        int col = (cash_position + x) % width;
+
+        if(_cash[col].state != CashLine::CashState::CashStateValid)
+        {
+            hasLast = false;
+            continue;
+        }
+
+
+        /*
+         * 当前ping对应dataset索引
+         */
+        int poolIndex = _cash[col].poolIndex;
+        if(poolIndex < 0 || poolIndex >= depthFilterList_.size())
+        {
+            hasLast = false;
+            continue;
+        }
+
+
+        /*
+         * KF深度
+         * getDepthListKF()
+         */
+        int depth = depthFilterList_.at(poolIndex);
+        if(depth <=0) {
+            hasLast = false;
+            continue;
+        }
+
+        /*
+         * 深度转换为声呐图Y坐标
+         * bottomLineIdx: = btStart * scaleY
+         * 所以这里采用同样比例
+         */
+        float y = (float)depth / currentLoRng_ * canvas.height();
+        QPoint currentPoint(x, (int)y);
+
+        if(hasLast) {
+            cp->drawLine(lastPoint, currentPoint);
+        }
+
+        lastPoint = currentPoint;
+        hasLast = true;
+    }
+
+
+}
+
 QList<int> Plot2DEchogram::getDepthListKF()
 {
     QList<int> list_kf;
@@ -214,10 +295,11 @@ QList<int> Plot2DEchogram::getDepthListKF()
     int mark_count = 0;
     int mark_last = depth;
     int isFirst = -1;
-    if(dataset_ == nullptr) {
+    if(dataset_ == nullptr || plot2d_ == nullptr) {
         return list_kf;
     }
 
+    int diffCount = 20,diffValue = 30,R_small = 5,R_big = 20;
     DatasetCursor& cursor = plot2d_->cursor();
     int dataSize = dataset_->size();
     for(int i = 0; i < dataSize; i++) {
@@ -243,8 +325,9 @@ QList<int> Plot2DEchogram::getDepthListKF()
                 } else {
                     list_kf.append(list_kf.last());
                 }
-            } else {
-                list_kf.append(KalmanFilter(depth, KALMAN_Q, R_small*filterLevel_, KALMAN_P0,isFirst));
+            }
+            else {
+                list_kf.append(KalmanFilter(depth, 1, R_small*filterLevel_, 4000.0, isFirst));
             }
             //list_midCount.append(3);
         } else {
@@ -252,11 +335,12 @@ QList<int> Plot2DEchogram::getDepthListKF()
             if(0 == depth) {
                 if(list_kf.isEmpty()) {
                     list_kf.append(0);
-                } else {
+                }
+                else {
                     list_kf.append(list_kf.last());
                 }
-            }else {
-                list_kf.append(KalmanFilter(depth, KALMAN_Q, R_big*filterLevel_*filterLevel_, KALMAN_P0,isFirst));
+            } else {
+                list_kf.append(KalmanFilter(depth, 1, R_big*filterLevel_*filterLevel_, 4000.0, isFirst));
             }
             //list_midCount.append(21);
         }
@@ -264,7 +348,6 @@ QList<int> Plot2DEchogram::getDepthListKF()
         isFirst = 0;
     }
 
-    qDebug() << "list_kf.count().........." << list_kf.count();
 
     return list_kf;
 }
@@ -336,73 +419,115 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     p->setPen(sepPen);
     p->drawLine(panelX, 0, panelX, height);
 
-    QVector<uint8_t> latestWave = wavePixel_.waveData;
-    for (int j = 0; j < height; j++) {
-        uint8_t dataValue = latestWave[j];
-        int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-        int rgb = bgColor;
+    int sfEnd   = wavePixel_.sfEnd;
+    int btStart = wavePixel_.btStart;
+    QVector<uint8_t> cacheData = wavePixel_.waveData;
 
-        if (j >= 0 && j < wavePixel_.sfEnd) {
-            // 水表
-            if(dataValue == 0) {
-                rgb = bgColor;
-            } else {
-                if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                    rgb = ZyColorScheme::colorScheme_surface[254];
-                } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                    rgb = ZyColorScheme::colorScheme_surface[0];
+    QList<int> colorData;
+    colorData.clear();
+    int colorNum = 1;
+    if(colorNum == 1) {
+        /*-水表-*/
+        for(int j = 0; (j<sfEnd)&&(j<btStart)&&(j<height); j++) {
+            if(cacheData[j] == 0) {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else {
+                if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
+                    colorData.append(ZyColorScheme::colorScheme_surface[254]);
+                } else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
+                    colorData.append(ZyColorScheme::colorScheme_surface[0]);
                 } else {
-                    rgb =  ZyColorScheme::colorScheme_surface[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+                    colorData.append(ZyColorScheme::colorScheme_surface[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
                 }
             }
         }
-        else if (j >= wavePixel_.sfEnd && j < wavePixel_.btStart) {
-            // 水中
-            if(dataValue == 0) {
-                rgb = bgColor;
-            } else {
-                if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                    rgb = ZyColorScheme::colorScheme_fish[254];
-                } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                    rgb = ZyColorScheme::colorScheme_fish[254];
-                } else {
-                    rgb = ZyColorScheme::colorScheme_fish[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
+        /*-水中-*/
+        for(int j = sfEnd; ((j<btStart)&&(j<height)); j++)
+        {
+            if(cacheData[j] == 0) {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else {
+                if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
+                    colorData.append(ZyColorScheme::colorScheme_fish[254]);
+                }
+                else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
+                    colorData.append(ZyColorScheme::colorScheme_fish[0]);
+                }
+                else {
+                    colorData.append(ZyColorScheme::colorScheme_fish[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
+                }
+            }
+
+        }
+        /*-水底-*/
+        for(int j = btStart; j < height; j++)
+        {
+            if(cacheData[j] == 0) {
+                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
+            }
+            else
+            {
+                if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
+                    colorData.append(ZyColorScheme::colorScheme_bottom[254]);
+                }
+                else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
+                    colorData.append(ZyColorScheme::colorScheme_bottom[0]);
+                }
+                else {
+                    colorData.append(ZyColorScheme::colorScheme_bottom[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
                 }
             }
         }
-        else if(j >= wavePixel_.btStart) {
-            // 水底
-            if(dataValue == 0) {
-                rgb = bgColor;
-            } else {
-                if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                    rgb = ZyColorScheme::colorScheme_bottom[254];
-                } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                    rgb = ZyColorScheme::colorScheme_bottom[254];
-                } else {
-                    rgb = ZyColorScheme::colorScheme_bottom[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
-                }
-            }
-        }
-
-
-
-        // 以面板中线为中心，根据振幅向两侧扩展
-        int halfWidth = (latestWave[j] * (panelW / 2)) / 255;
-        int centerX   = panelX + panelW / 2;
-        int xStart    = centerX - halfWidth;
-        int xEnd      = centerX + halfWidth;
-        if (xStart < panelX) xStart = panelX;
-        if (xEnd > panelX + panelW) xEnd = panelX + panelW;
-        if (xEnd > xStart) {
-            p->fillRect(xStart, j, xEnd - xStart, 1, QColor::fromRgb(rgb));
-        }
-
     }
 
 
+    float scaleY = wavePixel_.nowScaleY;
+    int startIdx = wavePixel_.startIdx;
+
+    int *sonarWaveBuffer = new int[panelW*height];
+    QImage *sonarWave = new QImage((uchar *)sonarWaveBuffer, panelW, height, QImage::Format_RGB32);
+
+    int ratio = 10;
+    if(scaleY < 1 && scaleY > 0) {
+        scaleY = 1 / scaleY;
+
+        /*-底色，防止拉伸在范围外-*/
+        for(int i = 0; i < height; i++) {
+            for(int j = 1; j < panelW; j++) {
+                sonarWaveBuffer[(i)*panelW +j] =  ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+            }
+        }
+
+        for(int i = 0; (i < height) && ((startIdx+(int)(i*scaleY)) < colorData.count()); i++) {
+            for(int j = (panelW/2-(cacheData[startIdx+(int)(i*scaleY)]/ratio));
+                 j<(panelW/2+(cacheData[startIdx+(int)(i*scaleY)]/ratio)); j++) {
+                sonarWaveBuffer[(i)*panelW +j] = colorData[startIdx+(int)(i*scaleY)];
+            }
+        }
+    }
+    else if(scaleY >= 1) {
+        for(int i = 0; i < height; i++) {
+            for(int j = 1;j < panelW; j++) {
+                sonarWaveBuffer[i*panelW+j] = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
+            }
+        }
+        for(int i = 0; (i < height) && ((startIdx+(int)(i/scaleY))<colorData.count()); i++) {
+            for(int j = panelW/2-(cacheData[startIdx+(int)(i/scaleY)]/ratio);
+                 j < (panelW/2+(cacheData[startIdx+(int)(i/scaleY)]/ratio)); j++) {
+                sonarWaveBuffer[(i)*panelW +j] = colorData[startIdx+(int)(i/scaleY)];
+            }
+        }
+    }
+
+
+    QImage tmpImage = sonarWave->scaled(panelW, height, Qt::IgnoreAspectRatio);
+    p->drawPixmap(QPoint(panelX,0), QPixmap::fromImage(tmpImage));
+
 
     int bottomLineIdx = wavePixel_.bottomLineIdx;
+    qDebug() << "bottomLineIdx......" << bottomLineIdx;
     if (bottomLineIdx >= 0 && bottomLineIdx < height) {
         QPen linePen(Qt::red);
         linePen.setWidth(2);
@@ -500,8 +625,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
     }
 
-    float currentViewMaxBtStart = -1.0;
-
+    float currentViewMaxLoRng = -1.0;
     for(int column = 0; column < width; column++) {
         int cursorPos = column - wrapStartPos;
         if(column < wrapStartPos) {
@@ -526,12 +650,10 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
             if (isCashNotvalid || pool_index_safe != cacheIndex || !wasValidlyRendered) {
                 _cash[column].poolIndex = pool_index_safe;
 
-
                 ChartParameters params = epochData->getChartParameters(cursor.channel1);
                 const int pingSize = params.pingSize;
 
-                int sfEnd = 0, btStart = 0, draft = 0;
-
+                int sfEnd = 0, btStart = 0, draft = 0, btStart_filter;
                 float upRng = params.upRng;
                 float loRng = params.loRng;
                 float depth = params.depth;
@@ -541,26 +663,23 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     sfEnd = 0;
                 }
 
-                int startIdx = 0;
+                float depthFilter = 0.01;
+                if(depthFilterList_.size() > pool_index_safe) {
+                    depthFilter = depthFilterList_.at(pool_index_safe);
+                }
 
                 if(loRng != 0) {
-                    // if(loRng == upRng) {
-                    //     draft   = 0;
-                    //     btStart  = 0;
-                    //     sfEnd    = 0;
-                    //     startIdx = 0;
-                    // }
-                    draft = (1500.0/soundVelocity_) * (draftOffset_ / (loRng + upRng)) * pingSize;
+                    draft   = (1500.0/soundVelocity_) * (draftOffset_ / (loRng-upRng)) * pingSize;
+                    btStart = (1500.0/soundVelocity_) * (depth / (loRng-upRng)) * pingSize;
+                    btStart_filter = (1500.0/soundVelocity_) * (depthFilter / (loRng-upRng)) * pingSize;
 
-                    btStart = (1500.0/soundVelocity_) * (depth / (loRng - upRng)) * pingSize;
-
-                    float surfaceEnd;
+                    float surfaceEnd = 0.0;
                     if((depth < 100) && (depth > 30)) {
                         surfaceEnd = depth - 10 + draftOffset_;
                     } else {
                         surfaceEnd = 100 + draftOffset_;
                     }
-                    sfEnd = (1500.0/soundVelocity_) * (surfaceEnd / (loRng - upRng)) * pingSize;
+                    sfEnd = (1500.0/soundVelocity_) * (surfaceEnd / (loRng-upRng)) * pingSize;
                 }
                 if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
                     draft   = 0;
@@ -568,8 +687,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     sfEnd   = 0;
                 }
 
-                currentViewMaxBtStart = qMax(currentViewMaxBtStart, loRng);
-
+                currentViewMaxLoRng = qMax(currentViewMaxLoRng, loRng);
 
                 QVector<uint8_t> rawDataVec;
                 rawDataVec.resize(PING_SIZE_MAX);
@@ -602,26 +720,30 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     cacheData.append(0);
                 }
 
-
-                float scaleY = (float)height / pingSize * (loRng/(currentLoRng_ - currentUpRng_));
-                startIdx = pingSize * currentUpRng_ / loRng;
-
+                float nowScaleY = (float)height / pingSize * (loRng / (currentLoRng_-currentUpRng_));
+                int startIdx = pingSize * currentUpRng_ / loRng;
+                int btStartNow = btStart;
+                btStartNow -= startIdx;
+                int btStartFilter = btStart_filter;
+                btStartFilter -= startIdx;
 
                 QList<int> colorData;
                 colorData.clear();
-
                 int colorNum = 1;
                 if(colorNum == 1) {
                     /*-水表-*/
                     for(int j = 0; (j<sfEnd)&&(j<btStart)&&(j<height); j++) {
                         if(cacheData[j] == 0) {
                             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
-                        } else {
+                        }
+                        else {
                             if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
                                 colorData.append(ZyColorScheme::colorScheme_surface[254]);
-                            } else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
+                            }
+                            else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
                                 colorData.append(ZyColorScheme::colorScheme_surface[0]);
-                            } else {
+                            }
+                            else {
                                 colorData.append(ZyColorScheme::colorScheme_surface[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
                             }
                         }
@@ -632,18 +754,14 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                         if(cacheData[j] == 0) {
                             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
                         }
-                        else
-                        {
-                            if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
-                            {
+                        else {
+                            if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
                                 colorData.append(ZyColorScheme::colorScheme_fish[254]);
                             }
-                            else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
-                            {
+                            else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
                                 colorData.append(ZyColorScheme::colorScheme_fish[0]);
                             }
-                            else
-                            {
+                            else {
                                 colorData.append(ZyColorScheme::colorScheme_fish[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
                             }
                         }
@@ -652,22 +770,17 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     /*-水底-*/
                     for(int j = btStart; j < height; j++)
                     {
-                        if(cacheData[j] == 0)
-                        {
+                        if(cacheData[j] == 0) {
                             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
                         }
-                        else
-                        {
-                            if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254)
-                            {
+                        else {
+                            if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
                                 colorData.append(ZyColorScheme::colorScheme_bottom[254]);
                             }
-                            else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0)
-                            {
+                            else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
                                 colorData.append(ZyColorScheme::colorScheme_bottom[0]);
                             }
-                            else
-                            {
+                            else {
                                 colorData.append(ZyColorScheme::colorScheme_bottom[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
                             }
                         }
@@ -678,37 +791,35 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 uint32_t* img_data = (uint32_t*)_image.bits();
                 int bytesPerLine   = _image.bytesPerLine() / 4;
 
-                if(scaleY < 1 && scaleY > 0) {
-                    scaleY = 1 / scaleY;
+                if(nowScaleY < 1 && nowScaleY > 0) {
+                    nowScaleY = 1 / nowScaleY;
 
                     int j = 0;
-                    for(; (((int)(j*scaleY)+startIdx) < cacheData.count()); j++) {
-                        int rgb = colorData[startIdx+(int)(j*scaleY)];
+                    for(; ((int)(j*nowScaleY)+startIdx) < cacheData.count(); j++) {
+                        int rgb = colorData[startIdx+(int)(j*nowScaleY)];
                         QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                         img_data[j* bytesPerLine + column] = color;
                     }
                     /*-自动补齐-*/
-                    for(; j<height; j++) {
+                    for(; j < height; j++) {
                         /*-底层的部分设置成1不使用透明模式-*/
                         int rgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
                         img_data[j* bytesPerLine + column] = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                     }
                 }
-                else if(scaleY >= 1) {
+                else if(nowScaleY >= 1) {
                     for (int j = 0; j < height; j++) {
                         int rgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
                         QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                         img_data[j* bytesPerLine + column] = color;
                     }
 
-                    for(int j = 0; ((j<height)&&(btStart+(int)(j/scaleY)<colorData.count())); j++) {
-                        int rgb = colorData[startIdx+(int)(j/scaleY)];
+                    for(int j = 0; (j<height) && (btStart+(int)(j/nowScaleY)<colorData.count()); j++) {
+                        int rgb = colorData[startIdx+(int)(j/nowScaleY)];
                         QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                         img_data[j * bytesPerLine + column] = color;
                     }
                 }
-
-
 
 
                 // uint8_t* cacheData = new uint8_t[height];
@@ -719,7 +830,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 _cash[column].waveData = cacheData;
                 _cash[column].sfEnd    = sfEnd;
                 _cash[column].btStart  = btStart;
-                _cash[column].bottomLineIdx = _cash[column].btStart * scaleY;
+                _cash[column].bottomLineIdx = btStartNow * nowScaleY;
                 _cash[column].state    = CashLine::CashState::CashStateValid;
                 _cash[column].isNeedUpdate = true;
                 _cash[column].heading  = params.heading;
@@ -727,7 +838,9 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 _cash[column].speed    = params.speed;
                 _cash[column].temperature = params.temperature;
                 _cash[column].longitude = params.longitude;
-                _cash[column].latitude = params.latitude;
+                _cash[column].latitude  = params.latitude;
+                _cash[column].nowScaleY = nowScaleY;
+                _cash[column].startIdx  = startIdx;
 
 
 
@@ -810,8 +923,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
     }
 
-    parent->currentViewMaxBtStart_ = currentViewMaxBtStart;
-
+    parent->currentViewMaxLoRng_ = currentViewMaxLoRng;
 
     int visualRightColumn = (wrapStartPos == 0) ? (width - 1) : (wrapStartPos - 1);
     if (visualRightColumn >= 0 && visualRightColumn < _cash.size()) {
@@ -881,9 +993,10 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
         if(wavePanelWidth < 1) {
             wavePanelWidth = 1;
         }
-        drawLatestWavePixel(parent, image_width, wavePanelWidth, image_height);
 
+        drawLatestWavePixel(parent, image_width, wavePanelWidth, image_height);
         drawBottomLine(canvas, image_width, cash_position, bottomLineVisible_);
+        drawDepthFilter(canvas, image_width, cash_position, true);
     }
 
     return true;

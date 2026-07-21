@@ -286,38 +286,6 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         float depth = tslSingleStru.auxInfo.depth;
         int pingSize = 240;
         float upRng = 0.0;
-        // int sfEnd;
-        // int btStart;
-        // int draft;
-
-        // if(loRng <= 0) {
-        //     draft   = 0;
-        //     btStart = 0;
-        //     sfEnd   = 0;
-        // }
-
-        // if(loRng != 0) {
-        //     if(loRng == 0.0) {
-        //         draft    = 0;
-        //         btStart  = 0;
-        //         sfEnd    = 0;
-        //     }
-
-        //     btStart = (depth /(loRng-upRng))*pingSize;
-
-        //     float surfaceEnd;
-        //     if((depth < 100) && (depth > 30)) {
-        //         surfaceEnd = depth - 10;
-        //     } else {
-        //         surfaceEnd = 100;
-        //     }
-        //     sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
-        // }
-        // if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
-        //     draft   = 0;
-        //     btStart = 0;
-        //     sfEnd   = 0;
-        // }
 
         ChartParameters chartParams;
         // chartParams.sfEnd       = sfEnd;
@@ -416,7 +384,6 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
     const int   MEDIAN_WINDOW   = 13;     // 窗口大小（奇数）
     const float SPIKE_THRESHOLD = 10.0f;  // 跳变阈值（米），超过用中值替代
     QList<LLA> buffer;
-
     for(int i = 0; i < tsl3Cnt; i++)
     {
         QByteArray tslDataTemp = tslByteList.at(i);
@@ -490,50 +457,16 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         float upRng = tslSingleStru.ping.upRng;
         float loRng = tslSingleStru.ping.loRng;
         float depth = tslSingleStru.auxInfo.depth;
-        // int sfEnd;
-        // int btStart;
-        // int draft;
-        // if(tslSingleStru.ping.frequency == snrFrq455) {
-        //     if(depth > 10000) {
-        //         depth = 0;
-        //     }
-        //     else if(depth > 30000) {
-        //         depth = 0;
-        //     }
-        // }
-
-        // if(loRng <= 0) {
-        //     draft   = 0;
-        //     btStart = 0;
-        //     sfEnd   = 0;
-        // }
-
-        // if(loRng != 0) {
-        //     if(loRng == 0.0) {
-        //         draft    = 0;
-        //         btStart  = 0;
-        //         sfEnd    = 0;
-        //     }
-
-        //     btStart = (depth / (loRng - upRng)) * pingSize;
-
-        //     float surfaceEnd;
-        //     if((depth < 100) && (depth > 30)) {
-        //         surfaceEnd = depth - 10;
-        //     } else {
-        //         surfaceEnd = 100;
-        //     }
-        //     sfEnd = (surfaceEnd / (loRng-upRng)) * pingSize;
-        // }
-        // if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
-        //     draft   = 0;
-        //     btStart = 0;
-        //     sfEnd   = 0;
-        // }
+        if(tslSingleStru.ping.frequency == snrFrq455) {
+            if(depth > 10000) {
+                depth = 0;
+            }
+            else if(depth > 30000) {
+                depth = 0;
+            }
+        }
 
         ChartParameters chartParams;
-        // chartParams.sfEnd        = sfEnd;
-        // chartParams.btStart      = btStart;
         chartParams.depth        = depth;
         chartParams.pingSize     = pingSize;
         chartParams.upRng        = upRng;
