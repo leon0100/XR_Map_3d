@@ -33,12 +33,12 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
             offsetX = cursor.selectEpochIndx - withoutHalf;
         }
 
-        if (const auto datasetChannels{ dataset->channelsList() }; !datasetChannels.empty()) {
+        if (const auto datasetChannels{dataset->channelsList()}; !datasetChannels.empty()) {
             auto& firstDatasetChannels = datasetChannels.at(0);
             if (const auto chartPtr{ ep->chart(firstDatasetChannels.channelId_, firstDatasetChannels.subChannelId_) }; chartPtr) {
-                const int x = canvas.width() / 2 + offsetX;
-                const int y = datasetChannels.size() == 2 ? canvas.height() / 2 - canvas.height() * (chartPtr->bottomProcessing.distance / cursor.distance.range()) :
-                                  canvas.height() * (chartPtr->bottomProcessing.distance / cursor.distance.range());
+                const int x = canvas.width()*0.5 + offsetX;
+                const int y = datasetChannels.size() == 2 ? canvas.height()*0.5 - canvas.height() * (chartPtr->bottomProcessing.distance / cursor.distance.range()) :
+                                canvas.height() * (chartPtr->bottomProcessing.distance / cursor.distance.range());
                 cursor.setMouse(x, y);
             }
         }

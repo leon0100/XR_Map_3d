@@ -138,7 +138,8 @@ public:
 
 
 public:
-    float currentViewMaxLoRng_ = -1.0f;
+    float currentViewMaxLoRng_ = 1.0f;
+    int tempViewMaxLoRng_ = 3200.f;
 
 protected:
     Canvas        canvas_;

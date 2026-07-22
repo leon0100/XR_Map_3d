@@ -962,7 +962,6 @@ void Plot2DEchogram::drawBatchCorrect(Plot2D* parent, Dataset* dataset, int widt
             resetCash();
         }
 
-
         int wrapStartPos = qAbs(cursor.getIndex(0) % width);
         for (int i = 0; i < cursor.indexes.size(); i++) {
             if (cursor.indexes[i] > 0) {

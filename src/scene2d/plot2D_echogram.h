@@ -45,8 +45,8 @@ public:
     void setCompensation(int compensation_id);
 
     void setBottomLineVisible(bool isVisible);
-    void setDepthFilterVisible(bool isVisible);
-    void setDepthFilterValue(int value);
+    void setDepthFilterVisible(bool isVisible, int value);
+    void setBatchCorrect(bool batch);
 
 
     int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
@@ -57,14 +57,16 @@ public:
     void setSoundVelocity(int soundVelocity, int draftOffset);
     void setSensitivity(int sensitive);
     QList<int> getDepthListKF();
+    void drawBatchCorrect(Plot2D* parent, Dataset* dataset, int width, int height);
 
     void addReRenderPlotIndxs(const QSet<int>& indxs);
+
+    QList<QPoint> batchCorrectList_;
 
 protected:
     struct CashLine
     {
-        enum class CashState
-        {
+        enum class CashState {
             CashStateNotValid = 0,
             CashStateValid,
             CashStateEraced
@@ -143,9 +145,12 @@ private:
     int  draftOffset_ = 0;
     int  sensLevel_ = 7;
     int  depthLevel_ = 9;
-    int  filterLevel_ = 1;
-    Dataset* dataset_;
-    Plot2D *plot2d_;
+    Dataset* dataset_ = nullptr;
+    Plot2D *plot2d_ = nullptr;
+    int  depthFilterLevel_ = 1;
+    bool filterLevelVisible_ = false;
     QList<int> depthFilterList_;
+
+    bool batchCorrect_ = false;
 
 };

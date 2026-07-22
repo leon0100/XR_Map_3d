@@ -142,6 +142,7 @@ WaterFall {
             property int   contactMouseY: -1
             property bool  isPanning: false
             property int   panStartX: -1
+            property bool  batchCorrect: core.batchCorrect
 
             hoverEnabled: true
 
@@ -195,6 +196,7 @@ WaterFall {
 
                     isPanning = false
                     panStartX = mouse.x
+
                 }
 
                 if (mouse.button === Qt.RightButton) {
@@ -248,7 +250,7 @@ WaterFall {
                 if (Qt.platform.os === "android") {
                     if (!wasMoved) {
                         var currDelta = Math.sqrt(Math.pow((mouse.x - startMousePos.x), 2)
-                                                  + Math.pow((mouse.y - startMousePos.y), 2));
+                                                + Math.pow((mouse.y - startMousePos.y), 2));
                         if (currDelta > mouseThreshold) {
                             wasMoved = true;
                         }
@@ -275,6 +277,11 @@ WaterFall {
                             plot.horScrollEvent(delta)
                             updateOtherPlot(indx)      //同步另一个声呐视图
                         }
+                    }
+
+                    if(batchCorrect) {
+                        console.log("batchCorrect is true")
+                        plot.drawBatchCorrect(mouse.x, mouse.y)
                     }
                 }
 

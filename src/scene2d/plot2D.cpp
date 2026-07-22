@@ -595,7 +595,7 @@ void Plot2D::setMousePosition(int x, int y, bool isSync)
     if(x >= image_width) { x = image_width - 1; }
 
     if(y < 0) { y = 0; }
-    if(y >= image_height) { x = image_height - 1; }
+    if(y >= image_height) { y = image_height - 1; }
 
     if(x == -1) {
         _mouse.x = -1;

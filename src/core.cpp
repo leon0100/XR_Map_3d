@@ -1283,9 +1283,22 @@ void Core::switchMapType(int sourceType)
 void Core::bathyMetryConfigApply(int soundVelocity, int draftOffset)
 {
     const int numPlots = plot2dList_.size();
-    for (int i = 0; i < numPlots; i++) {
-        qPlot2D* plot2d = plot2dList_[i];
-        plot2d->setSoundVelocity(soundVelocity, draftOffset);
+    for(int i = 0; i < numPlots; i++) {
+        qPlot2D* plot2d = plot2dList_.at(i);
+        if(plot2d){
+            plot2d->setSoundVelocity(soundVelocity, draftOffset);
+        }
+    }
+}
+
+void Core::setDepthFilterVisible(bool visible, int value)
+{
+    const int numPlots = plot2dList_.size();
+    for(int i = 0; i < numPlots; i++) {
+        qPlot2D* plot2d = plot2dList_.at(i);
+        if(plot2d) {
+            plot2d->setDepthFilterVisible(visible, value);
+        }
     }
 }
 
@@ -1726,6 +1739,25 @@ void Core::setProgress(QObject* dialog)
             deviceManager->setProgressDialog(dialog);
         }
         emit progressChanged();
+    }
+}
+
+bool Core::batchCorrect()
+{
+    return isBatchCorrect_;
+}
+
+void Core::setBatchCorrect(bool batchCorrect)
+{
+    isBatchCorrect_ = batchCorrect;
+    emit drawBatchCorrectChanged();
+
+    const int numPlots = plot2dList_.size();
+    for(int i = 0; i < numPlots; i++) {
+        qPlot2D* plot2d = plot2dList_.at(i);
+        if(plot2d) {
+            plot2d->setBatchCorrect(batchCorrect);
+        }
     }
 }
 

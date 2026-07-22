@@ -51,7 +51,9 @@ public:
     Q_PROPERTY(QString   ch1Name                      READ getChannel1Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
-    Q_PROPERTY(QObject*  progress       READ progress     WRITE setProgress     NOTIFY  progressChanged)
+    Q_PROPERTY(QObject*  progress   READ progress       WRITE setProgress        NOTIFY progressChanged)
+    Q_PROPERTY(bool batchCorrect    READ batchCorrect   WRITE  setBatchCorrect   NOTIFY drawBatchCorrectChanged)
+
 
 
     void setEngine(QQmlApplicationEngine *engine);
@@ -108,6 +110,8 @@ public slots:
 
     QObject* progress() const;
     void setProgress(QObject* dialog);
+    bool batchCorrect();
+    void setBatchCorrect(bool batchCorrect);
 
     Q_INVOKABLE QString getChannel1Name() const;
     Q_INVOKABLE QString getChannel2Name() const;
@@ -122,6 +126,7 @@ public slots:
     Q_INVOKABLE void exitApp();
     Q_INVOKABLE void switchMapType(int sourceType);
     Q_INVOKABLE void bathyMetryConfigApply(int soundVelocity, int draftOffset);
+    Q_INVOKABLE void setDepthFilterVisible(bool visible, int value);
 
 signals:
     void connectionChanged(bool duplex = false);
@@ -136,6 +141,8 @@ signals:
     void progressChanged();
 
     void drawRealtimeContour(bool isRead);
+
+    void drawBatchCorrectChanged();
 
 
 private:
@@ -224,6 +231,8 @@ private:
 
     int  currMapLevel_ = 0;
     bool isAutoRenderSpan_ = true;
+
+    bool isBatchCorrect_ = false;
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;

@@ -46,6 +46,8 @@ public:
     int  getMaxLoRng();
     void setMaxLoRng(int maxLoRng);
     void setSoundVelocity(int soundVelocity, int draftOffset);
+    void setDepthFilterVisible(bool visible, int value);
+    void setBatchCorrect(bool batch);
 
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
@@ -90,6 +92,7 @@ public slots:
     Q_INVOKABLE bool deleteContact(int indx);
     Q_INVOKABLE void updateContact();
     Q_INVOKABLE void setBottomLineVisible(bool isVisible);
+    Q_INVOKABLE void drawBatchCorrect(int x, int y);
 
 
     void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)

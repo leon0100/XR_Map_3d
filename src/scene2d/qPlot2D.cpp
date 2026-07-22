@@ -74,9 +74,10 @@ void qPlot2D::plotUpdate()
 
     update();
 
-    // if(currentViewMaxLoRng_ != 1.0f && dataset_ && !dataset_->vec_CSV_.empty()) {
-    //     setMaxLoRng((int)(currentViewMaxLoRng_ * 1.5f));
-    // }
+    if(dataset_ && !dataset_->vec_CSV_.empty()) {
+        tempViewMaxLoRng_ = (int)(currentViewMaxLoRng_ * 1.5f);
+        setMaxLoRng(tempViewMaxLoRng_);
+    }
 
     mutex.unlock();
 }
@@ -175,6 +176,17 @@ void qPlot2D::setSoundVelocity(int soundVelocity, int draftOffset)
     plotUpdate();
 }
 
+void qPlot2D::setDepthFilterVisible(bool visible, int value)
+{
+    echogram_.setDepthFilterVisible(visible, value);
+    plotUpdate();
+}
+
+void qPlot2D::setBatchCorrect(bool batch)
+{
+    echogram_.setBatchCorrect(batch);
+}
+
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
     qDebug() << "upper........" << upper << "  " << lower;
@@ -211,6 +223,12 @@ void qPlot2D::updateContact()
 void qPlot2D::setBottomLineVisible(bool isVisible)
 {
     echogram_.setBottomLineVisible(isVisible);
+    plotUpdate();
+}
+
+void qPlot2D::drawBatchCorrect(int x, int y)
+{
+    echogram_.batchCorrectList_.append(QPoint(x, y));
     plotUpdate();
 }
 

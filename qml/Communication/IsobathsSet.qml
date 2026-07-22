@@ -157,8 +157,6 @@ Item {
     }
 
 
-
-
     // ------------------------- isobaths抽屉 -------------------------
     Rectangle {
         id: isobathsContent
@@ -1084,11 +1082,11 @@ Item {
                     rightPadding: 0
                     checked: false
                     onCheckedChanged: {
-                        console.log("Depth Filter......", checked)
-                        // attitudeCorrectionEnable = checked
+                        core.setDepthFilterVisible(checked, depthFilterXRSlider.value)
                     }
                 }
                 XRSlider {
+                    id: depthFilterXRSlider
                     title: qsTr("Depth Filter")
                     Layout.preferredWidth: plotIconSize * 6
                     Layout.alignment: Qt.AlignVCenter
@@ -1101,7 +1099,7 @@ Item {
                     value: 1
                     onValueChanged: {
                         console.log("深度滤波:")
-                        // plot.setSensitivity(value)
+                        core.setDepthFilterVisible(depthFilterCheck.checked, depthFilterXRSlider.value)
                     }
                 }
 
@@ -1162,8 +1160,7 @@ Item {
                     font.pixelSize: iconSize
                     checked: false
                     onCheckedChanged: {
-                        console.log("批量校正:", checked)
-                        // attitudeCorrectionEnable = checked
+                        core.batchCorrect = checked
                     }
                 }
 
@@ -1180,7 +1177,6 @@ Item {
                     checked: false
                     onCheckedChanged: {
                         console.log("深度校正:", checked)
-                        // attitudeCorrectionEnable = checked
                     }
                 }
 
