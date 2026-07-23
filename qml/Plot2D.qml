@@ -603,7 +603,7 @@ WaterFall {
 
                             ColumnLayout {
                                 anchors.fill: parent
-                                spacing: 12
+                                spacing: 2
 
                                 Rectangle {
                                     Layout.alignment: Qt.AlignLeft
@@ -620,11 +620,12 @@ WaterFall {
                                 }
 
                                 Rectangle {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: marksDrawer.markIconSize * 6
+                                    // Layout.fillWidth: true
+                                    Layout.preferredWidth: plot.width * 0.25
+                                    Layout.preferredHeight: marksDrawer.markIconSize * 5
                                     Layout.alignment: Qt.AlignHCenter
-                                    Layout.topMargin: 5
-                                    Layout.bottomMargin: 5
+                                    Layout.topMargin: 4
+                                    Layout.bottomMargin: 4
 
                                     border.color: "#7f8fa6"
                                     border.width: 1
