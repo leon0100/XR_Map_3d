@@ -46,7 +46,6 @@ public:
 
     void setBottomLineVisible(bool isVisible);
     void setDepthFilterVisible(bool isVisible, int value);
-    void setBatchCorrect(bool batch);
 
 
     int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
@@ -57,11 +56,16 @@ public:
     void setSoundVelocity(int soundVelocity, int draftOffset);
     void setSensitivity(int sensitive);
     QList<int> getDepthListKF();
+    void setBatchCorrect(bool batch);
     void drawBatchCorrect(Plot2D* parent, Dataset* dataset, int width, int height);
+    void updateBatchCorrect(Plot2D* parent, Dataset* dataset, int width, int height);
+    void addBatchCorrect(QPoint pos);
+    void clearBatchCorrect();
+    void setUpdateBatchCorrect(bool updateBatchCorrect);
+    void setDepthCorrect(bool depthCorrect);
+    void clearDepthCorrect();
+    void applyDepthCorrect(Plot2D* parent, Dataset* dataset, int mouseX, int mouseY, int imageWidth, int height);
 
-    void addReRenderPlotIndxs(const QSet<int>& indxs);
-
-    QList<QPoint> batchCorrectList_;
 
 protected:
     struct CashLine
@@ -134,7 +138,6 @@ private:
 
 private:
     ThemeId themeId_;
-    QSet<int> reRenderPlotIndxs_;
 
     ZyColorScheme *zyColorScheme_;
 
@@ -151,6 +154,8 @@ private:
     bool filterLevelVisible_ = false;
     QList<int> depthFilterList_;
 
-    bool batchCorrect_ = false;
-
+    bool batchCorrect_ = false, updateBatchCorrect_ = false;
+    QList<QPoint> batchCorrectList_;
+    bool depthCorrect_ = false;
+    int  depthCorrectY_ = -1;
 };

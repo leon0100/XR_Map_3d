@@ -1176,7 +1176,7 @@ Item {
                     font.pixelSize: iconSize
                     checked: false
                     onCheckedChanged: {
-                        console.log("深度校正:", checked)
+                        core.depthCorrect = checked
                     }
                 }
 

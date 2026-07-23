@@ -45,7 +45,6 @@ bool Plot2DAim::draw(Plot2D* parent, Dataset* dataset)
     }
 
     QPainter* p = canvas.painter();
-
     QPen pen;
     pen.setWidth(lineWidth_);
     pen.setColor(lineColor_);

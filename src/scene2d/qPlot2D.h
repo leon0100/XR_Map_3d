@@ -48,6 +48,9 @@ public:
     void setSoundVelocity(int soundVelocity, int draftOffset);
     void setDepthFilterVisible(bool visible, int value);
     void setBatchCorrect(bool batch);
+    void setDepthCorrect(bool depthCorrect);
+    Q_INVOKABLE void drawDepthCorrect(int x, int y);
+    Q_INVOKABLE void clearDepthCorrect();
 
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
@@ -93,6 +96,8 @@ public slots:
     Q_INVOKABLE void updateContact();
     Q_INVOKABLE void setBottomLineVisible(bool isVisible);
     Q_INVOKABLE void drawBatchCorrect(int x, int y);
+    Q_INVOKABLE void clearBatchCorrect();
+    Q_INVOKABLE void updateBatchCorrect();
 
 
     void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)
@@ -130,7 +135,6 @@ public slots:
 
     void plotAcousticAngleVisible(bool visible) { setAcousticAngleVisible(visible); }
 
-    void plotGridVerticalNumber(int grids) { setGridVetricalNumber(grids); }
     void plotGridInvert(bool state) { setGridInvert(state); };
     void plotAngleVisibility(bool state)   { setAngleVisibility(state); }
     void plotAngleRange(int angleRange) { setAngleRange(angleRange); }
@@ -168,5 +172,5 @@ public slots:
 private:
     int indx_ = -1;
     int currentUpRng_ = 0, currentLoRng_ = 1600;
-
+    bool prompt_ = true;
 };

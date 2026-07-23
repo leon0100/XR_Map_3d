@@ -190,7 +190,6 @@ ApplicationWindow  {
     }
 
 
-
     function setFullScreenMode(enabled) {
         appSettings.isFullScreen = enabled
         if (enabled) {
@@ -1010,7 +1009,6 @@ ApplicationWindow  {
                         onPressed: function(mouse) {
                             menuBlock.visible      = false
                             geoMenuBlock.visible   = false
-                            rulerMenuBlock.visible = false
                             startMousePos          = Qt.point(mouse.x, mouse.y)
                             wasMoved               = false
                             vertexMode             = false
@@ -1616,13 +1614,6 @@ ApplicationWindow  {
     }
 
     function handlePlotCursorChanged(indx, from, to) {
-        // if (!menuBar.syncPlots) {
-        //     if (syncLoupeOverlay && syncLoupeOverlay.visible) {
-        //         syncLoupeOverlay.refreshLoupePlot()
-        //     }
-        //     return;
-        // }
-
         if (indx === 1 && waterViewSecond.enabled) {
             waterViewSecond.setCursorFromTo(from, to)
             waterViewSecond.update()
@@ -1631,10 +1622,6 @@ ApplicationWindow  {
             waterViewFirst.setCursorFromTo(from, to)
             waterViewFirst.update()
         }
-
-        // if (syncLoupeOverlay.visible) {
-        //     syncLoupeOverlay.refreshLoupePlot()
-        // }
     }
 
     function handleUpdateOtherPlot(indx) {

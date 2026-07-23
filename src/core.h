@@ -52,7 +52,8 @@ public:
     Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
     Q_PROPERTY(QObject*  progress   READ progress       WRITE setProgress        NOTIFY progressChanged)
-    Q_PROPERTY(bool batchCorrect    READ batchCorrect   WRITE  setBatchCorrect   NOTIFY drawBatchCorrectChanged)
+    Q_PROPERTY(bool batchCorrect   READ batchCorrect    WRITE setBatchCorrect    NOTIFY drawBatchCorrectChanged)
+    Q_PROPERTY(bool depthCorrect   READ depthCorrect    WRITE setDepthCorrect    NOTIFY drawDepthCorrectChanged)
 
 
 
@@ -100,7 +101,6 @@ public slots:
     bool getIsFileOpening() const;
     bool getIsSeparateReading() const;
     void onChannelsUpdated();
-    void onRedrawEpochs(const QSet<int>& indxs);
     int  getDataProcessorState() const;
     void initStreamList();
     int  getCurrMapLevel() const;
@@ -112,6 +112,8 @@ public slots:
     void setProgress(QObject* dialog);
     bool batchCorrect();
     void setBatchCorrect(bool batchCorrect);
+    bool depthCorrect();
+    void setDepthCorrect(bool depthCorrect);
 
     Q_INVOKABLE QString getChannel1Name() const;
     Q_INVOKABLE QString getChannel2Name() const;
@@ -143,6 +145,7 @@ signals:
     void drawRealtimeContour(bool isRead);
 
     void drawBatchCorrectChanged();
+    void drawDepthCorrectChanged();
 
 
 private:
@@ -233,6 +236,7 @@ private:
     bool isAutoRenderSpan_ = true;
 
     bool isBatchCorrect_ = false;
+    bool isDepthCorrect_ = false;
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;

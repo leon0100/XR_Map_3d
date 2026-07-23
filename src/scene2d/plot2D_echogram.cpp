@@ -220,59 +220,36 @@ void Plot2DEchogram::drawDepthFilter(Canvas canvas, int width, int cash_position
         return;
     }
 
-    qDebug() << "depthFilterList_.size().........." << depthFilterList_.size();
-
     if(_cash.size() != width || width <= 1 || depthFilterList_.isEmpty()) {
         return;
     }
 
     QPainter* cp = canvas.painter();
-
     QPen depthFilterPen(QColor(0,255,0));
     depthFilterPen.setWidth(2);
-
     cp->setPen(depthFilterPen);
 
     QPoint lastPoint;
     bool hasLast = false;
-
     for(int x = 0; x < width; x++) {
-        // 与drawBottomLine保持一致
         int col = (cash_position + x) % width;
-
-        if(_cash[col].state != CashLine::CashState::CashStateValid)
-        {
+        if(_cash[col].state != CashLine::CashState::CashStateValid) {
             hasLast = false;
             continue;
         }
 
-
-        /*
-         * 当前ping对应dataset索引
-         */
         int poolIndex = _cash[col].poolIndex;
-        if(poolIndex < 0 || poolIndex >= depthFilterList_.size())
-        {
+        if(poolIndex < 0 || poolIndex >= depthFilterList_.size()) {
             hasLast = false;
             continue;
         }
 
-
-        /*
-         * KF深度
-         * getDepthListKF()
-         */
         int depth = depthFilterList_.at(poolIndex);
-        if(depth <=0) {
+        if(depth <= 0) {
             hasLast = false;
             continue;
         }
 
-        /*
-         * 深度转换为声呐图Y坐标
-         * bottomLineIdx: = btStart * scaleY
-         * 所以这里采用同样比例
-         */
         float y = (float)depth / currentLoRng_ * canvas.height();
         QPoint currentPoint(x, (int)y);
 
@@ -283,7 +260,6 @@ void Plot2DEchogram::drawDepthFilter(Canvas canvas, int width, int cash_position
         lastPoint = currentPoint;
         hasLast = true;
     }
-
 
 }
 
@@ -351,11 +327,6 @@ QList<int> Plot2DEchogram::getDepthListKF()
 
 
     return list_kf;
-}
-
-void Plot2DEchogram::addReRenderPlotIndxs(const QSet<int> &indxs)
-{
-    reRenderPlotIndxs_.unite(indxs);
 }
 
 void Plot2DEchogram::stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale, int startIndx)
@@ -523,6 +494,9 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     p->drawImage(panelX, 0, sonarWave);
 
     int bottomLineIdx = wavePixel_.bottomLineIdx;
+    if (depthCorrect_ && depthCorrectY_ >= 0 && depthCorrectY_ < height) {
+        bottomLineIdx = depthCorrectY_;
+    }
     if (bottomLineIdx >= 0 && bottomLineIdx < height) {
         QPen linePen(Qt::red);
         linePen.setWidth(2);
@@ -598,6 +572,57 @@ void Plot2DEchogram::drawBottomLine(Canvas canvas, int width, int cash_position,
 
 }
 
+void Plot2DEchogram::setDepthCorrect(bool depthCorrect)
+{
+    depthCorrect_ = depthCorrect;
+    if (!depthCorrect) {
+        depthCorrectY_ = -1;
+    }
+}
+
+void Plot2DEchogram::clearDepthCorrect()
+{
+    depthCorrectY_ = -1;
+    resetCash();
+}
+
+void Plot2DEchogram::applyDepthCorrect(Plot2D* parent, Dataset* dataset, int mouseX, int mouseY, int imageWidth, int height)
+{
+    if (!depthCorrect_ || dataset == nullptr || parent == nullptr || height <= 0) {
+        return;
+    }
+
+    int wavePanelWidth = imageWidth / (WAVE_WIDTH_RATIO_DENOM - 1);
+    if (wavePanelWidth < 1) wavePanelWidth = 1;
+
+    if (mouseX < imageWidth || mouseX > imageWidth + wavePanelWidth) {
+        return;
+    }
+
+    int y = mouseY;
+    if (y < 0) y = 0;
+    if (y >= height) y = height - 1;
+
+    depthCorrectY_ = y;
+
+    float newDepth = currentUpRng_ + (currentLoRng_ - currentUpRng_) * ((float)y / height);
+
+    DatasetCursor& cursor = parent->cursor();
+    int latestIdx = dataset->endIndex() - 1;
+    int latestSafe = dataset->validIndex(latestIdx);
+    if (latestSafe >= 0) {
+        Epoch* epoch = dataset->fromIndex(latestSafe);
+        if (epoch) {
+            ChartParameters params = epoch->getChartParameters(cursor.channel1);
+            params.depth = newDepth;
+            epoch->setChartParameters(cursor.channel1, params);
+        }
+    }
+
+    resetCash();
+    parent->plotUpdate();
+}
+
 
 int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int height)
 {
@@ -630,19 +655,13 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         int poolIndex = cursor.getIndex(cursorPos);
         int pool_index_safe = dataset->validIndex(poolIndex);
         if(pool_index_safe >= 0) {
-            bool wasValidlyRendered = true;
-            if (reRenderPlotIndxs_.contains(pool_index_safe)) {
-                reRenderPlotIndxs_.remove(pool_index_safe);
-                wasValidlyRendered = false;
-            }
-
             // qDebug() << "pool_index_safe..........." << pool_index_safe;
             Epoch* epochData = dataset->fromIndex(pool_index_safe);
             if(epochData == nullptr) {
                 return -1;
             }
             const int cacheIndex = _cash[column].poolIndex;
-            if (isCashNotvalid || pool_index_safe != cacheIndex || !wasValidlyRendered) {
+            if (isCashNotvalid || pool_index_safe != cacheIndex) {
                 _cash[column].poolIndex = pool_index_safe;
 
                 ChartParameters params = epochData->getChartParameters(cursor.channel1);
@@ -937,260 +956,82 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
     return wrapStartPos;
 }
 
+void Plot2DEchogram::addBatchCorrect(QPoint pos)
+{
+    batchCorrectList_.append(pos);
+}
+
+void Plot2DEchogram::clearBatchCorrect()
+{
+    batchCorrectList_.clear();
+}
+
+void Plot2DEchogram::setUpdateBatchCorrect(bool updateBatchCorrect)
+{
+    updateBatchCorrect_ = updateBatchCorrect;
+}
+
 void Plot2DEchogram::drawBatchCorrect(Plot2D* parent, Dataset* dataset, int width, int height)
 {
     if(batchCorrect_) {
         auto& canvas = parent->canvas();
         QPainter* p  = canvas.painter();
-
         QPen pen;
-        pen.setWidth(2);
+        pen.setWidth(3);
         pen.setColor(Qt::red);
         p->setPen(pen);
 
-        for(int i = 0; i < batchCorrectList_.size()-1; i++) {
-            QPoint a = batchCorrectList_.at(i);
-            qDebug() << "a::::......... " << a.x() << "   " << a.y();
-            QPoint b = batchCorrectList_.at(i+1);
-            p->drawLine(a, b);
+        for(int i = 0; i < batchCorrectList_.size() - 1; i++) {
+            QPoint start = batchCorrectList_[i];
+            QPoint end   = batchCorrectList_[i+1];
+            p->drawLine(start, end);
+        }
+    }
+}
+
+void Plot2DEchogram::updateBatchCorrect(Plot2D* parent, Dataset* dataset, int width, int height)
+{
+    if(batchCorrect_ && updateBatchCorrect_) {
+        QList<QPoint> correctPoints;
+        for(int i = 0; i < batchCorrectList_.size() - 1; i++) {
+            QPoint start = batchCorrectList_[i];
+            QPoint end   = batchCorrectList_[i+1];
+            int steps    = qMax(qAbs(end.x() - start.x()), qAbs(end.y() - start.y()));
+            if(steps == 0) {
+                continue;
+            }
+
+            for(int j = 0; j <= steps; j++) {
+                QPoint p;
+                p.setX(start.x() + (end.x() - start.x()) * j / steps);
+                p.setY(start.y() + (end.y() - start.y()) * j / steps);
+                correctPoints.append(p);
+            }
         }
 
-        // qDebug() << "::updateCash.......width:" << width << " height:" << height;
         DatasetCursor& cursor = parent->cursor();
-        if (_cash.size() != width) {
-            _cash.resize(width);
-            resetCash();
-        }
-
-
-        int wrapStartPos = qAbs(cursor.getIndex(0) % width);
-        for (int i = 0; i < cursor.indexes.size(); i++) {
-            if (cursor.indexes[i] > 0) {
-                wrapStartPos = qAbs((cursor.indexes[i] + (width - i)) % width);
-                break;
-            }
-        }
-
-        float currentViewMaxLoRng = -1.0f;
-        for(int i = 0; i < batchCorrectList_.size()-1; i++) {
-            int cursorPos = i - wrapStartPos;
-            if(i < wrapStartPos) {
-                cursorPos += width;
-            }
-
-            int poolIndex = cursor.getIndex(cursorPos);
+        for(const QPoint& point: correctPoints) {
+            int posX = point.x();
+            int posY = point.y();
+            if(posX < 0) posX = 0;
+            if(posX >= width) posX = width - 1;
+            int poolIndex = cursor.getIndex(posX);
             int pool_index_safe = dataset->validIndex(poolIndex);
             if(pool_index_safe >= 0) {
-                bool wasValidlyRendered = true;
-                if (reRenderPlotIndxs_.contains(pool_index_safe)) {
-                    reRenderPlotIndxs_.remove(pool_index_safe);
-                    wasValidlyRendered = false;
-                }
-
-                // qDebug() << "pool_index_safe..........." << pool_index_safe;
                 Epoch* epochData = dataset->fromIndex(pool_index_safe);
-                if(epochData == nullptr) {
-                    return;
-                }
-                const int cacheIndex = _cash[i].poolIndex;
-                if (pool_index_safe != cacheIndex || !wasValidlyRendered) {
-                    _cash[i].poolIndex = pool_index_safe;
-
+                if(epochData) {
                     ChartParameters params = epochData->getChartParameters(cursor.channel1);
-                    const int pingSize = params.pingSize;
-                    // qDebug() << "=========================================================================================";
-
-                    int sfEnd = 0, btStart = 0, draft = 0, btStart_filter;
-                    float upRng = params.upRng;
-                    float loRng = params.loRng;
-                    float depth = params.depth;
-                    if((upRng < 0) || (loRng < 0) || (pingSize <= 0) || (upRng == loRng)) {
-                        draft = 0;
-                        btStart = 0;
-                        sfEnd = 0;
-                    }
-
-                    float depthFilter = 0.01;
-                    if(depthFilterList_.size() > pool_index_safe) {
-                        depthFilter = depthFilterList_.at(pool_index_safe);
-                    }
-                    // qDebug() << "depth..." << depth << "  loRng:" << loRng << "  upRng:" << upRng << "pingSize:" << pingSize;
-                    if(loRng != 0) {
-                        draft   = (1500.0/soundVelocity_) * (draftOffset_ / (loRng-upRng)) * pingSize;
-                        btStart = (1500.0/soundVelocity_) * (depth / (loRng-upRng)) * pingSize;
-                        btStart_filter = (1500.0/soundVelocity_) * (depthFilter / (loRng-upRng)) * pingSize;
-
-                        float surfaceEnd = 0.0;
-                        if((depth < 100) && (depth > 30)) {
-                            surfaceEnd = depth - 10 + draftOffset_;
-                        } else {
-                            surfaceEnd = 100 + draftOffset_;
-                        }
-                        sfEnd = (1500.0/soundVelocity_) * (surfaceEnd / (loRng-upRng)) * pingSize;
-                    }
-                    if((btStart < 0) || (sfEnd < 0) || (depth < 0)) {
-                        draft   = 0;
-                        btStart = 0;
-                        sfEnd   = 0;
-                    }
-
-                    currentViewMaxLoRng = qMax(currentViewMaxLoRng, loRng);
-
-                    QVector<uint8_t> rawDataVec;
-                    rawDataVec.resize(PING_SIZE_MAX);
-                    if (cursor.channel2 == CHANNEL_NONE) {
-                        epochData->getSonarFramePixel(cursor.channel1, cursor.subChannel1, rawDataVec);
-                    }
-
-                    /*- 灵敏度滤波 -*/
-                    int sens = 95 - sensLevel_ * 10;
-                    for(int i = 0; (i < btStart) && (i < pingSize) && (i < height); i++) {
-                        if(rawDataVec[i] < sens) {
-                            rawDataVec[i] = 0;
-                        }
-                    }
-
-                    for(int i = btStart; (i < pingSize) && (i < height); i++) {
-                        if(rawDataVec[i] < (sens * 0.5)) {
-                            rawDataVec[i] = 0;
-                        }
-                    }
-
-                    QVector<uint8_t> cacheData;
-                    for(int i = 0;((i < draft) && (i < height)); i++) {
-                        cacheData.append(0);
-                    }
-                    for(int i = draft;((i < (pingSize + draft)) && (i < height)); i++) {
-                        cacheData.append((quint8)rawDataVec[i-draft]);
-                    }
-                    for(int i = (pingSize+draft); i < height; i++) {
-                        cacheData.append(0);
-                    }
-
-                    float nowScaleY = (float)height / pingSize * (loRng / (currentLoRng_-currentUpRng_));
-                    int startIdx = pingSize * currentUpRng_ / loRng;
-                    int btStartNow = btStart;
-                    btStartNow -= startIdx;
-                    // qDebug() << "btStart:" << btStart << "   btStartNow:" << btStartNow << "   nowScaleY:" << nowScaleY;
-                    int btStartFilter = btStart_filter;
-                    btStartFilter -= startIdx;
-                    QList<int> colorData;
-                    colorData.clear();
-                    int colorNum = 1;
-                    if(colorNum == 1) {
-                        /*-水表-*/
-                        for(int j = 0; (j<sfEnd)&&(j<btStart)&&(j<height); j++) {
-                            if(cacheData[j] == 0) {
-                                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
-                            }
-                            else {
-                                if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
-                                    colorData.append(ZyColorScheme::colorScheme_surface[254]);
-                                }
-                                else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
-                                    colorData.append(ZyColorScheme::colorScheme_surface[0]);
-                                }
-                                else {
-                                    colorData.append(ZyColorScheme::colorScheme_surface[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
-                                }
-                            }
-                        }
-                        /*-水中-*/
-                        for(int j = sfEnd; ((j<btStart)&&(j<height)); j++)
-                        {
-                            if(cacheData[j] == 0) {
-                                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
-                            }
-                            else {
-                                if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
-                                    colorData.append(ZyColorScheme::colorScheme_fish[254]);
-                                }
-                                else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
-                                    colorData.append(ZyColorScheme::colorScheme_fish[0]);
-                                }
-                                else {
-                                    colorData.append(ZyColorScheme::colorScheme_fish[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
-                                }
-                            }
-
-                        }
-                        /*-水底-*/
-                        for(int j = btStart; j < height; j++)
-                        {
-                            if(cacheData[j] == 0) {
-                                colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
-                            }
-                            else {
-                                if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
-                                    colorData.append(ZyColorScheme::colorScheme_bottom[254]);
-                                }
-                                else if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) < 0) {
-                                    colorData.append(ZyColorScheme::colorScheme_bottom[0]);
-                                }
-                                else {
-                                    colorData.append(ZyColorScheme::colorScheme_bottom[cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE]);
-                                }
-                            }
-                        }
-                    }
-
-
-                    uint32_t* img_data = (uint32_t*)_image.bits();
-                    int bytesPerLine   = _image.bytesPerLine() / 4;
-
-                    _cash[i].bottomLineIdx = btStartNow * nowScaleY;
-                    _cash[i].nowScaleY     = nowScaleY;
-
-                    if(nowScaleY < 1 && nowScaleY > 0) {
-                        nowScaleY = 1 / nowScaleY;
-
-                        int j = 0;
-                        for(; ((int)(j*nowScaleY)+startIdx) < cacheData.count(); j++) {
-                            int rgb = colorData[startIdx+(int)(j*nowScaleY)];
-                            QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                            img_data[j* bytesPerLine + i] = color;
-                        }
-                        /*-自动补齐-*/
-                        for(; j < height; j++) {
-                            /*-底层的部分设置成1不使用透明模式-*/
-                            int rgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-                            img_data[j* bytesPerLine + i] = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                        }
-                    }
-                    else if(nowScaleY >= 1) {
-                        for (int j = 0; j < height; j++) {
-                            int rgb = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-                            QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                            img_data[j* bytesPerLine + i] = color;
-                        }
-
-                        for(int j = 0; (j<height) && (btStart+(int)(j/nowScaleY)<colorData.count()); j++) {
-                            int rgb = colorData[startIdx+(int)(j/nowScaleY)];
-                            QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                            img_data[j * bytesPerLine + i] = color;
-                        }
-                    }
-
-
-                    _cash[i].waveData = cacheData;
-                    _cash[i].sfEnd    = sfEnd;
-                    _cash[i].btStart  = btStart;
-                    _cash[i].state    = CashLine::CashState::CashStateValid;
-                    _cash[i].isNeedUpdate = true;
-                    _cash[i].heading  = params.heading;
-                    _cash[i].depth    = params.depth;
-                    _cash[i].speed    = params.speed;
-                    _cash[i].temperature = params.temperature;
-                    _cash[i].longitude = params.longitude;
-                    _cash[i].latitude  = params.latitude;
-                    _cash[i].startIdx  = startIdx;
-
+                    params.depth = currentUpRng_ + (currentLoRng_- currentUpRng_) * ((float)posY / height);
+                    epochData->setChartParameters(cursor.channel1, params);
                 }
             }
         }
 
+        batchCorrectList_.clear();
+        updateBatchCorrect_ = false;
+        resetCash();
+        parent->plotUpdate();
     }
-
 }
 
 bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
@@ -1256,8 +1097,8 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
         drawBottomLine(canvas, image_width, cash_position, bottomLineVisible_);
         drawDepthFilter(canvas, image_width, cash_position, filterLevelVisible_);
 
-
         drawBatchCorrect(parent, dataset, image_width, image_height);
+        updateBatchCorrect(parent, dataset, image_width, image_height);
     }
 
     return true;

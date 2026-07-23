@@ -40,8 +40,6 @@ public:
     int getEpochIndxByMousePos(int mouseX, int mouseY, bool isHorizontal) const;
     QPoint getMousePosByDepthAndEpochIndx(float depth, int epochIndx, bool isHorizontal) const;
 
-    void addReRenderPlotIndxs(const QSet<int>& indxs);
-
     bool getPlotEnabled() const;
     void setPlotEnabled(bool state);
 
@@ -104,7 +102,6 @@ public:
 
     void setAcousticAngleVisible(bool visible);
 
-    void setGridVetricalNumber(int grids);
     void setGridInvert(bool state);
     void setAngleVisibility(bool state);
     void setAngleRange(int angleRange);

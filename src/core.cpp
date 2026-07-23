@@ -963,14 +963,6 @@ void Core::onChannelsUpdated()
     emit channelListUpdated();
 }
 
-void Core::onRedrawEpochs(const QSet<int>& indxs)
-{
-    const int numPlots = plot2dList_.size();
-    for (int i = 0; i < numPlots; i++) {
-        plot2dList_[i]->addReRenderPlotIndxs(indxs);
-    }
-}
-
 QString Core::getChannel1Name() const
 {
     return fChName_;
@@ -1702,7 +1694,6 @@ void Core::slot_RealtimeDrawContourWifi(QVector<float>& depthVec, double minZ, d
 void Core::createDatasetConnections()
 {
     QObject::connect(datasetPtr_, &Dataset::channelsUpdated, this,               &Core::onChannelsUpdated);
-    QObject::connect(datasetPtr_, &Dataset::redrawEpochs,    this,               &Core::onRedrawEpochs);
 
     QObject::connect(datasetPtr_, &Dataset::epochAdded,       dataHorizon_.get(), &DataHorizon::onAddedEpoch);
     QObject::connect(datasetPtr_, &Dataset::positionAdded,    dataHorizon_.get(), &DataHorizon::onAddedPosition);
@@ -1749,6 +1740,9 @@ bool Core::batchCorrect()
 
 void Core::setBatchCorrect(bool batchCorrect)
 {
+    if(batchCorrect) {
+        GIF->dialogInfo(Dialog_OK, "Right-click and Drag to Pan Sonar Image.");
+    }
     isBatchCorrect_ = batchCorrect;
     emit drawBatchCorrectChanged();
 
@@ -1757,6 +1751,25 @@ void Core::setBatchCorrect(bool batchCorrect)
         qPlot2D* plot2d = plot2dList_.at(i);
         if(plot2d) {
             plot2d->setBatchCorrect(batchCorrect);
+        }
+    }
+}
+
+bool Core::depthCorrect()
+{
+    return isDepthCorrect_;
+}
+
+void Core::setDepthCorrect(bool depthCorrect)
+{
+    isDepthCorrect_ = depthCorrect;
+    emit drawDepthCorrectChanged();
+
+    const int numPlots = plot2dList_.size();
+    for(int i = 0; i < numPlots; i++) {
+        qPlot2D* plot2d = plot2dList_.at(i);
+        if(plot2d) {
+            plot2d->setBatchCorrect(depthCorrect);
         }
     }
 }

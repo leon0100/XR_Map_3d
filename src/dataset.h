@@ -345,7 +345,6 @@ signals:
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
     void channelsUpdated();
-    void redrawEpochs(const QSet<int>& indxs);
     void lastPositionChanged();
     void activeContactChanged();
     void lastDepthChanged();

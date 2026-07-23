@@ -187,6 +187,10 @@ void qPlot2D::setBatchCorrect(bool batch)
     echogram_.setBatchCorrect(batch);
 }
 
+void qPlot2D::setDepthCorrect(bool depthCorrect)
+{
+    echogram_.setDepthCorrect(depthCorrect);
+}
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
     qDebug() << "upper........" << upper << "  " << lower;
@@ -228,7 +232,46 @@ void qPlot2D::setBottomLineVisible(bool isVisible)
 
 void qPlot2D::drawBatchCorrect(int x, int y)
 {
-    echogram_.batchCorrectList_.append(QPoint(x, y));
+    echogram_.addBatchCorrect(QPoint(x, y));
+    plotUpdate();
+}
+
+void qPlot2D::clearBatchCorrect()
+{
+    echogram_.clearBatchCorrect();
+    plotUpdate();
+}
+
+void qPlot2D::updateBatchCorrect()
+{
+    if(prompt_) {
+        GIF->dialogCheck(tr("Confirm to Clear Isobaths?"),[this](bool confirmed, bool prompt) {
+            if(confirmed) {
+                prompt_ = !prompt;
+                echogram_.setUpdateBatchCorrect(true);
+                plotUpdate();
+            }
+        }, tr("Don't prompt again"));
+    }
+    else {
+        echogram_.setUpdateBatchCorrect(true);
+        plotUpdate();
+    }
+}
+
+void qPlot2D::drawDepthCorrect(int x, int y)
+{
+    if (dataset_ == nullptr) return;
+    int totalWidth = static_cast<int>(width());
+    int waveWidth = totalWidth / WAVE_WIDTH_RATIO_DENOM;
+    int imageWidth = totalWidth - waveWidth;
+    int h = static_cast<int>(height());
+    echogram_.applyDepthCorrect(this, dataset_, x, y, imageWidth, h);
+}
+
+void qPlot2D::clearDepthCorrect()
+{
+    echogram_.clearDepthCorrect();
     plotUpdate();
 }
 

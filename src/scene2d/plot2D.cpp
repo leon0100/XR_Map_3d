@@ -121,11 +121,6 @@ QPoint Plot2D::getMousePosByDepthAndEpochIndx(float depth, int epochIndx, bool i
     }
 }
 
-void Plot2D::addReRenderPlotIndxs(const QSet<int> &indxs)
-{
-    echogram_.addReRenderPlotIndxs(indxs);
-}
-
 bool Plot2D::getPlotEnabled() const
 {
     return isEnabled_;
@@ -442,13 +437,6 @@ void Plot2D::setAcousticAngleVisible(bool visible)
     plotUpdate();
 }
 
-void Plot2D::setGridVetricalNumber(int grids)
-{
-    qDebug() << "Plot2D::setGridVetricalNumber........." << grids;
-    grid_.setVisible(grids > 0);
-    plotUpdate();
-}
-
 void Plot2D::setGridInvert(bool state)
 {
     // qDebug() << "Plot2D::setGridInvert.........";
@@ -589,7 +577,6 @@ void Plot2D::setMousePosition(int x, int y, bool isSync)
     _mouse.x = cursor_.mouseX;
     _mouse.y = cursor_.mouseY;
     cursor_.setMouse(x, y);
-
 
     if(x < -1) { x = -1; }
     if(x >= image_width) { x = image_width - 1; }
