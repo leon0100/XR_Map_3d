@@ -393,6 +393,11 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 
     int sfEnd   = wavePixel_.sfEnd;
     int btStart = wavePixel_.btStart;
+    int bottomLineIdx = wavePixel_.bottomLineIdx;
+    if (depthCorrect_ && depthCorrectY_ >= 0 && depthCorrectY_ < height) {
+        bottomLineIdx = depthCorrectY_;
+        btStart = depthCorrectBtStart_;
+    }
     QVector<uint8_t> cacheData = wavePixel_.waveData;
 
     QList<int> colorData;
@@ -493,10 +498,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 
     p->drawImage(panelX, 0, sonarWave);
 
-    int bottomLineIdx = wavePixel_.bottomLineIdx;
-    if (depthCorrect_ && depthCorrectY_ >= 0 && depthCorrectY_ < height) {
-        bottomLineIdx = depthCorrectY_;
-    }
+
     if (bottomLineIdx >= 0 && bottomLineIdx < height) {
         QPen linePen(Qt::red);
         linePen.setWidth(2);
@@ -575,53 +577,168 @@ void Plot2DEchogram::drawBottomLine(Canvas canvas, int width, int cash_position,
 void Plot2DEchogram::setDepthCorrect(bool depthCorrect)
 {
     depthCorrect_ = depthCorrect;
-    if (!depthCorrect) {
-        depthCorrectY_ = -1;
-    }
-}
-
-void Plot2DEchogram::clearDepthCorrect()
-{
-    depthCorrectY_ = -1;
-    resetCash();
 }
 
 void Plot2DEchogram::applyDepthCorrect(Plot2D* parent, Dataset* dataset, int mouseX, int mouseY, int imageWidth, int height)
 {
-    if (!depthCorrect_ || dataset == nullptr || parent == nullptr || height <= 0) {
+    if (dataset == nullptr || parent == nullptr || height <= 0) {
         return;
     }
 
     int wavePanelWidth = imageWidth / (WAVE_WIDTH_RATIO_DENOM - 1);
     if (wavePanelWidth < 1) wavePanelWidth = 1;
 
-    if (mouseX < imageWidth || mouseX > imageWidth + wavePanelWidth) {
+    if (mouseX < imageWidth || mouseX > (imageWidth + wavePanelWidth)) {
         return;
     }
 
-    int y = mouseY;
-    if (y < 0) y = 0;
-    if (y >= height) y = height - 1;
+    if (mouseY < 0) mouseY = 0;
+    if (mouseY >= height) mouseY = height - 1;
 
-    depthCorrectY_ = y;
+    depthCorrectY_ = mouseY;
+    float newDepth = currentUpRng_ + (currentLoRng_ - currentUpRng_) * ((float)mouseY / height);
+    float temp = wavePixel_.btStart / ((1500.0/soundVelocity_) * wavePixel_.depth);
+    depthCorrectBtStart_ = newDepth / temp - wavePixel_.startIdx;
+    resetCash();
+    parent->plotUpdate();
+}
 
-    float newDepth = currentUpRng_ + (currentLoRng_ - currentUpRng_) * ((float)y / height);
+void Plot2DEchogram::setMarks(Plot2D* parent, Dataset* dataset, float distanceInterval, bool distanceEnabled,
+                              float timeInterval, bool timeEnabled,
+                              bool showFrame, bool showTime, bool showCoordinate, bool showDepth)
+{
+    if (dataset == nullptr || parent == nullptr || dataset->size() <= 0) {
+        return;
+    }
 
-    DatasetCursor& cursor = parent->cursor();
-    int latestIdx = dataset->endIndex() - 1;
-    int latestSafe = dataset->validIndex(latestIdx);
-    if (latestSafe >= 0) {
-        Epoch* epoch = dataset->fromIndex(latestSafe);
-        if (epoch) {
-            ChartParameters params = epoch->getChartParameters(cursor.channel1);
-            params.depth = newDepth;
-            epoch->setChartParameters(cursor.channel1, params);
+    markShowFrame_ = showFrame;
+    markShowTime_ = showTime;
+    markShowCoordinate_ = showCoordinate;
+    markShowDepth_ = showDepth;
+
+    const int total = dataset->size();
+    QList<int> markEpochIdxs;
+    markEpochIdxs.append(0);
+
+    if (distanceEnabled && distanceInterval > 0) {
+        float accumDist = 0.0f;
+        float lastMarkDist = 0.0f;
+        for (int i = 0; i < total; i++) {
+            Epoch* ep = dataset->fromIndex(i);
+            if (ep == nullptr) continue;
+            // float d = ep->getDistance();
+            float d = 100;
+            if (!qIsFinite(d)) continue;
+            accumDist = d;
+            if (accumDist - lastMarkDist >= distanceInterval) {
+                markEpochIdxs.append(i);
+                lastMarkDist = accumDist;
+            }
         }
+    }
+
+    if (timeEnabled && timeInterval > 0) {
+        int64_t lastMarkSec = -1;
+        for (int i = 0; i < total; i++) {
+            Epoch* ep = dataset->fromIndex(i);
+            if (ep == nullptr) continue;
+            DateTime* dt = ep->time();
+            if (dt == nullptr || dt->sec <= 0) continue;
+            if (lastMarkSec < 0) {
+                lastMarkSec = dt->sec;
+                continue;
+            }
+            if ((int64_t)dt->sec - lastMarkSec >= (int64_t)timeInterval) {
+                if (!markEpochIdxs.contains(i)) {
+                    markEpochIdxs.append(i);
+                }
+                lastMarkSec = dt->sec;
+            }
+        }
+    }
+
+    std::sort(markEpochIdxs.begin(), markEpochIdxs.end());
+    markEpochIdxs.erase(std::unique(markEpochIdxs.begin(), markEpochIdxs.end()), markEpochIdxs.end());
+
+    for (int idx : markEpochIdxs) {
+        Epoch* ep = dataset->fromIndex(idx);
+        if (ep == nullptr) continue;
+
+        MarkInfo mark;
+        mark.epochIdx = idx;
+        QStringList parts;
+
+        if (showFrame) {
+            parts.append(QString("F:%1").arg(idx));
+        }
+        if (showTime) {
+            DateTime* dt = ep->time();
+            if (dt && dt->sec > 0) {
+                QDateTime qdt = QDateTime::fromSecsSinceEpoch(dt->sec);
+                parts.append(qdt.toString("HH:mm:ss"));
+            }
+        }
+        if (showCoordinate) {
+            double lat = ep->lat();
+            double lon = ep->lon();
+            parts.append(QString("%1,%2").arg(lat, 0, 'f', 5).arg(lon, 0, 'f', 5));
+        }
+        if (showDepth) {
+            ChartParameters params = ep->getChartParameters(parent->cursor().channel1);
+            parts.append(QString("D:%1m").arg(params.depth / 100.0f, 0, 'f', 1));
+        }
+
+        mark.text = parts.join(" ");
     }
 
     resetCash();
     parent->plotUpdate();
 }
+
+void Plot2DEchogram::drawMarks(Plot2D* parent, Dataset* dataset, int width, int height, int cash_position, bool isVisible)
+{
+    if (parent == nullptr || dataset == nullptr) {
+        return;
+    }
+
+    auto& canvas = parent->canvas();
+    QPainter* p = canvas.painter();
+
+    if(isVisible) {
+        if(_cash.size() == width && width > 1) {
+            QPainter* cp = canvas.painter();
+            QPen profilePen(QColor(255, 0, 0));
+            profilePen.setWidth(1);
+            cp->setPen(profilePen);
+            QPolygonF profilePts;
+            profilePts.reserve(width);
+            for(int x = 0; x < width; x +=10) {
+                int col = (cash_position + x) % width;
+                int idx = _cash[col].bottomLineIdx;
+                if (_cash[col].state == CashLine::CashState::CashStateValid) {
+                    profilePts.append(QPointF(x, idx));
+                }
+                else if (profilePts.size() > 1) {
+                    cp->drawPolyline(profilePts);
+                    profilePts.clear();
+                }
+
+                p->drawLine(x, 0, x, height);
+                QFont font;
+                QRect textRect = QFontMetrics(font).boundingRect(x);
+                int textX = x + 3;
+                if (textX + textRect.width() > width) {
+                    textX = x - textRect.width() - 3;
+                }
+                p->fillRect(textX - 1, 1, textRect.width() + 2, textRect.height() + 2, QColor(0, 0, 0, 150));
+                p->setPen(QPen(Qt::white));
+                p->drawText(textX, 1 + textRect.height(), QString::number(x));
+            }
+        }
+    }
+
+}
+
 
 
 int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int height)
@@ -666,8 +783,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
                 ChartParameters params = epochData->getChartParameters(cursor.channel1);
                 const int pingSize = params.pingSize;
-                // qDebug() << "=========================================================================================";
-
                 int sfEnd = 0, btStart = 0, draft = 0, btStart_filter;
                 float upRng = params.upRng;
                 float loRng = params.loRng;
@@ -1099,6 +1214,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
         drawBatchCorrect(parent, dataset, image_width, image_height);
         updateBatchCorrect(parent, dataset, image_width, image_height);
+        drawMarks(parent, dataset, image_width, image_height, cash_position, markFrameVisible_);
     }
 
     return true;

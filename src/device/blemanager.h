@@ -28,22 +28,6 @@
 #define RX_FIFO_SIZE (1024 * 1024 * 4)
 
 
-struct BoatPoint {
-    double latitude;
-    double longitude;
-    double depth;   // m
-    double heading;
-    double speed;   // m/s
-
-    QString date;   // yyyy-MM-dd
-    QString time;   // HH:mm:ss
-
-    BoatPoint(double lo = 0.0, double la = 0.0, double he = 0.0, double sp = 0.0, double de = 0.0)
-        : latitude(la), longitude(lo), depth(de), heading(he), speed(sp) {}
-};
-Q_DECLARE_METATYPE(BoatPoint)
-
-
 
 class RealTimeParser : public QObject
 {

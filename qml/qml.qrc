@@ -115,7 +115,6 @@
         <file>Communication/IsobathsSet.qml</file>
         <file>Communication/loading.qml</file>
         <file>Communication/qmldir</file>
-        <file>Communication/SerialPort.qml</file>
         <file>AppXr/ExportAsData.qml</file>
         <file>AppXr/XRCheckBox.qml</file>
         <file>AppXr/XRSlider.qml</file>

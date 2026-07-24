@@ -774,6 +774,84 @@ Rectangle {
 
             spacing: 10
 
+            RowLayout {
+                id: rowSettings
+                Layout.fillWidth: true
+                spacing: iconSize
+                RowLayout {
+                    id: rowPort
+                    Layout.fillWidth: true
+                    spacing: 2
+
+                    Label {
+                        text: qsTr("Port")
+                        color: "black"
+                        font.pixelSize: iconSize
+                        Layout.minimumWidth: iconSize
+                    }
+                    ComboBox {
+                        id: portCombo
+                        model: SerialPort.availablePorts
+                        Layout.preferredWidth: iconSize * 6
+                        font.pixelSize: iconSize
+                        contentItem: Text {
+                            text: portCombo.displayText
+                            color: "#333333"
+                        }
+
+                        delegate: ItemDelegate {
+                            width: portCombo.width
+                            height: portCombo.height
+                            contentItem: Text {
+                                text: modelData
+                                color: "#333333"
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                            highlighted: portCombo.highlightedIndex === index
+                        }
+                    }
+
+                }
+
+                RowLayout {
+                    id: rowBaud
+                    Layout.fillWidth: true
+                    spacing: 2
+
+                    Label {
+                        text: qsTr("Baud Rate")
+                        color: "black"
+                        font.pixelSize: iconSize
+                        Layout.minimumWidth: iconSize * 2
+                    }
+
+                    ComboBox {
+                        id: baudCombo
+                        model: [ "19200", "921600", "57600", "115200", "230400"]
+                        font.pixelSize: iconSize
+                        Layout.preferredWidth: iconSize * 6
+                        contentItem: Text {
+                            text: baudCombo.displayText
+                            color: "#333333"
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        delegate: ItemDelegate {
+                            width: baudCombo.width
+                            height: baudCombo.height
+                            contentItem: Text {
+                                text: modelData
+                                color: "#333333"
+                                verticalAlignment: Text.AlignVCenter
+                                horizontalAlignment: Text.AlignHCenter
+                            }
+                            highlighted: baudCombo.highlightedIndex === index
+                        }
+                    }
+                }
+            }
+
             RowLayout
             {
                 anchors.margins: 10
@@ -1023,12 +1101,13 @@ Rectangle {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     onClicked: {
-                                        if(switchControl2.isOn) {
-                                            switchControl2.isOn = false;
-                                            BleManager.operateBleOnOff(false)
-                                        } else {
-                                            BleManager.operateBleOnOff(true)
-                                        }
+                                        // if(switchControl2.isOn) {
+                                        //     switchControl2.isOn = false;
+                                        //     BleManager.operateBleOnOff(false)
+                                        // } else {
+                                        //     BleManager.operateBleOnOff(true)
+                                        // }
+                                        SerialPort.toggleConnection(portCombo.currentText, baudCombo.currentText)
                                     }
                                     onEntered: switchControl2.hovered = true
                                     onExited:  switchControl2.hovered = false
@@ -1117,85 +1196,85 @@ Rectangle {
             }
 
 
-            Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 3; color: "#7f8c8d" }
+            // Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 3; color: "#7f8c8d" }
 
 
-            ColumnLayout
-            {
-                anchors.margins: 15
-                spacing: 1
+            // ColumnLayout
+            // {
+            //     anchors.margins: 15
+            //     spacing: 1
 
-                Text {
-                    anchors.margins: 5
-                    font.pixelSize: iconSize * 0.9
-                    text: qsTr("Toslon BLE Devices List:")
-                    verticalAlignment: Text.AlignVCenter
-                }
+            //     Text {
+            //         anchors.margins: 5
+            //         font.pixelSize: iconSize * 0.9
+            //         text: qsTr("Toslon BLE Devices List:")
+            //         verticalAlignment: Text.AlignVCenter
+            //     }
 
-                // 设备列表
-                GroupBox {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: layoutHeight * 3
-                    background: Rectangle {
-                        color: "#F5F5F5"
-                        radius: layoutHeight * 0.3
-                        border.color: "#bdc3c7"
-                    }
+            //     // 设备列表
+            //     GroupBox {
+            //         Layout.fillWidth: true
+            //         Layout.preferredHeight: layoutHeight * 3
+            //         background: Rectangle {
+            //             color: "#F5F5F5"
+            //             radius: layoutHeight * 0.3
+            //             border.color: "#bdc3c7"
+            //         }
 
-                    ListView {
-                        id: deviceList2
-                        anchors.fill: parent
-                        anchors.margins: 5
-                        model: BleManager ? BleManager.devices : ""
-                        clip: true
+            //         ListView {
+            //             id: deviceList2
+            //             anchors.fill: parent
+            //             anchors.margins: 5
+            //             model: BleManager ? BleManager.devices : ""
+            //             clip: true
 
-                        delegate: Rectangle
-                        {
-                            width: deviceList2.width
-                            height: layoutHeight * 0.8
-                            radius: 4
+            //             delegate: Rectangle
+            //             {
+            //                 width: deviceList2.width
+            //                 height: layoutHeight * 0.8
+            //                 radius: 4
 
-                            readonly property bool noDevices: (modelData === qsTr("No Devices Found"))
+            //                 readonly property bool noDevices: (modelData === qsTr("No Devices Found"))
 
-                            border.width: noDevices ? 1 : (switchControl2.isOn ? 2 : 1)
-                            border.color: noDevices ? "#ecf0f1" : (switchControl2.isOn ? "#3498db" : "#ecf0f1")
-                            color: noDevices ? "white" : (switchControl2.isOn ? "#d6eaf8" : (mouseArea22.containsMouse ? "#d6e6ff" : "white"))
+            //                 border.width: noDevices ? 1 : (switchControl2.isOn ? 2 : 1)
+            //                 border.color: noDevices ? "#ecf0f1" : (switchControl2.isOn ? "#3498db" : "#ecf0f1")
+            //                 color: noDevices ? "white" : (switchControl2.isOn ? "#d6eaf8" : (mouseArea22.containsMouse ? "#d6e6ff" : "white"))
 
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 15
-                                anchors.rightMargin: 15
+            //                 RowLayout {
+            //                     anchors.fill: parent
+            //                     anchors.leftMargin: 15
+            //                     anchors.rightMargin: 15
 
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: modelData
-                                    color: "#2c3e50"
-                                    font.pixelSize: iconSize * 0.9
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                                Text {
-                                    visible: !noDevices
-                                    text: switchControl2.isOn ? qsTr("Connected") : qsTr("Disconnected")
-                                    color: switchControl2.isOn ? "#36D85A" : "#7f8c8d"
-                                    font.pixelSize: iconSize * 0.6
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
+            //                     Text {
+            //                         Layout.fillWidth: true
+            //                         text: modelData
+            //                         color: "#2c3e50"
+            //                         font.pixelSize: iconSize * 0.9
+            //                         verticalAlignment: Text.AlignVCenter
+            //                     }
+            //                     Text {
+            //                         visible: !noDevices
+            //                         text: switchControl2.isOn ? qsTr("Connected") : qsTr("Disconnected")
+            //                         color: switchControl2.isOn ? "#36D85A" : "#7f8c8d"
+            //                         font.pixelSize: iconSize * 0.6
+            //                         verticalAlignment: Text.AlignVCenter
+            //                     }
+            //                 }
 
-                            MouseArea {
-                                id: mouseArea22
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onClicked:{
-                                    if(!noDevices && BleManager){
-                                        BleManager.connectToDevice(index)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            //                 MouseArea {
+            //                     id: mouseArea22
+            //                     anchors.fill: parent
+            //                     hoverEnabled: true
+            //                     onClicked:{
+            //                         if(!noDevices && BleManager){
+            //                             BleManager.connectToDevice(index)
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
         }
 
     }

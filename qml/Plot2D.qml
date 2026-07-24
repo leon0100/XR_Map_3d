@@ -202,10 +202,6 @@ WaterFall {
 
                 }
 
-                if (depthCorrectMode) {
-                    plot.drawDepthCorrect(mouseX, mouseY)
-                }
-
                 wasMoved = false
             }
 
@@ -220,10 +216,6 @@ WaterFall {
                     if(mouse.button === Qt.LeftButton) {
                         plot.updateBatchCorrect()
                     }
-                }
-
-                if (depthCorrectMode) {
-                    plot.clearDepthCorrect()
                 }
 
                 wasMoved = false
@@ -305,7 +297,10 @@ WaterFall {
 
 
                 if (depthCorrectMode) {
-                    plot.drawDepthCorrect(mouseX, mouseY)
+                    if (mousearea.pressedButtons & Qt.LeftButton) {
+                        plot.drawDepthCorrect(mouseX, mouseY)
+                    }
+
                 }
 
             }
@@ -582,7 +577,7 @@ WaterFall {
                         id: marksDrawer
                         x: addMarks.x
                         y: addMarks.y - height
-                        width: plot.width * 0.3
+                        width: plot.width * 0.25
                         height: 0
                         color: "#dbe3f2"
                         border.color: "#a8b3c5"
@@ -591,7 +586,7 @@ WaterFall {
                         clip: true
 
                         property bool opened: false
-                        property int markIconSize: plotIconSize * 0.8
+                        property int markIconSize: plotIconSize * 0.75
 
                         Behavior on height {
                             NumberAnimation {
@@ -600,427 +595,421 @@ WaterFall {
                             }
                         }
 
+                        ColumnLayout {
+                            anchors.fill: parent
+                            spacing: 2
 
-                            ColumnLayout {
-                                anchors.fill: parent
-                                spacing: 2
+                            Rectangle {
+                                Layout.alignment: Qt.AlignLeft
+                                height: marksDrawer.markIconSize * 1.5
+                                color: "#3498db"
 
-                                Rectangle {
-                                    Layout.alignment: Qt.AlignLeft
-                                    height: marksDrawer.markIconSize * 1.5
-                                    color: "#3498db"
-
-                                    Text {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: 3
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Marks Format")
-                                        font.pixelSize: marksDrawer.markIconSize
-                                    }
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 3
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("Marks Format")
+                                    font.pixelSize: marksDrawer.markIconSize
                                 }
+                            }
 
-                                Rectangle {
-                                    // Layout.fillWidth: true
-                                    Layout.preferredWidth: plot.width * 0.25
-                                    Layout.preferredHeight: marksDrawer.markIconSize * 5
-                                    Layout.alignment: Qt.AlignHCenter
-                                    Layout.topMargin: 4
-                                    Layout.bottomMargin: 4
+                            Rectangle {
+                                Layout.preferredWidth: plot.width * 0.23
+                                Layout.preferredHeight: marksDrawer.markIconSize * 5
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.topMargin: 4
+                                Layout.bottomMargin: 4
 
-                                    border.color: "#7f8fa6"
-                                    border.width: 1
+                                border.color: "#7f8fa6"
+                                border.width: 1
+                                radius: markIconSize * 0.2
 
-                                    ColumnLayout {
-                                        anchors.fill: parent
-                                        anchors.margins: 5
-                                        spacing: 2
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 5
+                                    spacing: 2
 
-                                        Rectangle {
-                                            id: boatTrack
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: marksDrawer.markIconSize
-                                            color: "#f9f9fb"
+                                    Rectangle {
+                                        id: frame
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: marksDrawer.markIconSize
+                                        color: "#d6e6ff"
 
-                                            property bool checked: true
+                                        property bool isFrame: true
 
-                                            SequentialAnimation {
-                                                id: flashAnim1
-                                                running: false
-                                                loops: 1
+                                        Row {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: marksDrawer.markIconSize * 0.5
+                                            anchors.rightMargin: marksDrawer.markIconSize * 0.5
+                                            spacing: marksDrawer.markIconSize * 0.5
+                                            anchors.verticalCenter: parent.verticalCenter
 
-                                                ColorAnimation {
-                                                    target: boatTrack
-                                                    property: "color"
-                                                    to: "#9ecbff"
-                                                    duration: 100
-                                                }
-                                                ColorAnimation {
-                                                    target: boatTrack
-                                                    property: "color"
-                                                    to: "#d6e6ff"
-                                                    duration: 100
-                                                }
-                                            }
-
-                                            Row {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: marksDrawer.markIconSize * 0.5
-                                                anchors.rightMargin: marksDrawer.markIconSize * 0.5
-                                                spacing: marksDrawer.markIconSize * 0.5
+                                            Rectangle {
+                                                width:  marksDrawer.markIconSize
+                                                height: marksDrawer.markIconSize
+                                                radius: 5
+                                                border.color: "#b0b3b8"
+                                                border.width: 1
                                                 anchors.verticalCenter: parent.verticalCenter
 
-
-                                                Rectangle {
-                                                    width: marksDrawer.markIconSize * 1.1
-                                                    height: marksDrawer.markIconSize * 1.1
-                                                    radius: 5
-                                                    border.color: "#b0b3b8"
-                                                    border.width: 1
+                                                Image {
+                                                    source: "qrc:/XR/check.svg"
+                                                    visible: frame.isFrame
+                                                    width: parent.width * 0.9
+                                                    height: parent.width * 0.9
                                                     anchors.verticalCenter: parent.verticalCenter
-
-                                                    Rectangle {
-                                                        anchors.centerIn: parent
-                                                        width: parent.width * 0.8
-                                                        height: parent.height * 0.8
-                                                        radius: parent.height * 0.4
-                                                        color: "#66E07A"
-                                                        visible: isShowBoatTrack
-                                                    }
-                                                }
-
-                                                Text {
-                                                    text: qsTr("Boat Track")
-                                                    font.pixelSize: marksDrawer.markIconSize
-                                                    color: "black"
-                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    anchors.horizontalCenter: parent.horizontalCenter
+                                                    anchors.rightMargin: 2
                                                 }
                                             }
 
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                hoverEnabled: true
 
-                                                onClicked: {
-                                                    flashAnim1.restart()
-                                                }
-
-                                                onEntered: parent.color = "#d6e6ff"
-                                                onExited:  parent.color = "#f9f9fb"
+                                            Text {
+                                                text: qsTr("Frame")
+                                                font.pixelSize: marksDrawer.markIconSize
+                                                color: "black"
+                                                anchors.verticalCenter: parent.verticalCenter
                                             }
                                         }
 
-
-                                        Rectangle {
-                                            id: showOutline
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: marksDrawer.markIconSize
-                                            color: "#f9f9fb"
-
-                                            property bool checked: true
-
-                                            SequentialAnimation {
-                                                id: flashAnim2
-                                                running: false
-                                                loops: 1
-
-                                                ColorAnimation {
-                                                    target: showOutline
-                                                    property: "color"
-                                                    to: "#9ecbff"
-                                                    duration: 100
-                                                }
-                                                ColorAnimation {
-                                                    target: showOutline
-                                                    property: "color"
-                                                    to: "#d6e6ff"
-                                                    duration: 100
-                                                }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onPressed: {
+                                                frame.isFrame = !frame.isFrame
                                             }
 
-                                            Row {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: marksDrawer.markIconSize * 0.5
-                                                anchors.rightMargin: marksDrawer.markIconSize * 0.5
-                                                spacing: marksDrawer.markIconSize * 0.5
-                                                anchors.verticalCenter: parent.verticalCenter
-
-                                                Rectangle {
-                                                    width: marksDrawer.markIconSize * 1.1
-                                                    height: marksDrawer.markIconSize * 1.1
-                                                    radius: 5
-                                                    border.color: "#b0b3b8"
-                                                    border.width: 1
-                                                    anchors.verticalCenter: parent.verticalCenter
-
-                                                    Rectangle {
-                                                        anchors.centerIn: parent
-                                                        width: parent.width * 0.8
-                                                        height: parent.height * 0.8
-                                                        radius: parent.height * 0.4
-                                                        color: "#66E07A"
-                                                        visible: isShowOutline
-                                                    }
-                                                }
-
-                                                Text {
-                                                    text: qsTr("Track Boundary")
-                                                    font.pixelSize: marksDrawer.markIconSize
-                                                    color: "black"
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-
-                                                onClicked: {
-                                                    flashAnim2.restart()
-                                                }
-
-                                                onEntered: parent.color = "#d6e6ff"
-                                                onExited:  parent.color = "#f9f9fb"
-                                            }
                                         }
-
-
-
-                                        Rectangle {
-                                            id: contour
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: marksDrawer.markIconSize
-                                            color: "#f9f9fb"
-
-                                            property bool checked: true
-
-                                            SequentialAnimation {
-                                                id: flashAnim3
-                                                running: false
-                                                loops: 1
-
-                                                ColorAnimation {
-                                                    target: contour
-                                                    property: "color"
-                                                    to: "#9ecbff"
-                                                    duration: 100
-                                                }
-                                                ColorAnimation {
-                                                    target: contour
-                                                    property: "color"
-                                                    to: "#d6e6ff"
-                                                    duration: 100
-                                                }
-                                            }
-
-                                            Row {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: marksDrawer.markIconSize * 0.5
-                                                anchors.rightMargin: marksDrawer.markIconSize * 0.5
-                                                spacing: marksDrawer.markIconSize * 0.5
-                                                anchors.verticalCenter: parent.verticalCenter
-
-                                                Rectangle {
-                                                    width: marksDrawer.markIconSize * 1.1
-                                                    height: marksDrawer.markIconSize * 1.1
-                                                    radius: 5
-                                                    border.color: "#b0b3b8"
-                                                    border.width: 1
-                                                    anchors.verticalCenter: parent.verticalCenter
-
-                                                    Rectangle {
-                                                        anchors.centerIn: parent
-                                                        width: parent.width * 0.8
-                                                        height: parent.height * 0.8
-                                                        radius: parent.height * 0.4
-                                                        color: "#66E07A"
-                                                        visible: isContours
-                                                    }
-                                                }
-
-                                                Text {
-                                                    text: qsTr("Contours")
-                                                    font.pixelSize: marksDrawer.markIconSize
-                                                    color: "black"
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-
-                                                onClicked: {
-                                                    flashAnim3.restart()
-                                                }
-
-                                                onEntered: parent.color = "#d6e6ff"
-                                                onExited:  parent.color = "#f9f9fb"
-                                            }
-                                        }
-
-
-                                        Rectangle {
-                                            id: isobaths
-                                            Layout.fillWidth: true
-                                            Layout.preferredHeight: marksDrawer.markIconSize
-                                            color: "#f9f9fb"
-
-                                            property bool checked: true
-
-                                            SequentialAnimation {
-                                                id: flashAnim_isobaths
-                                                running: false
-                                                loops: 1
-
-                                                ColorAnimation {
-                                                    target: isobaths
-                                                    property: "color"
-                                                    to: "#9ecbff"
-                                                    duration: 100
-                                                }
-                                                ColorAnimation {
-                                                    target: isobaths
-                                                    property: "color"
-                                                    to: "#d6e6ff"
-                                                    duration: 100
-                                                }
-                                            }
-
-                                            Row {
-                                                anchors.fill: parent
-                                                anchors.leftMargin: marksDrawer.markIconSize * 0.5
-                                                anchors.rightMargin: marksDrawer.markIconSize * 0.5
-                                                spacing: marksDrawer.markIconSize * 0.5
-                                                anchors.verticalCenter: parent.verticalCenter
-
-                                                Rectangle {
-                                                    width: marksDrawer.markIconSize * 1.1
-                                                    height: marksDrawer.markIconSize * 1.1
-                                                    radius: 5
-                                                    border.color: "#b0b3b8"
-                                                    border.width: 1
-                                                    anchors.verticalCenter: parent.verticalCenter
-
-                                                    Rectangle {
-                                                        anchors.centerIn: parent
-                                                        width: parent.width * 0.8
-                                                        height: parent.height * 0.8
-                                                        radius: parent.height * 0.4
-                                                        color: "#66E07A"
-                                                        visible: isShowIsobaths
-                                                    }
-                                                }
-
-                                                Text {
-                                                    text: qsTr("Isobaths")
-                                                    font.pixelSize: marksDrawer.markIconSize
-                                                    color: "black"
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                }
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-
-                                                onClicked: {
-
-                                                }
-
-                                                onEntered: parent.color = "#d6e6ff"
-                                                onExited:  parent.color = "#f9f9fb"
-                                            }
-                                        }
-
-
                                     }
 
-                                }
+
+                                    Rectangle {
+                                        id: time
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: marksDrawer.markIconSize
+                                        color: "#d6e6ff"
+
+                                        property bool isTime: true
+
+                                        Row {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: marksDrawer.markIconSize * 0.5
+                                            anchors.rightMargin: marksDrawer.markIconSize * 0.5
+                                            spacing: marksDrawer.markIconSize * 0.5
+                                            anchors.verticalCenter: parent.verticalCenter
+
+                                            Rectangle {
+                                                width:  marksDrawer.markIconSize
+                                                height: marksDrawer.markIconSize
+                                                radius: 5
+                                                border.color: "#b0b3b8"
+                                                border.width: 1
+                                                anchors.verticalCenter: parent.verticalCenter
+
+                                                Image {
+                                                    source: "qrc:/XR/check.svg"
+                                                    visible: time.isTime
+                                                    width: parent.width * 0.9
+                                                    height: parent.width * 0.9
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    anchors.horizontalCenter: parent.horizontalCenter
+                                                    anchors.rightMargin: 2
+                                                }
+                                            }
 
 
-                                Rectangle {
-                                    id: markInterval
+                                            Text {
+                                                text: qsTr("Time")
+                                                font.pixelSize: marksDrawer.markIconSize
+                                                color: "black"
+                                                anchors.verticalCenter: parent.verticalCenter
+                                            }
+                                        }
 
-                                    Layout.alignment: Qt.AlignLeft
-                                    height: marksDrawer.markIconSize * 1.5
-                                    color: "#3498db"
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onPressed: {
+                                                time.isTime = !time.isTime
+                                            }
 
-                                    Text {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: 3
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: qsTr("Marks Interval")
-                                        font.pixelSize: marksDrawer.markIconSize
+                                        }
                                     }
-                                }
 
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: marksDrawer.markIconSize * 3
-                                    Layout.alignment: Qt.AlignHCenter
-                                    Layout.topMargin: 5
-                                    Layout.bottomMargin: 5
 
-                                    border.color: "#7f8fa6"
-                                    border.width: 1
 
-                                     ColumnLayout {
-                                         anchors.fill: parent
-                                         spacing: 2
+                                    Rectangle {
+                                        id: depth
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: marksDrawer.markIconSize
+                                        color: "#d6e6ff"
 
-                                         RowLayout {
-                                            Layout.fillWidth: true
+                                        property bool isDepth: true
 
-                                            TextField {
-                                                id: distanceValue
-                                                text: "10"
-                                                Layout.preferredWidth: plot.width * 0.1
-                                                Layout.preferredHeight: marksDrawer.markIconSize * 1.5
-                                                horizontalAlignment: Text.AlignRight
-                                                enabled: distanceRadio.checked
+                                        Row {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: marksDrawer.markIconSize * 0.5
+                                            anchors.rightMargin: marksDrawer.markIconSize * 0.5
+                                            spacing: marksDrawer.markIconSize * 0.5
+                                            anchors.verticalCenter: parent.verticalCenter
+
+                                            Rectangle {
+                                                width:  marksDrawer.markIconSize
+                                                height: marksDrawer.markIconSize
+                                                radius: 5
+                                                border.color: "#b0b3b8"
+                                                border.width: 1
+                                                anchors.verticalCenter: parent.verticalCenter
+
+                                                Image {
+                                                    source: "qrc:/XR/check.svg"
+                                                    visible: depth.isDepth
+                                                    width: parent.width * 0.9
+                                                    height: parent.width * 0.9
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    anchors.horizontalCenter: parent.horizontalCenter
+                                                    anchors.rightMargin: 2
+                                                }
                                             }
 
-                                            ComboBox {
-                                                model:[ qsTr("m"), qsTr("km") ]
-                                                currentIndex:0
-                                                enabled: distanceRadio.checked
-                                                Layout.preferredWidth: marksDrawer.markIconSize * 2
-                                                Layout.preferredHeight: marksDrawer.markIconSize * 1.5
+
+                                            Text {
+                                                text: qsTr("Depth")
+                                                font.pixelSize: marksDrawer.markIconSize
+                                                color: "black"
+                                                anchors.verticalCenter: parent.verticalCenter
                                             }
-                                         }
+                                        }
 
-
-
-                                         RowLayout {
-                                            Layout.fillWidth:true
-                                             TextField {
-                                                text:"60"
-                                                Layout.preferredWidth: plot.width * 0.1
-                                                Layout.preferredHeight: marksDrawer.markIconSize * 1.5
-                                                horizontalAlignment: Text.AlignRight
-                                                enabled:timeRadio.checked
-                                             }
-
-
-                                             ComboBox {
-                                                 model:[ qsTr("Sec"), qsTr("Min") ]
-                                                 currentIndex:0
-                                                 enabled:timeRadio.checked
-                                                 Layout.preferredWidth: marksDrawer.markIconSize * 2
-                                                 Layout.preferredHeight: marksDrawer.markIconSize * 1.5
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onPressed: {
+                                                depth.isDepth = !depth.isDepth
                                             }
 
-                                         }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        id: coordinate
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: marksDrawer.markIconSize
+                                        color: "#d6e6ff"
+
+                                        property bool isCoordinate: true
+
+                                        Row {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: marksDrawer.markIconSize * 0.5
+                                            anchors.rightMargin: marksDrawer.markIconSize * 0.5
+                                            spacing: marksDrawer.markIconSize * 0.5
+                                            anchors.verticalCenter: parent.verticalCenter
+
+                                            Rectangle {
+                                                width:  marksDrawer.markIconSize
+                                                height: marksDrawer.markIconSize
+                                                radius: 5
+                                                border.color: "#b0b3b8"
+                                                border.width: 1
+                                                anchors.verticalCenter: parent.verticalCenter
+
+                                                Image {
+                                                    source: "qrc:/XR/check.svg"
+                                                    visible: coordinate.isCoordinate
+                                                    width: parent.width * 0.9
+                                                    height: parent.width * 0.9
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    anchors.horizontalCenter: parent.horizontalCenter
+                                                    anchors.rightMargin: 2
+                                                }
+                                            }
 
 
-                                     }
+                                            Text {
+                                                text: qsTr("Coordinate")
+                                                font.pixelSize: marksDrawer.markIconSize
+                                                color: "black"
+                                                anchors.verticalCenter: parent.verticalCenter
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            onPressed: {
+                                                coordinate.isCoordinate = !coordinate.isCoordinate
+                                            }
+
+                                        }
+                                    }
 
                                 }
 
                             }
 
+
+                            Rectangle {
+                                id: markInterval
+
+                                Layout.alignment: Qt.AlignLeft
+                                height: marksDrawer.markIconSize * 1.5
+                                color: "#3498db"
+
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 3
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("Marks Interval")
+                                    font.pixelSize: marksDrawer.markIconSize
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.preferredWidth: plot.width * 0.23
+                                Layout.preferredHeight: marksDrawer.markIconSize * 3
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.bottomMargin: 5
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    spacing: 2
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: marksDrawer.markIconSize * 0.5
+
+                                        Text {
+                                            text: qsTr("Distance")
+                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            color: "black"
+                                            Layout.fillWidth: true
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        TextField {
+                                            id: distanceValue
+                                            text: "10"
+                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            Layout.preferredWidth:  marksDrawer.markIconSize * 3
+                                            Layout.preferredHeight: marksDrawer.markIconSize * 1.2
+                                            horizontalAlignment: TextInput.AlignHCenter
+                                            topPadding: 0
+                                            bottomPadding: 0
+                                            selectByMouse: true
+                                        }
+
+                                        ComboBox {
+                                            id: distanceUnitCombo
+                                            model:[ qsTr("m"), qsTr("km") ]
+                                            currentIndex: 0
+                                            Layout.preferredWidth: marksDrawer.markIconSize * 2.8
+                                            Layout.preferredHeight: marksDrawer.markIconSize * 1.2
+                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+
+                                            contentItem: Text {
+                                                text: distanceUnitCombo.displayText
+                                                color: "#333333"
+                                            }
+
+                                            delegate: ItemDelegate {
+                                                width: distanceUnitCombo.width
+                                                height: distanceUnitCombo.height
+                                                contentItem: Text {
+                                                    text: modelData
+                                                    color: "#333333"
+                                                    verticalAlignment: Text.AlignVCenter
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                }
+                                                highlighted: distanceUnitCombo.highlightedIndex === index
+                                            }
+                                        }
+                                    }
+
+
+                                    RowLayout {
+                                        Layout.fillWidth:true
+                                        spacing: marksDrawer.markIconSize * 0.5
+
+                                        Text {
+                                            text: qsTr("Time")
+                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            color: "black"
+                                            Layout.fillWidth: true
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        TextField {
+                                            text:"60"
+                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            Layout.preferredWidth:  marksDrawer.markIconSize * 2.8
+                                            Layout.preferredHeight: marksDrawer.markIconSize * 1.2
+                                            horizontalAlignment: TextInput.AlignHCenter
+                                            topPadding: 0
+                                            bottomPadding: 0
+                                            selectByMouse: true
+                                        }
+
+                                        ComboBox {
+                                            id: timeUnitCombo
+                                            model: [qsTr("Sec"), qsTr("Min")]
+                                            currentIndex: 0
+                                            Layout.preferredWidth: marksDrawer.markIconSize * 3
+                                            Layout.preferredHeight: marksDrawer.markIconSize * 1.2
+                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+
+                                            contentItem: Text {
+                                                text: timeUnitCombo.displayText
+                                                color: "#333333"
+                                            }
+
+                                            delegate: ItemDelegate {
+                                                width: timeUnitCombo.width
+                                                height: timeUnitCombo.height
+                                                contentItem: Text {
+                                                    text: modelData
+                                                    color: "#333333"
+                                                    verticalAlignment: Text.AlignVCenter
+                                                    horizontalAlignment: Text.AlignHCenter
+                                                }
+                                                highlighted: timeUnitCombo.highlightedIndex === index
+                                            }
+                                        }
+
+                                    }
+
+                                }
+
+                                }
+
+
+                            Button {
+                                text: qsTr("OK")
+                                font.pixelSize: marksDrawer.markIconSize;
+                                width: marksDrawer.markIconSize * 2
+                                Layout.alignment: Qt.AlignHCenter
+                                onClicked:{
+                                    var distVal = parseFloat(distanceValue.text)
+                                    if (distanceUnitCombo.currentIndex === 1) distVal *= 1000  // km→m
+
+                                    var timeVal = 60  // Time TextField需加id: timeValue
+                                    if (timeUnitCombo.currentIndex === 1) timeVal *= 60  // min→sec
+
+                                    plot.applyMarks(
+                                            distVal, true,           // distance间隔(m), 启用
+                                            timeVal, true,           // time间隔(sec), 启用
+                                            frame.isFrame,           // 显示Frame
+                                            time.isTime,             // 显示Time
+                                            coordinate.isCoordinate, // 显示Coordinate
+                                            depth.isDepth            // 显示Depth
+                                    )
+                                }
+                            }
+
+                            }
+
                         function open() {
-                            height = plotIconSize * 12
+                            height = plotIconSize * 11
                             opened = true
                         }
 

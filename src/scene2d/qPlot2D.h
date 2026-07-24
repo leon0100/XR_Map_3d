@@ -50,7 +50,6 @@ public:
     void setBatchCorrect(bool batch);
     void setDepthCorrect(bool depthCorrect);
     Q_INVOKABLE void drawDepthCorrect(int x, int y);
-    Q_INVOKABLE void clearDepthCorrect();
 
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
@@ -58,6 +57,16 @@ public:
     Q_INVOKABLE void setIndx(int indx) { indx_ = indx; }
     Q_INVOKABLE void resetUpLoRng(int upper, int lower);
     Q_INVOKABLE void setSensitivity(int sensitive);
+
+
+
+    Q_INVOKABLE void setBottomLineVisible(bool isVisible);
+    Q_INVOKABLE void drawBatchCorrect(int x, int y);
+    Q_INVOKABLE void clearBatchCorrect();
+    Q_INVOKABLE void updateBatchCorrect();
+    Q_INVOKABLE void applyMarks(double distanceInterval, bool distanceEnabled,
+                                double timeInterval, bool timeEnabled,
+                                bool showFrame, bool showTime, bool showCoordinate, bool showDepth);
 
 
 protected:
@@ -94,10 +103,6 @@ public slots:
     Q_INVOKABLE bool setActiveContact(int indx);
     Q_INVOKABLE bool deleteContact(int indx);
     Q_INVOKABLE void updateContact();
-    Q_INVOKABLE void setBottomLineVisible(bool isVisible);
-    Q_INVOKABLE void drawBatchCorrect(int x, int y);
-    Q_INVOKABLE void clearBatchCorrect();
-    Q_INVOKABLE void updateBatchCorrect();
 
 
     void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)

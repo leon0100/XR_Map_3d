@@ -6,8 +6,7 @@
 
 
 
-typedef struct
-{
+typedef struct {
     int draft;    //吃水深度
     int sfEnd;    //surfaceEnd
     int btStart;  //bottomStart
@@ -18,6 +17,12 @@ typedef struct
 
 #define COLOR_LINE 7   //偏移量
 #define WAVE_WIDTH_RATIO_DENOM 25
+
+typedef struct {
+    int epochIdx;
+    QString text;
+}MarkInfo;
+
 class Plot2DEchogram : public PlotLayer {
 public:
     enum ThemeId {
@@ -63,8 +68,12 @@ public:
     void clearBatchCorrect();
     void setUpdateBatchCorrect(bool updateBatchCorrect);
     void setDepthCorrect(bool depthCorrect);
-    void clearDepthCorrect();
     void applyDepthCorrect(Plot2D* parent, Dataset* dataset, int mouseX, int mouseY, int imageWidth, int height);
+
+    void setMarks(Plot2D* parent, Dataset* dataset, float distanceInterval, bool distanceEnabled,
+                  float timeInterval, bool timeEnabled,
+                  bool showFrame, bool showTime, bool showCoordinate, bool showDepth);
+    void drawMarks(Plot2D* parent, Dataset* dataset, int width, int height, int cash_position, bool isVisible);
 
 
 protected:
@@ -158,4 +167,12 @@ private:
     QList<QPoint> batchCorrectList_;
     bool depthCorrect_ = false;
     int  depthCorrectY_ = -1;
+    int depthCorrectBtStart_;
+
+    bool markFrameVisible_ = false;
+    bool markShowFrame_ = true;
+    bool markShowTime_ = true;
+    bool markShowCoordinate_ = true;
+    bool markShowDepth_ = true;
+
 };

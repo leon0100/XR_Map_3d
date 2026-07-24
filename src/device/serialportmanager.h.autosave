@@ -54,7 +54,6 @@ public:
 
 
 signals:
-    // 通知QML更新
     void portsUpdated();
     void statsUpdated();
     void connectionChanged(bool connected);

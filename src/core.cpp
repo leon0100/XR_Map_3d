@@ -1769,7 +1769,7 @@ void Core::setDepthCorrect(bool depthCorrect)
     for(int i = 0; i < numPlots; i++) {
         qPlot2D* plot2d = plot2dList_.at(i);
         if(plot2d) {
-            plot2d->setBatchCorrect(depthCorrect);
+            plot2d->setDepthCorrect(depthCorrect);
         }
     }
 }

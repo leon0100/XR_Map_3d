@@ -261,6 +261,7 @@ void qPlot2D::updateBatchCorrect()
 
 void qPlot2D::drawDepthCorrect(int x, int y)
 {
+    qDebug() << "x........" << x << "  y:" << y;
     if (dataset_ == nullptr) return;
     int totalWidth = static_cast<int>(width());
     int waveWidth = totalWidth / WAVE_WIDTH_RATIO_DENOM;
@@ -269,9 +270,14 @@ void qPlot2D::drawDepthCorrect(int x, int y)
     echogram_.applyDepthCorrect(this, dataset_, x, y, imageWidth, h);
 }
 
-void qPlot2D::clearDepthCorrect()
+
+void qPlot2D::applyMarks(double distanceInterval, bool distanceEnabled,
+                         double timeInterval, bool timeEnabled,
+                         bool showFrame, bool showTime, bool showCoordinate, bool showDepth)
 {
-    echogram_.clearDepthCorrect();
+    if (dataset_ == nullptr) return;
+    echogram_.setMarks(this, dataset_, (float)distanceInterval, distanceEnabled,
+                       (float)timeInterval, timeEnabled, showFrame, showTime, showCoordinate, showDepth);
     plotUpdate();
 }
 
