@@ -1103,11 +1103,12 @@ Rectangle {
                                     onClicked: {
                                         // if(switchControl2.isOn) {
                                         //     switchControl2.isOn = false;
-                                        //     BleManager.operateBleOnOff(false)
+                                            BleManager.operateBleOnOff(false)
                                         // } else {
                                         //     BleManager.operateBleOnOff(true)
                                         // }
-                                        SerialPort.toggleConnection(portCombo.currentText, baudCombo.currentText)
+                                        // SerialPort.toggleConnection(portCombo.currentText, baudCombo.currentText)
+                                        SerialPort.toggleConnection2(222)
                                     }
                                     onEntered: switchControl2.hovered = true
                                     onExited:  switchControl2.hovered = false

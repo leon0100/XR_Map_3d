@@ -9,6 +9,15 @@
 #include "dataset_defs.h"
 
 
+
+#define     GET_YEAR(x)         (x&0b11111100000000000000000000000000)>>26
+#define     GET_MONTH(x)        (x&0b00000011110000000000000000000000)>>22
+#define     GET_DAY(x)          (x&0b00000000001111100000000000000000)>>17
+#define     GET_HOUR(x)         (x&0b00000000000000011111000000000000)>>12
+#define     GET_MINUTE(x)       (x&0b00000000000000000000111111000000)>>6
+#define     GET_SECOND(x)       (x&0b00000000000000000000000000111111)
+
+
 typedef enum {
     AutoRangeNone = -1,
     AutoRangeLastData,

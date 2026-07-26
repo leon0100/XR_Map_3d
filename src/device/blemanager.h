@@ -75,7 +75,6 @@ private:
 
     QString lastDateStr_;  // "yyyy-MM-dd" 标准化日期
     QString lastTimeStr_;  // "HH:mm:ss" 记录最新时钟时间
-
 };
 
 

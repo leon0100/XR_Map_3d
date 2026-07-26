@@ -270,14 +270,10 @@ void qPlot2D::drawDepthCorrect(int x, int y)
     echogram_.applyDepthCorrect(this, dataset_, x, y, imageWidth, h);
 }
 
-
-void qPlot2D::applyMarks(double distanceInterval, bool distanceEnabled,
-                         double timeInterval, bool timeEnabled,
-                         bool showFrame, bool showTime, bool showCoordinate, bool showDepth)
+void qPlot2D::setMarkDistTimeVisible(bool visible, int dist0time1, int distInterval, int timeInterval,
+                                bool isFrame, bool isTime, bool isDepth, bool isCoordinate)
 {
-    if (dataset_ == nullptr) return;
-    echogram_.setMarks(this, dataset_, (float)distanceInterval, distanceEnabled,
-                       (float)timeInterval, timeEnabled, showFrame, showTime, showCoordinate, showDepth);
+    echogram_.setMarkDistTimeVisible(visible, dist0time1, distInterval, timeInterval,isFrame, isTime, isDepth, isCoordinate);
     plotUpdate();
 }
 

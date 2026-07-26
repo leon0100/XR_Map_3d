@@ -64,9 +64,8 @@ public:
     Q_INVOKABLE void drawBatchCorrect(int x, int y);
     Q_INVOKABLE void clearBatchCorrect();
     Q_INVOKABLE void updateBatchCorrect();
-    Q_INVOKABLE void applyMarks(double distanceInterval, bool distanceEnabled,
-                                double timeInterval, bool timeEnabled,
-                                bool showFrame, bool showTime, bool showCoordinate, bool showDepth);
+    Q_INVOKABLE void setMarkDistTimeVisible(bool visible, int dist0time1, int distInterval, int timeInterval,
+                                            bool isFrame, bool isTime, bool isDepth, bool isCoordinate); //dist:0, time:1
 
 
 protected:

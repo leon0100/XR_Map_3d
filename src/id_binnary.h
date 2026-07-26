@@ -73,6 +73,7 @@ struct ChartParameters {
     quint16  heading;
     quint16  speed;
     quint16  temperature;
+    quint32  time;
     double   latitude;
     double   longitude;
 };

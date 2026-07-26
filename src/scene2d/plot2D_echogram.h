@@ -70,10 +70,11 @@ public:
     void setDepthCorrect(bool depthCorrect);
     void applyDepthCorrect(Plot2D* parent, Dataset* dataset, int mouseX, int mouseY, int imageWidth, int height);
 
-    void setMarks(Plot2D* parent, Dataset* dataset, float distanceInterval, bool distanceEnabled,
-                  float timeInterval, bool timeEnabled,
-                  bool showFrame, bool showTime, bool showCoordinate, bool showDepth);
-    void drawMarks(Plot2D* parent, Dataset* dataset, int width, int height, int cash_position, bool isVisible);
+    void getMarkAccordTimeDist();
+    void setMarkDistTimeVisible(bool markVisible, int dist0time1, int distInterval, int timeInterval,
+                                bool isFrame, bool isTime, bool isDepth, bool isCoordinate);
+    void drawMarks(Plot2D* parent, int width, int height, int cash_position);
+
 
 
 protected:
@@ -169,10 +170,10 @@ private:
     int  depthCorrectY_ = -1;
     int depthCorrectBtStart_;
 
-    bool markFrameVisible_ = false;
-    bool markShowFrame_ = true;
-    bool markShowTime_ = true;
-    bool markShowCoordinate_ = true;
-    bool markShowDepth_ = true;
+    bool isMarkVisible_ = false;
+    int  dist0time1Visible_ = 0;  //dist:0, time:1
+    bool isFrameVisible_ = true, isTimeVisible_ = true, isDepthVisible_ = true, isCoordinateVisible_ = true;
+    int  distInterval_ = 10, timeInterval_ = 60;
+    QSet<int> markDistList_, markTimeList_;
 
 };

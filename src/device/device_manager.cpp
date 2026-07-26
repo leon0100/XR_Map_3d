@@ -297,6 +297,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         chartParams.temperature = tslSingleStru.auxInfo.temperature * 10.0f;
         chartParams.heading     = tslSingleStru.boat.heading;
         chartParams.speed       = tslSingleStru.boat.speed * 10 / 0.514444f;
+        chartParams.time        = tslSingleStru.boat.time;
         chartParams.longitude   = lla.longitude;
         chartParams.latitude    = lla.latitude;
         emit chartComplete(batchChannelId_, chartParams, dataVec, true);
@@ -474,6 +475,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         chartParams.temperature  = tslSingleStru.auxInfo.temperature;
         chartParams.heading      = tslSingleStru.boat.heading;
         chartParams.speed        = tslSingleStru.boat.speed;
+        chartParams.time         = tslSingleStru.boat.time;
         chartParams.longitude    = lla.longitude;
         chartParams.latitude     = lla.latitude;
         emit chartComplete(batchChannelId_, chartParams, dataVec, true);

@@ -15,12 +15,10 @@
 #include "dataset_defs.h"
 
 
-
-
 class SerialPortManager : public QObject
 {
     Q_OBJECT
-
+public:
     Q_PROPERTY(QStringList availablePorts READ availablePorts NOTIFY portsUpdated)
     Q_PROPERTY(double receiveSpeed READ receiveSpeed   NOTIFY statsUpdated)
     Q_PROPERTY(int receivedFrames READ receivedFrames NOTIFY statsUpdated)
@@ -36,6 +34,7 @@ public:
 
     Q_INVOKABLE void scanPorts();
     Q_INVOKABLE void toggleConnection(QString port, int baudRate);
+    Q_INVOKABLE void toggleConnection2(int baudRate);
     Q_INVOKABLE void saveSerialPortData();
     Q_INVOKABLE void openSerialPortFile();
 
@@ -54,7 +53,6 @@ public:
 
 
 signals:
-    // 通知QML更新
     void portsUpdated();
     void statsUpdated();
     void connectionChanged(bool connected);

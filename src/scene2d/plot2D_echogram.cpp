@@ -278,7 +278,6 @@ QList<int> Plot2DEchogram::getDepthListKF()
     int diffCount = 20,diffValue = 30,R_small = 5,R_big = 20;
     DatasetCursor& cursor = plot2d_->cursor();
     int dataSize = dataset_->size();
-    qDebug() << "dataSize....." << dataSize;
     for(int i = 0; i < dataSize; i++) {
         Epoch* epochData = dataset_->fromIndex(i);
         if(epochData == nullptr) {
@@ -603,136 +602,196 @@ void Plot2DEchogram::applyDepthCorrect(Plot2D* parent, Dataset* dataset, int mou
     parent->plotUpdate();
 }
 
-void Plot2DEchogram::setMarks(Plot2D* parent, Dataset* dataset, float distanceInterval, bool distanceEnabled,
-                              float timeInterval, bool timeEnabled,
-                              bool showFrame, bool showTime, bool showCoordinate, bool showDepth)
+void Plot2DEchogram::setMarkDistTimeVisible(bool markVisible, int dist0time1, int distInterval, int timeInterval,
+                                bool isFrame, bool isTime, bool isDepth, bool isCoordinate)
 {
-    if (dataset == nullptr || parent == nullptr || dataset->size() <= 0) {
-        return;
-    }
+    isMarkVisible_ = markVisible;
+    dist0time1Visible_ = dist0time1;
+    distInterval_ = distInterval;
+    timeInterval_ = timeInterval;
+    isFrameVisible_ = isFrame;
+    isTimeVisible_ = isTime;
+    isDepthVisible_ = isDepth;
+    isCoordinateVisible_ = isCoordinate;
 
-    markShowFrame_ = showFrame;
-    markShowTime_ = showTime;
-    markShowCoordinate_ = showCoordinate;
-    markShowDepth_ = showDepth;
+    markDistList_.clear();
+    markTimeList_.clear();
 
-    const int total = dataset->size();
-    QList<int> markEpochIdxs;
-    markEpochIdxs.append(0);
+    getMarkAccordTimeDist();
 
-    if (distanceEnabled && distanceInterval > 0) {
-        float accumDist = 0.0f;
-        float lastMarkDist = 0.0f;
-        for (int i = 0; i < total; i++) {
-            Epoch* ep = dataset->fromIndex(i);
-            if (ep == nullptr) continue;
-            // float d = ep->getDistance();
-            float d = 100;
-            if (!qIsFinite(d)) continue;
-            accumDist = d;
-            if (accumDist - lastMarkDist >= distanceInterval) {
-                markEpochIdxs.append(i);
-                lastMarkDist = accumDist;
-            }
-        }
-    }
-
-    if (timeEnabled && timeInterval > 0) {
-        int64_t lastMarkSec = -1;
-        for (int i = 0; i < total; i++) {
-            Epoch* ep = dataset->fromIndex(i);
-            if (ep == nullptr) continue;
-            DateTime* dt = ep->time();
-            if (dt == nullptr || dt->sec <= 0) continue;
-            if (lastMarkSec < 0) {
-                lastMarkSec = dt->sec;
-                continue;
-            }
-            if ((int64_t)dt->sec - lastMarkSec >= (int64_t)timeInterval) {
-                if (!markEpochIdxs.contains(i)) {
-                    markEpochIdxs.append(i);
-                }
-                lastMarkSec = dt->sec;
-            }
-        }
-    }
-
-    std::sort(markEpochIdxs.begin(), markEpochIdxs.end());
-    markEpochIdxs.erase(std::unique(markEpochIdxs.begin(), markEpochIdxs.end()), markEpochIdxs.end());
-
-    for (int idx : markEpochIdxs) {
-        Epoch* ep = dataset->fromIndex(idx);
-        if (ep == nullptr) continue;
-
-        MarkInfo mark;
-        mark.epochIdx = idx;
-        QStringList parts;
-
-        if (showFrame) {
-            parts.append(QString("F:%1").arg(idx));
-        }
-        if (showTime) {
-            DateTime* dt = ep->time();
-            if (dt && dt->sec > 0) {
-                QDateTime qdt = QDateTime::fromSecsSinceEpoch(dt->sec);
-                parts.append(qdt.toString("HH:mm:ss"));
-            }
-        }
-        if (showCoordinate) {
-            double lat = ep->lat();
-            double lon = ep->lon();
-            parts.append(QString("%1,%2").arg(lat, 0, 'f', 5).arg(lon, 0, 'f', 5));
-        }
-        if (showDepth) {
-            ChartParameters params = ep->getChartParameters(parent->cursor().channel1);
-            parts.append(QString("D:%1m").arg(params.depth / 100.0f, 0, 'f', 1));
-        }
-
-        mark.text = parts.join(" ");
-    }
-
-    resetCash();
-    parent->plotUpdate();
 }
 
-void Plot2DEchogram::drawMarks(Plot2D* parent, Dataset* dataset, int width, int height, int cash_position, bool isVisible)
+
+void Plot2DEchogram::drawMarks(Plot2D* parent, int width, int height, int cash_position)
 {
-    if (parent == nullptr || dataset == nullptr) {
+    if(!isMarkVisible_) {
         return;
     }
 
     auto& canvas = parent->canvas();
-    QPainter* p = canvas.painter();
+    DatasetCursor& cursor = parent->cursor();
+    QPainter* p  = canvas.painter();
 
-    if(isVisible) {
-        if(_cash.size() == width && width > 1) {
-            QPainter* cp = canvas.painter();
-            QPen profilePen(QColor(255, 0, 0));
-            profilePen.setWidth(1);
-            cp->setPen(profilePen);
-            QPolygonF profilePts;
-            profilePts.reserve(width);
-            for(int x = 0; x < width; x +=10) {
-                int col = (cash_position + x) % width;
-                int idx = _cash[col].bottomLineIdx;
-                if (_cash[col].state == CashLine::CashState::CashStateValid) {
-                    profilePts.append(QPointF(x, idx));
-                }
-                else if (profilePts.size() > 1) {
-                    cp->drawPolyline(profilePts);
-                    profilePts.clear();
-                }
 
-                p->drawLine(x, 0, x, height);
-                QFont font;
-                QRect textRect = QFontMetrics(font).boundingRect(x);
-                int textX = x + 3;
-                if (textX + textRect.width() > width) {
-                    textX = x - textRect.width() - 3;
-                }
-                p->fillRect(textX - 1, 1, textRect.width() + 2, textRect.height() + 2, QColor(0, 0, 0, 150));
-                p->setPen(QPen(Qt::white));
-                p->drawText(textX, 1 + textRect.height(), QString::number(x));
+    if(_cash.size() != width || width <= 1) {
+        return;
+    }
+    if(markDistList_.isEmpty()) {
+        return;
+    }
+
+    QPen markPen(QColor(255, 0, 0));
+    markPen.setWidth(1);
+    markPen.setStyle(Qt::DashDotLine);
+    p->setPen(markPen);
+
+    QFont font = p->font();
+    font.setPixelSize(qMax(9, height / 70));
+    p->setFont(font);
+    QFontMetrics fm(font);
+
+    for(int x = 0; x < width; x++) {
+        int col = (cash_position + x) % width;
+        int poolIndex = _cash[col].poolIndex;
+        if(poolIndex < 0) {
+            continue;
+        }
+        if(dist0time1Visible_ == 0) {
+            if(!markDistList_.contains(poolIndex)) {
+                continue;
+            }
+        }
+        else if(dist0time1Visible_ == 1){
+            if(!markTimeList_.contains(poolIndex)) {
+                continue;
+            }
+        }
+
+        Epoch* epoch = dataset_->fromIndex(poolIndex);
+        ChartParameters params = epoch->getChartParameters(cursor.channel1);
+        QString markLabel;
+        if(isFrameVisible_) {
+            p->drawLine(x, 0, x, height);
+            markLabel.append(QString::number(poolIndex+1));
+        }
+        if(isTimeVisible_) {
+            quint32 timeVal = params.time;
+            quint8 hour = GET_HOUR(timeVal);
+            quint8 minute = GET_MINUTE(timeVal);
+            quint8 second = GET_SECOND(timeVal);
+            QString time = ", " + QString("%1").arg(hour, 2, 10, QLatin1Char('0'))+":"+QString("%1").
+                    arg(minute, 2, 10, QLatin1Char('0'))+":"+QString("%1").arg(second, 2, 10, QLatin1Char('0'));
+            markLabel.append(time);
+        }
+        if(isCoordinateVisible_) {
+            double lat  = params.latitude;
+            double lon  = params.longitude;
+            QString string_ns, string_lat, string_ew, string_lon;
+            if(lon >= 0) {
+                string_ew = "E";
+                string_lon = QString::number(lon,'f',6);
+            }
+            else {
+                string_ew = "W";
+                string_lon = QString::number(-lon,'f',6);
+            }
+
+            if(lat >= 0) {
+                string_ns = "N";
+                string_lat = QString::number(lat,'f',6);
+            }
+            else {
+                string_ns = "S";
+                string_lat = QString::number(-lat,'f',6);
+            }
+            QString coor = ", " + string_ew + string_lon + "° " +string_ns + string_lat +"°";
+            markLabel.append(coor);
+        }
+        if(isDepthVisible_){
+            QString depth = ", " + QString::number(params.depth/100.0f, 'f', 2) +"m";
+            markLabel.append(depth);
+        }
+
+        p->save();
+        p->translate(x, height);
+        p->rotate(-90);
+        p->drawText(5, -2, markLabel);
+        p->restore();
+    }
+}
+
+void Plot2DEchogram::getMarkAccordTimeDist()
+{
+    if(dataset_ == nullptr || plot2d_ == nullptr) {
+        return;
+    }
+
+    int dataSize = dataset_->size();
+    if(dataSize == 0) {
+        return;
+    }
+
+    if(dist0time1Visible_ == 0) {
+        markDistList_.clear();
+        markDistList_.insert(0);
+        Epoch* epochData0 = dataset_->fromIndex(0);
+        if(epochData0 == nullptr) {
+            return;
+        }
+
+        North_East_Down lastNed = epochData0->getPositionGNSS().ned;
+
+        for(int i = 1; i < dataSize; i++) {
+            Epoch* epochData = dataset_->fromIndex(i);
+            if(epochData == nullptr) {
+                continue;
+            }
+
+            North_East_Down currNed = epochData->getPositionGNSS().ned;
+            double dn = currNed.n - lastNed.n;
+            double de = currNed.e - lastNed.e;
+            double dist = sqrt(dn * dn + de * de);
+            if(dist > distInterval_) {
+                lastNed = currNed;
+                markDistList_.insert(i);
+            }
+        }
+    }
+    else if(dist0time1Visible_ == 1) {
+        markTimeList_.clear();
+        markTimeList_.insert(0);
+        Epoch* epochData0 = dataset_->fromIndex(0);
+        if(epochData0 == nullptr) {
+            return;
+        }
+
+        // North_East_Down lastNed = epochData0->getPositionGNSS().ned;
+        // 以第 0 帧的时间为起点，每当时间差 >= timeInterval_（秒）时打一个标
+        const double intervalSec = static_cast<double>(timeInterval_);
+        if(intervalSec <= 0) {
+            return;
+        }
+        time_t       lastSec    = epochData0->getPositionGNSS().time.sec;
+        int          lastNano   = epochData0->getPositionGNSS().time.nanoSec;
+        double       lastTimeSec = static_cast<double>(lastSec) + lastNano * 1e-9;
+
+
+        for(int i = 1; i < dataSize; i++) {
+            Epoch* epochData = dataset_->fromIndex(i);
+            if(epochData == nullptr) {
+                continue;
+            }
+
+            const DateTime& dt = epochData->getPositionGNSS().time;
+            if(dt.sec == 0 && dt.nanoSec == 0) {
+                continue;   // 无效时间戳跳过
+            }
+            double currTimeSec = static_cast<double>(dt.sec) + dt.nanoSec * 1e-9;
+            double diff = currTimeSec - lastTimeSec;
+            if(diff >= intervalSec) {
+                qDebug() << "timeDiff:" << diff << "   timeInterval:" << timeInterval_;
+                lastTimeSec = currTimeSec;
+                markTimeList_.insert(i);
             }
         }
     }
@@ -1214,7 +1273,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 
         drawBatchCorrect(parent, dataset, image_width, image_height);
         updateBatchCorrect(parent, dataset, image_width, image_height);
-        drawMarks(parent, dataset, image_width, image_height, cash_position, markFrameVisible_);
+        drawMarks(parent, image_width, image_height, cash_position);
     }
 
     return true;

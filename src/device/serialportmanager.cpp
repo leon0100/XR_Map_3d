@@ -118,6 +118,10 @@ void SerialPortManager::toggleConnection(QString port, int baudRate)
     }
 }
 
+void SerialPortManager::toggleConnection2(int baudRate)
+{
+     qDebug() << "toggleConnection2............." << baudRate;
+}
 
 void SerialPortManager::saveSerialPortData()
 {

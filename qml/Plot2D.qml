@@ -587,6 +587,13 @@ WaterFall {
 
                         property bool opened: false
                         property int markIconSize: plotIconSize * 0.75
+                        property int dist0Time1: 0
+                        property int distInterval: 10
+                        property int timeInterval: 60
+                        property bool isFrameVisible:  true;
+                        property bool isTimeVisible:   true;
+                        property bool  isDepthVisible: true;
+                        property bool isCoordinateVisible: true;
 
                         Behavior on height {
                             NumberAnimation {
@@ -635,8 +642,6 @@ WaterFall {
                                         Layout.preferredHeight: marksDrawer.markIconSize
                                         color: "#d6e6ff"
 
-                                        property bool isFrame: true
-
                                         Row {
                                             anchors.fill: parent
                                             anchors.leftMargin: marksDrawer.markIconSize * 0.5
@@ -654,15 +659,14 @@ WaterFall {
 
                                                 Image {
                                                     source: "qrc:/XR/check.svg"
-                                                    visible: frame.isFrame
                                                     width: parent.width * 0.9
                                                     height: parent.width * 0.9
+                                                    visible: marksDrawer.isFrameVisible
                                                     anchors.verticalCenter: parent.verticalCenter
                                                     anchors.horizontalCenter: parent.horizontalCenter
                                                     anchors.rightMargin: 2
                                                 }
                                             }
-
 
                                             Text {
                                                 text: qsTr("Frame")
@@ -675,10 +679,7 @@ WaterFall {
                                         MouseArea {
                                             anchors.fill: parent
                                             hoverEnabled: true
-                                            onPressed: {
-                                                frame.isFrame = !frame.isFrame
-                                            }
-
+                                            onPressed: marksDrawer.isFrameVisible = !marksDrawer.isFrameVisible
                                         }
                                     }
 
@@ -688,8 +689,6 @@ WaterFall {
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: marksDrawer.markIconSize
                                         color: "#d6e6ff"
-
-                                        property bool isTime: true
 
                                         Row {
                                             anchors.fill: parent
@@ -708,7 +707,7 @@ WaterFall {
 
                                                 Image {
                                                     source: "qrc:/XR/check.svg"
-                                                    visible: time.isTime
+                                                    visible: marksDrawer.isTimeVisible
                                                     width: parent.width * 0.9
                                                     height: parent.width * 0.9
                                                     anchors.verticalCenter: parent.verticalCenter
@@ -716,8 +715,6 @@ WaterFall {
                                                     anchors.rightMargin: 2
                                                 }
                                             }
-
-
                                             Text {
                                                 text: qsTr("Time")
                                                 font.pixelSize: marksDrawer.markIconSize
@@ -729,10 +726,7 @@ WaterFall {
                                         MouseArea {
                                             anchors.fill: parent
                                             hoverEnabled: true
-                                            onPressed: {
-                                                time.isTime = !time.isTime
-                                            }
-
+                                            onPressed: marksDrawer.isTimeVisible = !marksDrawer.isTimeVisible
                                         }
                                     }
 
@@ -743,8 +737,6 @@ WaterFall {
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: marksDrawer.markIconSize
                                         color: "#d6e6ff"
-
-                                        property bool isDepth: true
 
                                         Row {
                                             anchors.fill: parent
@@ -763,7 +755,7 @@ WaterFall {
 
                                                 Image {
                                                     source: "qrc:/XR/check.svg"
-                                                    visible: depth.isDepth
+                                                    visible: marksDrawer.isDepthVisible
                                                     width: parent.width * 0.9
                                                     height: parent.width * 0.9
                                                     anchors.verticalCenter: parent.verticalCenter
@@ -771,7 +763,6 @@ WaterFall {
                                                     anchors.rightMargin: 2
                                                 }
                                             }
-
 
                                             Text {
                                                 text: qsTr("Depth")
@@ -784,9 +775,7 @@ WaterFall {
                                         MouseArea {
                                             anchors.fill: parent
                                             hoverEnabled: true
-                                            onPressed: {
-                                                depth.isDepth = !depth.isDepth
-                                            }
+                                            onPressed: marksDrawer.isDepthVisible = !marksDrawer.isDepthVisible
 
                                         }
                                     }
@@ -796,8 +785,6 @@ WaterFall {
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: marksDrawer.markIconSize
                                         color: "#d6e6ff"
-
-                                        property bool isCoordinate: true
 
                                         Row {
                                             anchors.fill: parent
@@ -816,7 +803,7 @@ WaterFall {
 
                                                 Image {
                                                     source: "qrc:/XR/check.svg"
-                                                    visible: coordinate.isCoordinate
+                                                    visible: marksDrawer.isCoordinateVisible
                                                     width: parent.width * 0.9
                                                     height: parent.width * 0.9
                                                     anchors.verticalCenter: parent.verticalCenter
@@ -837,10 +824,7 @@ WaterFall {
                                         MouseArea {
                                             anchors.fill: parent
                                             hoverEnabled: true
-                                            onPressed: {
-                                                coordinate.isCoordinate = !coordinate.isCoordinate
-                                            }
-
+                                            onPressed: marksDrawer.isCoordinateVisible = !marksDrawer.isCoordinateVisible
                                         }
                                     }
 
@@ -877,12 +861,33 @@ WaterFall {
 
                                     RowLayout {
                                         Layout.fillWidth: true
-                                        spacing: marksDrawer.markIconSize * 0.5
+                                        spacing: marksDrawer.markIconSize * 0.2
+
+                                        Rectangle {
+                                            Layout.preferredWidth: marksDrawer.markIconSize
+                                            Layout.preferredHeight: marksDrawer.markIconSize
+                                            radius: 5
+                                            border.color: "#b0b3b8"
+                                            border.width: 1
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Image {
+                                                source: "qrc:/XR/check.svg"
+                                                width: parent.width * 0.9
+                                                height: parent.width * 0.9
+                                                visible: marksDrawer.dist0Time1 === 0
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                anchors.horizontalCenter: parent.horizontalCenter
+                                                anchors.rightMargin: 2
+                                            }
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                onClicked: marksDrawer.dist0Time1 = 0
+                                            }
+                                        }
 
                                         Text {
                                             text: qsTr("Distance")
-                                            font.pixelSize: marksDrawer.markIconSize * 0.9
-                                            color: "black"
+                                            font.pixelSize: marksDrawer.markIconSize * 0.8
                                             Layout.fillWidth: true
                                             verticalAlignment: Text.AlignVCenter
                                         }
@@ -903,7 +908,7 @@ WaterFall {
                                             id: distanceUnitCombo
                                             model:[ qsTr("m"), qsTr("km") ]
                                             currentIndex: 0
-                                            Layout.preferredWidth: marksDrawer.markIconSize * 2.8
+                                            Layout.preferredWidth: marksDrawer.markIconSize * 2.5
                                             Layout.preferredHeight: marksDrawer.markIconSize * 1.2
                                             font.pixelSize: marksDrawer.markIconSize * 0.9
 
@@ -929,17 +934,40 @@ WaterFall {
 
                                     RowLayout {
                                         Layout.fillWidth:true
-                                        spacing: marksDrawer.markIconSize * 0.5
+                                        spacing: marksDrawer.markIconSize * 0.2
+
+                                        Rectangle {
+                                            Layout.preferredWidth: marksDrawer.markIconSize
+                                            Layout.preferredHeight: marksDrawer.markIconSize
+                                            radius: 5
+                                            border.color: "#b0b3b8"
+                                            border.width: 1
+                                            Layout.alignment: Qt.AlignVCenter
+                                            Image {
+                                                source: "qrc:/XR/check.svg"
+                                                width: parent.width * 0.9
+                                                height: parent.width * 0.9
+                                                visible: marksDrawer.dist0Time1 === 1
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                anchors.horizontalCenter: parent.horizontalCenter
+                                                anchors.rightMargin: 2
+                                            }
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                onClicked: marksDrawer.dist0Time1 = 1
+                                            }
+                                        }
 
                                         Text {
                                             text: qsTr("Time")
-                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            font.pixelSize: marksDrawer.markIconSize * 0.8
                                             color: "black"
                                             Layout.fillWidth: true
                                             verticalAlignment: Text.AlignVCenter
                                         }
 
                                         TextField {
+                                            id: timeValue
                                             text:"60"
                                             font.pixelSize: marksDrawer.markIconSize * 0.9
                                             Layout.preferredWidth:  marksDrawer.markIconSize * 2.8
@@ -954,7 +982,7 @@ WaterFall {
                                             id: timeUnitCombo
                                             model: [qsTr("Sec"), qsTr("Min")]
                                             currentIndex: 0
-                                            Layout.preferredWidth: marksDrawer.markIconSize * 3
+                                            Layout.preferredWidth: marksDrawer.markIconSize * 2.5
                                             Layout.preferredHeight: marksDrawer.markIconSize * 1.2
                                             font.pixelSize: marksDrawer.markIconSize * 0.9
 
@@ -989,20 +1017,13 @@ WaterFall {
                                 width: marksDrawer.markIconSize * 2
                                 Layout.alignment: Qt.AlignHCenter
                                 onClicked:{
-                                    var distVal = parseFloat(distanceValue.text)
-                                    if (distanceUnitCombo.currentIndex === 1) distVal *= 1000  // km→m
-
-                                    var timeVal = 60  // Time TextField需加id: timeValue
-                                    if (timeUnitCombo.currentIndex === 1) timeVal *= 60  // min→sec
-
-                                    plot.applyMarks(
-                                            distVal, true,           // distance间隔(m), 启用
-                                            timeVal, true,           // time间隔(sec), 启用
-                                            frame.isFrame,           // 显示Frame
-                                            time.isTime,             // 显示Time
-                                            coordinate.isCoordinate, // 显示Coordinate
-                                            depth.isDepth            // 显示Depth
-                                    )
+                                    marksDrawer.distInterval = parseInt(distanceValue.text)
+                                    if (distanceUnitCombo.currentIndex === 1) marksDrawer.distInterval *= 1000  // km→m
+                                    marksDrawer.timeInterval = parseInt(timeValue.text)
+                                    if (timeUnitCombo.currentIndex === 1) marksDrawer.timeInterval *= 60  // min→sec
+                                    plot.setMarkDistTimeVisible(addMarks.checked, marksDrawer.dist0Time1, marksDrawer.distInterval,
+                                             marksDrawer.timeInterval, marksDrawer.isFrameVisible,marksDrawer.isTimeVisible,
+                                             marksDrawer.isDepthVisible, marksDrawer.isCoordinateVisible )
                                 }
                             }
 
@@ -1027,13 +1048,23 @@ WaterFall {
                     ExpandCheckBox {
                         id: addMarks
                         text: qsTr("Add Marks")
-                        onCheckedChanged: {
-                            if(checked) {
+                        onTextClicked: {
+                            if(addMarks.isTextClicked) {
                                 marksDrawer.open()
                             }
                             else {
                                 marksDrawer.close()
                             }
+
+                        }
+                        onCheckClicked: {
+                            marksDrawer.distInterval = parseInt(distanceValue.text)
+                            if (distanceUnitCombo.currentIndex === 1) marksDrawer.distInterval *= 1000
+                            marksDrawer.timeInterval = parseInt(timeValue.text)
+                            if (timeUnitCombo.currentIndex === 1) marksDrawer.timeInterval *= 60
+                            plot.setMarkDistTimeVisible(addMarks.checked, marksDrawer.dist0Time1, marksDrawer.distInterval,
+                                     marksDrawer.timeInterval, marksDrawer.isFrameVisible,marksDrawer.isTimeVisible,
+                                     marksDrawer.isDepthVisible, marksDrawer.isCoordinateVisible )
                         }
                     }
 
