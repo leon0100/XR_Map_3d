@@ -25,6 +25,10 @@ public:
 
     Q_PROPERTY(int  minUpRng  READ  getMinUpRng   WRITE  setMinUpRng   NOTIFY minUpRngChanged)
     Q_PROPERTY(int  maxLoRng  READ  getMaxLoRng   WRITE  setMaxLoRng   NOTIFY maxLoRngChanged)
+    Q_PROPERTY(QString fromLonStr   READ fromLonStr  WRITE setFromLonStr   NOTIFY fromToLonLatiChanged)
+    Q_PROPERTY(QString fromLatiStr  READ fromLatiStr WRITE setFromLatiStr  NOTIFY fromToLonLatiChanged)
+    Q_PROPERTY(QString toLonStr     READ toLonStr    WRITE setToLonStr     NOTIFY fromToLonLatiChanged)
+    Q_PROPERTY(QString toLatiStr    READ toLatiStr   WRITE setToLatiStr    NOTIFY fromToLonLatiChanged)
 
     qPlot2D(QQuickItem* parent = nullptr);
     void paint(QPainter *painter) override;
@@ -49,8 +53,17 @@ public:
     void setDepthFilterVisible(bool visible, int value);
     void setBatchCorrect(bool batch);
     void setDepthCorrect(bool depthCorrect);
-    Q_INVOKABLE void drawDepthCorrect(int x, int y);
 
+    QString fromLonStr();
+    void setFromLonStr(QString fromLon);
+    QString fromLatiStr();
+    void setFromLatiStr(QString fromLati);
+    QString toLonStr();
+    void setToLonStr(QString toLon);
+    QString toLatiStr();
+    void setToLatiStr(QString toLati);
+
+    Q_INVOKABLE void drawDepthCorrect(int x, int y);
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
     Q_INVOKABLE void setCursorFromTo(float from, float to) { cursor_.distance.mode = AutoRangeNone; Plot2D::cursor_.distance.from = from; Plot2D::cursor_.distance.to = to; }
@@ -58,14 +71,12 @@ public:
     Q_INVOKABLE void resetUpLoRng(int upper, int lower);
     Q_INVOKABLE void setSensitivity(int sensitive);
 
-
-
     Q_INVOKABLE void setBottomLineVisible(bool isVisible);
     Q_INVOKABLE void drawBatchCorrect(int x, int y);
     Q_INVOKABLE void clearBatchCorrect();
     Q_INVOKABLE void updateBatchCorrect();
     Q_INVOKABLE void setMarkDistTimeVisible(bool visible, int dist0time1, int distInterval, int timeInterval,
-                                            bool isFrame, bool isTime, bool isDepth, bool isCoordinate); //dist:0, time:1
+                                    bool isFrame, bool isTime, bool isDepth, bool isCoordinate); //dist:0, time:1
 
 
 protected:
@@ -81,6 +92,7 @@ signals:
     void outlineModeChanged();
     void minUpRngChanged();
     void maxLoRngChanged();
+    void fromToLonLatiChanged();
 
 protected slots:
     void timerUpdater();
@@ -161,7 +173,6 @@ public slots:
     void refreshDistParams(int preset, int windowSize, float verticalGap, float rangeMin, float rangeMax,
                     float gainSlope, float threshold, float offsetX, float offsetY, float offsetZ);
 
-
     void setPreset(int value);
     void setWindowSize(int value);
     void setVerticalGap(float value);
@@ -172,6 +183,13 @@ public slots:
     void setOffsetX(float value);
     void setOffsetY(float value);
     void setOffsetZ(float value);
+
+    Q_INVOKABLE void setDeleteFrameMode(bool mode);
+    Q_INVOKABLE bool onDoubleClick(int x, int y);
+    Q_INVOKABLE void updateDeleteFrameMousePos(int x, int y);
+    Q_INVOKABLE void clearDeleteFrame();
+    Q_INVOKABLE int  getDeleteStartIdx();
+    Q_INVOKABLE int  getDeleteEndIdx();
 
 private:
     int indx_ = -1;

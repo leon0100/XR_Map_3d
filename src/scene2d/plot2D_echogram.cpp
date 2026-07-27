@@ -618,7 +618,6 @@ void Plot2DEchogram::setMarkDistTimeVisible(bool markVisible, int dist0time1, in
     markTimeList_.clear();
 
     getMarkAccordTimeDist();
-
 }
 
 
@@ -628,15 +627,15 @@ void Plot2DEchogram::drawMarks(Plot2D* parent, int width, int height, int cash_p
         return;
     }
 
+    if(_cash.size() != width || width <= 1) {
+        return;
+    }
+
     auto& canvas = parent->canvas();
     DatasetCursor& cursor = parent->cursor();
     QPainter* p  = canvas.painter();
 
-
-    if(_cash.size() != width || width <= 1) {
-        return;
-    }
-    if(markDistList_.isEmpty()) {
+    if(markDistList_.isEmpty() && markTimeList_.isEmpty()) {
         return;
     }
 
@@ -661,7 +660,7 @@ void Plot2DEchogram::drawMarks(Plot2D* parent, int width, int height, int cash_p
                 continue;
             }
         }
-        else if(dist0time1Visible_ == 1){
+        else if(dist0time1Visible_ == 1) {
             if(!markTimeList_.contains(poolIndex)) {
                 continue;
             }
@@ -676,9 +675,9 @@ void Plot2DEchogram::drawMarks(Plot2D* parent, int width, int height, int cash_p
         }
         if(isTimeVisible_) {
             quint32 timeVal = params.time;
-            quint8 hour = GET_HOUR(timeVal);
-            quint8 minute = GET_MINUTE(timeVal);
-            quint8 second = GET_SECOND(timeVal);
+            quint8 hour     = GET_HOUR(timeVal);
+            quint8 minute   = GET_MINUTE(timeVal);
+            quint8 second   = GET_SECOND(timeVal);
             QString time = ", " + QString("%1").arg(hour, 2, 10, QLatin1Char('0'))+":"+QString("%1").
                     arg(minute, 2, 10, QLatin1Char('0'))+":"+QString("%1").arg(second, 2, 10, QLatin1Char('0'));
             markLabel.append(time);
@@ -725,6 +724,7 @@ void Plot2DEchogram::getMarkAccordTimeDist()
     if(dataset_ == nullptr || plot2d_ == nullptr) {
         return;
     }
+    DatasetCursor& cursor = plot2d_->cursor();
 
     int dataSize = dataset_->size();
     if(dataSize == 0) {
@@ -764,17 +764,13 @@ void Plot2DEchogram::getMarkAccordTimeDist()
         if(epochData0 == nullptr) {
             return;
         }
-
-        // North_East_Down lastNed = epochData0->getPositionGNSS().ned;
-        // 以第 0 帧的时间为起点，每当时间差 >= timeInterval_（秒）时打一个标
-        const double intervalSec = static_cast<double>(timeInterval_);
-        if(intervalSec <= 0) {
-            return;
-        }
-        time_t       lastSec    = epochData0->getPositionGNSS().time.sec;
-        int          lastNano   = epochData0->getPositionGNSS().time.nanoSec;
-        double       lastTimeSec = static_cast<double>(lastSec) + lastNano * 1e-9;
-
+        ChartParameters param0 = epochData0->getChartParameters(cursor.channel1);
+        quint32 timeVal0 = param0.time;
+        quint8 hour0 = GET_HOUR(timeVal0);
+        quint8 minute0 = GET_MINUTE(timeVal0);
+        quint8 second0 = GET_SECOND(timeVal0);
+        int currTime0 = hour0 * 3600 + minute0 * 60 + second0;
+        int nextTime = currTime0 + timeInterval_;
 
         for(int i = 1; i < dataSize; i++) {
             Epoch* epochData = dataset_->fromIndex(i);
@@ -782,16 +778,15 @@ void Plot2DEchogram::getMarkAccordTimeDist()
                 continue;
             }
 
-            const DateTime& dt = epochData->getPositionGNSS().time;
-            if(dt.sec == 0 && dt.nanoSec == 0) {
-                continue;   // 无效时间戳跳过
-            }
-            double currTimeSec = static_cast<double>(dt.sec) + dt.nanoSec * 1e-9;
-            double diff = currTimeSec - lastTimeSec;
-            if(diff >= intervalSec) {
-                qDebug() << "timeDiff:" << diff << "   timeInterval:" << timeInterval_;
-                lastTimeSec = currTimeSec;
+            ChartParameters param = epochData->getChartParameters(cursor.channel1);
+            quint32 timeVal = param.time;
+            quint8 hour = GET_HOUR(timeVal);
+            quint8 minute = GET_MINUTE(timeVal);
+            quint8 second = GET_SECOND(timeVal);
+            int currTime = hour * 3600 + minute * 60 + second;
+            if(currTime >= nextTime) {
                 markTimeList_.insert(i);
+                nextTime += timeInterval_;
             }
         }
     }
@@ -1140,6 +1135,175 @@ void Plot2DEchogram::clearBatchCorrect()
     batchCorrectList_.clear();
 }
 
+
+void Plot2DEchogram::setDeleteFrameMode(bool mode)
+{
+    deleteFrameMode_ = mode;
+    if (!mode) {
+        deleteStartIdx_ = -1;
+        deleteEndIdx_ = -1;
+        awaitingEnd_ = false;
+        deleteFrameMouseX_ = -1;
+        deleteFrameMouseY_ = -1;
+    }
+}
+
+void Plot2DEchogram::clearDeleteFrame()
+{
+    deleteStartIdx_ = -1;
+    deleteEndIdx_ = -1;
+    awaitingEnd_ = false;
+}
+
+int Plot2DEchogram::getDeleteStartIdx() const
+{
+    int dataSize = dataset_->size();
+    if(dataSize <= deleteStartIdx_) {
+        return -1;
+    }
+    DatasetCursor& cursor = plot2d_->cursor();
+    Epoch* epochData = dataset_->fromIndex(deleteStartIdx_);
+    ChartParameters param = epochData->getChartParameters(cursor.channel1);
+    double lat  = param.latitude;
+    double lon  = param.longitude;
+    QString string_ns, string_lat, string_ew, string_lon;
+    if(lon >= 0) {
+        string_ew = "E";
+        string_lon = QString::number(lon,'f',6);
+    } else {
+        string_ew = "W";
+        string_lon = QString::number(-lon,'f',6);
+    }
+    if(lat >= 0) {
+        string_ns = "N";
+        string_lat = QString::number(lat,'f',6);
+    } else {
+        string_ns = "S";
+        string_lat = QString::number(-lat,'f',6);
+    }
+    plot2d_->fromLonStr_  = string_ew + string_lon + "°";
+    plot2d_->fromLatiStr_ = string_ns + string_lat + "°";
+
+    if(deleteEndIdx_ > 0) {
+        epochData = dataset_->fromIndex(deleteEndIdx_);
+        param = epochData->getChartParameters(cursor.channel1);
+        lat  = param.latitude;
+        lon  = param.longitude;
+        // QString string_ns2, string_lat2, string_ew2, string_lon2;
+        if(lon >= 0) {
+            string_ew = "E";
+            string_lon = QString::number(lon,'f',6);
+        } else {
+            string_ew = "W";
+            string_lon = QString::number(-lon,'f',6);
+        }
+        if(lat >= 0) {
+            string_ns = "N";
+            string_lat = QString::number(lat,'f',6);
+        } else {
+            string_ns = "S";
+            string_lat = QString::number(-lat,'f',6);
+        }
+        plot2d_->toLonStr_  = string_ew + string_lon + "°";
+        plot2d_->toLatiStr_ = string_ns + string_lat + "°";
+    }
+
+    return deleteStartIdx_;
+}
+
+int Plot2DEchogram::getDeleteEndIdx() const
+{
+    return deleteEndIdx_;
+}
+
+void Plot2DEchogram::updateDeleteFrameMousePos(int mouseX, int mouseY)
+{
+    deleteFrameMouseX_ = mouseX;
+    deleteFrameMouseY_ = mouseY;
+}
+
+bool Plot2DEchogram::handleDeleteFrameDoubleClick(Plot2D* parent, Dataset* dataset, int mouseX, int mouseY, bool isHorizontal)
+{
+    if (!deleteFrameMode_ || parent == nullptr || dataset == nullptr) {
+        return false;
+    }
+
+    int epochIdx = parent->getEpochIndxByMousePos(mouseX, mouseY, isHorizontal);
+    if (epochIdx < 0 || epochIdx >= dataset->size()) {
+        return false;
+    }
+
+    if (!awaitingEnd_) {
+        deleteStartIdx_ = epochIdx;
+        awaitingEnd_ = true;
+    } else {
+        deleteEndIdx_ = epochIdx;
+        if (deleteEndIdx_ < deleteStartIdx_) {
+            std::swap(deleteStartIdx_, deleteEndIdx_);
+        }
+        awaitingEnd_ = false;
+    }
+    return true;
+}
+
+void Plot2DEchogram::drawDeleteFrameHint(int width, int height)
+{
+    if (!deleteFrameMode_ ||  plot2d_ == nullptr) return;
+    auto& canvas = plot2d_->canvas();
+    QPainter* p  = canvas.painter();
+    if (p == nullptr) return;
+
+    QString text = awaitingEnd_ ? QObject::tr("select end frame") : QObject::tr("select start frame");
+
+    QFont font = p->font();
+    font.setPixelSize(qMax(9, height / 50));
+    font.setBold(true);
+    p->setFont(font);
+
+    QFontMetrics fm(font);
+    QRect textRect = fm.boundingRect(text);
+
+    int mx = deleteFrameMouseX_;
+    int my = deleteFrameMouseY_;
+    if (mx < 0 || my < 0) {
+        mx = width / 2;
+        my = height / 2;
+    }
+
+    int textX = mx + 15;
+    int textY = my - textRect.height() - 5;
+    if (textX + textRect.width() > width) textX = mx - textRect.width() - 15;
+    if (textY < 0) textY = my + 15;
+
+    p->fillRect(textX - 4, textY - 2, textRect.width() + 8, textRect.height() + 4, QColor(0, 0, 0, 180));
+    p->drawText(textX, textY + fm.ascent(), text);
+
+    QPen spen(QColor(0, 255, 0, 200));
+    spen.setWidth(2);
+    spen.setStyle(Qt::DashLine);
+    p->setPen(spen);
+
+    if (deleteStartIdx_ >= 0) {
+        DatasetCursor& cursor = plot2d_->cursor();
+        for (int col = 0; col < (int)cursor.indexes.size(); col++) {
+            if (cursor.indexes[col] == deleteStartIdx_) {
+                p->drawLine(col, 0, col, height);
+                break;
+            }
+        }
+    }
+
+    if (deleteEndIdx_ >= 0) {
+        DatasetCursor& cursor = plot2d_->cursor();
+        for (int col = 0; col < (int)cursor.indexes.size(); col++) {
+            if (cursor.indexes[col] == deleteEndIdx_) {
+                p->drawLine(col, 0, col, height);
+                break;
+            }
+        }
+    }
+}
+
 void Plot2DEchogram::setUpdateBatchCorrect(bool updateBatchCorrect)
 {
     updateBatchCorrect_ = updateBatchCorrect;
@@ -1274,6 +1438,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
         drawBatchCorrect(parent, dataset, image_width, image_height);
         updateBatchCorrect(parent, dataset, image_width, image_height);
         drawMarks(parent, image_width, image_height, cash_position);
+        drawDeleteFrameHint(image_width, image_height);
     }
 
     return true;

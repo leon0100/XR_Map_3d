@@ -137,6 +137,7 @@ public:
 public:
     float currentViewMaxLoRng_ = 1.0f;
     int tempViewMaxLoRng_ = 3200.f;
+    QString fromLonStr_, fromLatiStr_, toLonStr_, toLatiStr_;
 
 protected:
     Canvas        canvas_;

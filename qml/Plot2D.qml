@@ -140,6 +140,7 @@ WaterFall {
             property int   panStartX: -1
             property bool  batchCorrect: core.batchCorrect
             property bool  depthCorrectMode: core.depthCorrect
+            property bool  deleteFrameMode: deleteFrame.checked
 
             hoverEnabled: true
 
@@ -303,6 +304,30 @@ WaterFall {
 
                 }
 
+                if (deleteFrameMode) {
+                    plot.updateDeleteFrameMousePos(mouse.x, mouse.y)
+                }
+
+            }
+
+            onDoubleClicked: function(mouse) {
+               if (deleteFrameMode && mouse.button === Qt.LeftButton) {
+                   var ok = plot.onDoubleClick(mouse.x, mouse.y)
+                   if (ok) {
+                       var startIdx = plot.getDeleteStartIdx()
+                       var endIdx   = plot.getDeleteEndIdx()
+                       if (startIdx >= 0) {
+                           fromValue.text     = startIdx
+                           fromLonValue.text  = plot.fromLonStr
+                           fromLatiValue.text = plot.fromLatiStr
+                       }
+                       if (endIdx >= 0) {
+                           toValue.text     = endIdx
+                           toLonValue.text  = plot.toLonStr
+                           toLatiValue.text = plot.toLatiStr
+                       }
+                   }
+               }
             }
 
             onWheel: function(wheel) {
@@ -586,18 +611,18 @@ WaterFall {
                         clip: true
 
                         property bool opened: false
-                        property int markIconSize: plotIconSize * 0.75
-                        property int dist0Time1: 0
-                        property int distInterval: 10
-                        property int timeInterval: 60
+                        property int  markIconSize: plotIconSize * 0.72
+                        property int  dist0Time1: 0
+                        property int  distInterval: 10
+                        property int  timeInterval: 60
                         property bool isFrameVisible:  true;
                         property bool isTimeVisible:   true;
-                        property bool  isDepthVisible: true;
+                        property bool isDepthVisible: true;
                         property bool isCoordinateVisible: true;
 
                         Behavior on height {
                             NumberAnimation {
-                                duration: 200
+                                duration: 250
                                 easing.type: Easing.OutCubic
                             }
                         }
@@ -609,7 +634,6 @@ WaterFall {
                             Rectangle {
                                 Layout.alignment: Qt.AlignLeft
                                 height: marksDrawer.markIconSize * 1.5
-                                color: "#3498db"
 
                                 Text {
                                     anchors.left: parent.left
@@ -621,7 +645,7 @@ WaterFall {
                             }
 
                             Rectangle {
-                                Layout.preferredWidth: plot.width * 0.23
+                                Layout.preferredWidth: plot.width * 0.24
                                 Layout.preferredHeight: marksDrawer.markIconSize * 5
                                 Layout.alignment: Qt.AlignHCenter
                                 Layout.topMargin: 4
@@ -835,7 +859,6 @@ WaterFall {
 
                             Rectangle {
                                 id: markInterval
-
                                 Layout.alignment: Qt.AlignLeft
                                 height: marksDrawer.markIconSize * 1.5
                                 color: "#3498db"
@@ -850,7 +873,7 @@ WaterFall {
                             }
 
                             Rectangle {
-                                Layout.preferredWidth: plot.width * 0.23
+                                Layout.preferredWidth: plot.width * 0.24
                                 Layout.preferredHeight: marksDrawer.markIconSize * 3
                                 Layout.alignment: Qt.AlignHCenter
                                 Layout.bottomMargin: 5
@@ -895,7 +918,7 @@ WaterFall {
                                         TextField {
                                             id: distanceValue
                                             text: "10"
-                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            font.pixelSize:         marksDrawer.markIconSize * 0.9
                                             Layout.preferredWidth:  marksDrawer.markIconSize * 3
                                             Layout.preferredHeight: marksDrawer.markIconSize * 1.2
                                             horizontalAlignment: TextInput.AlignHCenter
@@ -906,14 +929,15 @@ WaterFall {
 
                                         ComboBox {
                                             id: distanceUnitCombo
-                                            model:[ qsTr("m"), qsTr("km") ]
+                                            model:[qsTr("m"), qsTr("km")]
                                             currentIndex: 0
-                                            Layout.preferredWidth: marksDrawer.markIconSize * 2.5
+                                            Layout.preferredWidth:  marksDrawer.markIconSize * 2.8
                                             Layout.preferredHeight: marksDrawer.markIconSize * 1.2
-                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            font.pixelSize:         marksDrawer.markIconSize * 0.8
 
                                             contentItem: Text {
                                                 text: distanceUnitCombo.displayText
+                                                font.pixelSize: marksDrawer.markIconSize * 0.8
                                                 color: "#333333"
                                             }
 
@@ -930,7 +954,6 @@ WaterFall {
                                             }
                                         }
                                     }
-
 
                                     RowLayout {
                                         Layout.fillWidth:true
@@ -968,8 +991,8 @@ WaterFall {
 
                                         TextField {
                                             id: timeValue
-                                            text:"60"
-                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            text: "60"
+                                            font.pixelSize:         marksDrawer.markIconSize * 0.9
                                             Layout.preferredWidth:  marksDrawer.markIconSize * 2.8
                                             Layout.preferredHeight: marksDrawer.markIconSize * 1.2
                                             horizontalAlignment: TextInput.AlignHCenter
@@ -982,12 +1005,13 @@ WaterFall {
                                             id: timeUnitCombo
                                             model: [qsTr("Sec"), qsTr("Min")]
                                             currentIndex: 0
-                                            Layout.preferredWidth: marksDrawer.markIconSize * 2.5
+                                            Layout.preferredWidth:  marksDrawer.markIconSize * 2.8
                                             Layout.preferredHeight: marksDrawer.markIconSize * 1.2
-                                            font.pixelSize: marksDrawer.markIconSize * 0.9
+                                            font.pixelSize: marksDrawer.markIconSize * 0.8
 
                                             contentItem: Text {
                                                 text: timeUnitCombo.displayText
+                                                font.pixelSize: marksDrawer.markIconSize * 0.8
                                                 color: "#333333"
                                             }
 
@@ -1003,31 +1027,30 @@ WaterFall {
                                                 highlighted: timeUnitCombo.highlightedIndex === index
                                             }
                                         }
-
                                     }
 
                                 }
 
-                                }
+                            }
 
 
                             Button {
                                 text: qsTr("OK")
                                 font.pixelSize: marksDrawer.markIconSize;
-                                width: marksDrawer.markIconSize * 2
+                                width: marksDrawer.markIconSize * 2.5
                                 Layout.alignment: Qt.AlignHCenter
-                                onClicked:{
+                                onClicked: {
                                     marksDrawer.distInterval = parseInt(distanceValue.text)
                                     if (distanceUnitCombo.currentIndex === 1) marksDrawer.distInterval *= 1000  // km→m
                                     marksDrawer.timeInterval = parseInt(timeValue.text)
                                     if (timeUnitCombo.currentIndex === 1) marksDrawer.timeInterval *= 60  // min→sec
                                     plot.setMarkDistTimeVisible(addMarks.checked, marksDrawer.dist0Time1, marksDrawer.distInterval,
-                                             marksDrawer.timeInterval, marksDrawer.isFrameVisible,marksDrawer.isTimeVisible,
-                                             marksDrawer.isDepthVisible, marksDrawer.isCoordinateVisible )
+                                        marksDrawer.timeInterval, marksDrawer.isFrameVisible,marksDrawer.isTimeVisible,
+                                        marksDrawer.isDepthVisible, marksDrawer.isCoordinateVisible)
                                 }
                             }
 
-                            }
+                        }
 
                         function open() {
                             height = plotIconSize * 11
@@ -1068,15 +1091,251 @@ WaterFall {
                         }
                     }
 
+
+
+
+
+                    Rectangle {
+                        id: deleteFramePanel
+                        x: deleteFrame.x
+                        y: deleteFrame.y - height
+                        width: plot.width * 0.24
+                        height: 0
+                        color: "#dbe3f2"
+                        border.color: "#a8b3c5"
+                        border.width: 1
+                        radius: deleteIconSize * 0.2
+                        clip: true
+
+                        property bool opened: false
+                        property int  deleteIconSize: plotIconSize * 0.7
+
+                        Behavior on height {
+                            NumberAnimation {
+                                duration: 250
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            spacing: 2
+
+                            Rectangle {
+                                Layout.alignment: Qt.AlignLeft
+                                height: deleteFramePanel.deleteIconSize * 1.5
+
+                                Text {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 3
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: qsTr("Delete Frame")
+                                    font.pixelSize: deleteFramePanel.deleteIconSize
+                                }
+                            }
+
+
+                            Rectangle {
+                                id: content
+                                Layout.preferredWidth: plot.width * 0.24
+                                Layout.preferredHeight: deleteFramePanel.height * 0.8
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.bottomMargin: 5
+
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    spacing: 2
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: deleteFramePanel.deleteIconSize * 0.2
+
+                                        Text {
+                                            text: qsTr("From:")
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.25
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        Text {
+                                            text: qsTr("Frame")
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.25
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        TextField {
+                                            id: fromValue
+                                            text: "10"
+                                            font.pixelSize:         deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.4
+                                            Layout.preferredHeight: deleteFramePanel.deleteIconSize  * 1.2
+                                            horizontalAlignment: TextInput.AlignHCenter
+                                            topPadding: 0
+                                            bottomPadding: 0
+                                            selectByMouse: true
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: deleteFramePanel.deleteIconSize * 0.2
+
+                                        Text {
+                                            text: qsTr("Lon:")
+                                            color:"#9c9c9c"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.3
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        Text {
+                                            id: fromLonValue
+                                            text: "000.000000"
+                                            color:"#9c9c9c"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.5
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: deleteFramePanel.deleteIconSize * 0.2
+
+                                        Text {
+                                            text: qsTr("Lati:")
+                                            color:"#828282"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.3
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        Text {
+                                            id: fromLatiValue
+                                            text: "000.000000"
+                                            color:"#828282"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.5
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 1
+                                        Layout.topMargin: 5
+                                        Layout.bottomMargin: 5
+                                        color: "#555555"
+                                    }
+
+
+
+                                    RowLayout {
+                                        Layout.fillWidth:true
+                                        spacing: deleteFramePanel.deleteIconSize  * 0.2
+
+                                        Text {
+                                            text: qsTr("To:")
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.25
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        Text {
+                                            text: qsTr("Frame")
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.25
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        TextField {
+                                            id: toValue
+                                            text: "60"
+                                            font.pixelSize:         deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.4
+                                            Layout.preferredHeight: deleteFramePanel.deleteIconSize * 1.2
+                                            horizontalAlignment: TextInput.AlignHCenter
+                                            topPadding: 0
+                                            bottomPadding: 0
+                                            selectByMouse: true
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: deleteFramePanel.deleteIconSize * 0.2
+
+                                        Text {
+                                            text: qsTr("Lon:")
+                                            color: "#828282"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.3
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        Text {
+                                            id: toLonValue
+                                            text: "000.000000"
+                                            color: "#828282"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.5
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: deleteFramePanel.deleteIconSize * 0.2
+
+                                        Text {
+                                            text: qsTr("Lati:")
+                                            color: "#828282"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.3
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+
+                                        Text {
+                                            id: toLatiValue
+                                            text: "000.000000"
+                                            color:"#828282"
+                                            font.pixelSize: deleteFramePanel.deleteIconSize
+                                            Layout.preferredWidth: content.width * 0.5
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                        function open() {
+                            height = plotIconSize * 10
+                            opened = true
+                        }
+
+                        function close() {
+                            height = 0
+                            opened = false
+                        }
+                    }
+
                     CCheck {
                         id: deleteFrame
                         checked: false
                         text: qsTr("Delete Frame")
                         height: plotIconSize
                         onCheckedChanged: {
-                            currentFrameChecked = !currentFrameChecked
-                            if(!currentFrameChecked) {
-                                plot.plotMousePosition(-1, -1)
+                            if(deleteFrame.checked) {
+                                deleteFramePanel.open()
+                                plot.setDeleteFrameMode(true)
+                            }
+                            else {
+                                deleteFramePanel.close()
+                                plot.setDeleteFrameMode(false)
                             }
                         }
                     }

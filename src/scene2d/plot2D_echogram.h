@@ -76,6 +76,16 @@ public:
     void drawMarks(Plot2D* parent, int width, int height, int cash_position);
 
 
+    void setDeleteFrameMode(bool mode);
+    bool handleDeleteFrameDoubleClick(Plot2D* parent, Dataset* dataset, int mouseX, int mouseY, bool isHorizontal);
+    void updateDeleteFrameMousePos(int mouseX, int mouseY);
+    void drawDeleteFrameHint(int width, int height);
+    void clearDeleteFrame();
+    int getDeleteStartIdx() const;
+    int getDeleteEndIdx() const;
+
+
+
 
 protected:
     struct CashLine
@@ -176,4 +186,10 @@ private:
     int  distInterval_ = 10, timeInterval_ = 60;
     QSet<int> markDistList_, markTimeList_;
 
+    bool deleteFrameMode_ = false;
+    int deleteStartIdx_ = -1;
+    int deleteEndIdx_ = -1;
+    bool awaitingEnd_ = false;
+    int deleteFrameMouseX_ = -1;
+    int deleteFrameMouseY_ = -1;
 };

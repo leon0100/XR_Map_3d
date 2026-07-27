@@ -191,10 +191,43 @@ void qPlot2D::setDepthCorrect(bool depthCorrect)
 {
     echogram_.setDepthCorrect(depthCorrect);
 }
+
+QString qPlot2D::fromLonStr()
+{
+    return fromLonStr_;
+}
+void qPlot2D::setFromLonStr(QString fromLon)
+{
+    fromLonStr_ = fromLon;
+    emit fromToLonLatiChanged();
+}
+QString qPlot2D::fromLatiStr()
+{
+    return fromLatiStr_;
+}
+void qPlot2D::setFromLatiStr(QString fromLati)
+{
+    fromLatiStr_ = fromLati;
+}
+QString qPlot2D::toLonStr()
+{
+    return toLonStr_;
+}
+void qPlot2D::setToLonStr(QString toLon)
+{
+    toLonStr_ = toLon;
+}
+QString qPlot2D::toLatiStr()
+{
+    return toLatiStr_;
+}
+void qPlot2D::setToLatiStr(QString toLati)
+{
+    toLatiStr_ = toLati;
+}
+
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
-    qDebug() << "upper........" << upper << "  " << lower;
-
     currentUpRng_ = upper * 100;
     currentLoRng_ = lower * 100;
     setMinUpRng(currentUpRng_);
@@ -528,4 +561,40 @@ void qPlot2D::updater()
     m_needUpdate = true;
 }
 
+
+void qPlot2D::setDeleteFrameMode(bool mode)
+{
+    echogram_.setDeleteFrameMode(mode);
+    plotUpdate();
+}
+
+bool qPlot2D::onDoubleClick(int x, int y)
+{
+    if (dataset_ == nullptr) return false;
+    bool ok = echogram_.handleDeleteFrameDoubleClick(this, dataset_, x, y, _isHorizontal);
+    if (ok) plotUpdate();
+    return ok;
+}
+
+void qPlot2D::updateDeleteFrameMousePos(int x, int y)
+{
+    echogram_.updateDeleteFrameMousePos(x, y);
+    plotUpdate();
+}
+
+void qPlot2D::clearDeleteFrame()
+{
+    echogram_.clearDeleteFrame();
+    plotUpdate();
+}
+
+int qPlot2D::getDeleteStartIdx()
+{
+    return echogram_.getDeleteStartIdx();
+}
+
+int qPlot2D::getDeleteEndIdx()
+{
+    return echogram_.getDeleteEndIdx();
+}
 
