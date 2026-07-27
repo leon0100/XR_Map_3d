@@ -208,7 +208,7 @@ private:
 
     std::shared_ptr<BLEManager>  bleManager_;
     std::shared_ptr<UdpManager>  udpManager_;
-    std::shared_ptr<SerialPortManager> serialPortManager_;
+    std::shared_ptr<SerialPortMger> serialPortManager_;
     std::shared_ptr<Locations>   locations_;
 
     // data processor

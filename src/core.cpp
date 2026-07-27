@@ -1413,7 +1413,7 @@ void Core::createControllers()
 
     bleManager_                           = std::make_shared<BLEManager>();
     udpManager_                           = std::make_shared<UdpManager>();
-    serialPortManager_                    = std::make_shared<SerialPortManager>();
+    serialPortManager_                    = std::make_shared<SerialPortMger>();
     locations_                            = std::make_shared<Locations>();
 }
 

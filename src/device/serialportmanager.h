@@ -15,6 +15,16 @@
 #include "dataset_defs.h"
 
 
+
+class SerialPortMger : public QObject
+{
+    Q_OBJECT
+public:
+    explicit SerialPortMger(QObject *parent = nullptr);
+    ~SerialPortMger() override;
+    Q_INVOKABLE void toggleConnection(QString port, int baudRate);
+};
+
 class SerialPortManager : public QObject
 {
     Q_OBJECT

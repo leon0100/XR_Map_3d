@@ -4,6 +4,52 @@
 #include <QDebug>
 
 
+
+
+
+
+
+
+
+
+
+
+
+SerialPortMger::SerialPortMger(QObject *parent) : QObject(parent)
+{
+
+}
+
+
+void SerialPortMger::toggleConnection(QString port, int baudRate)
+{
+    // baudRate_ = baudRate;
+    qDebug() << "port: " << port << "   baudRate: " << baudRate;
+    // if(serialPort_->isOpen()) {
+    //     serialPort_->close();
+    //     m_speedTimer.stop();
+    //     emit connectionChanged(false);
+    // }
+    // else {
+    //     serialPort_->setPortName(port);
+    //     serialPort_->setBaudRate(baudRate);
+
+    //     if(serialPort_->open(QIODevice::ReadWrite)) {
+    //         emit connectionChanged(true);
+    //     } else {
+    //         emit dataReceived(tr("Failed to open port: %1").arg(serialPort_->errorString()));
+    //     }
+    // }
+}
+
+
+SerialPortMger::~SerialPortMger()
+{
+
+}
+
+
+/*-----------------------------------------------------------------------------*/
 SerialPortManager::SerialPortManager(QObject *parent) : QObject(parent)
 {
     serialPort_ = new QSerialPort(this);
