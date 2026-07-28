@@ -34,7 +34,6 @@ Item {
             }
         }
 
-
         RowLayout {
             Layout.fillWidth: true
             Layout.margins: 15

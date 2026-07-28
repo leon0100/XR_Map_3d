@@ -598,3 +598,10 @@ int qPlot2D::getDeleteEndIdx()
     return echogram_.getDeleteEndIdx();
 }
 
+bool qPlot2D::deleteSelectedFrames()
+{
+    if (dataset_ == nullptr) return false;
+    bool ok = echogram_.deleteFrames(this, dataset_);
+    if (ok) plotUpdate();
+    return ok;
+}

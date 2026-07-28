@@ -13,6 +13,7 @@
 #include "id_binnary.h"
 
 
+
 #define  TEMP_PATH  (qApp->applicationDirPath().append("/temp/").append(QString::number(qApp->applicationPid())))
 #define  PATH_PIX_LFREQ   (TEMP_PATH.append("/pixL"))
 
@@ -50,14 +51,13 @@ public:
 
 
 private:
-    QString getCurrentWifiName();
-    uint8_t crc8_poly7(const uint8_t *data, int len);
+    QString  getCurrentWifiName();
+    uint8_t  crc8_poly7(const uint8_t *data, int len);
     uint16_t crc16_modbus(const uint8_t *data, int len);
-    QByteArray buildXrmapActivePayload(uint16_t map_ver,  const QString &map_name,  uint32_t map_size,
-            uint16_t all_map_CRC16,
-            uint32_t all_map_CRC32,  uint16_t pkt_bytes, uint16_t MAP_PKT_NUM,  uint32_t unix_sec);
+    QByteArray buildXrmapActivePayload(uint16_t map_ver, const QString &map_name, uint32_t map_size,
+        uint16_t all_map_CRC16, uint32_t all_map_CRC32,  uint16_t pkt_bytes, uint16_t MAP_PKT_NUM,  uint32_t unix_sec);
     QByteArray buildTModemFrame_xrmap(uint8_t dev_addr, uint8_t sn, bool needAck,
-                                      uint8_t commandByte, const QByteArray &payload);
+                            uint8_t commandByte, const QByteArray &payload);
     void parseTModemFrame(const QByteArray& rawData);
     void parseTsl3FromTModem();
     double dm_to_dd(double ddmmmmmmm);

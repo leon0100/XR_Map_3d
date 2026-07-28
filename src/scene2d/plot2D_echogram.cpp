@@ -183,7 +183,7 @@ void Plot2DEchogram::setSensitivity(int sensitive)
 }
 
 
-double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,double MeasureNoise_R,double InitialPrediction,int isFirst)
+double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,double MeasureNoise_R,double InitialPredict,int isFirst)
 {
     static double x_last = ResrcData;
     if(-1 == isFirst)
@@ -192,10 +192,10 @@ double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,doubl
     }
     double x_mid = x_last;
     double x_now;
-    static double p_last = InitialPrediction;
+    static double p_last = InitialPredict;
     if(-1 == isFirst)
     {
-        p_last = InitialPrediction;
+        p_last = InitialPredict;
     }
     double p_mid;
     double p_now;
@@ -1135,14 +1135,18 @@ void Plot2DEchogram::clearBatchCorrect()
     batchCorrectList_.clear();
 }
 
-
 void Plot2DEchogram::setDeleteFrameMode(bool mode)
 {
     deleteFrameMode_ = mode;
-    if (!mode) {
+    if (mode) {
+        if(dataset_ && dataset_->size() != 0) {
+            deleteHint_ = 1;
+        }
+    }
+    else {
+        deleteHint_ = 0;
         deleteStartIdx_ = -1;
-        deleteEndIdx_ = -1;
-        awaitingEnd_ = false;
+        deleteEndIdx_   = -1;
         deleteFrameMouseX_ = -1;
         deleteFrameMouseY_ = -1;
     }
@@ -1150,9 +1154,11 @@ void Plot2DEchogram::setDeleteFrameMode(bool mode)
 
 void Plot2DEchogram::clearDeleteFrame()
 {
+    deleteHint_ = 1;
     deleteStartIdx_ = -1;
-    deleteEndIdx_ = -1;
-    awaitingEnd_ = false;
+    deleteEndIdx_   = -1;
+    deleteFrameMouseX_ = -1;
+    deleteFrameMouseY_ = -1;
 }
 
 int Plot2DEchogram::getDeleteStartIdx() const
@@ -1216,6 +1222,17 @@ int Plot2DEchogram::getDeleteEndIdx() const
     return deleteEndIdx_;
 }
 
+bool Plot2DEchogram::deleteFrames(Plot2D* parent, Dataset* dataset)
+{
+    if(parent == nullptr || dataset == nullptr) return false;
+    if((deleteStartIdx_ < 0) || (deleteEndIdx_ < 0)) return false;
+    if((deleteStartIdx_ >= dataset->size()) || (deleteEndIdx_ >= dataset->size())) return false;
+    dataset->removeFrames(deleteStartIdx_, deleteEndIdx_);
+    clearDeleteFrame();
+    resetCash();
+    return true;
+}
+
 void Plot2DEchogram::updateDeleteFrameMousePos(int mouseX, int mouseY)
 {
     deleteFrameMouseX_ = mouseX;
@@ -1233,48 +1250,52 @@ bool Plot2DEchogram::handleDeleteFrameDoubleClick(Plot2D* parent, Dataset* datas
         return false;
     }
 
-    if (!awaitingEnd_) {
+    if (deleteHint_ == 1) {
         deleteStartIdx_ = epochIdx;
-        awaitingEnd_ = true;
-    } else {
+    }
+    else if(deleteHint_ == 2) {
         deleteEndIdx_ = epochIdx;
         if (deleteEndIdx_ < deleteStartIdx_) {
             std::swap(deleteStartIdx_, deleteEndIdx_);
         }
-        awaitingEnd_ = false;
     }
     return true;
 }
 
 void Plot2DEchogram::drawDeleteFrameHint(int width, int height)
 {
-    if (!deleteFrameMode_ ||  plot2d_ == nullptr) return;
+    if (!deleteFrameMode_ ||  plot2d_ == nullptr || deleteHint_ == 0) return;
     auto& canvas = plot2d_->canvas();
     QPainter* p  = canvas.painter();
     if (p == nullptr) return;
 
-    QString text = awaitingEnd_ ? QObject::tr("select end frame") : QObject::tr("select start frame");
-
     QFont font = p->font();
-    font.setPixelSize(qMax(9, height / 50));
-    font.setBold(true);
+    font.setPixelSize(qMax(9, height / 60));
     p->setFont(font);
-
     QFontMetrics fm(font);
+    QString text;
+    if (deleteHint_ == 1) {
+        text = QObject::tr("select start frame");
+    }
+    else if(deleteHint_ == 2) {
+        text = QObject::tr("select end frame");
+    }
     QRect textRect = fm.boundingRect(text);
 
     int mx = deleteFrameMouseX_;
     int my = deleteFrameMouseY_;
     if (mx < 0 || my < 0) {
-        mx = width / 2;
-        my = height / 2;
+        mx = width  * 0.5;
+        my = height * 0.5;
     }
-
-    int textX = mx + 15;
+    int textX = mx + 10;
     int textY = my - textRect.height() - 5;
-    if (textX + textRect.width() > width) textX = mx - textRect.width() - 15;
-    if (textY < 0) textY = my + 15;
-
+    if (textX + textRect.width() > width) {
+        textX = mx - textRect.width() - 10;
+    }
+    if (textY < 0) {
+        textY = my + 10;
+    }
     p->fillRect(textX - 4, textY - 2, textRect.width() + 8, textRect.height() + 4, QColor(0, 0, 0, 180));
     p->drawText(textX, textY + fm.ascent(), text);
 
@@ -1283,18 +1304,20 @@ void Plot2DEchogram::drawDeleteFrameHint(int width, int height)
     spen.setStyle(Qt::DashLine);
     p->setPen(spen);
 
+    DatasetCursor& cursor = plot2d_->cursor();
     if (deleteStartIdx_ >= 0) {
-        DatasetCursor& cursor = plot2d_->cursor();
         for (int col = 0; col < (int)cursor.indexes.size(); col++) {
             if (cursor.indexes[col] == deleteStartIdx_) {
                 p->drawLine(col, 0, col, height);
+                if (deleteHint_ == 1) {
+                    deleteHint_ = 2;
+                }
                 break;
             }
         }
     }
 
     if (deleteEndIdx_ >= 0) {
-        DatasetCursor& cursor = plot2d_->cursor();
         for (int col = 0; col < (int)cursor.indexes.size(); col++) {
             if (cursor.indexes[col] == deleteEndIdx_) {
                 p->drawLine(col, 0, col, height);
@@ -1302,6 +1325,7 @@ void Plot2DEchogram::drawDeleteFrameHint(int width, int height)
             }
         }
     }
+
 }
 
 void Plot2DEchogram::setUpdateBatchCorrect(bool updateBatchCorrect)

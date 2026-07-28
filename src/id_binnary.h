@@ -9,7 +9,6 @@
 #include "dataset_defs.h"
 #include "proto_binnary.h"
 
-
 using namespace Parsers;
 using Segment = QPair<uint16_t, uint16_t>; // first - begin, second - end
 

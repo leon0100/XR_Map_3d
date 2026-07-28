@@ -9,31 +9,26 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QTimer>
-
-
+#include <QtEndian>
+#include <QHostAddress>
 
 #include "dataset_defs.h"
 
+#include "tmodem.h"
+#include "tsl3.h"
+#include "id_binnary.h"
 
 
-class SerialPortMger : public QObject
-{
-    Q_OBJECT
-public:
-    explicit SerialPortMger(QObject *parent = nullptr);
-    ~SerialPortMger() override;
-    Q_INVOKABLE void toggleConnection(QString port, int baudRate);
-};
+
+#define  TEMP_PATH_SERIAL       (qApp->applicationDirPath().append("/temp/").append(QString::number(qApp->applicationPid())))
+#define  PATH_PIX_LFREQ_SERIAL  (TEMP_PATH_SERIAL.append("/pixL"))
 
 class SerialPortManager : public QObject
 {
     Q_OBJECT
 public:
-    Q_PROPERTY(QStringList availablePorts READ availablePorts NOTIFY portsUpdated)
-    Q_PROPERTY(double receiveSpeed READ receiveSpeed   NOTIFY statsUpdated)
-    Q_PROPERTY(int receivedFrames READ receivedFrames NOTIFY statsUpdated)
-    Q_PROPERTY(bool connected READ isConnected NOTIFY connectionChanged)
-    Q_PROPERTY(QString saveFilePath READ saveFilePath WRITE setSaveFilePath NOTIFY savePathToQML)
+    Q_PROPERTY(QStringList availablePorts READ availablePorts                       NOTIFY portsUpdated)
+    Q_PROPERTY(bool    connected          READ isConnected                          NOTIFY connectChanged)
 
 
 public:
@@ -44,19 +39,10 @@ public:
 
     Q_INVOKABLE void scanPorts();
     Q_INVOKABLE void toggleConnection(QString port, int baudRate);
-    Q_INVOKABLE void toggleConnection2(int baudRate);
-    Q_INVOKABLE void saveSerialPortData();
-    Q_INVOKABLE void openSerialPortFile();
 
-    int receivedBytes();
-    double receiveSpeed();
-    int receivedFrames();
+    int  receivedBytes();
     bool isConnected();
 
-    QString saveFilePath();
-    void setSaveFilePath(const QString &path);
-
-    static double parseNMEACoordinate(const QString &coord, const QString &direction);
     static char calculateChecksum(const QByteArray &data);
     static bool verifyChecksum(const QByteArray &nmeaSentence);
 
@@ -64,25 +50,31 @@ public:
 
 signals:
     void portsUpdated();
-    void statsUpdated();
-    void connectionChanged(bool connected);
-
+    void connectChanged(bool connected);
     void dataReceived(QString data);
 
-    void savePathToQML();  // 这个信号其实用不到
-    void signal_realTimeTrackData(QString data);
-    void signal_clearCacheData();
-
-
-
-public slots:
-    // 写入数据到串口
-    void writeData(const QString &data);
 
 private slots:
-    void handleReadyRead();  // 处理串口数据接收
+    void handleReadyRead();
+    void onHeartbeatTimeout();
 
-    void updateSpeedStats();  // 更新接收速度统计
+private:
+    void disConnectUdp();
+    void clearRealData();
+
+    QString getCurrentWifiName();
+    uint8_t crc8_poly7(const uint8_t *data, int len);
+    uint16_t crc16_modbus(const uint8_t *data, int len);
+    QByteArray buildXrmapActivePayload(uint16_t map_ver,  const QString &map_name,  uint32_t map_size,
+                                       uint16_t all_map_CRC16,
+                                       uint32_t all_map_CRC32,  uint16_t pkt_bytes, uint16_t MAP_PKT_NUM,  uint32_t unix_sec);
+    QByteArray buildTModemFrame_xrmap(uint8_t dev_addr, uint8_t sn, bool needAck,
+                                      uint8_t commandByte, const QByteArray &payload);
+    void parseTModemFrame(const QByteArray& rawData);
+    void parseTsl3FromTModem();
+    double dm_to_dd(double ddmmmmmmm);
+    QByteArray decompressTsl3(const QByteArray &compressed);
+
 
 private:
     int baudRate_ = 230400;
@@ -97,13 +89,40 @@ private:
     qint64 m_lastUpdateTime = 0;
     int m_bytesSinceLastUpdate = 0;
 
-    QTimer m_speedTimer;
 
-    QString saveFilePath_;
     QByteArray readAllBuffer_;
-    // QVector<GPSDepthData> gpsDepthDataVec_;
-    // GPSDepthData currValidGPS;
-    bool hasGPSData_ = false;  //标记是否已经获取到GPS数据
+    bool hasGPSData_ = false;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    QTimer* m_heartbeatTimer = nullptr;
+    int m_heartbeatCnt = 0;
+    int tmodemSn_ = 0;
+
+
+
+  QByteArray m_tsl3Buffer;
+  int nowIndex_  = 0;
+  int tslIndex_ = 0;
+  QVector<float> depthHistory_;
+  double minDepth_ = 0.0, maxDepth_ = 0.0;
+  bool readingDrawTrack_ = true;
+  typSnrCtrl fileInfo_snrCtrl;
+  QString constructionTime_;
+
 
 };
 

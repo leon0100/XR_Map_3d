@@ -270,7 +270,7 @@ WaterFall {
                         if (isPanning) {
                             if (delta !== 0) {
                                 plot.horScrollEvent(delta)
-                                updateOtherPlot(indx)      //同步另一个声呐视图
+                                updateOtherPlot(indx)
                             }
                         }
                     }
@@ -290,7 +290,7 @@ WaterFall {
                         else {
                             if (delta !== 0) {
                                 plot.horScrollEvent(delta)
-                                updateOtherPlot(indx)    //同步另一个声呐视图
+                                updateOtherPlot(indx)
                             }
                         }
                     }
@@ -641,6 +641,7 @@ WaterFall {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Marks Format")
                                     font.pixelSize: marksDrawer.markIconSize
+                                    font.bold: true
                                 }
                             }
 
@@ -653,7 +654,7 @@ WaterFall {
 
                                 border.color: "#7f8fa6"
                                 border.width: 1
-                                radius: markIconSize * 0.2
+                                radius: marksDrawer.markIconSize * 0.2
 
                                 ColumnLayout {
                                     anchors.fill: parent
@@ -869,6 +870,7 @@ WaterFall {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Marks Interval")
                                     font.pixelSize: marksDrawer.markIconSize
+                                    font.bold: true
                                 }
                             }
 
@@ -1033,12 +1035,13 @@ WaterFall {
 
                             }
 
-
                             Button {
                                 text: qsTr("OK")
-                                font.pixelSize: marksDrawer.markIconSize;
-                                width: marksDrawer.markIconSize * 2.5
+                                font.pixelSize: marksDrawer.markIconSize
+                                Layout.preferredWidth:  marksDrawer.markIconSize * 3.6
+                                Layout.preferredHeight: marksDrawer.markIconSize * 1.5
                                 Layout.alignment: Qt.AlignHCenter
+                                palette.button: "#b9c6db"
                                 onClicked: {
                                     marksDrawer.distInterval = parseInt(distanceValue.text)
                                     if (distanceUnitCombo.currentIndex === 1) marksDrawer.distInterval *= 1000  // km→m
@@ -1065,9 +1068,6 @@ WaterFall {
 
 
 
-
-
-
                     ExpandCheckBox {
                         id: addMarks
                         text: qsTr("Add Marks")
@@ -1090,9 +1090,6 @@ WaterFall {
                                      marksDrawer.isDepthVisible, marksDrawer.isCoordinateVisible )
                         }
                     }
-
-
-
 
 
                     Rectangle {
@@ -1130,6 +1127,7 @@ WaterFall {
                                     anchors.leftMargin: 3
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: qsTr("Delete Frame")
+                                    font.bold: true
                                     font.pixelSize: deleteFramePanel.deleteIconSize
                                 }
                             }
@@ -1141,6 +1139,9 @@ WaterFall {
                                 Layout.preferredHeight: deleteFramePanel.height * 0.8
                                 Layout.alignment: Qt.AlignHCenter
                                 Layout.bottomMargin: 5
+                                Layout.leftMargin: 4
+                                Layout.rightMargin: 4
+                                color: "#dbe3f2"
 
                                 ColumnLayout {
                                     anchors.fill: parent
@@ -1169,9 +1170,9 @@ WaterFall {
                                             text: "10"
                                             font.pixelSize:         deleteFramePanel.deleteIconSize
                                             Layout.preferredWidth: content.width * 0.4
-                                            Layout.preferredHeight: deleteFramePanel.deleteIconSize  * 1.2
+                                            Layout.preferredHeight: deleteFramePanel.deleteIconSize  * 1.25
                                             horizontalAlignment: TextInput.AlignHCenter
-                                            topPadding: 0
+                                            topPadding: 1
                                             bottomPadding: 0
                                             selectByMouse: true
                                         }
@@ -1229,8 +1230,6 @@ WaterFall {
                                         color: "#555555"
                                     }
 
-
-
                                     RowLayout {
                                         Layout.fillWidth:true
                                         spacing: deleteFramePanel.deleteIconSize  * 0.2
@@ -1254,9 +1253,9 @@ WaterFall {
                                             text: "60"
                                             font.pixelSize:         deleteFramePanel.deleteIconSize
                                             Layout.preferredWidth: content.width * 0.4
-                                            Layout.preferredHeight: deleteFramePanel.deleteIconSize * 1.2
+                                            Layout.preferredHeight: deleteFramePanel.deleteIconSize * 1.25
                                             horizontalAlignment: TextInput.AlignHCenter
-                                            topPadding: 0
+                                            topPadding: 1
                                             bottomPadding: 0
                                             selectByMouse: true
                                         }
@@ -1310,10 +1309,49 @@ WaterFall {
 
                             }
 
+
+                            RowLayout {
+                                spacing: marksDrawer.markIconSize
+                                Layout.alignment: Qt.AlignHCenter
+
+                                Button {
+                                    text: qsTr("OK")
+                                    font.pixelSize: marksDrawer.markIconSize * 0.85
+                                    Layout.preferredWidth:  marksDrawer.markIconSize * 3.6
+                                    Layout.preferredHeight: marksDrawer.markIconSize * 1.2
+                                    palette.button: "#b9c6db"
+                                    onClicked: {
+                                        var ok = plot.deleteSelectedFrames()
+                                        if(ok) {
+                                            fromValue.text = "0"
+                                            toValue.text = "0"
+                                            fromLonValue.text = "000.000000"
+                                            fromLatiValue.text = "000.000000"
+                                            toLonValue.text = "000.000000"
+                                            toLatiValue.text = "000.000000"
+                                            plot.clearDeleteFrame()
+                                        }
+
+                                    }
+                                }
+
+                                Button {
+                                    text: qsTr("Cancel")
+                                    font.pixelSize: marksDrawer.markIconSize * 0.85
+                                    Layout.preferredWidth:  marksDrawer.markIconSize * 3.6
+                                    Layout.preferredHeight: marksDrawer.markIconSize * 1.2
+                                    palette.button: "#b9c6db"
+                                    onClicked: {
+                                        plot.clearDeleteFrame()
+                                    }
+                                }
+
+                            }
+
                         }
 
                         function open() {
-                            height = plotIconSize * 10
+                            height = plotIconSize * 11
                             opened = true
                         }
 
@@ -1342,17 +1380,7 @@ WaterFall {
 
                 }
 
-                // CCheck {
-                //     id: horisontalVertical
-                //     checked: true
-                //     text: qsTr("Horizontal")
-                // }
-
             }
-
-
-
-
 
 
 

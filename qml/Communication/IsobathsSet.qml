@@ -972,6 +972,7 @@ Item {
                 Text {
                     text: qsTr("Parameter:")
                     font.pixelSize: iconSize
+                    font.bold: true
                     verticalAlignment: Text.AlignVCenter
                     // width: 200 //布局中，width不起效果xxx
                     // implicitWidth: 200  //Text在布局中implicitWidth仅读不能赋值xxx
@@ -1081,24 +1082,20 @@ Item {
                     font.pixelSize: iconSize
                     rightPadding: 0
                     checked: false
-                    onCheckedChanged: {
-                        core.setDepthFilterVisible(checked, depthFilterXRSlider.value)
-                    }
+                    onCheckedChanged: core.setDepthFilterVisible(checked, depthFilterXRSlider.value)
                 }
                 XRSlider {
                     id: depthFilterXRSlider
                     title: qsTr("Depth Filter")
-                    Layout.preferredWidth: plotIconSize * 6
+                    Layout.preferredWidth: iconSize * 6
                     Layout.alignment: Qt.AlignVCenter
                     fontSize: iconSize
-                    spacing: iconSize * 0.3
+                    spacing:  iconSize * 0.3
                     sliderLen: iconSize * 5
-
                     from: 1
                     to: 4
                     value: 1
                     onValueChanged: {
-                        console.log("深度滤波:")
                         core.setDepthFilterVisible(depthFilterCheck.checked, depthFilterXRSlider.value)
                     }
                 }
@@ -1110,13 +1107,13 @@ Item {
                 }
 
                 XRSlider {
-                    title: "Outline Correct"
-                    Layout.preferredWidth: plotIconSize * 6
+                    // title: "Outline Correct"
+                    title: qsTr("Keel Offset")
+                    Layout.preferredWidth: iconSize * 6
                     Layout.alignment: Qt.AlignVCenter
                     fontSize: iconSize
                     spacing: iconSize * 0.1
                     sliderLen: iconSize * 5
-
                     from: 1
                     to: 4
                     value: 1
@@ -1139,11 +1136,12 @@ Item {
 
                 CheckBox {
                     id: attitudeCorrectCheck
-                    text: qsTr("Attitude Correct")
+                    text: qsTr("Attitude Correction")
                     font.pixelSize: iconSize
                     checked: false
+                    enabled: false
+                    opacity: 0.7
                     onCheckedChanged: {
-                        console.log("Attitude Correct......", checked)
                         // attitudeCorrectionEnable = checked
                     }
                 }
@@ -1164,52 +1162,27 @@ Item {
                     }
                 }
 
-                Rectangle {
-                    Layout.fillHeight: true
-                    Layout.preferredWidth: 2
-                    color: "#888888"
-                }
+                // Rectangle {
+                //     Layout.fillHeight: true
+                //     Layout.preferredWidth: 2
+                //     color: "#888888"
+                // }
 
-                CheckBox {
-                    id: depthCorrectionCheck
-                    text: qsTr("Depth Correct")
-                    font.pixelSize: iconSize
-                    checked: false
-                    onCheckedChanged: {
-                        core.depthCorrect = checked
-                    }
-                }
-
+                // CheckBox {
+                //     id: depthCorrectionCheck
+                //     text: qsTr("Depth Correct")
+                //     font.pixelSize: iconSize
+                //     checked: false
+                //     onCheckedChanged: {
+                //         core.depthCorrect = checked
+                //     }
+                // }
 
             }
 
-
-
         }
 
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

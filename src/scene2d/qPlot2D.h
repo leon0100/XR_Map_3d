@@ -190,6 +190,7 @@ public slots:
     Q_INVOKABLE void clearDeleteFrame();
     Q_INVOKABLE int  getDeleteStartIdx();
     Q_INVOKABLE int  getDeleteEndIdx();
+    Q_INVOKABLE bool deleteSelectedFrames();
 
 private:
     int indx_ = -1;

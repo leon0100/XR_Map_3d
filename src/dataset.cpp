@@ -711,6 +711,25 @@ void Dataset::clearBoundary()
     autoBoundary_.clear();
 }
 
+void Dataset::removeFrames(int startIndex, int endIndex)
+{
+    if(startIndex > endIndex) {
+        std::swap(startIndex, endIndex);
+    }
+    const int sz = pool_.size();
+    if(startIndex < 0) {
+        startIndex = 0;
+    }
+    if(endIndex >= sz) {
+        endIndex = sz - 1;
+    }
+    if((startIndex > endIndex) ||(startIndex >= sz)) {
+        return;
+    }
+    QWriteLocker wl(&poolMtx_);
+    pool_.remove(startIndex, endIndex-startIndex+1);
+}
+
 void Dataset::resetDistProcessing() {
 //     int pool_size = size();
 //     for(int i = 0; i < pool_size; i++) {

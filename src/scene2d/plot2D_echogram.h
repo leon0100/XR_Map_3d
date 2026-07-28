@@ -83,6 +83,7 @@ public:
     void clearDeleteFrame();
     int getDeleteStartIdx() const;
     int getDeleteEndIdx() const;
+    bool deleteFrames(Plot2D* parent, Dataset* dataset);
 
 
 
@@ -152,9 +153,8 @@ private:
     void drawLatestWavePixel(Plot2D* parent, int panelX, int panelY, int height);
     void drawBottomLine(Canvas canvas, int width, int cash_position, bool isVisible);
 
-    double KalmanFilter(double ResrcData, double ProcessNiose_Q, double MeasureNoise_R, double InitialPrediction, int isFirst);
+    double KalmanFilter(double ResrcData, double ProcessNiose_Q, double MeasureNoise_R, double InitialPredict, int isFirst);
     void drawDepthFilter(Canvas canvas, int width, int cash_position, bool isVisible);
-
 
 private:
     ThemeId themeId_;
@@ -189,7 +189,7 @@ private:
     bool deleteFrameMode_ = false;
     int deleteStartIdx_ = -1;
     int deleteEndIdx_ = -1;
-    bool awaitingEnd_ = false;
+    quint8 deleteHint_ = 0;  //0:隐藏提示;  1:start;  2: end;
     int deleteFrameMouseX_ = -1;
     int deleteFrameMouseY_ = -1;
 };

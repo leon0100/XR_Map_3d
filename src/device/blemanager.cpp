@@ -544,7 +544,6 @@ void BLEManager::disconnectDevice()
 
 void BLEManager::operateBleOnOff(bool isOn)
 {
-    qDebug() << "2323232336666";
     if(isOn) {
         GIF->dialogInfo(Dialog_OK, tr("Please Click the Device Name in the List below to Establish Connection."));
     }

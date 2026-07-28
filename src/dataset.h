@@ -67,6 +67,8 @@ public:
         return pool_;
     }
 
+    void removeFrames(int startIndex, int endIndex);
+
     QVector<Epoch>& getPolygonOutline() {
         return polygonOutline_;
     }
