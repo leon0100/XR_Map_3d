@@ -192,4 +192,6 @@ private:
     quint8 deleteHint_ = 0;  //0:隐藏提示;  1:start;  2: end;
     int deleteFrameMouseX_ = -1;
     int deleteFrameMouseY_ = -1;
+
+    int dbgCnt = 0;
 };

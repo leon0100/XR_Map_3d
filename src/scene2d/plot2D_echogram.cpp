@@ -908,7 +908,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 int startIdx = pingSize * currentUpRng_ / loRng;
                 int btStartNow = btStart;
                 btStartNow -= startIdx;
-                // qDebug() << "btStart:" << btStart << "   btStartNow:" << btStartNow << "   nowScaleY:" << nowScaleY;
+                qDebug() << "btStart:" << btStart << "   btStartNow:" << btStartNow << "   nowScaleY:" << nowScaleY;
                 int btStartFilter = btStart_filter;
                 btStartFilter -= startIdx;
                 QList<int> colorData;

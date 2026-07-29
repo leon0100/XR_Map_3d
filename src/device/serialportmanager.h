@@ -40,7 +40,6 @@ public:
     Q_INVOKABLE void scanPorts();
     Q_INVOKABLE void toggleConnection(QString port, int baudRate);
 
-    int  receivedBytes();
     bool isConnected();
 
     static char calculateChecksum(const QByteArray &data);
@@ -52,6 +51,11 @@ signals:
     void portsUpdated();
     void connectChanged(bool connected);
     void dataReceived(QString data);
+
+    void positionComplete(double lat, double lon, double depth, bool isRead);
+    void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ, bool isRead);
+    void chartComplete(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
+
 
 
 private slots:
@@ -65,65 +69,37 @@ private:
     QString getCurrentWifiName();
     uint8_t crc8_poly7(const uint8_t *data, int len);
     uint16_t crc16_modbus(const uint8_t *data, int len);
-    QByteArray buildXrmapActivePayload(uint16_t map_ver,  const QString &map_name,  uint32_t map_size,
-                                       uint16_t all_map_CRC16,
-                                       uint32_t all_map_CRC32,  uint16_t pkt_bytes, uint16_t MAP_PKT_NUM,  uint32_t unix_sec);
+    QByteArray buildXrmapActivePayload(uint16_t map_ver, const QString &map_name, uint32_t map_size,
+            uint16_t all_map_CRC16, uint32_t all_map_CRC32,  uint16_t pkt_bytes, uint16_t MAP_PKT_NUM,  uint32_t unix_sec);
     QByteArray buildTModemFrame_xrmap(uint8_t dev_addr, uint8_t sn, bool needAck,
-                                      uint8_t commandByte, const QByteArray &payload);
-    void parseTModemFrame(const QByteArray& rawData);
+                         uint8_t commandByte, const QByteArray &payload);
+    void parseTModemFrame(QByteArray& rawData);
     void parseTsl3FromTModem();
     double dm_to_dd(double ddmmmmmmm);
     QByteArray decompressTsl3(const QByteArray &compressed);
 
 
 private:
-    int baudRate_ = 230400;
+    int baudRate_ = 19200;
 
     QSerialPort *serialPort_;
     QStringList m_availablePorts;
-
-    // 数据统计
-    int m_receivedBytes = 0;
-    int m_receivedFrames = 0;
-    double m_receiveSpeed = 0.0;
-    qint64 m_lastUpdateTime = 0;
-    int m_bytesSinceLastUpdate = 0;
-
-
     QByteArray readAllBuffer_;
     bool hasGPSData_ = false;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     QTimer* m_heartbeatTimer = nullptr;
     int m_heartbeatCnt = 0;
     int tmodemSn_ = 0;
 
-
-
-  QByteArray m_tsl3Buffer;
-  int nowIndex_  = 0;
-  int tslIndex_ = 0;
-  QVector<float> depthHistory_;
-  double minDepth_ = 0.0, maxDepth_ = 0.0;
-  bool readingDrawTrack_ = true;
-  typSnrCtrl fileInfo_snrCtrl;
-  QString constructionTime_;
-
-
+    QByteArray m_tsl3Buffer;
+    int nowIndex_  = 0;
+    int tslIndex_ = 0;
+    QVector<float> depthHistory_;
+    double minDepth_ = 0.0, maxDepth_ = 0.0;
+    bool readingDrawTrack_ = true;
+    typSnrCtrl fileInfo_snrCtrl;
+    QString constructionTime_;
+    ChannelId batchChannelId_{QUuid(), 0};
 };
 
 

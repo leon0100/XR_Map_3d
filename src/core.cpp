@@ -911,12 +911,10 @@ void Core::onChannelsUpdated()
     // qDebug() << "Core::onChannelsUpdated()...................";
     auto chs = datasetPtr_->channelsList();
     int chSize = chs.size();
-
     if (!chSize) {
         fChName_.clear();
         sChName_.clear();
         emit channelListUpdated();
-
         return;
     }
 
@@ -925,11 +923,25 @@ void Core::onChannelsUpdated()
 
     if (openedfilePath_.isEmpty()) {
         auto linkNames = getLinkNames();
-        if (chSize > 0 && linkNames.contains(chs[0].channelId_.uuid)) {
-            fChName = chs[0].portName_;
+        // if (chSize > 0 && linkNames.contains(chs[0].channelId_.uuid)) {
+        //     fChName = chs[0].portName_;
+        // }
+        // if (chSize > 1 && linkNames.contains(chs[1].channelId_.uuid)) {
+        //     sChName = chs[1].portName_;
+        // }
+        if (chSize > 0) {
+            if (linkNames.contains(chs[0].channelId_.uuid)) {
+                fChName = chs[0].portName_;
+            } else if (!chs[0].portName_.isEmpty()) {
+                fChName = chs[0].portName_;
+            }
         }
-        if (chSize > 1 && linkNames.contains(chs[1].channelId_.uuid)) {
-            sChName = chs[1].portName_;
+        if (chSize > 1) {
+            if (linkNames.contains(chs[1].channelId_.uuid)) {
+                sChName = chs[1].portName_;
+            } else if (!chs[1].portName_.isEmpty()) {
+                sChName = chs[1].portName_;
+            }
         }
     }
     else {
@@ -941,8 +953,17 @@ void Core::onChannelsUpdated()
         }
     }
 
-    if (fChName.isEmpty() && sChName.isEmpty()) {
+    // if (fChName.isEmpty() && sChName.isEmpty()) {
+    //     return;
+    // }
+    if (fChName.isEmpty() && sChName.isEmpty() && chSize > 0 && chs[0].portName_.isEmpty()) {
         return;
+    }
+    if (fChName.isEmpty() && chSize > 0) {
+        fChName = chs[0].portName_;
+    }
+    if (sChName.isEmpty() && chSize > 1) {
+        sChName = chs[1].portName_;
     }
 
     const int numPlots = plot2dList_.size();
@@ -1434,23 +1455,27 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete, datasetPtr_,&Dataset::addPosition,           directionConnection);
     QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,                        directionConnection);
     QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,                        directionConnection);
+    QObject::connect(serialPortManager_.get(), &SerialPortManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,          directionConnection);
+    QObject::connect(serialPortManager_.get(), &SerialPortManager::chartComplete,    datasetPtr_, &Dataset::addChart,                      directionConnection);
 
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file,     directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionCompleteRTK,  datasetPtr_, &Dataset::addPositionRTK,  directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::depthComplete, datasetPtr_, &Dataset::addDepth,        directionConnection);
 
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::gnssVelocityComplete, datasetPtr_, &Dataset::addGnssVelocity, directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::attitudeComplete, datasetPtr_, &Dataset::addAtt,          directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::tempComplete, datasetPtr_, &Dataset::addTemp,         directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileOpened, this, &Core::onFileOpened,       directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::encoderComplete, datasetPtr_, &Dataset::addEncoder,      directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening, this,  &Core::onFileStopsOpening, directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening2, this, &Core::onFileStopsOpening2, directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file, directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionCompleteRTK,  datasetPtr_, &Dataset::addPositionRTK,    directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::depthComplete, datasetPtr_, &Dataset::addDepth,                 directionConnection);
 
-    QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourBle, directionConnection);
-    QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi, directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::gnssVelocityComplete, datasetPtr_, &Dataset::addGnssVelocity,   directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::attitudeComplete, datasetPtr_, &Dataset::addAtt,                directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::tempComplete, datasetPtr_, &Dataset::addTemp,                   directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileOpened, this, &Core::onFileOpened,                          directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::encoderComplete, datasetPtr_, &Dataset::addEncoder,             directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening, this,  &Core::onFileStopsOpening,             directionConnection);
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening2, this, &Core::onFileStopsOpening2,            directionConnection);
 
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame,      directionConnection);
+    QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourBle,                  directionConnection);
+    QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi,                 directionConnection);
+    QObject::connect(serialPortManager_.get(), &SerialPortManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi,   directionConnection);
+
+    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame,           directionConnection);
 }
 
 void Core::createLinkManagerConnections()

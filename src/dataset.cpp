@@ -965,6 +965,7 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
         QWriteLocker locker(&lock_);
 
         if (channelsSetup_.empty()) {
+            qDebug() << "11111111111111111111";
             firstChannelId_ = DatasetChannel(channelId, subChannelId);
         }
 
@@ -990,9 +991,11 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
             auto links = corePtr->getLinkNames();
 
             if (links.contains(channelId.uuid)) {
+                qDebug() << "222222222222222222";
                 newDCh.portName_ = links[channelId.uuid];
             }
             else {
+                qDebug()<< "3333333333333333";
                 newDCh.portName_ = "None";
             }
 
@@ -1001,6 +1004,7 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
     }
 
     if (indx == -1) {
+        qDebug()<< "44444444444444444444444";
         emit channelsUpdated();
     }
 }

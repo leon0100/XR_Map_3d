@@ -119,8 +119,8 @@ bool Logger::startNewCsvLog()
         if (isOpen) {
             corePtr->consoleInfo("Logger csv dir: " + dir.path());
             corePtr->consoleInfo("Logger csv make file: " + csvLogFile_->fileName());
-            csvData_.csvConnections.append(QObject::connect(datasetPtr_, &Dataset::dataUpdate, this,
-                                                            &Logger::loggingCsvStream, Qt::AutoConnection));
+            // csvData_.csvConnections.append(QObject::connect(datasetPtr_, &Dataset::dataUpdate, this,
+            //                                                 &Logger::loggingCsvStream, Qt::AutoConnection));
         }
         else {
             corePtr->consoleInfo("Logger csv can't make file: " + csvLogFile_->fileName());

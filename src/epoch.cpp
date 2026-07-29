@@ -516,7 +516,11 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
 void Epoch::getSonarFramePixel(const ChannelId& channelId, uint8_t subChannelId, QVector<uint8_t>& pixelVec)
 {
     Echogram& chart = charts_[channelId][subChannelId];
-
+    // auto it = charts_.find(channelId);
+    // if(it == charts_.end() || subChannelId >= it.value().size()) {
+    //     return;
+    // }
+    // Echogram& chart = it.value()[subChannelId];
     pixelVec = chart.amplitude;
 }
 

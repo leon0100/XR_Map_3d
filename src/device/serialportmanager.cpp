@@ -85,6 +85,7 @@ void SerialPortManager::toggleConnection(QString port, int baudRate)
 
             QDateTime dateTime = QDateTime::currentDateTime();
             constructionTime_  = QString::number(dateTime.toTime_t());
+            batchChannelId_    = ChannelId(QUuid::createUuid(), 0);
         }
         else {
             emit dataReceived(tr("Failed to open port: %1").arg(serialPort_->errorString()));
@@ -100,26 +101,14 @@ void SerialPortManager::handleReadyRead()
     }
 
     QByteArray data = serialPort_->readAll();
-    int bytesRead = data.size();
     readAllBuffer_.append(data);
 
-    m_receivedBytes += bytesRead;
-    m_bytesSinceLastUpdate += bytesRead;
-    m_receivedFrames++;
-
-    qDebug() << "data........." << data;
-
-    parseTModemFrame(data);
+    parseTModemFrame(readAllBuffer_);
 }
 
 QStringList SerialPortManager::availablePorts()
 {
     return m_availablePorts;
-}
-
-int SerialPortManager::receivedBytes()
-{
-    return m_receivedBytes;
 }
 
 bool SerialPortManager::isConnected()
@@ -149,13 +138,11 @@ void SerialPortManager::onHeartbeatTimeout()
                                                  102400u, 0x55AA, 0x11223344u, 512, 200, 1732000000u);
     QByteArray frame = buildTModemFrame_xrmap(0, tmodemSn_, true, 0x3E, payload);
 
-    // m_udpSocket->writeDatagram(frame, QHostAddress(m_remoteIp), m_remotePort.toUShort());
-    // writeData()
     if(serialPort_->isOpen()) {
         serialPort_->write(frame);
     }
 
-    // qDebug() << "[UDP Heartbeat]" << packet << "len=" << len;
+    qDebug() << "[UDP Heartbeat]" << frame << "len=" << frame.size();
 }
 
 void SerialPortManager::clearRealData()
@@ -297,10 +284,9 @@ QByteArray SerialPortManager::buildTModemFrame_xrmap(uint8_t dev_addr, uint8_t s
     return frame.toByteArray();
 }
 
-
-void SerialPortManager::parseTModemFrame(const QByteArray& rawData)
+void SerialPortManager::parseTModemFrame(QByteArray& rawData)
 {
-    qDebug() << "rawData.size().... " << rawData.size();
+    // qDebug() << "rawData.size().... " << rawData.size();
     QList<StructFrameTM> frames;
 
     const quint8 HEAD1       = 0xAA;
@@ -310,6 +296,7 @@ void SerialPortManager::parseTModemFrame(const QByteArray& rawData)
 
     int pos = 0;
     int dataLen = rawData.size();
+    bool frameLengNot = false;
     while (pos <= (dataLen - HEADER_LEN))
     {
         // 1. 查找包头 0xAA 0xBB
@@ -340,6 +327,7 @@ void SerialPortManager::parseTModemFrame(const QByteArray& rawData)
         // 5. 检查整帧长度是否足够
         quint32 frameLen = HEADER_LEN + payloadLen + 2; // +2 是 check1/check2
         if (pos + frameLen > dataLen) {
+            frameLengNot = true;
             break; // 数据不足，等待更多数据
         }
 
@@ -359,18 +347,19 @@ void SerialPortManager::parseTModemFrame(const QByteArray& rawData)
             continue;
         }
 
-        qDebug() << "tbbpFrame.payload............." << tbbpFrame.payload;
+        // qDebug() << "tbbpFrame.payload............." << tbbpFrame.payload;
         m_tsl3Buffer += decompressTsl3(tbbpFrame.payload);
 
-        // 9. 添加到帧列表
-        frames.append(tbbpFrame);
+        frames.append(tbbpFrame);  // 9. 添加到帧列表
 
-        // 10. 移动到下一帧
-        pos += frameLen;
+        pos += frameLen;  // 10. 移动到下一帧
+    }
+
+    if(!frameLengNot) {
+        rawData.remove(0, pos);
     }
 
     parseTsl3FromTModem();
-
 }
 
 void SerialPortManager::parseTsl3FromTModem()
@@ -416,40 +405,73 @@ void SerialPortManager::parseTsl3FromTModem()
         }
     }
 
-    /*- 用来写入像素数据 -*/
-    QFile file_lFreq(PATH_PIX_LFREQ_SERIAL.append(constructionTime_).append(".txt"));
-    file_lFreq.open(QIODevice::Append|QIODevice::ReadWrite);
-    QDataStream out_lFreq(&file_lFreq);
-
     int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
     for(auto tslDataTemp : tslByteList) {
-        tsl_3 tslSingleStruct;
-        memcpy(&tslSingleStruct, tslDataTemp, idx);
+        tsl_3 tslSingleStru;
+        memcpy(&tslSingleStru, tslDataTemp, idx);
         LLA lla;
-        lla.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
-        lla.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
-        lla.altitude  = tslSingleStruct.auxInfo.depth * 0.01f;
-        qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
+        lla.latitude  = dm_to_dd(tslSingleStru.boat.latitude);
+        lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
+        lla.altitude  = tslSingleStru.auxInfo.depth * 0.01f;
+        // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
 
         QByteArray rawDat;
-        for(int i = 0; i < tslSingleStruct.ping.size; i++) {
+        for(int i = 0; i < tslSingleStru.ping.size; i++) {
             rawDat.append(tslDataTemp[idx + i]);
         }
-        for(int i = tslSingleStruct.ping.size; i < PING_SIZE_MAX; i++) {
+        for(int i = tslSingleStru.ping.size; i < PING_SIZE_MAX; i++) {
             rawDat.append('\0');
         }
 
-        if(fileInfo_snrCtrl.dualFrqEn == 1) {
-            out_lFreq.writeRawData(rawDat.data(), PING_SIZE_MAX);
+        // if(fileInfo_snrCtrl.dualFrqEn == 1) {
+        //     out_lFreq.writeRawData(rawDat.data(), PING_SIZE_MAX);
+        // }
+
+        // ----------- 将声呐数据发送到 Dataset ------------
+        int pingSize = tslSingleStru.ping.size;
+        QVector<QVector<uint8_t>> dataVec;
+        QVector<uint8_t> channelData;
+        for(int i = 0; i < pingSize; i++) {
+            channelData.append((uint8_t)tslDataTemp[idx + i]);
+        }
+        for(int i = pingSize; i < PING_SIZE_MAX; i++) {
+            channelData.append((uint8_t)'\0');
+        }
+        dataVec.append(channelData);
+
+        float upRng = tslSingleStru.ping.upRng;
+        float loRng = tslSingleStru.ping.loRng;
+        float depth = tslSingleStru.auxInfo.depth;
+        if(tslSingleStru.ping.frequency == snrFrq455) {
+            if(depth > 10000) {
+                depth = 0;
+            }
+            else if(depth > 30000) {
+                depth = 0;
+            }
         }
 
-        // emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
+        ChartParameters chartParams;
+        chartParams.depth        = depth;
+        chartParams.pingSize     = pingSize;
+        chartParams.upRng        = upRng;
+        chartParams.loRng        = loRng;
+        chartParams.temperature  = tslSingleStru.auxInfo.temperature;
+        chartParams.heading      = tslSingleStru.boat.heading;
+        chartParams.speed        = tslSingleStru.boat.speed;
+        chartParams.time         = tslSingleStru.boat.time;
+        chartParams.longitude    = lla.longitude;
+        chartParams.latitude     = lla.latitude;
+        // qDebug() << "depth........" << depth << "  " << pingSize << "  " << upRng << "  " << loRng << " " << dataVec.size();
+        emit chartComplete(batchChannelId_, chartParams, dataVec, true);
+
+        emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
 
         depthHistory_.append(static_cast<float>(lla.altitude));
         minDepth_ = std::min(minDepth_, lla.altitude);
         maxDepth_ = std::max(maxDepth_, lla.altitude);
 
-        // emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
+        emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
     }
 
 }
@@ -464,11 +486,9 @@ double SerialPortManager::dm_to_dd(double ddmmmmmmm)
 }
 
 
-
 QByteArray SerialPortManager::decompressTsl3(const QByteArray &compressed)
 {
-    if (compressed.isEmpty())
-    {
+    if (compressed.isEmpty()) {
         qWarning() << "[TslCompressor] Compressed data is empty.";
         return QByteArray();
     }
@@ -476,13 +496,10 @@ QByteArray SerialPortManager::decompressTsl3(const QByteArray &compressed)
     int maxDecompressedSize = 4096;
     QByteArray result;
     result.resize(maxDecompressedSize);
-
     lzo_uint decompressedLen = result.size();
     int res = lzo1x_decompress_safe((const lzo_bytep)compressed.constData(), compressed.size(),
                                     (lzo_bytep)result.data(),&decompressedLen, nullptr);
-
-    if (res != LZO_E_OK)
-    {
+    if (res != LZO_E_OK) {
         qDebug() << "Decompression failed with error code:" << res;
         return QByteArray();
     }

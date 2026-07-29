@@ -315,6 +315,7 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
 
     int pos = 0;
     int dataLen = rawData.size();
+    bool frameLengNot = false;
     while (pos <= (dataLen - HEADER_LEN))
     {
         // 1. 查找包头 0xAA 0xBB
@@ -345,6 +346,7 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
         // 5. 检查整帧长度是否足够
         quint32 frameLen = HEADER_LEN + payloadLen + 2; // +2 是 check1/check2
         if (pos + frameLen > dataLen) {
+            frameLengNot = true;
             break; // 数据不足，等待更多数据
         }
 
@@ -374,7 +376,9 @@ void UdpManager::parseTModemFrame(const QByteArray& rawData)
         pos += frameLen;
     }
 
-    parseTsl3FromTModem();
+    if(!frameLengNot) {
+       parseTsl3FromTModem();
+    }
 
 }
 

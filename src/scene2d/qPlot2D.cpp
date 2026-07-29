@@ -72,12 +72,12 @@ void qPlot2D::plotUpdate()
     }
     emit timelinePositionChanged();
 
-    update();
-
     if(dataset_ && !dataset_->vec_CSV_.empty()) {
         tempViewMaxLoRng_ = (int)(currentViewMaxLoRng_ * 1.5f);
         setMaxLoRng(tempViewMaxLoRng_);
     }
+
+    update();
 
     mutex.unlock();
 }
@@ -158,7 +158,7 @@ void qPlot2D::setMinUpRng(int minUpRng)
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
     echogram_.setUpperRng(minUpRng);
     emit minUpRngChanged();
-    plotUpdate();
+    // plotUpdate();
 }
 
 void qPlot2D::setMaxLoRng(int maxLoRng)
@@ -167,7 +167,7 @@ void qPlot2D::setMaxLoRng(int maxLoRng)
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
     echogram_.setLowerRng(maxLoRng);
     emit maxLoRngChanged();
-    plotUpdate();
+    // plotUpdate();
 }
 
 void qPlot2D::setSoundVelocity(int soundVelocity, int draftOffset)
@@ -501,6 +501,7 @@ void qPlot2D::scaleYZoomEvent(int delta)
 
     echogram_.setLowerRng(currentLoRng_);
     setMaxLoRng(currentLoRng_);
+    plotUpdate();
 }
 
 void qPlot2D::plotMousePosition(int x, int y, bool isSync)
@@ -553,7 +554,7 @@ void qPlot2D::dataUpdate()
 {
     setMinUpRng(0);
     setMaxLoRng(3200);
-    // plotUpdate();
+    plotUpdate();
 }
 
 void qPlot2D::updater()

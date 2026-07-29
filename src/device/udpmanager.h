@@ -80,14 +80,10 @@ signals:
     void isConnectedChanged();
     void dataReadingChanged();
     void signalCancelUdpOn(bool isOn);
-
-
     void dataReceived(const QByteArray& data);
 
     void positionComplete(double lat, double lon, double depth, bool isRead);
     void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ, bool isRead);
-
-
 
 
 
