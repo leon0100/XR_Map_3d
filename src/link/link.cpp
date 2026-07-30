@@ -577,7 +577,6 @@ void Link::onCheckedTimerEnd()
 
     if (isNeedSearch) {
         timeoutCnt_ = linkNumTimeoutsSmall;
-        //qDebug() << "   link: timeout ended do emit sendDoRequestAll" << uuid_;
         auto currBaudrate = baudrateSearchList_.at(lastSearchIndx_);
         lastSearchIndx_ = (lastSearchIndx_ + 1) % baudrateSearchList_.size();
         //qDebug() << "   link: trying find" << currBaudrate << "on" << lastSearchIndx_;
@@ -586,9 +585,6 @@ void Link::onCheckedTimerEnd()
     }
 
     if (!isReceivesData_ || !requestCnt_) {
-        if(attribute_ == LinkAttribute::kLinkAttributeNone) {
-            emit sendDoRequestAll(uuid_);
-        }
         if (!requestCnt_) {
             requestCnt_ = onUpgradingFirmware_ ? requestAllCntSmall : isReceivesData_ ? requestAllCntBig : requestAllCntSmall;
         }

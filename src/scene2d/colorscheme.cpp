@@ -94,7 +94,7 @@ void ZyColorScheme::readColorToColorList(QString fileName)
 
     colorList_bottom.clear();
     selfColor.beginGroup("bottom");
-    qDebug() << "3333333333333333selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
+    qDebug() << "selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
     for(int i=0;i<selfColor.value("count",0).toInt();i++) {
         tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
         tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();

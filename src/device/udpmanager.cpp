@@ -387,11 +387,11 @@ void UdpManager::parseTsl3FromTModem()
     QList<QByteArray> tslByteList;
     int byteCount = 0;
     int maxCount = m_tsl3Buffer.count();
+    int tslIdx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
     while(nowIndex_ < (maxCount-100))
     {
         if('#' == m_tsl3Buffer.at(nowIndex_)) {
-            byteCount = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3)+
-                        U8_TO_16(m_tsl3Buffer.at(nowIndex_+22),m_tsl3Buffer.at(nowIndex_+23))+1;
+            byteCount = tslIdx + U8_TO_16(m_tsl3Buffer.at(nowIndex_+22),m_tsl3Buffer.at(nowIndex_+23))+1;
             if((byteCount >= 100) && (byteCount <= 2048)) {
                 if((nowIndex_ + byteCount) > maxCount) {
                     nowIndex_++;
@@ -430,10 +430,9 @@ void UdpManager::parseTsl3FromTModem()
     file_lFreq.open(QIODevice::Append|QIODevice::ReadWrite);
     QDataStream out_lFreq(&file_lFreq);
 
-    int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
     for(auto tslDataTemp : tslByteList) {
         tsl_3 tslSingleStruct;
-        memcpy(&tslSingleStruct, tslDataTemp, idx);
+        memcpy(&tslSingleStruct, tslDataTemp, tslIdx);
         LLA lla;
         lla.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
         lla.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
@@ -442,7 +441,7 @@ void UdpManager::parseTsl3FromTModem()
 
         QByteArray rawDat;
         for(int i = 0; i < tslSingleStruct.ping.size; i++) {
-            rawDat.append(tslDataTemp[idx + i]);
+            rawDat.append(tslDataTemp[tslIdx + i]);
         }
         for(int i = tslSingleStruct.ping.size; i < PING_SIZE_MAX; i++) {
             rawDat.append('\0');

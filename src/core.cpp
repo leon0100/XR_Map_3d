@@ -128,7 +128,6 @@ void Core::saveCurrentMapState(std::function<void(double lat, double lon)>writer
     if(auto cam = camera.lock(); cam){
         double lat = cam->viewLlaRef_.refLla.latitude;
         double lon = cam->viewLlaRef_.refLla.longitude;
-        qDebug() << "lat........" << lat << "  " << lon;
         writer(lat, lon);
     }
 }
@@ -1058,6 +1057,7 @@ void Core::openFileFromMenu()
         resetDataProcessorConnections();
         bleManager_->clearRealData();
         udpManager_->clearRealData();
+        serialPortManager_->clearRealData();
         datasetPtr_->resetDataset();
         dataHorizon_->clear();
         if (scene3dViewPtr_) {
@@ -1492,8 +1492,6 @@ void Core::createLinkManagerConnections()
             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
         }
     }, linkManagerConnection));
-    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::sendDoRequestAll,
-    deviceManagerWrapperPtr_->getWorker(),&DeviceManager::onSendRequestAll, linkManagerConnection));
 }
 
 void Core::removeLinkManagerConnections()

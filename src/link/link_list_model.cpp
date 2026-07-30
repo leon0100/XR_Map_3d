@@ -2,8 +2,7 @@
 
 
 LinkListModel::LinkListModel(QObject* parent) :
-    QAbstractListModel(parent),
-    size_(0)
+    QAbstractListModel(parent), size_(0)
 {
     connect(this, &LinkListModel::appendModifyEvent, this, &LinkListModel::doAppendModify);
     connect(this, &LinkListModel::removeEvent, this, &LinkListModel::doRemove);

@@ -542,26 +542,12 @@ void qPlot2D::onCursorMoved(int x, int y)
     Plot2D::onCursorMoved(x, y);
 }
 
-void qPlot2D::timerUpdater()
-{
-    if(m_needUpdate) {
-        m_needUpdate = false;
-       update();
-    }
-}
-
 void qPlot2D::dataUpdate()
 {
     setMinUpRng(0);
     setMaxLoRng(3200);
     plotUpdate();
 }
-
-void qPlot2D::updater()
-{
-    m_needUpdate = true;
-}
-
 
 void qPlot2D::setDeleteFrameMode(bool mode)
 {

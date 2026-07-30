@@ -330,7 +330,6 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
 {
     tslByteArray.remove(0, 512);  /*- 清除文件头信息，只保留声呐数据 -*/
-
     /*-将去掉文件头的所有剩下的声呐数据，按照一帧一帧的模式放入临时容器-*/
     QList<QByteArray> tslByteList;
     int nowIndex = 0;
@@ -468,16 +467,16 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         }
 
         ChartParameters chartParams;
-        chartParams.depth        = depth;
-        chartParams.pingSize     = pingSize;
-        chartParams.upRng        = upRng;
-        chartParams.loRng        = loRng;
-        chartParams.temperature  = tslSingleStru.auxInfo.temperature;
-        chartParams.heading      = tslSingleStru.boat.heading;
-        chartParams.speed        = tslSingleStru.boat.speed;
-        chartParams.time         = tslSingleStru.boat.time;
-        chartParams.longitude    = lla.longitude;
-        chartParams.latitude     = lla.latitude;
+        chartParams.depth       = depth;
+        chartParams.pingSize    = pingSize;
+        chartParams.upRng       = upRng;
+        chartParams.loRng       = loRng;
+        chartParams.temperature = tslSingleStru.auxInfo.temperature;
+        chartParams.heading     = tslSingleStru.boat.heading;
+        chartParams.speed       = tslSingleStru.boat.speed;
+        chartParams.time        = tslSingleStru.boat.time;
+        chartParams.longitude   = lla.longitude;
+        chartParams.latitude    = lla.latitude;
         emit chartComplete(batchChannelId_, chartParams, dataVec, true);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
@@ -582,37 +581,9 @@ void DeviceManager::setUSBLBeaconDirectAsk(bool is_ask) {
     }
 }
 
-void DeviceManager::onSendRequestAll(QUuid uuid)
-{
-}
-
 StreamListModel* DeviceManager::streamsList()
 {
     return streamList_.streamsList();
-}
-
-void DeviceManager::readyReadProxy(Link* link)
-{
-    while (link->parse()) {
-        FrameParser* frame = link->frameParser();
-
-        if (frame->isComplete()) {
-            QByteArray data((char*)frame->frame(), frame->frameLen());
-            emit dataSend(data);
-        }
-    }
-}
-
-void DeviceManager::readyReadProxyNav(Link* link)
-{
-    while (link->parse()) {
-        FrameParser* frame = link->frameParser();
-
-        if (frame->isComplete()) {
-            QByteArray data((char*)frame->frame(), frame->frameLen());
-            emit dataSend(data);
-        }
-    }
 }
 
 void DeviceManager::onStartUpgradingFirmware(QUuid linkUuid, uint8_t address, const QByteArray& firmware)

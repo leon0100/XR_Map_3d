@@ -1,8 +1,6 @@
 module Communication
 
-BleButton            1.0  BleButton.qml
 BleDataPanel         1.0  BleDataPanel.qml
-BleLivedataScanning  1.0  BleLivedataScanning.qml
 loading              1.0  loading.qml
 IsobathsSet          1.0  IsobathsSet.qml
 LiveData             1.0  LiveData.qml

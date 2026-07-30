@@ -3,9 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 RowLayout {
-
     id: xrSlider
-
 
     property  alias  value: slider.value
     property  real   from: 0
@@ -16,7 +14,6 @@ RowLayout {
     property  int    fontSize: theme.iconSize * 1.5
     property  real   handleWidth: fontSize * 0.5
     property  int    sliderLen: fontSize * 10
-
 
     spacing: fontSize * 0.3
 

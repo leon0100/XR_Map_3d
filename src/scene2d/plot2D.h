@@ -130,6 +130,8 @@ public:
     void reindexingCursor();
     void reRangeDistance();
 
+    void setRealtimeChannel(const ChannelId& channelId, uint8_t subChannelId);
+
     virtual void plotUpdate();
     virtual void sendSyncEvent(int epoch_index, QEvent::Type eventType);
 

@@ -47,7 +47,6 @@ public slots:
     void beaconDirectQueueAsk();
     bool isbeaconDirectQueueAsk() { return isUSBLBeaconDirectAsk; }
     void setUSBLBeaconDirectAsk(bool is_ask);
-    void onSendRequestAll(QUuid uuid);
 
     void onStartUpgradingFirmware(QUuid linkUuid, uint8_t address, const QByteArray& firmware);
     void onUpgradingFirmwareDone();
@@ -155,9 +154,4 @@ private:
     QObject* progressDialog_ = nullptr;
     ChannelId batchChannelId_{QUuid(), 0};
     double minZ_ = 0.0, maxZ_ = 0.0;
-
-
-private slots:
-    void readyReadProxy(Link* link);
-    void readyReadProxyNav(Link* link);
 };

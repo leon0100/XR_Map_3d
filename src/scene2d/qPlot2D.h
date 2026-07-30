@@ -82,7 +82,6 @@ public:
 protected:
     Dataset* dataset_ = nullptr;
     QTimer* m_updateTimer;
-    bool m_needUpdate = true;
     bool _isHorizontal = true;
 
 signals:
@@ -95,13 +94,10 @@ signals:
     void fromToLonLatiChanged();
 
 protected slots:
-    void timerUpdater();
     void dataUpdate();
-    // void updateMinMaxLoRng(int minLoRng, int maxLoRng);
 
 
 public slots:
-    void updater();
     void horScrollEvent(int delta);
     void verZoomEvent(int delta);
     void verScrollEvent(int delta);

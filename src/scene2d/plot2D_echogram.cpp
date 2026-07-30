@@ -793,8 +793,6 @@ void Plot2DEchogram::getMarkAccordTimeDist()
 
 }
 
-
-
 int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int height)
 {
     // qDebug() << "::updateCash.......width:" << width << " height:" << height;
@@ -851,7 +849,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 if(depthFilterList_.size() > pool_index_safe) {
                     depthFilter = depthFilterList_.at(pool_index_safe);
                 }
-                // qDebug() << "depth..." << depth << "  loRng:" << loRng << "  upRng:" << upRng << "pingSize:" << pingSize;
+                // qDebug() << "222222222222depth:" << depth << "  latitude:" << params.longitude << "  " << params.latitude;
                 if(loRng != 0) {
                     draft   = (1500.0/soundVelocity_) * (draftOffset_ / (loRng-upRng)) * pingSize;
                     btStart = (1500.0/soundVelocity_) * (depth / (loRng-upRng)) * pingSize;
@@ -908,7 +906,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 int startIdx = pingSize * currentUpRng_ / loRng;
                 int btStartNow = btStart;
                 btStartNow -= startIdx;
-                qDebug() << "btStart:" << btStart << "   btStartNow:" << btStartNow << "   nowScaleY:" << nowScaleY;
+                // qDebug() << "btStart:" << btStart << "   btStartNow:" << btStartNow << "   nowScaleY:" << nowScaleY;
                 int btStartFilter = btStart_filter;
                 btStartFilter -= startIdx;
                 QList<int> colorData;
@@ -1118,6 +1116,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         else {
             parent->currentViewMaxLoRng_ = currentViewMaxLoRng;
         }
+        // qDebug() << "wavePixel_........." << wavePixel_.depth;
     }
 
     _lastCursor = cursor;

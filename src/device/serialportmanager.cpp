@@ -18,7 +18,6 @@ SerialPortManager::SerialPortManager(QObject *parent) : QObject(parent)
     connect(serialPort_, &QSerialPort::readyRead, this, &SerialPortManager::handleReadyRead);
 
     scanPorts();
-
 }
 
 char SerialPortManager::calculateChecksum(const QByteArray &data)
@@ -37,10 +36,10 @@ bool SerialPortManager::verifyChecksum(const QByteArray &nmeaSentence)
         return false;
     }
 
-    QByteArray data = nmeaSentence.mid(1, checksumIndex - 1);
+    QByteArray data = nmeaSentence.mid(1, checksumIndex-1);
 
     // 提取校验和
-    QByteArray checksumStr = nmeaSentence.mid(checksumIndex + 1, 2);
+    QByteArray checksumStr = nmeaSentence.mid(checksumIndex+1, 2);
     bool ok;
     int receivedChecksum = checksumStr.toInt(&ok, 16);
     if (!ok) {
@@ -53,7 +52,7 @@ bool SerialPortManager::verifyChecksum(const QByteArray &nmeaSentence)
 
 SerialPortManager::~SerialPortManager()
 {
-    disConnectUdp();
+    clearRealData();
 }
 
 void SerialPortManager::scanPorts()
@@ -69,23 +68,19 @@ void SerialPortManager::scanPorts()
 void SerialPortManager::toggleConnection(QString port, int baudRate)
 {
     baudRate_ = baudRate;
-    qDebug() << "port: " << port << "   baudRate: " << baudRate;
+    // qDebug() << "port: " << port << "   baudRate: " << baudRate;
     if(serialPort_->isOpen()) {
-        disConnectUdp();
+        serialPort_->close();
+        serialPort_->disconnect();
+        clearRealData();
         emit connectChanged(false);
     }
     else {
         serialPort_->setPortName(port);
         serialPort_->setBaudRate(baudRate);
         if(serialPort_->open(QIODevice::ReadWrite)) {
-            m_heartbeatTimer = new QTimer(this);
-            connect(m_heartbeatTimer, &QTimer::timeout, this, &SerialPortManager::onHeartbeatTimeout);
-            m_heartbeatTimer->start(8000);
             emit connectChanged(true);
-
-            QDateTime dateTime = QDateTime::currentDateTime();
-            constructionTime_  = QString::number(dateTime.toTime_t());
-            batchChannelId_    = ChannelId(QUuid::createUuid(), 0);
+            batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
         }
         else {
             emit dataReceived(tr("Failed to open port: %1").arg(serialPort_->errorString()));
@@ -113,41 +108,12 @@ QStringList SerialPortManager::availablePorts()
 
 bool SerialPortManager::isConnected()
 {
+    qDebug() << "serialPort_->isOpen........" << serialPort_->isOpen();
     return serialPort_->isOpen();
-}
-
-void SerialPortManager::disConnectUdp()
-{
-    if (m_heartbeatTimer) {
-        m_heartbeatTimer->stop();
-        m_heartbeatTimer->deleteLater();
-        m_heartbeatTimer = nullptr;
-    }
-
-    if(serialPort_->isOpen()) {
-        serialPort_->close();
-    }
-
-    m_heartbeatCnt = 0;
-}
-
-void SerialPortManager::onHeartbeatTimeout()
-{
-    tmodemSn_++;
-    QByteArray payload = buildXrmapActivePayload(1, QStringLiteral("T"),
-                                                 102400u, 0x55AA, 0x11223344u, 512, 200, 1732000000u);
-    QByteArray frame = buildTModemFrame_xrmap(0, tmodemSn_, true, 0x3E, payload);
-
-    if(serialPort_->isOpen()) {
-        serialPort_->write(frame);
-    }
-
-    qDebug() << "[UDP Heartbeat]" << frame << "len=" << frame.size();
 }
 
 void SerialPortManager::clearRealData()
 {
-    m_heartbeatCnt = 0;
     tmodemSn_ = 0;
     m_tsl3Buffer.clear();
     nowIndex_  = 0;
@@ -155,6 +121,11 @@ void SerialPortManager::clearRealData()
     depthHistory_.clear();
     minDepth_ = 0.0;
     maxDepth_ = 0.0;
+    latitude_ = 000.000;
+    longitude_ = 000.000;
+    angle_ = 000.000;
+    speed_ = 0.0;
+    depth_ = 0.0;
 }
 
 // --------------------------------------- CRC Helpers -------------------------------------------
@@ -190,8 +161,8 @@ uint16_t SerialPortManager::crc16_modbus(const uint8_t *data, int len)
 
 
 QByteArray SerialPortManager::buildXrmapActivePayload(uint16_t map_ver,  const QString &map_name,
-                                               uint32_t map_size,  uint16_t all_map_CRC16,
-                                               uint32_t all_map_CRC32,  uint16_t pkt_bytes,  uint16_t MAP_PKT_NUM,  uint32_t unix_sec)
+                                uint32_t map_size,  uint16_t all_map_CRC16, uint32_t all_map_CRC32,
+                                uint16_t pkt_bytes,  uint16_t MAP_PKT_NUM,  uint32_t unix_sec)
 {
     Xrmap_Active_t xr;
     xr.HDR[0] = 0x81; xr.HDR[1] = 0x7E; // SUB_CMD & ~SUB_CMD (示例)
@@ -357,9 +328,9 @@ void SerialPortManager::parseTModemFrame(QByteArray& rawData)
 
     if(!frameLengNot) {
         rawData.remove(0, pos);
+        parseTsl3FromTModem();
     }
 
-    parseTsl3FromTModem();
 }
 
 void SerialPortManager::parseTsl3FromTModem()
@@ -367,11 +338,11 @@ void SerialPortManager::parseTsl3FromTModem()
     QList<QByteArray> tslByteList;
     int byteCount = 0;
     int maxCount = m_tsl3Buffer.count();
+    int tslIdx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
     while(nowIndex_ < (maxCount-100))
     {
         if('#' == m_tsl3Buffer.at(nowIndex_)) {
-            byteCount = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3)+
-                        U8_TO_16(m_tsl3Buffer.at(nowIndex_+22),m_tsl3Buffer.at(nowIndex_+23))+1;
+            byteCount = tslIdx + U8_TO_16(m_tsl3Buffer.at(nowIndex_+22),m_tsl3Buffer.at(nowIndex_+23))+1;
             if((byteCount >= 100) && (byteCount <= 2048)) {
                 if((nowIndex_ + byteCount) > maxCount) {
                     nowIndex_++;
@@ -405,10 +376,10 @@ void SerialPortManager::parseTsl3FromTModem()
         }
     }
 
-    int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
+    // qDebug() << "tslByteList.size()........" << tslByteList.size();
     for(auto tslDataTemp : tslByteList) {
         tsl_3 tslSingleStru;
-        memcpy(&tslSingleStru, tslDataTemp, idx);
+        memcpy(&tslSingleStru, tslDataTemp, tslIdx);
         LLA lla;
         lla.latitude  = dm_to_dd(tslSingleStru.boat.latitude);
         lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
@@ -417,22 +388,18 @@ void SerialPortManager::parseTsl3FromTModem()
 
         QByteArray rawDat;
         for(int i = 0; i < tslSingleStru.ping.size; i++) {
-            rawDat.append(tslDataTemp[idx + i]);
+            rawDat.append(tslDataTemp[tslIdx + i]);
         }
         for(int i = tslSingleStru.ping.size; i < PING_SIZE_MAX; i++) {
             rawDat.append('\0');
         }
-
-        // if(fileInfo_snrCtrl.dualFrqEn == 1) {
-        //     out_lFreq.writeRawData(rawDat.data(), PING_SIZE_MAX);
-        // }
 
         // ----------- 将声呐数据发送到 Dataset ------------
         int pingSize = tslSingleStru.ping.size;
         QVector<QVector<uint8_t>> dataVec;
         QVector<uint8_t> channelData;
         for(int i = 0; i < pingSize; i++) {
-            channelData.append((uint8_t)tslDataTemp[idx + i]);
+            channelData.append((uint8_t)tslDataTemp[tslIdx + i]);
         }
         for(int i = pingSize; i < PING_SIZE_MAX; i++) {
             channelData.append((uint8_t)'\0');
@@ -452,18 +419,22 @@ void SerialPortManager::parseTsl3FromTModem()
         }
 
         ChartParameters chartParams;
-        chartParams.depth        = depth;
-        chartParams.pingSize     = pingSize;
-        chartParams.upRng        = upRng;
-        chartParams.loRng        = loRng;
-        chartParams.temperature  = tslSingleStru.auxInfo.temperature;
-        chartParams.heading      = tslSingleStru.boat.heading;
-        chartParams.speed        = tslSingleStru.boat.speed;
-        chartParams.time         = tslSingleStru.boat.time;
-        chartParams.longitude    = lla.longitude;
-        chartParams.latitude     = lla.latitude;
-        // qDebug() << "depth........" << depth << "  " << pingSize << "  " << upRng << "  " << loRng << " " << dataVec.size();
-        emit chartComplete(batchChannelId_, chartParams, dataVec, true);
+        chartParams.depth       = depth;
+        chartParams.pingSize    = pingSize;
+        chartParams.upRng       = upRng;
+        chartParams.loRng       = loRng;
+        chartParams.temperature = tslSingleStru.auxInfo.temperature;
+        chartParams.heading     = tslSingleStru.boat.heading;
+        chartParams.speed       = tslSingleStru.boat.speed;
+        chartParams.time        = tslSingleStru.boat.time;
+        chartParams.longitude   = lla.longitude;
+        chartParams.latitude    = lla.latitude;
+        latitude_  = chartParams.latitude;;
+        longitude_ = chartParams.longitude;
+        angle_     = chartParams.heading ;
+        speed_     = chartParams.speed ;
+        depth_     = depth;
+        emit chartComplete(batchChannelId_, chartParams, dataVec, readingDrawTrack_);
 
         emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
 
@@ -472,6 +443,7 @@ void SerialPortManager::parseTsl3FromTModem()
         maxDepth_ = std::max(maxDepth_, lla.altitude);
 
         emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
+        break;
     }
 
 }

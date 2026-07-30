@@ -21,6 +21,7 @@
 
 
 #include "dataset_defs.h"
+#include "id_binnary.h"
 
 // #include "tmodem.h"
 // #include "../Code/fifotmodem.h"
@@ -86,7 +87,6 @@ class BLEManager : public QObject
 {
     Q_OBJECT
 public:
-    //class传给bleLiveDataAndScanning.qml
     Q_PROPERTY(QStringList devices READ devices NOTIFY devicesChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
     Q_PROPERTY(QString scanStatus READ scanStatus NOTIFY scanStatusChanged)
@@ -123,8 +123,7 @@ public:
     QString depth() const { return QString::number(parser_->getCurrentBoatPoint().depth, 'f', 2); }
 
     bool dataReading() const { return readingDrawTrack_; }
-    Q_INVOKABLE void setDataReading(bool isReading) { readingDrawTrack_ = isReading;
-                                     emit dataReadingChanged(isReading);}
+    void setDataReading(bool isReading) { readingDrawTrack_ = isReading; emit dataReadingChanged(isReading);}
 
     double maxDepthValue() const { return maxDepth_;}
     double currentDepthValue() const { return 0.0; };
@@ -249,6 +248,8 @@ private:
     QVector<float> depthHistory_;
     double minDepth_ = 0.0, maxDepth_ = 0.0;
     bool readingDrawTrack_ = true;
+
+    QBluetoothLocalDevice *localDevice_;
 
 
 };

@@ -20,15 +20,15 @@ Item {
         BleManager.setBleLiveScanningVisible(visible)
     }
 
-    Connections {
-        target: BleManager
-        function onConnectedChanged(connected) {
-            isOn = connected
-            readControl.isReading  = connected
-            root.isShowDataPanel = true
-            // root.visible = false
-        }
-    }
+    // Connections {
+    //     target: BleManager
+    //     function onConnectedChanged(connected) {
+    //         isOn = connected
+    //         readControl.isReading  = connected
+    //         root.isShowDataPanel = true
+    //         // root.visible = false
+    //     }
+    // }
 
     Rectangle {
         anchors.fill: parent

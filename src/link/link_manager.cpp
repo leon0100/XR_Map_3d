@@ -241,7 +241,6 @@ Link *LinkManager::createNewLink() const
     QObject::connect(retVal, &Link::opened, this, &LinkManager::linkOpened);
     QObject::connect(retVal, &Link::baudrateChanged, this, &LinkManager::onLinkIsReceivesDataChanged);
     QObject::connect(retVal, &Link::isReceivesDataChanged, this, &LinkManager::onLinkIsReceivesDataChanged);
-    QObject::connect(retVal, &Link::sendDoRequestAll, this, &LinkManager::sendDoRequestAll);
 
     return retVal;
 }

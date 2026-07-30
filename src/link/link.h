@@ -98,7 +98,6 @@ signals:
     void closed(QUuid uuid, Link* link);
     void baudrateChanged(QUuid uuid);
     void isReceivesDataChanged(QUuid uuid);
-    void sendDoRequestAll(QUuid uuid);
     void upgradingFirmwareStateChanged(QUuid uuid);
     void dataReady(QByteArray data);
 

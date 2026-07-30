@@ -30,6 +30,16 @@ public:
     Q_PROPERTY(QStringList availablePorts READ availablePorts                       NOTIFY portsUpdated)
     Q_PROPERTY(bool    connected          READ isConnected                          NOTIFY connectChanged)
 
+    //class传给bleDataPanel.qml
+    Q_PROPERTY(QString latitude    READ latitude     NOTIFY dataPanelUpdate)
+    Q_PROPERTY(QString longitude   READ longitude    NOTIFY dataPanelUpdate)
+    Q_PROPERTY(QString angle       READ angle        NOTIFY dataPanelUpdate)
+    Q_PROPERTY(QString speed       READ speed        NOTIFY dataPanelUpdate)
+    Q_PROPERTY(QString depth       READ depth        NOTIFY dataPanelUpdate)
+
+    Q_PROPERTY(bool dataReading    READ dataReading  WRITE setDataReading     NOTIFY dataReadingChanged)
+
+
 
 public:
     explicit SerialPortManager(QObject *parent = nullptr);
@@ -37,10 +47,21 @@ public:
 
     QStringList availablePorts();
 
+    QString latitude()  const   { return QString::number(latitude_, 'f', 6); }
+    QString longitude() const   { return QString::number(longitude_, 'f', 6); }
+    QString angle()     const   { return QString::number(angle_, 'f', 2); }
+    QString speed()     const   { return QString::number(speed_, 'f', 2); }
+    QString depth()     const   { return QString::number(depth_, 'f', 2); }
+
+    bool dataReading() const { return readingDrawTrack_; }
+    void setDataReading(bool isReading) { readingDrawTrack_ = isReading; emit dataReadingChanged(isReading);}
+
     Q_INVOKABLE void scanPorts();
     Q_INVOKABLE void toggleConnection(QString port, int baudRate);
 
     bool isConnected();
+
+    void clearRealData();
 
     static char calculateChecksum(const QByteArray &data);
     static bool verifyChecksum(const QByteArray &nmeaSentence);
@@ -51,6 +72,8 @@ signals:
     void portsUpdated();
     void connectChanged(bool connected);
     void dataReceived(QString data);
+    void dataPanelUpdate();
+    void dataReadingChanged(bool isReading);
 
     void positionComplete(double lat, double lon, double depth, bool isRead);
     void signal_drawRealtimeContour(QVector<float>& depth, double minZ, double maxZ, bool isRead);
@@ -60,11 +83,8 @@ signals:
 
 private slots:
     void handleReadyRead();
-    void onHeartbeatTimeout();
 
 private:
-    void disConnectUdp();
-    void clearRealData();
 
     QString getCurrentWifiName();
     uint8_t crc8_poly7(const uint8_t *data, int len);
@@ -79,16 +99,22 @@ private:
     QByteArray decompressTsl3(const QByteArray &compressed);
 
 
+
+public:
+    double latitude_ = 000.000;
+    double longitude_ = 000.000;
+    double angle_ = 000.000;
+    double speed_ = 0.0;
+    double depth_ = 0.0;
+
 private:
-    int baudRate_ = 19200;
+    int baudRate_ = 230400;
 
     QSerialPort *serialPort_;
     QStringList m_availablePorts;
     QByteArray readAllBuffer_;
     bool hasGPSData_ = false;
 
-    QTimer* m_heartbeatTimer = nullptr;
-    int m_heartbeatCnt = 0;
     int tmodemSn_ = 0;
 
     QByteArray m_tsl3Buffer;
@@ -97,8 +123,6 @@ private:
     QVector<float> depthHistory_;
     double minDepth_ = 0.0, maxDepth_ = 0.0;
     bool readingDrawTrack_ = true;
-    typSnrCtrl fileInfo_snrCtrl;
-    QString constructionTime_;
     ChannelId batchChannelId_{QUuid(), 0};
 };
 

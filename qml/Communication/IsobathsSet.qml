@@ -892,21 +892,21 @@ Item {
 
 
 
-    property bool isShowDataPanel: false
+    // property bool isShowDataPanel: false
 
-    onVisibleChanged: {
-        BleManager.setBleLiveScanningVisible(visible)
-    }
+    // onVisibleChanged: {
+    //     BleManager.setBleLiveScanningVisible(visible)
+    // }
 
-    Connections {
-        target: BleManager
-        function onConnectedChanged(connected) {
-            switchControl.isOn = connected
-            readControl.isReading  = connected
-            root.isShowDataPanel = true
-            // root.visible = false
-        }
-    }
+    // Connections {
+    //     target: BleManager
+    //     function onConnectedChanged(connected) {
+    //         switchControl.isOn = connected
+    //         readControl.isReading  = connected
+    //         root.isShowDataPanel = true
+    //         // root.visible = false
+    //     }
+    // }
 
 
 

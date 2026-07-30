@@ -530,7 +530,6 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
 
 }
 
-
 void Dataset::location(double lat, double lon)
 {
     LLA lla = LLA(lat, lon);
@@ -834,10 +833,9 @@ void Dataset::setRefPosition(Epoch* epoch) {
 }
 
 void Dataset::setRefPosition(Position ref_pos) {
-    qDebug() << "Dataset::setRefPosition2222222222222222...............";
+    // qDebug() << "Dataset::setRefPosition2222222222222222...............";
     if(ref_pos.lla.isCoordinatesValid()) {
         setLlaRef(LLARef(ref_pos.lla), getCurrentLlaRefState());
-        qDebug() << "Dataset::setRefPosition.size() " << size();
         for(int iepoch = 0; iepoch < size(); iepoch++) {
             Epoch* epoch = fromIndex(iepoch);
             if(epoch == NULL) { continue; }
@@ -849,7 +847,7 @@ void Dataset::setRefPosition(Position ref_pos) {
 }
 
 void Dataset::setRefPositionByFirstValid() {
-    qDebug() << "Dataset::setRefPositionByFirstValid..................";
+    // qDebug() << "Dataset::setRefPositionByFirstValid..................";
     Epoch* epoch = getFirstEpochByValidPosition();
     if(epoch == NULL) { return; }
 
@@ -965,7 +963,6 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
         QWriteLocker locker(&lock_);
 
         if (channelsSetup_.empty()) {
-            qDebug() << "11111111111111111111";
             firstChannelId_ = DatasetChannel(channelId, subChannelId);
         }
 
@@ -991,11 +988,9 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
             auto links = corePtr->getLinkNames();
 
             if (links.contains(channelId.uuid)) {
-                qDebug() << "222222222222222222";
                 newDCh.portName_ = links[channelId.uuid];
             }
             else {
-                qDebug()<< "3333333333333333";
                 newDCh.portName_ = "None";
             }
 
@@ -1004,7 +999,6 @@ void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannel
     }
 
     if (indx == -1) {
-        qDebug()<< "44444444444444444444444";
         emit channelsUpdated();
     }
 }

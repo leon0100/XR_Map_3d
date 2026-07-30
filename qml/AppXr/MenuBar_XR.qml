@@ -527,10 +527,14 @@ Popup {
                     }
                     onClicked: {
                         mainMenuPopup.closeMenu()
-                        // if(theme.liveDataVisible === false) {
-
-                        // }
-                        theme.liveDataVisible = (theme.liveDataVisible === false) ? true : false
+                        if(theme.liveDataVisible === false) {
+                            BleManager.setBleLiveScanningVisible(true)
+                            theme.liveDataVisible = true
+                        }
+                        else {
+                            BleManager.setBleLiveScanningVisible(false)
+                            theme.liveDataVisible = false
+                        }
                     }
 
                     Image {

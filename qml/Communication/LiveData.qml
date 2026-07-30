@@ -26,6 +26,18 @@ Rectangle {
     property int  layoutHeight: liveDataSize * 0.1
     property var  targetPlot:   null
     property int  iconSize:     liveDataSize * 0.05
+    property bool isShowDataPanel: false
+
+
+    Connections {
+        target: BleManager
+        function onConnectedChanged(connected) {
+            switchControl.isOn = connected
+            readControl.isReading  = connected
+            liveDataContent.isShowDataPanel = true
+        }
+    }
+
 
     // 拦截鼠标事件，防止点击穿透到地图
     MouseArea {
@@ -77,9 +89,13 @@ Rectangle {
                         anchors.fill: parent
                         onClicked: {
                             currentCommPage = index
-                            if(index === 2) {
+                            if(index === 0) {
+                                BleManager.setBleLiveScanningVisible(true)
+                            }
+                            else if(index === 2) {
                                 SerialPort.scanPorts()
                             }
+
                         }
                     }
                 }
@@ -427,7 +443,7 @@ Rectangle {
                                     hoverEnabled: true
                                     onClicked: {
                                         readControl.isReading = !readControl.isReading
-                                        BleManager.setDataReading(readControl.isReading)
+                                        BleManager.dataReading = readControl.isReading
                                     }
                                     onEntered: readControl.hovered = true
                                     onExited:  readControl.hovered = false
@@ -632,7 +648,7 @@ Rectangle {
                     property bool isOn: false
                     property bool hovered: false
 
-                    // 滑块
+                    // 滑块wifi
                     Rectangle {
                         width:  layoutHeight * 0.9
                         height: layoutHeight * 0.9
@@ -688,6 +704,7 @@ Rectangle {
                     }
                 }
 
+
                 Rectangle {
                     id: readControl2
                     width:  layoutHeight * 2.2
@@ -695,10 +712,10 @@ Rectangle {
                     radius: layoutHeight * 0.3
                     color:  hovered ? (readControl2.isReading ? "#36D85A" : "#D6E6FF")
                                     : (readControl2.isReading?  "#66E07A" : "#D0D0D2")
-                    property bool isReading: true
-                    property bool hovered: true
+                    property bool isReading: false
+                    property bool hovered:   false
 
-                    // 滑块
+                    // 滑块wifi
                     Rectangle {
                         width:  layoutHeight * 0.9
                         height: layoutHeight * 0.9
@@ -759,6 +776,10 @@ Rectangle {
 
         }
     }
+
+
+
+
 
 
     Item {
@@ -830,7 +851,7 @@ Rectangle {
 
                     ComboBox {
                         id: baudCombo
-                        model: [ "19200", "921600", "57600", "115200", "230400"]
+                        model: [ "230400", "19200", "921600", "57600", "115200", "38400"]
                         font.pixelSize: iconSize
                         Layout.preferredWidth: iconSize * 6
                         contentItem: Text {
@@ -869,7 +890,7 @@ Rectangle {
                                     : (SerialPort.connected?  "#66E07A" : "#D0D0D2")
                     property bool hovered: false
 
-                    // 滑块
+                    // 滑块serialPort
                     Rectangle {
                         width:  layoutHeight * 0.9
                         height: layoutHeight * 0.9
@@ -939,7 +960,7 @@ Rectangle {
                     property bool isReading: false
                     property bool hovered: false
 
-                    // 滑块
+                    // 滑块serialPort
                     Rectangle {
                         width:  layoutHeight * 0.9
                         height: layoutHeight * 0.9
@@ -966,7 +987,7 @@ Rectangle {
                         text: qsTr("Read")
                         font.pixelSize: iconSize * 0.8
                         font.bold: true
-                        visible: readControl2.isReading
+                        visible: readControl22.isReading
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
 
@@ -979,7 +1000,7 @@ Rectangle {
                         text: qsTr("Pause")
                         font.pixelSize: iconSize * 0.8
                         font.bold: true
-                        visible: !readControl2.isReading
+                        visible: !readControl22.isReading
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
 
@@ -989,7 +1010,7 @@ Rectangle {
                         hoverEnabled: true
                         onClicked: {
                             readControl2.isReading = !readControl2.isReading
-                            BleManager.setDataReading(readControl2.isReading)
+                            SerialPort.dataReading = readControl2.isReading
                         }
                         onEntered: readControl2.hovered = true
                         onExited:  readControl2.hovered = false

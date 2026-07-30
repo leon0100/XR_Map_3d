@@ -32,7 +32,6 @@ Rectangle {
 
 
     function show(msg) {
-        console.log("msg.....", msg)
         if(msg === "show") {
             loader.visible = true
         }

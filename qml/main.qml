@@ -103,14 +103,8 @@ ApplicationWindow  {
         targetPlot: toolBarXR.targetPlot
     }
 
-    BleLivedataScanning {
-        id: bleLivedataScaning
-        // visible: toolBarXR.bluetoothMode
-        visible: expandToolBar.bluetoothMode
-    }
-
     BleDataPanel {
-       visible: bleLivedataScaning.isShowDataPanel
+       visible: liveDataPanel.isShowDataPanel
     }
 
     MapTileLoad {
@@ -118,7 +112,7 @@ ApplicationWindow  {
     }
 
     LiveData {
-
+        id: liveDataPanel
     }
 
     ExportAsData {

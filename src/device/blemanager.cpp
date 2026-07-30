@@ -215,18 +215,12 @@ void RealTimeParser::processQueue()
 double RealTimeParser::parseNMEACoordinate(const QString &coord, const QString &direction)
 {
     if (coord.isEmpty()) return 0.0;
-
     int dotIndex = coord.indexOf('.');
-
     if (dotIndex < 2) return 0.0;
-
     QString degreesStr = coord.left(dotIndex - 2);
-
     QString minutesStr = coord.mid(dotIndex - 2);
-
     double degrees = degreesStr.toDouble();
     double minutes = minutesStr.toDouble();
-
     double result = degrees + minutes / 60.0;
 
     // 根据方向调整正负
@@ -305,6 +299,8 @@ BLEManager::BLEManager(QObject *parent) : QObject(parent)
         connect(trackTimer_, &QTimer::timeout, this, &BLEManager::slotTrackTimeout);
     }
 
+    localDevice_ = new QBluetoothLocalDevice(this);
+
 }
 
 void BLEManager::translate()
@@ -353,6 +349,7 @@ void BLEManager::doStartScan()
     discoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
     setScanStatus(tr("Scanning..."));
 }
+
 
 void BLEManager::resetData()
 {
@@ -407,6 +404,17 @@ void BLEManager::startStopScan(bool scan)
 
 void BLEManager::setBleLiveScanningVisible(bool visible)
 {
+    if(!localDevice_) {
+        return;
+    }
+    connect(localDevice_, &QBluetoothLocalDevice::hostModeStateChanged, this,
+            [this](QBluetoothLocalDevice::HostMode mode) {
+                if(mode == QBluetoothLocalDevice::HostPoweredOff) {
+                    setScanStatus(tr("Check Bluetoothis Enabled"));
+                    return;
+                }
+        }, Qt::UniqueConnection);
+
     liveScanVisble_ = visible;
     if(visible) {
         if(!connected()) {

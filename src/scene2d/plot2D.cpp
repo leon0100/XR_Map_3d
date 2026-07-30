@@ -159,6 +159,10 @@ void Plot2D::draw(QPainter *painterPtr)
     // qDebug() << "Plot2D::draw(QPainter *painterPtr)..............";
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
+
+    // echogram_.drawRealtime(this, datasetPtr_);
+
+    // echogram_.draw(this, datasetPtr_);
     // attitude_.draw(this, datasetPtr_);
     // encoder_.draw(this, datasetPtr_);
     // dvlBeamVelocity_.draw(this, datasetPtr_);
@@ -943,7 +947,9 @@ void Plot2D::sendSyncEvent(int epoch_index, QEvent::Type eventType)
 void Plot2D::reindexingCursor()
 {
     // qDebug() << "void Plot2D::reindexingCursor()............";
-    if(datasetPtr_ == nullptr) { return; }
+    if(datasetPtr_ == nullptr) {
+        return;
+    }
 
     const int image_width = canvas_.width();
     const int data_width = datasetPtr_->size();
