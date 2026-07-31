@@ -205,6 +205,7 @@ void Plot2D::setTimelinePosition(float position)
     if (position < 0) {
         position = 0;
     }
+
     if (cursor_.position != position) {
         cursor_.position = position;
         plotUpdate();
@@ -218,7 +219,7 @@ void Plot2D::resetAim()
 
 void Plot2D::setTimelinePositionSec(float position)
 {
-    qDebug() << "Plot2D::setTimelinePositionSec.........";
+    // qDebug() << "Plot2D::setTimelinePositionSec.........";
     if (position > 1.0f) {
         position = 1.0f;
     }
@@ -961,21 +962,23 @@ void Plot2D::reindexingCursor()
 
     if(cursor_.last_dataset_size > 0) {
         float position = timelinePosition();
-
-        float last_head = round(position*cursor_.last_dataset_size);
+        float last_head = round(position * cursor_.last_dataset_size);
         float last_offset_head = float(cursor_.last_dataset_size) - last_head;
         float new_head = data_width - last_offset_head;
-
         position = float(new_head)/float(data_width);
 
-        setTimelinePosition(position);
+        // setTimelinePosition(position);
+        if (position > 1.0f) position = 1.0f;
+        if (position < 0.0f) position = 0.0f;
+        if (qAbs(cursor_.position - position) > 1e-5f) {
+            cursor_.position = position;
+        }
     }
     cursor_.last_dataset_size = data_width;
 
     float hor_ratio = 1.0f;
 
     float position = timelinePosition();
-
     int head_data_index = round(position*float(data_width));
 
     int cntZeros = 0;

@@ -37,6 +37,7 @@ public:
     Plot2DEchogram();
     ~Plot2DEchogram();
     bool draw(Plot2D* parent, Dataset* dataset);
+    void clearPlotData();
 
     float getLowLevel() const;
     float getHighLevel() const;
@@ -51,6 +52,7 @@ public:
 
     void setBottomLineVisible(bool isVisible);
     void setDepthFilterVisible(bool isVisible, int value);
+    void setKeelOffsetValue(int value);
 
 
     int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
@@ -173,6 +175,7 @@ private:
     int  depthFilterLevel_ = 1;
     bool filterLevelVisible_ = false;
     QList<int> depthFilterList_;
+    int keelOffset_ = 0;
 
     bool batchCorrect_ = false, updateBatchCorrect_ = false;
     QList<QPoint> batchCorrectList_;

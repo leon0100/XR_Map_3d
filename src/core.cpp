@@ -1221,6 +1221,30 @@ void Core::clearRouteData()
             }
         });
     }
+    else if(dataProcessorState_ == DataProcessorType::serialPortTrack) {
+        GIF->dialogYesNo(tr("Confirm Clear All Historical Data?"),[this](bool confirmed) {
+            if(confirmed) {
+                serialPortManager_->clearRealData();
+                datasetPtr_->resetDataset();
+                dataHorizon_->clear();
+                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing", Qt::QueuedConnection);
+                if (scene3dViewPtr_) {
+                    scene3dViewPtr_->clear(true);
+                    scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+                }
+
+                const int numPlots = plot2dList_.size();
+                for(int i = 0; i < numPlots; i++) {
+                    qPlot2D* plot2d = plot2dList_.at(i);
+                    if(plot2d){
+                        plot2d->clearPlotData();
+                    }
+                }
+
+                emit isobathsViewControlMenuController_->edgeLimitChanged(100);
+            }
+        });
+    }
     else if(dataProcessorState_ == DataProcessorType::staticTrack) {
         GIF->dialogCheck(tr("Confirm to Clear Isobaths?"),[this](bool confirmed, bool clearTrack) {
             if(confirmed) {
@@ -1315,6 +1339,17 @@ void Core::setDepthFilterVisible(bool visible, int value)
     }
 }
 
+void Core::setKeelOffsetValue(int value)
+{
+    const int numPlots = plot2dList_.size();
+    for(int i = 0; i < numPlots; i++) {
+        qPlot2D* plot2d = plot2dList_.at(i);
+        if(plot2d) {
+            plot2d->setKeelOffsetValue(value);
+        }
+    }
+}
+
 void Core::onTileSetChanged(std::shared_ptr<map::TileSet> tileSet)
 {
     if(!tileSet) {
@@ -1355,22 +1390,30 @@ void Core::location(uint8_t type)
         case 0:
             qDebug() << "powerOn..........";
             break;
+
         case 1:
-            qDebug() << "keepBoatView......";
-            latitude =  bleManager_->latitude_;
+            qDebug() << "keepBoatView::blemnager......";
+            latitude  = bleManager_->latitude_;
             longitude = bleManager_->longitude_;
             break;
+
         case 2:
             qDebug() << "locationManager......";
             break;
+
         case 3:
-            qDebug() << "screen......";
+            qDebug() << "keepBoatView::serialPort......";
+            latitude  = serialPortManager_->latitude_;
+            longitude = serialPortManager_->longitude_;
             break;
+
         default:
             break;
     }
 
-    datasetPtr_->location(latitude, longitude);
+    if((latitude != 0) & (longitude != 0)) {
+        datasetPtr_->location(latitude, longitude);
+    }
 }
 
 void Core::onFileStopsOpening()
@@ -1473,7 +1516,7 @@ void Core::createDeviceManagerConnections()
 
     QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourBle,                  directionConnection);
     QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi,                 directionConnection);
-    QObject::connect(serialPortManager_.get(), &SerialPortManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi,   directionConnection);
+    QObject::connect(serialPortManager_.get(), &SerialPortManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourSerialPort, directionConnection);
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame,           directionConnection);
 }
@@ -1712,6 +1755,36 @@ void Core::slot_RealtimeDrawContourWifi(QVector<float>& depthVec, double minZ, d
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
     emit drawRealtimeContour(isRead);
 
+}
+
+void Core::slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
+{
+    int vecSize = depthVec.size();
+    if(vecSize > 0 && vecSize < 3) {
+        qDebug() << "vecSize..........." << vecSize;
+        onDataProcesstorStateChanged(DataProcessorType::serialPortTrack);
+    }
+    if(isAutoRenderSpan_) {
+        if(vecSize == 200) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(80);
+        }
+        else if(vecSize == 400) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(60);
+        }
+        else if(vecSize == 600) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(50);
+        }
+        else if(vecSize == 800) {
+            isobathsViewControlMenuController_->setEdgeLimitChanged(40);
+        }
+    }
+
+    datasetPtr_->vec_CSV_  = depthVec;
+    datasetPtr_->minDepth_ = minZ;
+    datasetPtr_->maxDepth_ = maxZ;
+    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
+    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
+    emit drawRealtimeContour(isRead);
 }
 
 void Core::createDatasetConnections()

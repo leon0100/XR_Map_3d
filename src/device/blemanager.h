@@ -114,13 +114,13 @@ public:
     bool connected() const { return m_connected; }
     QString scanStatus() const { return m_scanStatus; }
 
-    QString latitude() {  latitude_ = parser_->getCurrentBoatPoint().latitude;
+    QString latitude() { latitude_ = parser_->getCurrentBoatPoint().latitude;
                                     return QString::number(latitude_, 'f', 6); }
     QString longitude() { longitude_ = parser_->getCurrentBoatPoint().longitude;
                                     return QString::number(longitude_, 'f', 6); }
-    QString angle() const { return QString::number(parser_->getCurrentBoatPoint().heading, 'f', 2); }
-    QString speed() const { return QString::number(parser_->getCurrentBoatPoint().speed, 'f', 2); }
-    QString depth() const { return QString::number(parser_->getCurrentBoatPoint().depth, 'f', 2); }
+    QString angle() const { return QString::number(parser_->getCurrentBoatPoint().heading / 10.f, 'f', 1); }
+    QString speed() const { return QString::number(parser_->getCurrentBoatPoint().speed/ 100 * 0.514444f, 'f', 2); }
+    QString depth() const { return QString::number(parser_->getCurrentBoatPoint().depth/ 100.0f, 'f', 2); }
 
     bool dataReading() const { return readingDrawTrack_; }
     void setDataReading(bool isReading) { readingDrawTrack_ = isReading; emit dataReadingChanged(isReading);}
@@ -231,11 +231,8 @@ private:
     void searchCharacteristic();
     void SendMsg(QString text);
 
-    // QQuickView* loadingQuickView_;
-
-
 private:
-    QElapsedTimer recvTimer_;
+    QElapsedTimer  recvTimer_;
     RealTimeParser *parser_ = nullptr;
     QThread *parserThread_;
 
@@ -250,8 +247,6 @@ private:
     bool readingDrawTrack_ = true;
 
     QBluetoothLocalDevice *localDevice_;
-
-
 };
 
 

@@ -426,6 +426,16 @@ void Themes::setLiveDataVisible(bool visible)
     emit liveDataVisibleChanged();
 }
 
+int Themes::currentCommPage() const
+{
+    return currentCommPage_;
+
+}
+void Themes::setCurrentCommPage(int currentCommPage)
+{
+    currentCommPage_ = currentCommPage;
+    emit currentCommPageChanged();
+}
 
 double Themes::batteryValue() const
 {

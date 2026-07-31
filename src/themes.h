@@ -185,25 +185,25 @@ class Themes : public QObject
 public:
     Themes();
 
-    Q_PROPERTY(bool isFakeCoords READ getIsFakeCoords NOTIFY changed)
-    Q_PROPERTY(qreal resCoeff READ getResolutionCoeff NOTIFY changed)
+    Q_PROPERTY(bool  isFakeCoords READ getIsFakeCoords     NOTIFY changed)
+    Q_PROPERTY(qreal resCoeff     READ getResolutionCoeff  NOTIFY changed)
 
     Q_PROPERTY(QColor disabledTextColor READ disabledTextColor NOTIFY changed)
     Q_PROPERTY(QColor disabledBackColor READ disabledBackColor NOTIFY changed)
-    Q_PROPERTY(QColor hoveredBackColor READ hoveredBackColor NOTIFY changed)
+    Q_PROPERTY(QColor hoveredBackColor  READ hoveredBackColor  NOTIFY changed)
 
-    Q_PROPERTY(QColor textColor READ textColor NOTIFY changed)
+    Q_PROPERTY(QColor textColor      READ textColor      NOTIFY changed)
     Q_PROPERTY(QColor textSolidColor READ textSolidColor NOTIFY changed)
     Q_PROPERTY(QColor textErrorColor READ textErrorColor NOTIFY changed)
-    Q_PROPERTY(QFont textFont READ textFont NOTIFY changed)
-    Q_PROPERTY(QFont textFontS READ textFontS NOTIFY changed)
+    Q_PROPERTY(QFont textFont        READ textFont       NOTIFY changed)
+    Q_PROPERTY(QFont textFontS       READ textFontS      NOTIFY changed)
 
-    Q_PROPERTY(QColor menuBackColor READ menuBackColor NOTIFY changed)
+    Q_PROPERTY(QColor menuBackColor  READ menuBackColor  NOTIFY changed)
     Q_PROPERTY(QColor frameBackColor READ frameBackColor NOTIFY changed)
 
-    Q_PROPERTY(QColor controlBackColor READ controlBackColor NOTIFY changed)
-    Q_PROPERTY(QColor controlBorderColor READ controlBorderColor NOTIFY changed)
-    Q_PROPERTY(QColor controlSolidBackColor READ controlSolidBackColor NOTIFY changed)
+    Q_PROPERTY(QColor controlBackColor        READ controlBackColor        NOTIFY changed)
+    Q_PROPERTY(QColor controlBorderColor      READ controlBorderColor      NOTIFY changed)
+    Q_PROPERTY(QColor controlSolidBackColor   READ controlSolidBackColor   NOTIFY changed)
     Q_PROPERTY(QColor controlSolidBorderColor READ controlSolidBorderColor NOTIFY changed)
     Q_PROPERTY(int screenSize   READ screenSize   NOTIFY changed)
     Q_PROPERTY(int screenWidth  READ screenWidth  NOTIFY changed)
@@ -227,7 +227,7 @@ public:
     Q_PROPERTY(double batteryValue       READ batteryValue       NOTIFY sysytemToolBarChanged)
     Q_PROPERTY(QString updateSystemTime  READ updateSysytemTime  NOTIFY sysytemToolBarChanged)
     Q_PROPERTY(int systemNetStatus       READ systemNetStatus    NOTIFY sysytemToolBarChanged)
-
+    Q_PROPERTY(int currentCommPage       READ currentCommPage    WRITE setCurrentCommPage  NOTIFY currentCommPageChanged)
 
     bool   getIsFakeCoords()    const { return isFakeCoords_; };
     qreal  getResolutionCoeff() const { return resolutionCoeff_; };
@@ -265,6 +265,8 @@ public:
     void setExportAsDataVisible(bool visible);
     bool getLiveDataVisible();
     void setLiveDataVisible(bool visible);
+    int  currentCommPage() const;
+    void setCurrentCommPage(int currentCommPage);
 
 
     double batteryValue() const;
@@ -326,6 +328,7 @@ signals:
     void mapSourceLoadVisibleChanged();
     void exportAsDataVisibleChanged();
     void sysytemToolBarChanged();
+    void currentCommPageChanged();
     void liveDataVisibleChanged();
 
 
@@ -371,6 +374,7 @@ private:
     double m_batteryValue;
     QString m_currentTime;
     int systemNetStatus_;
+    int currentCommPage_ = 0;
 };
 
 inline qreal Themes::checkResolutionCoeff() const

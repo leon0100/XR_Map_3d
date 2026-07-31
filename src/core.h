@@ -129,6 +129,7 @@ public slots:
     Q_INVOKABLE void switchMapType(int sourceType);
     Q_INVOKABLE void bathyMetryConfigApply(int soundVelocity, int draftOffset);
     Q_INVOKABLE void setDepthFilterVisible(bool visible, int value);
+    Q_INVOKABLE void setKeelOffsetValue(int value);
 
 signals:
     void connectionChanged(bool duplex = false);
@@ -163,6 +164,7 @@ private slots:
 
     void slot_RealtimeDrawContourBle(QVector<float>& depthVec, double minZ, double maxZ, bool isRead);
     void slot_RealtimeDrawContourWifi(QVector<float>& depthVec, double minZ, double maxZ, bool isRead);
+    void slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double minZ, double maxZ, bool isRead);
 
 
 private:

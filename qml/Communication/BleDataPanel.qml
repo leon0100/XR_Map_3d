@@ -18,7 +18,8 @@ Item {
     property string defaultLatLon: "000.000"
     property string defaultValue: "0.0"
 
-    property bool dataReading: BleManager ? BleManager.dataReading : true
+    property bool dataReading:BleManager.dataReading
+    property bool serialPortDataReading: SerialPort.dataReading
 
 
     Rectangle {
@@ -45,7 +46,14 @@ Item {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? (BleManager.latitude + "°") : text
+            text: {
+                if(theme.currentCommPage === 0) {
+                    dataReading ? (BleManager.latitude + "°") : text
+                }
+                else if(theme.currentCommPage === 2) {
+                    serialPortDataReading ? (SerialPort.latitude + "°") : text
+                }
+            }
         }
 
 
@@ -55,7 +63,14 @@ Item {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? (BleManager.longitude + "°") : text
+            text: {
+                if(theme.currentCommPage === 0) {
+                    dataReading ? (BleManager.longitude + "°") : text
+                }
+                else if(theme.currentCommPage === 2) {
+                    serialPortDataReading ? (SerialPort.longitude + "°") : text
+                }
+            }
         }
 
 
@@ -65,7 +80,14 @@ Item {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? (BleManager.angle + "°") : text
+            text: {
+               if(theme.currentCommPage === 0) {
+                   dataReading ? (BleManager.angle + "°") : text
+               }
+               else if(theme.currentCommPage === 2) {
+                   serialPortDataReading ? (SerialPort.angle + "°") : text
+               }
+            }
         }
 
 
@@ -75,7 +97,14 @@ Item {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? (BleManager.speed + " m/s") : text
+            text: {
+                if(theme.currentCommPage === 0) {
+                    dataReading ? (BleManager.speed + "m/s") : text
+                }
+                else if(theme.currentCommPage === 2) {
+                    serialPortDataReading ? (SerialPort.speed + "m/s") : text
+                }
+            }
         }
 
 
@@ -85,7 +114,14 @@ Item {
             font.pixelSize: iconSize
             font.bold: true
             color: "#102040"
-            text: dataReading ? (BleManager.depth + " m") : text
+            text: {
+                if(theme.currentCommPage === 0) {
+                    dataReading ? (BleManager.depth + " m") : text
+                }
+                else if(theme.currentCommPage === 2) {
+                    serialPortDataReading ? (SerialPort.depth + " m") : text
+                }
+            }
         }
 
     }

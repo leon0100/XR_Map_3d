@@ -7,7 +7,7 @@ import QtQuick.Window 2.15
 
 Rectangle {
     id: root
-    width: landSize * 1.2
+    width:  landSize * 1.2
     height: landSize * 0.9
     radius: 10
     z: 999

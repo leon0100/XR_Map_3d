@@ -59,6 +59,12 @@ void qPlot2D::setDataProcessor(DataProcessor *dataProcessorPtr)
     Plot2D::setDataProcessorPtr(dataProcessorPtr);
 }
 
+void qPlot2D::clearPlotData()
+{
+    echogram_.clearPlotData();
+    plotUpdate();
+}
+
 void qPlot2D::plotUpdate()
 {
     // qDebug() << "qPlot2D::plotUpdate()..........";
@@ -72,7 +78,8 @@ void qPlot2D::plotUpdate()
     }
     emit timelinePositionChanged();
 
-    if(dataset_ && !dataset_->vec_CSV_.empty()) {
+    // if(dataset_ && !dataset_->vec_CSV_.empty()) {
+    if(dataset_ && !dataset_->vec_CSV_.empty()  && cursor_.distance.mode != AutoRangeNone) {
         tempViewMaxLoRng_ = (int)(currentViewMaxLoRng_ * 1.5f);
         setMaxLoRng(tempViewMaxLoRng_);
     }
@@ -158,7 +165,6 @@ void qPlot2D::setMinUpRng(int minUpRng)
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
     echogram_.setUpperRng(minUpRng);
     emit minUpRngChanged();
-    // plotUpdate();
 }
 
 void qPlot2D::setMaxLoRng(int maxLoRng)
@@ -167,7 +173,6 @@ void qPlot2D::setMaxLoRng(int maxLoRng)
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
     echogram_.setLowerRng(maxLoRng);
     emit maxLoRngChanged();
-    // plotUpdate();
 }
 
 void qPlot2D::setSoundVelocity(int soundVelocity, int draftOffset)
@@ -179,6 +184,12 @@ void qPlot2D::setSoundVelocity(int soundVelocity, int draftOffset)
 void qPlot2D::setDepthFilterVisible(bool visible, int value)
 {
     echogram_.setDepthFilterVisible(visible, value);
+    plotUpdate();
+}
+
+void qPlot2D::setKeelOffsetValue(int value)
+{
+    echogram_.setKeelOffsetValue(value);
     plotUpdate();
 }
 
@@ -224,6 +235,18 @@ QString qPlot2D::toLatiStr()
 void qPlot2D::setToLatiStr(QString toLati)
 {
     toLatiStr_ = toLati;
+}
+
+void qPlot2D::setCursorFromTo(float from, float to)
+{
+    cursor_.distance.mode = AutoRangeNone;
+    Plot2D::cursor_.distance.from = from;
+    Plot2D::cursor_.distance.to = to;
+}
+
+void qPlot2D::setIndx(int indx)
+{
+    indx_ = indx;
 }
 
 void qPlot2D::resetUpLoRng(int upper, int lower)
@@ -501,6 +524,7 @@ void qPlot2D::scaleYZoomEvent(int delta)
 
     echogram_.setLowerRng(currentLoRng_);
     setMaxLoRng(currentLoRng_);
+    qDebug() << "currentLoRng_........." << currentLoRng_;
     plotUpdate();
 }
 

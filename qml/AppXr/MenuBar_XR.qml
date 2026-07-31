@@ -51,7 +51,6 @@ Popup {
         langSubsubMenu.close()
         mapSubsubMenu.close()
         unitsSubsubMenu.close()
-
         mainMenuPopup.close()
     }
 

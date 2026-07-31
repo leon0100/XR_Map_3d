@@ -21,6 +21,7 @@ enum class DataProcessorType {
     kSurface,
     bletoothTrack,
     wifiTrack,
+    serialPortTrack,
     staticTrack,
     kmlkmzFile,
 };

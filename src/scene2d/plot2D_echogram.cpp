@@ -142,6 +142,12 @@ void Plot2DEchogram::setDepthFilterVisible(bool isVisible, int value)
     }
 }
 
+void Plot2DEchogram::setKeelOffsetValue(int value)
+{
+    keelOffset_ = value;
+    resetCash();
+}
+
 void Plot2DEchogram::setBatchCorrect(bool batch)
 {
     batchCorrect_ = batch;
@@ -181,7 +187,6 @@ void Plot2DEchogram::setSensitivity(int sensitive)
     sensLevel_ = sensitive;
     resetCash();
 }
-
 
 double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,double MeasureNoise_R,double InitialPredict,int isFirst)
 {
@@ -252,11 +257,9 @@ void Plot2DEchogram::drawDepthFilter(Canvas canvas, int width, int cash_position
 
         float y = (float)depth / currentLoRng_ * canvas.height();
         QPoint currentPoint(x, (int)y);
-
         if(hasLast) {
             cp->drawLine(lastPoint, currentPoint);
         }
-
         lastPoint = currentPoint;
         hasLast = true;
     }
@@ -839,6 +842,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 float upRng = params.upRng;
                 float loRng = params.loRng;
                 float depth = params.depth;
+                depth += keelOffset_;
                 if((upRng < 0) || (loRng < 0) || (pingSize <= 0) || (upRng == loRng)) {
                     draft = 0;
                     btStart = 0;
@@ -849,7 +853,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 if(depthFilterList_.size() > pool_index_safe) {
                     depthFilter = depthFilterList_.at(pool_index_safe);
                 }
-                // qDebug() << "222222222222depth:" << depth << "  latitude:" << params.longitude << "  " << params.latitude;
+                // qDebug() << "222222depth:" << depth << "  latitude:" << params.longitude << "  " << params.latitude;
                 if(loRng != 0) {
                     draft   = (1500.0/soundVelocity_) * (draftOffset_ / (loRng-upRng)) * pingSize;
                     btStart = (1500.0/soundVelocity_) * (depth / (loRng-upRng)) * pingSize;
@@ -907,8 +911,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 int btStartNow = btStart;
                 btStartNow -= startIdx;
                 // qDebug() << "btStart:" << btStart << "   btStartNow:" << btStartNow << "   nowScaleY:" << nowScaleY;
-                int btStartFilter = btStart_filter;
-                btStartFilter -= startIdx;
                 QList<int> colorData;
                 colorData.clear();
                 int colorNum = 1;
@@ -981,7 +983,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
 
                     int j = 0;
                     for(; ((int)(j*nowScaleY)+startIdx) < cacheData.count(); j++) {
-                        int rgb = colorData[startIdx+(int)(j*nowScaleY)];
+                        int rgb = colorData[(int)(j*nowScaleY)+startIdx];
                         QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                         img_data[j* bytesPerLine + column] = color;
                     }
@@ -999,8 +1001,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                         img_data[j* bytesPerLine + column] = color;
                     }
 
-                    for(int j = 0; (j<height) && (btStart+(int)(j/nowScaleY)<colorData.count()); j++) {
-                        int rgb = colorData[startIdx+(int)(j/nowScaleY)];
+                    for(int j = 0; j<height && ((int)(j/nowScaleY)+ startIdx)<colorData.count(); j++) {
+                        int rgb = colorData[(int)(j/nowScaleY)+ startIdx];
                         QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
                         img_data[j * bytesPerLine + column] = color;
                     }
@@ -1024,7 +1026,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 _cash[column].longitude = params.longitude;
                 _cash[column].latitude  = params.latitude;
                 _cash[column].startIdx  = startIdx;
-
 
 
                 // uint32_t* img_data = (uint32_t*)_image.bits();
@@ -1085,8 +1086,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 // delete[] cacheData;
                 // cacheData = nullptr;
             }
-        }
 
+        }
         else {
             if(isCashNotvalid || _cash[column].state != CashLine::CashState::CashStateEraced) {
                 _cash[column].poolIndex = -1;
@@ -1105,8 +1106,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
     }
 
-
-
     int visualRightColumn = (wrapStartPos == 0) ? (width - 1) : (wrapStartPos - 1);
     if (visualRightColumn >= 0 && visualRightColumn < _cash.size()) {
         wavePixel_ = _cash[visualRightColumn];
@@ -1116,9 +1115,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         else {
             parent->currentViewMaxLoRng_ = currentViewMaxLoRng;
         }
-        // qDebug() << "wavePixel_........." << wavePixel_.depth;
     }
-
     _lastCursor = cursor;
 
     return wrapStartPos;
@@ -1393,6 +1390,13 @@ void Plot2DEchogram::updateBatchCorrect(Plot2D* parent, Dataset* dataset, int wi
         resetCash();
         parent->plotUpdate();
     }
+}
+
+void Plot2DEchogram::clearPlotData()
+{
+    clearDeleteFrame();
+    clearBatchCorrect();
+    wavePixel_ = CashLine();
 }
 
 bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)

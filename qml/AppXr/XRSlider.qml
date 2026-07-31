@@ -6,6 +6,7 @@ RowLayout {
     id: xrSlider
 
     property  alias  value: slider.value
+    property  string unit: ""
     property  real   from: 0
     property  real   to: 100
     property  real   stepSize: 1
@@ -15,7 +16,7 @@ RowLayout {
     property  real   handleWidth: fontSize * 0.5
     property  int    sliderLen: fontSize * 10
 
-    spacing: fontSize * 0.3
+    spacing: fontSize * 0.4
 
     //---------------- 标题 ----------------//
     Text {
@@ -70,7 +71,7 @@ RowLayout {
 
     //---------------- 当前值 ----------------//
     Rectangle {
-        Layout.preferredWidth: fontSize  * 1.6
+        Layout.preferredWidth: fontSize  * 2.1
         Layout.preferredHeight: fontSize * 1.2
 
         radius: height * 0.2
@@ -78,7 +79,7 @@ RowLayout {
 
         Text {
             anchors.centerIn: parent
-            text: Number(slider.value).toFixed(0)
+            text: Number(slider.value).toFixed(0) + unit
             color: xrSlider.activeColor
             font.pixelSize: fontSize * 0.9
             font.bold: true

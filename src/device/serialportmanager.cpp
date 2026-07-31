@@ -68,7 +68,7 @@ void SerialPortManager::scanPorts()
 void SerialPortManager::toggleConnection(QString port, int baudRate)
 {
     baudRate_ = baudRate;
-    // qDebug() << "port: " << port << "   baudRate: " << baudRate;
+    qDebug() << "port: " << port << "   baudRate: " << baudRate;
     if(serialPort_->isOpen()) {
         serialPort_->close();
         serialPort_->disconnect();
@@ -108,24 +108,24 @@ QStringList SerialPortManager::availablePorts()
 
 bool SerialPortManager::isConnected()
 {
-    qDebug() << "serialPort_->isOpen........" << serialPort_->isOpen();
+    // qDebug() << "serialPort_->isOpen........" << serialPort_->isOpen();
     return serialPort_->isOpen();
 }
 
 void SerialPortManager::clearRealData()
 {
-    tmodemSn_ = 0;
+    tmodemSn_  = 0;
     m_tsl3Buffer.clear();
     nowIndex_  = 0;
-    tslIndex_ = 0;
+    tslIndex_  = 0;
     depthHistory_.clear();
-    minDepth_ = 0.0;
-    maxDepth_ = 0.0;
-    latitude_ = 000.000;
+    minDepth_  = 0.0;
+    maxDepth_  = 0.0;
+    latitude_  = 000.000;
     longitude_ = 000.000;
-    angle_ = 000.000;
-    speed_ = 0.0;
-    depth_ = 0.0;
+    angle_     = 000.000;
+    speed_     = 0.0;
+    depth_     = 0.0;
 }
 
 // --------------------------------------- CRC Helpers -------------------------------------------
@@ -434,6 +434,8 @@ void SerialPortManager::parseTsl3FromTModem()
         angle_     = chartParams.heading ;
         speed_     = chartParams.speed ;
         depth_     = depth;
+        emit dataPanelUpdate();
+
         emit chartComplete(batchChannelId_, chartParams, dataVec, readingDrawTrack_);
 
         emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);

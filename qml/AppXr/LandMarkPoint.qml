@@ -4,7 +4,7 @@ import QtQuick.Window 2.15
 
 Item {
     id: root
-    width: boxSize
+    width:  boxSize
     height: boxSize
     x: renderer.screetShot.landMarkPtX - boxSize * 0.5
     y: renderer.screetShot.landMarkPtY - boxSize * 0.5

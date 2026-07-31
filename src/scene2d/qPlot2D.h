@@ -36,6 +36,7 @@ public:
 
     void setPlot(Dataset* plot);
     void setDataProcessor(DataProcessor* dataProcessorPtr);
+    void clearPlotData();
 
     bool isHorizontal() { return _isHorizontal; }
     void setHorizontal(bool is_horizontal) { _isHorizontal = is_horizontal; Plot2D::setHorizontal(_isHorizontal); update(); }
@@ -51,6 +52,7 @@ public:
     void setMaxLoRng(int maxLoRng);
     void setSoundVelocity(int soundVelocity, int draftOffset);
     void setDepthFilterVisible(bool visible, int value);
+    void setKeelOffsetValue(int value);
     void setBatchCorrect(bool batch);
     void setDepthCorrect(bool depthCorrect);
 
@@ -66,8 +68,8 @@ public:
     Q_INVOKABLE void drawDepthCorrect(int x, int y);
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
     Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
-    Q_INVOKABLE void setCursorFromTo(float from, float to) { cursor_.distance.mode = AutoRangeNone; Plot2D::cursor_.distance.from = from; Plot2D::cursor_.distance.to = to; }
-    Q_INVOKABLE void setIndx(int indx) { indx_ = indx; }
+    Q_INVOKABLE void setCursorFromTo(float from, float to);
+    Q_INVOKABLE void setIndx(int indx);
     Q_INVOKABLE void resetUpLoRng(int upper, int lower);
     Q_INVOKABLE void setSensitivity(int sensitive);
 

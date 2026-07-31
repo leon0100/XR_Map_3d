@@ -12,7 +12,6 @@ Rectangle {
     x: width * 0.3
     y: 2
     z: 9999
-
     color: "#f0f0f0"
     border.color: "#3498db"
     border.width: 1
@@ -20,9 +19,9 @@ Rectangle {
     visible: theme.liveDataVisible
 
 
-    property int  currentCommPage: 0
+    // property int  currentCommPage: 0
     property bool bluetoothDrawOpen: false
-    property int  liveDataSize:  theme.screenSize * 0.35
+    property int  liveDataSize: theme.screenSize * 0.35
     property int  layoutHeight: liveDataSize * 0.1
     property var  targetPlot:   null
     property int  iconSize:     liveDataSize * 0.05
@@ -32,9 +31,17 @@ Rectangle {
     Connections {
         target: BleManager
         function onConnectedChanged(connected) {
-            switchControl.isOn = connected
+            switchControl.isOn     = connected
             readControl.isReading  = connected
             liveDataContent.isShowDataPanel = true
+        }
+    }
+
+    Connections {
+        target: SerialPort
+        function onConnectedChanged(connected) {
+            readControl22.isReading = connected
+            liveDataContent.isShowDataPanel = connected
         }
     }
 
@@ -76,19 +83,19 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    color: currentCommPage === index ? "#ffffff" : "#9fb6cd"
+                    color: theme.currentCommPage === index ? "#ffffff" : "#9fb6cd"
 
                     Text {
                         anchors.centerIn: parent
                         text: modelData
                         font.pixelSize: iconSize
-                        font.bold: currentCommPage === index
+                        font.bold: theme.currentCommPage === index
                     }
 
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            currentCommPage = index
+                            theme.currentCommPage = index
                             if(index === 0) {
                                 BleManager.setBleLiveScanningVisible(true)
                             }
@@ -105,7 +112,7 @@ Rectangle {
 
     Item {
         id: bluetoothPage
-        visible: currentCommPage === 0
+        visible: theme.currentCommPage === 0
         anchors.top: bluetoothTitleBar.bottom
         anchors.left:         parent.left
         anchors.right:        parent.right
@@ -203,7 +210,6 @@ Rectangle {
                                     if(switchControl.isOn) {
                                         core.location(1)
                                     }
-
                                 }
 
                                 onEntered: parent.color = "#d6e6ff"
@@ -550,7 +556,7 @@ Rectangle {
     Item {
         id: wifiPage
 
-        visible: currentCommPage === 1
+        visible: theme.currentCommPage === 1
 
         anchors {
             top: bluetoothTitleBar.bottom
@@ -784,7 +790,7 @@ Rectangle {
 
     Item {
         id: serialPortPage
-        visible: currentCommPage === 2
+        visible: theme.currentCommPage === 2
         anchors.top: bluetoothTitleBar.bottom
         anchors.left:    parent.left
         anchors.right:   parent.right
@@ -882,7 +888,7 @@ Rectangle {
                 spacing: layoutHeight * 2
 
                 Rectangle {
-                    id: switchControl2
+                    id: switchControl2  // serialPort
                     width:  layoutHeight * 2.2
                     height: layoutHeight
                     radius: layoutHeight * 0.3
@@ -1009,11 +1015,11 @@ Rectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         onClicked: {
-                            readControl2.isReading = !readControl2.isReading
-                            SerialPort.dataReading = readControl2.isReading
+                            readControl22.isReading = !readControl22.isReading
+                            SerialPort.dataReading = readControl22.isReading
                         }
-                        onEntered: readControl2.hovered = true
-                        onExited:  readControl2.hovered = false
+                        onEntered: readControl22.hovered = true
+                        onExited:  readControl22.hovered = false
                     }
 
                     Behavior on color {
@@ -1021,15 +1027,14 @@ Rectangle {
                     }
                 }
 
-
             }
 
 
             Rectangle {
                 id: keepBoatView2
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: layoutHeight * 6.4
-                Layout.preferredHeight:layoutHeight
+                Layout.preferredWidth:  layoutHeight * 6.4
+                Layout.preferredHeight: layoutHeight
                 radius: layoutHeight * 0.2
                 color: "#f9f9fb"
                 border.color: "#b0b3b8"
@@ -1043,13 +1048,13 @@ Rectangle {
                    loops: 1
 
                    ColorAnimation {
-                       target: keepBoatView
+                       target: keepBoatView2
                        property: "color"
                        to: "#9ecbff"
                        duration: 100
                    }
                    ColorAnimation {
-                       target: keepBoatView
+                       target: keepBoatView2
                        property: "color"
                        to: "#d6e6ff"
                        duration: 100
@@ -1064,7 +1069,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
 
                     Rectangle {
-                        width: iconSize * 1.1
+                        width:  iconSize * 1.1
                         height: iconSize * 1.1
                         radius: 5
                         border.color: "#b0b3b8"
@@ -1073,7 +1078,7 @@ Rectangle {
 
                         Rectangle {
                             anchors.centerIn: parent
-                            width: parent.width * 0.8
+                            width:  parent.width * 0.8
                             height: parent.height * 0.8
                             radius: parent.height * 0.4
                             color: "#66E07A"
@@ -1092,23 +1097,22 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     onClicked: {
-                        flashAnim11.restart()
-                        if(SerialPort.connected) {
-                            core.location(1)
+                        flashAnim112.restart()
+                        if(SerialPort.connected === true) {
+                            core.location(3)
                         }
                     }
                     onEntered: parent.color = "#d6e6ff"
-                    onExited: parent.color = "#f9f9fb"
+                    onExited:  parent.color = "#f9f9fb"
                 }
             }
 
             Rectangle {
                 id: showDataPanel2
-                // Layout.fillWidth: true
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: layoutHeight * 6.4
+                Layout.preferredWidth:  layoutHeight * 6.4
                 Layout.preferredHeight: layoutHeight
-                radius: layoutHeight * 0.2
+                radius:  layoutHeight * 0.2
                 color: "#f9f9fb"
                 border.color: "#b0b3b8"
                 border.width: 2
@@ -1121,13 +1125,13 @@ Rectangle {
                    loops: 1
 
                    ColorAnimation {
-                       target: showDataPanel
+                       target: showDataPanel2
                        property: "color"
                        to: "#9ecbff"
                        duration: 100
                    }
                    ColorAnimation {
-                       target: showDataPanel
+                       target: showDataPanel2
                        property: "color"
                        to: "#d6e6ff"
                        duration: 100
@@ -1136,13 +1140,13 @@ Rectangle {
 
                 Row {
                     anchors.fill: parent
-                    anchors.leftMargin: iconSize * 0.5
+                    anchors.leftMargin:  iconSize * 0.5
                     anchors.rightMargin: iconSize * 0.5
                     spacing: iconSize * 0.6
                     anchors.verticalCenter: parent.verticalCenter
 
                     Rectangle {
-                        width: iconSize * 1.1
+                        width:  iconSize * 1.1
                         height: iconSize * 1.1
                         radius: 5
                         border.color: "#b0b3b8"
@@ -1151,7 +1155,7 @@ Rectangle {
 
                         Rectangle {
                             anchors.centerIn: parent
-                            width: parent.width * 0.8
+                            width:  parent.width  * 0.8
                             height: parent.height * 0.8
                             radius: parent.height * 0.4
                             color: "#66E07A"
@@ -1170,18 +1174,14 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
-
                     onClicked: {
-                        flashAnim22.restart()
+                        flashAnim222.restart()
                         isShowDataPanel = !isShowDataPanel
                     }
-
                     onEntered: parent.color = "#d6e6ff"
                     onExited:  parent.color = "#f9f9fb"
                 }
             }
-
-
 
         }
 

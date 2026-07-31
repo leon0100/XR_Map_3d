@@ -421,52 +421,6 @@ void BLEManager::setBleLiveScanningVisible(bool visible)
             startStopScan(true);
         }
     }
-
-
-    // //nie:test
-    // if(visible) {
-    //     QString filePath = "E:/myQtProject/tsl_test_data/data of copy of tst.csv";
-    //     QFile file;
-    //     const QUrl url(filePath);
-    //     url.isLocalFile() ? file.setFileName(url.toLocalFile()) : file.setFileName(url.toString());
-    //     if (!file.open(QIODevice::ReadOnly)) {
-    //         return;
-    //     }
-
-    //     track_.clear();
-
-    //     QTextStream in(&file);
-    //     int skip_rows = 2;
-
-    //     QVector<float> vec_CSV;
-    //     double minZ = 0.0, maxZ = 0.0;
-    //     while (!in.atEnd()) {
-    //         QString row = in.readLine();
-    //         if (skip_rows > 0) {
-    //             skip_rows--;
-    //             continue;
-    //         }
-
-    //         QStringList columns = row.split(",");
-    //         track_.append(Position());
-
-    //         track_.last().lla.latitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-    //         track_.last().lla.longitude = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-    //         track_.last().lla.altitude  = columns[6].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-
-    //         minZ = std::min(minZ, track_.last().lla.altitude);
-    //         maxZ = std::max(maxZ, track_.last().lla.altitude);
-    //         vec_CSV.append(track_.last().lla.altitude);
-    //         // qDebug() << " track.last().lla.longitude:" << track.last().lla.longitude << "   latitude:" << track.last().lla.latitude;
-    //         // emit positionComplete_file(track.last().lla.latitude, track.last().lla.longitude,track.last().lla.altitude);
-    //     }
-    //     qDebug() << "vec_CSV.size()........." << vec_CSV.size();
-
-    //     file.close();
-
-    //     trackTimer_->start(50);
-    // }
-
 }
 
 void BLEManager::slotTrackTimeout()

@@ -29,7 +29,6 @@ class SerialPortManager : public QObject
 public:
     Q_PROPERTY(QStringList availablePorts READ availablePorts                       NOTIFY portsUpdated)
     Q_PROPERTY(bool    connected          READ isConnected                          NOTIFY connectChanged)
-
     //class传给bleDataPanel.qml
     Q_PROPERTY(QString latitude    READ latitude     NOTIFY dataPanelUpdate)
     Q_PROPERTY(QString longitude   READ longitude    NOTIFY dataPanelUpdate)
@@ -49,9 +48,9 @@ public:
 
     QString latitude()  const   { return QString::number(latitude_, 'f', 6); }
     QString longitude() const   { return QString::number(longitude_, 'f', 6); }
-    QString angle()     const   { return QString::number(angle_, 'f', 2); }
-    QString speed()     const   { return QString::number(speed_, 'f', 2); }
-    QString depth()     const   { return QString::number(depth_, 'f', 2); }
+    QString angle()     const   { return QString::number(angle_ / 10.f, 'f', 1);}
+    QString speed()     const   { return QString::number(speed_/ 100 * 0.514444f, 'f', 2); }
+    QString depth()     const   { return QString::number(depth_/ 100.0f, 'f', 2); }
 
     bool dataReading() const { return readingDrawTrack_; }
     void setDataReading(bool isReading) { readingDrawTrack_ = isReading; emit dataReadingChanged(isReading);}

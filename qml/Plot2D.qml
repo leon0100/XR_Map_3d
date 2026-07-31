@@ -35,10 +35,10 @@ WaterFall {
     }
 
     function setAim(mouseX, mouseY) {
-        plotMousePosition(mouseX, mouseY, true)
+        plot.plotMousePosition(mouseX, mouseY, true)
     }
     function resetAim() {
-        plotMousePosition(-1, -1)
+        plot.plotMousePosition(-1, -1)
     }
     function doVerZoomEvent(paramX) {
         verZoomEvent(paramX)
