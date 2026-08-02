@@ -390,11 +390,14 @@ WaterFall {
                 spacing: plotIconSize
 
                 RowLayout {
-                    // Layout.fillWidth:  true
+                    Layout.fillWidth:  true
+                    spacing: plotIconSize * 2
+
 
                     CCheck {
                         id: echogramVisible
-                        Layout.fillWidth: true
+                        // Layout.fillWidth: true
+                        // Layout.preferredWidth:
                         checked: true
                         text: qsTr("Color Scheme")
                         height: plotIconSize
@@ -402,20 +405,35 @@ WaterFall {
                         Component.onCompleted: plotEchogramVisible(checked)
                     }
 
-                    CCombo {
+                    // CCombo {
+                    //     id: echoTheme
+                    //     Layout.fillWidth: true
+                    //     model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
+                    //     currentIndex: 0
+                    //     height: plotIconSize
+
+                    //     onCurrentIndexChanged: plotEchogramTheme(currentIndex)
+                    //     Component.onCompleted: plotEchogramTheme(currentIndex)
+
+                    //     Settings {
+                    //         category: "Plot2D_" + plot.indx
+                    //         property alias waterfallThemeId: echoTheme.currentIndex
+                    //     }
+                    // }
+                    XRColorScheme {
                         id: echoTheme
-                        Layout.fillWidth: true
-                        model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
+                        // width: plotIconSize * 14
+                        // height: plotIconSize * 1.5
                         currentIndex: 0
-                        height: plotIconSize
 
-                        onCurrentIndexChanged: plotEchogramTheme(currentIndex)
-                        Component.onCompleted: plotEchogramTheme(currentIndex)
-
-                        Settings {
-                            category: "Plot2D_" + plot.indx
-                            property alias waterfallThemeId: echoTheme.currentIndex
+                        onCurrentIndexChanged: {
+                            plotEchogramTheme(currentIndex)
                         }
+
+                        Component.onCompleted: {
+                            plotEchogramTheme(currentIndex)
+                        }
+
                     }
 
                 }
@@ -547,12 +565,13 @@ WaterFall {
 
                 RowLayout {
                     Layout.fillWidth:  true
+                    spacing: plotIconSize * 2
 
                     XRSlider {
                         title: "Sensitivity"
-                        Layout.preferredWidth: plotIconSize * 8
+                        Layout.preferredWidth: plotIconSize * 7
                         Layout.alignment: Qt.AlignVCenter
-
+                        sliderLen: plotIconSize * 5
                         from: 1
                         to: 9
                         value: 7

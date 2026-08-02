@@ -65,6 +65,27 @@ void qPlot2D::clearPlotData()
     plotUpdate();
 }
 
+void qPlot2D::setTimelinePositionToStart()
+{
+    if(datasetPtr_ == nullptr) {
+        return;
+    }
+    const int data_width = datasetPtr_->size();
+    if(data_width <= 0) {
+        return;
+    }
+    const int image_width = canvas_.width();
+    if(image_width <= 0) {
+        return;
+    }
+    // 让屏幕最左侧显示第1帧(index 0):
+      // indexes[0] = head_data_index - image_width = 0
+      // => head_data_index = image_width
+      // => position = image_width / data_width
+    float position = static_cast<float>(image_width) / data_width;
+    setTimelinePosition(position);
+}
+
 void qPlot2D::plotUpdate()
 {
     // qDebug() << "qPlot2D::plotUpdate()..........";
@@ -78,10 +99,8 @@ void qPlot2D::plotUpdate()
     }
     emit timelinePositionChanged();
 
-    // if(dataset_ && !dataset_->vec_CSV_.empty()) {
-    if(dataset_ && !dataset_->vec_CSV_.empty()  && cursor_.distance.mode != AutoRangeNone) {
-        tempViewMaxLoRng_ = (int)(currentViewMaxLoRng_ * 1.5f);
-        setMaxLoRng(tempViewMaxLoRng_);
+    if(dataset_ && !dataset_->vec_CSV_.empty()  && cursor_.distance.mode == AutoRangeNone) {
+        setMaxLoRng((int)(currentViewMaxLoRng_ * 1.5f));
     }
 
     update();
@@ -239,6 +258,7 @@ void qPlot2D::setToLatiStr(QString toLati)
 
 void qPlot2D::setCursorFromTo(float from, float to)
 {
+    qDebug() << "qPlot2D::setCursorFromTo....." << from << "  " <<to;
     cursor_.distance.mode = AutoRangeNone;
     Plot2D::cursor_.distance.from = from;
     Plot2D::cursor_.distance.to = to;
@@ -508,6 +528,8 @@ void qPlot2D::setOffsetZ(float value)
 
 void qPlot2D::scaleYZoomEvent(int delta)
 {
+    cursor_.distance.mode = AutoRangeMaxOnScreen;
+
     if(delta < 0) {
         currentLoRng_ /= 2;
     }
@@ -524,8 +546,9 @@ void qPlot2D::scaleYZoomEvent(int delta)
 
     echogram_.setLowerRng(currentLoRng_);
     setMaxLoRng(currentLoRng_);
-    qDebug() << "currentLoRng_........." << currentLoRng_;
     plotUpdate();
+
+    cursor_.distance.mode = AutoRangeNone;
 }
 
 void qPlot2D::plotMousePosition(int x, int y, bool isSync)

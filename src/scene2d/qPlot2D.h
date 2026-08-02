@@ -37,6 +37,7 @@ public:
     void setPlot(Dataset* plot);
     void setDataProcessor(DataProcessor* dataProcessorPtr);
     void clearPlotData();
+    void setTimelinePositionToStart();
 
     bool isHorizontal() { return _isHorizontal; }
     void setHorizontal(bool is_horizontal) { _isHorizontal = is_horizontal; Plot2D::setHorizontal(_isHorizontal); update(); }

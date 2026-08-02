@@ -72,8 +72,7 @@ typedef struct DatasetCursor {
         float to = NAN;
         AutoRangeMode mode = AutoRangeNone;
 
-        void set(float f, float t)
-        {
+        void set(float f, float t) {
             from = f;
             to = t;
         }

@@ -179,10 +179,16 @@ void GraphicsScene3dRenderer::drawObjects()
     }
 
     view = m_camera.m_view;
-    model.scale(1.0f, 1.0f, m_verticalScale);
+    QMatrix4x4 surfaceModel = model;//nie:test，新建一个锚点缩放surfaceModel矩阵
 
+    model.scale(1.0f, 1.0f, m_verticalScale);
     m_model = std::move(model);
     m_projection = std::move(projection);
+
+    float anchorZ = surfaceViewRenderImpl_.getMinZ();
+    if (!qIsFinite(anchorZ) || anchorZ > 1e6f) anchorZ = 0.0f;
+    surfaceModel.translate(0.0f, 0.0f, -anchorZ * (1.0f + m_verticalScale));
+    surfaceModel.scale(1.0f, 1.0f, m_verticalScale);
 
     bool isOut = m_camera.getIsFarAwayFromOriginLla();
     // qDebug() << "........isOut...................." << isOut;
@@ -199,8 +205,10 @@ void GraphicsScene3dRenderer::drawObjects()
         glDepthFunc(GL_LEQUAL);
 
         // 渲染高度场
-        surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
-        isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
+        // surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
+        // isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
+        surfaceViewRenderImpl_.render(this,  m_projection * view * surfaceModel, m_shaderProgramMap);  //高度场
+        isobathsViewRenderImpl_.render(this, surfaceModel, view, m_projection, m_shaderProgramMap);    //等值线
 
         // 恢复深度测试状态
         if (depthTestEnabled) {
@@ -231,8 +239,10 @@ void GraphicsScene3dRenderer::drawObjects()
     // QMatrix4x4 upModel = m_model;
     // upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
 
-    surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
-    isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
+    // surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
+    // isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
+    surfaceViewRenderImpl_.render(this,  m_projection * view * surfaceModel, m_shaderProgramMap);  //高度场
+    isobathsViewRenderImpl_.render(this, surfaceModel, view, m_projection, m_shaderProgramMap);    //等值线
     // m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
 
     // // navigation arrow - 应用相同的 zOffset, 保持与等值线同一高度

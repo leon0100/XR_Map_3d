@@ -1,4 +1,3 @@
-// d:/MyProject/XR_Map_3d/src/device/serialportmanager.h
 #ifndef SERIALPORTMANAGER_H
 #define SERIALPORTMANAGER_H
 
@@ -13,8 +12,6 @@
 #include <QHostAddress>
 
 #include "dataset_defs.h"
-
-#include "tmodem.h"
 #include "tsl3.h"
 #include "id_binnary.h"
 

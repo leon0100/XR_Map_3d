@@ -80,13 +80,21 @@ void DeviceManager::initStreamList()
     streamList_.initTimer();
 }
 
-void DeviceManager::openFile_CSV(QString filePath)
+void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
 {
+    if (isOpeningFile_) {
+        pendingFiles_.append({filePath, filetype_CSV, fileIndex, fileCnt});
+        return;
+    }
+    isOpeningFile_ = true;
+
     QFile file;
     const QUrl url(filePath);
     url.isLocalFile() ? file.setFileName(url.toLocalFile()) : file.setFileName(url.toString());
     if (!file.open(QIODevice::ReadOnly)) {
         emit fileStopsOpening();
+        isOpeningFile_ = false;
+        processNextPendingFile();
         return;
     }
 
@@ -155,10 +163,19 @@ void DeviceManager::openFile_CSV(QString filePath)
     }
 
     emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);  //这一步使得最后将读取到的轨迹内容绘制到scene3d_view上
+
+    isOpeningFile_ = false;
+    processNextPendingFile();
 }
 
-void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType)
+void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType, int fileIndex, int fileCnt)
 {
+    if (isOpeningFile_) {
+        pendingFiles_.append({filePath, currentFileType, fileIndex, fileCnt});
+        return;
+    }
+    isOpeningFile_ = true;
+
     QFile tslFile;
     tslFile.setFileName(filePath);
     {
@@ -168,13 +185,32 @@ void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType)
             tslFile.close();
         }
         if(currentFileType == filetype_tslw) {
-            openFileData_tslw(tslByteArray);
+            openFileData_tslw(tslByteArray, fileIndex, fileCnt);
         }
         else if(currentFileType == filetype_tsl3) {
-            openFileData_tsl3(tslByteArray);
+            openFileData_tsl3(tslByteArray, fileIndex, fileCnt);
         }
 
     }
+
+    isOpeningFile_ = false;
+    processNextPendingFile();
+}
+//(星标：嵌套逻辑，重要！！！！)用 QTimer::singleShot(0, this, lambda) 在下一次事件循环迭代触发下一个文件，
+//确保当前调用栈完全展开（ fileStopsOpening2 → onFileStopsOpening2 已跑完）后再开始新文件。
+void DeviceManager::processNextPendingFile()
+{
+    if (pendingFiles_.isEmpty()) {
+        return;
+    }
+    PendingFile next = pendingFiles_.takeFirst();
+    QTimer::singleShot(0, this, [this, next]() {
+        if (next.type == filetype_CSV) {
+            openFile_CSV(next.path, next.index, next.cnt);
+        } else {
+            openFile_tsl(next.path, next.type, next.index, next.cnt);
+        }
+    });
 }
 
 
@@ -186,7 +222,7 @@ double DeviceManager::dm_to_dd(double ddmmmmmmm)
     return ((double)dd+mm);
 }
 
-void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
+void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, int fileCnt)
 {
     tslByteArray.remove(0, 64);
 
@@ -310,8 +346,10 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
         // 更新进度条
         if (progressDialog_ && (cnt % progressInterval == 0 || cnt == (tslWCnt - 1))) {
             double progress = static_cast<double>(cnt + 1) / tslWCnt;
-            QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                     .arg(cnt + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+            // QString statusText = tr("Processing frame %1 of %2 (%3%)")
+            //                         .arg(cnt + 1).arg(tslWCnt).arg(static_cast<int>(progress * 100));
+            QString statusText = tr("Openging files %1 of %2 (%3%)")
+                                     .arg(fileIndex + 1).arg(fileCnt).arg(static_cast<int>(progress * 100));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
@@ -327,7 +365,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray)
 }
 
 
-void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
+void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, int fileCnt)
 {
     tslByteArray.remove(0, 512);  /*- 清除文件头信息，只保留声呐数据 -*/
     /*-将去掉文件头的所有剩下的声呐数据，按照一帧一帧的模式放入临时容器-*/
@@ -486,8 +524,8 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray)
         // 更新进度条
         if (progressDialog_ && (i % progressInterval == 0 || i == (tsl3Cnt - 1))) {
             double progress = static_cast<double>(i + 1) / tsl3Cnt;
-            QString statusText = tr("Processing frame %1 of %2 (%3%)")
-                                    .arg(i+1).arg(tsl3Cnt).arg(static_cast<int>(progress*100));
+            QString statusText = tr("Openging files %1 of %2 (%3%)")
+                                     .arg(fileIndex+1).arg(fileCnt).arg(static_cast<int>(progress * 100.0 + 0.5));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();

@@ -64,8 +64,8 @@ public slots:
 
 signals:
     void sendOpenFile(QString path);
-    void sendOpenFile_CSV(QString path);
-    void sendOpenFile_tsl(QString path, EnumFileType currentFileType);
+    void sendOpenFile_CSV(QString path, int fileIndex, int fileCnt);
+    void sendOpenFile_tsl(QString path, EnumFileType currentFileType, int fileIndex, int fileCnt);
 
     void sendCloseFile();
 

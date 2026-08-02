@@ -414,9 +414,9 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
         return;
     }
 
-    const int hvSide   = tileHeightMatrixRatio_ + 1;
-    const int tilesY   = surfaceMeshPtr_->getNumHeightTiles();
-    const int tilesX   = surfaceMeshPtr_->getNumWidthTiles();
+    const int hvSide = tileHeightMatrixRatio_ + 1;
+    const int tilesY = surfaceMeshPtr_->getNumHeightTiles();
+    const int tilesX = surfaceMeshPtr_->getNumWidthTiles();
 
     auto& matrix = surfaceMeshPtr_->getTileMatrixRef();
 

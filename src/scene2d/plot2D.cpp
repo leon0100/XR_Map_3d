@@ -149,7 +149,6 @@ bool Plot2D::getImage(int width, int height, QPainter* painter, bool is_horizont
     }
 
     reindexingCursor();
-    reRangeDistance();
 
     return true;
 }
@@ -474,6 +473,7 @@ void Plot2D::setVelocityRange(float velocity)
 
 void Plot2D::setDistanceAutoRange(int auto_range_type)
 {
+    qDebug() << "Plot2D::setDistanceAutoRange....." << auto_range_type;
     cursor_.distance.mode = AutoRangeMode(auto_range_type);
 }
 
@@ -910,7 +910,6 @@ void Plot2D::onCursorMoved(int x, int y)
     else {
         const int horX = canvas_.width() - 1 - y;
         const int horY = x;
-
         const int clampedX = std::clamp(horX, 0, canvas_.width() - 1);
         const int clampedY = std::clamp(horY, 0, canvas_.height() - 1);
         contacts_.setMousePos(clampedX, clampedY);
@@ -993,63 +992,6 @@ void Plot2D::reindexingCursor()
         }
     }
     cursor_.numZeroEpoch = cntZeros;
-}
-
-void Plot2D::reRangeDistance()
-{
-    if (datasetPtr_ == NULL) {
-        return;
-    }
-
-    float max_range = NAN;
-
-    if (cursor_.distance.mode == AutoRangeLastData) {
-        for (int i = datasetPtr_->endIndex() - 3; i < datasetPtr_->endIndex(); i++) {
-            Epoch* epoch = datasetPtr_->fromIndex(i);
-            if (epoch != NULL) {
-                float epoch_range = epoch->getMaxRange(cursor_.channel1);
-                if (!qIsFinite(max_range) || max_range < epoch_range) {
-                    max_range = epoch_range;
-                }
-            }
-        }
-    }
-
-    if(cursor_.distance.mode == AutoRangeLastOnScreen) {
-        for(unsigned int i = cursor_.indexes.size() - 3; i < cursor_.indexes.size(); i++) {
-            Epoch* epoch = datasetPtr_->fromIndex(cursor_.getIndex(i));
-            if(epoch != NULL) {
-                float epoch_range = epoch->getMaxRange(cursor_.channel1);
-                if(!qIsFinite(max_range) || max_range < epoch_range) {
-                    max_range = epoch_range;
-                }
-            }
-        }
-    }
-
-    if(cursor_.distance.mode == AutoRangeMaxOnScreen) {
-        for(unsigned int i = 0; i < cursor_.indexes.size(); i++) {
-            Epoch* epoch = datasetPtr_->fromIndex(cursor_.getIndex(i));
-            if(epoch != NULL) {
-                float epoch_range = epoch->getMaxRange(cursor_.channel1);
-                if(!qIsFinite(max_range) || max_range < epoch_range) {
-                    max_range = epoch_range;
-                }
-            }
-        }
-    }
-
-    if (qIsFinite(max_range)) {
-        const float dist = std::round(std::abs(max_range));
-        cursor_.distance.to = dist;
-
-        if (cursor_.isChannelDoubled()) {
-            cursor_.distance.from = -dist;
-        }
-        else {
-            cursor_.distance.from = 0;
-        }
-    }
 }
 
 float Plot2D::timelinePosition()

@@ -118,5 +118,6 @@
         <file>AppXr/XRSlider.qml</file>
         <file>Communication/LiveData.qml</file>
         <file>QmlCommon/ExpandCheckBox.qml</file>
+        <file>AppXr/XRColorScheme.qml</file>
     </qresource>
 </RCC>

@@ -350,7 +350,7 @@ bool Core::openCSV(QString name, int separatorType, int firstRow, int colTime,
 
         datasetPtr_->setState(Dataset::DatasetState::kFile);
 
-        emit deviceManagerWrapperPtr_->sendOpenFile_CSV(localfilePath);
+        emit deviceManagerWrapperPtr_->sendOpenFile_CSV(localfilePath, 0, 1);
 
         openedfilePath_ = localfilePath;
 
@@ -1035,23 +1035,28 @@ void Core::setIsAttitudeExpected(bool state)
 
 void Core::openFileFromMenu()
 {
-    QStringList fileNames;
-    if(lastOpenFilePath_.isNull()) {
-        fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), qApp->applicationDirPath().append("/data/"),
-            "Toslon Sonar Log(*.tslw);;Toslon Sonar Log(*.tsl3);;Toslon Sonar(*.kml *.kmz);;Toslon Sonar Log(*.csv)");
+    QString defaultPath = openedfilePath_.isNull() ? qApp->applicationDirPath() + "/data/" : openedfilePath_;
+    QFileDialog dialog(nullptr, tr("Open"), defaultPath,
+        "Toslon Sonar Log(*.tsl3);;" "Toslon Sonar Log(*.tslw);;" "Toslon Sonar(*.kml *.kmz);;" "Toslon Sonar Log(*.csv)");
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+
+    if(!openedFileFilter_.isEmpty()) {
+        dialog.selectNameFilter(openedFileFilter_);
     }
-    else {
-        fileNames = QFileDialog::getOpenFileNames(nullptr,tr("Open"), lastOpenFilePath_,
-            "Toslon Sonar Log(*.tslw);;Toslon Sonar Log(*.tsl3);;Toslon Sonar(*.kml *.kmz);;Toslon Sonar Log(*.csv)");
+
+    QStringList fileNames;
+    if(dialog.exec() == QDialog::Accepted) {
+        fileNames = dialog.selectedFiles();
+        openedFileFilter_ = dialog.selectedNameFilter();
     }
 
     int fileCnt = fileNames.count();
     if(fileCnt < 1) {
         return;
     }
-    /*-先保存住地址-*/
-    QFileInfo fi = QFileInfo(fileNames.last());
-    lastOpenFilePath_ = fi.absolutePath();
+
+    QFileInfo fi(fileNames.last());
+    openedfilePath_ = fi.absolutePath();
 
     if(datasetPtr_ && datasetPtr_->size() > 0) {
         resetDataProcessorConnections();
@@ -1162,16 +1167,16 @@ void Core::openFileFromMenu()
             QString nowFileName = fileNames.at(i);
 
             if(currentFileType_ == filetype_tslw) {
-                emit deviceManagerWrapperPtr_->sendOpenFile_tsl(nowFileName, filetype_tslw);
+                emit deviceManagerWrapperPtr_->sendOpenFile_tsl(nowFileName, filetype_tslw, i, fileCnt);
             }
             else if(currentFileType_ == filetype_tsl3) {
-                emit deviceManagerWrapperPtr_->sendOpenFile_tsl(nowFileName, filetype_tsl3);
+                emit deviceManagerWrapperPtr_->sendOpenFile_tsl(nowFileName, filetype_tsl3, i, fileCnt);
             }
             else if(currentFileType_ == filetype_CSV) {
-                emit deviceManagerWrapperPtr_->sendOpenFile_CSV(nowFileName);
+                emit deviceManagerWrapperPtr_->sendOpenFile_CSV(nowFileName, i, fileCnt);
             }
 
-            openedfilePath_ = nowFileName;
+            // openedfilePath_ = nowFileName;
         }
 
     }
@@ -1446,6 +1451,13 @@ void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double max
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
     scene3dViewPtr_->focusTrackBounds();
+
+    for (int i = 0; i < plot2dList_.size(); i++) {
+        qPlot2D* qplot2d = plot2dList_.at(i);
+        if (qplot2d != NULL) {
+            qplot2d->setTimelinePositionToStart();
+        }
+    }
 }
 
 void Core::onSendMapTextureIdByTileIndx(const map::TileIndex &tileIndx, GLuint textureId)

@@ -224,7 +224,7 @@ private:
     Logger logger_;
     QList<qPlot2D*> plot2dList_;
     QList<QMetaObject::Connection> linkManagerWrapperConnections_;
-    QString openedfilePath_, lastOpenFilePath_;
+    QString openedfilePath_, openedFileFilter_;
     EnumFileType currentFileType_;
     QString filePath_;
     QString fChName_;

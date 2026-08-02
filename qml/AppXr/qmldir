@@ -13,3 +13,4 @@ ExpandToolBar  1.0   ExpandToolBar.qml
 ExportAsData   1.0   ExportAsData.qml
 XRCheckBox     1.0   XRCheckBox.qml
 XRSlider       1.0   XRSlider.qml
+XRColorScheme  1.0   XRColorScheme.qml

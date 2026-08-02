@@ -128,7 +128,6 @@ public:
     void resetCash();
     Canvas image(int width, int height);
     void reindexingCursor();
-    void reRangeDistance();
 
     void setRealtimeChannel(const ChannelId& channelId, uint8_t subChannelId);
 
@@ -138,7 +137,6 @@ public:
 
 public:
     float currentViewMaxLoRng_ = 1.0f;
-    int tempViewMaxLoRng_ = 3200.f;
     QString fromLonStr_, fromLatiStr_, toLonStr_, toLatiStr_;
 
 protected:

@@ -34,8 +34,8 @@ public slots:
     Q_INVOKABLE StreamListModel* streamsList();
 
     void initStreamList();
-    void openFile_CSV(QString filePath);
-    void openFile_tsl(QString filePath, EnumFileType currentFileType);
+    void openFile_CSV(QString filePath, int fileIndex, int fileCnt);
+    void openFile_tsl(QString filePath, EnumFileType currentFileType, int fileIndex, int fileCnt);
     void closeFile();
     void onLinkOpened(QUuid uuid, Link *link);
     void onLinkClosed(QUuid uuid, Link* link);
@@ -102,9 +102,10 @@ signals:
 
 private:
     void delAllDev();
-    void openFileData_tslw(QByteArray &tslByteArray);
-    void openFileData_tsl3(QByteArray &tslByteArray);
+    void openFileData_tslw(QByteArray &tslByteArray, int fileIndex, int fileCnt);
+    void openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, int fileCnt);
     double dm_to_dd(double ddmmmmmmm);
+    void processNextPendingFile();
 
     /*data*/
     struct VruData {
@@ -154,4 +155,13 @@ private:
     QObject* progressDialog_ = nullptr;
     ChannelId batchChannelId_{QUuid(), 0};
     double minZ_ = 0.0, maxZ_ = 0.0;
+    struct PendingFile {
+        QString path;
+        EnumFileType type;
+        int index;
+        int cnt;
+    };
+    bool isOpeningFile_ = false;
+    QList<PendingFile> pendingFiles_;
+
 };

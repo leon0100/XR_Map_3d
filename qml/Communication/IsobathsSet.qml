@@ -860,8 +860,9 @@ Item {
                     stepSize: 0.1
                     value: IsobathsViewControlMenuController.verticalScale()
 
-                    onValueChanged:
+                    onValueChanged: {
                         IsobathsViewControlMenuController.onVerticalScaleSliderValueChanged(value)
+                    }
 
                     background: Rectangle {
                         x: verticalScaleSlider.leftPadding

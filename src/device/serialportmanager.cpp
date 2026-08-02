@@ -6,6 +6,7 @@
 
 #include "minilzo.h"
 #include "console.h"
+#include "tmodem.h"
 
 SerialPortManager::SerialPortManager(QObject *parent) : QObject(parent)
 {
