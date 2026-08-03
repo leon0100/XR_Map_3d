@@ -353,6 +353,12 @@ void qPlot2D::setMarkDistTimeVisible(bool visible, int dist0time1, int distInter
     plotUpdate();
 }
 
+void qPlot2D::setColorScheme(int index)
+{
+    echogram_.setColorScheme(index);
+    plotUpdate();
+}
+
 float qPlot2D::getLowEchogramLevel() const
 {
     return Plot2D::getEchogramLowLevel();
@@ -361,11 +367,6 @@ float qPlot2D::getLowEchogramLevel() const
 float qPlot2D::getHighEchogramLevel() const
 {
     return Plot2D::getEchogramHighLevel();
-}
-
-int qPlot2D::getThemeId() const
-{
-    return Plot2D::getThemeId();
 }
 
 void qPlot2D::drawPolygonOutline(bool outlineMode)

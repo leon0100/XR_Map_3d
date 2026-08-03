@@ -55,7 +55,6 @@ public:
     void setExtraWidth(int val);
     float getEdgeLimit() const;
     float getSurfaceStepSize() const;
-    int getThemeId() const;
     int getExtraWidth() const;
     QVector<IsobathUtils::ColorInterval> getColorIntervals();
 

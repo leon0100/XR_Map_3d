@@ -81,11 +81,9 @@ public:
 
     float getEchogramLowLevel() const;
     float getEchogramHighLevel() const;
-    int  getThemeId() const;
     void setEchogramLowLevel(float low);
     void setEchogramHightLevel(float high);
     void setEchogramVisible(bool visible);
-    void setEchogramTheme(int theme_id);
     // float getEchogramScaleYFactor() const;
 
     void setBottomTrackVisible(bool visible);

@@ -44,12 +44,10 @@
         <file>CText.qml</file>
         <file>CRadioDel.qml</file>
         <file>CTextField.qml</file>
-        <file>settings-outline.svg</file>
         <file>RecorderBox.qml</file>
         <file>DopplerBox.qml</file>
         <file>CalcMethodTINSettings.qml</file>
         <file>Scene3DToolbar.qml</file>
-        <file>tool.svg</file>
         <file>QmlCommon/MenuBlockEx.qml</file>
         <file>QmlCommon/qmldir</file>
         <file>QmlCommon/KButton.qml</file>

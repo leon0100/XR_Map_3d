@@ -4,6 +4,7 @@ int ZyColorScheme::backgroundIndex = 2;
 int ZyColorScheme::background[] = {0xffffff, 0x000000, 0x104684};
 int ZyColorScheme::colorLine = 0;
 int ZyColorScheme::onlineColor = 0xff0000;
+int ZyColorScheme::colorSchemeIndex_ = 0;
 
 /*--------------------------------------------------------------------------------------*/
 int ZyColorScheme::colorScheme_surface[255] = {0};
@@ -72,7 +73,6 @@ void ZyColorScheme::readColorToColorList(QString fileName)
     /*-自定义配色表读取-*/
     colorList_surface.clear();
     selfColor.beginGroup("surface");
-    qDebug() << "11111111111111111selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
     for(int i=0;i<selfColor.value("count",0).toInt();i++) {
         tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
         tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
@@ -83,22 +83,18 @@ void ZyColorScheme::readColorToColorList(QString fileName)
 
     colorList_fish.clear();
     selfColor.beginGroup("fish");
-    qDebug() << "22222222222222222selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
     for(int i=0;i<selfColor.value("count",0).toInt();i++) {
         tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
         tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
-        qDebug() << "tmp.colorPosition:" << tmp.colorPosition  << "  tmp.colorValue" << tmp.colorValue;
         colorList_fish.append(tmp);
     }
     selfColor.endGroup();
 
     colorList_bottom.clear();
     selfColor.beginGroup("bottom");
-    qDebug() << "selfColor.value count,.toInt()" << selfColor.value("count",0).toInt();
     for(int i=0;i<selfColor.value("count",0).toInt();i++) {
         tmp.colorPosition = selfColor.value(("position_"+QString::number(i)), 0).toFloat();
         tmp.colorValue = selfColor.value("value_"+QString::number(i), 0).toInt();
-        qDebug() << "tmp.colorPosition:" << tmp.colorPosition  << "  tmp.colorValue" << tmp.colorValue;
         colorList_bottom.append(tmp);
     }
     selfColor.endGroup();
@@ -285,9 +281,7 @@ void ZyColorScheme::initDefaultColorList()
 {
     StructColorList tmp;
 
-    //==============================
     // surface
-    //==============================
     colorList_surface.clear();
 
     tmp.colorPosition = 0;
@@ -311,9 +305,7 @@ void ZyColorScheme::initDefaultColorList()
     colorList_surface.append(tmp);
 
 
-    //==============================
     // fish
-    //==============================
     colorList_fish.clear();
 
     tmp.colorPosition = 0;
@@ -353,10 +345,7 @@ void ZyColorScheme::initDefaultColorList()
     colorList_fish.append(tmp);
 
 
-
-    //==============================
     // bottom
-    //==============================
     colorList_bottom.clear();
 
     tmp.colorPosition = 0;
@@ -408,3 +397,54 @@ void ZyColorScheme::setBackgroundIndex(int value)
 }
 
 
+static const int xrColorSchemeData[ZyColorScheme::COLOR_SCHEME_COUNT][6] = {
+    { 0xff5400, 0xff8c00, 0xffc300, 0x8a7f70, 0x3d3b3c, 0x1a1a1a },
+    { 0x1e3a8a, 0x3b82f6, 0x93c5fd, 0xffb5a7, 0xff8fab, 0xff4d6d },
+    { 0x000000, 0x2b2b2b, 0x555555, 0x888888, 0xcccccc, 0xffffff },
+    { 0xffea00, 0xffaa00, 0xff7b00, 0xff0000, 0xd00000, 0x800020 },
+    { 0x2ec4b6, 0x00a896, 0x028090, 0x05668d, 0x023e8a, 0x03045e }
+};
+
+static void fillGradientTable(int* table, const int* colors, int count)
+{
+    QLinearGradient gradient(QPointF(0, 0), QPointF(0, 255));
+    for (int i = 0; i < count; ++i) {
+        gradient.setColorAt((float)i / (count - 1), QColor(colors[i]));
+    }
+
+    QPixmap pixmap(100, 256);
+    QPainter painter;
+    painter.begin(&pixmap);
+    painter.setBrush(gradient);
+    painter.drawRect(0, 0, 100, 256);
+    painter.end();
+
+    QImage img = pixmap.toImage();
+    for (int i = 0; i < 255; ++i) {
+        int y = qRound((float)i * 255.0f / 254.0f);
+        table[i] = img.pixel(99, y) & 0x00FFFFFF;
+    }
+}
+
+void ZyColorScheme::applyColorScheme(int index)
+{
+    if (index < 0 || index >= COLOR_SCHEME_COUNT) {
+        index = 0;
+    }
+    colorSchemeIndex_ = index;
+
+    if (index == 0) {
+        initDefaultColorList();
+    }
+    else {
+        const int* colors = xrColorSchemeData[index];
+        fillGradientTable(colorScheme_surface, colors, 6);
+        fillGradientTable(colorScheme_fish,    colors, 6);
+        fillGradientTable(colorScheme_bottom,  colors, 6);
+    }
+}
+
+int ZyColorScheme::colorSchemeIndex()
+{
+    return colorSchemeIndex_;
+}

@@ -330,11 +330,6 @@ float Plot2D::getEchogramHighLevel() const
     return echogram_.getHighLevel();
 }
 
-int Plot2D::getThemeId() const
-{
-    return echogram_.getThemeId();
-}
-
 void Plot2D::setEchogramLowLevel(float low)
 {
     // qDebug() << "Plot2D::setEchogramLowLevel........." << low;
@@ -357,12 +352,6 @@ void Plot2D::setEchogramVisible(bool visible)
     plotUpdate();
 }
 
-void Plot2D::setEchogramTheme(int theme_id)
-{
-    // qDebug() << "Plot2D::setEchogramTheme.........";
-    echogram_.setThemeId(theme_id);
-    plotUpdate();
-}
 
 // float Plot2D::getEchogramScaleYFactor() const
 // {

@@ -45,15 +45,10 @@ public:
     void  setHightLevel(float high);
     void  setLevels(float low, float hight);
 
-    void setColorScheme(QVector<QColor> coloros, QVector<int> levels);
-    int  getThemeId() const;
-    void setThemeId(int theme_id);
-    void setCompensation(int compensation_id);
-
+    void setColorScheme(int index);
     void setBottomLineVisible(bool isVisible);
     void setDepthFilterVisible(bool isVisible, int value);
     void setKeelOffsetValue(int value);
-
 
     int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
@@ -118,14 +113,10 @@ protected:
         int      startIdx;
     };
 
-    uint16_t _colorHashMap[256];
     QVector<CashLine> _cash;
 
-    QVector<QRgb> _colorTable;
-    QVector<QRgb> _colorLevels;
     QImage _image;
     QPixmap _pixmap;
-    bool _flagColorChanged = true;
 
     int _compensation_id = 0;
 

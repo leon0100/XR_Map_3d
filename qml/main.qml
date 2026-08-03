@@ -750,24 +750,6 @@ ApplicationWindow  {
                     }
                     break
                 }
-                case "prevTheme": {
-                    let themeId = waterViewFirst.getThemeId()
-                    if (themeId > 0) waterViewFirst.plotEchogramTheme(themeId - 1)
-                    if (waterViewSecond.enabled) {
-                        let themeSId = waterViewSecond.getThemeId()
-                        if (themeSId > 0) waterViewSecond.plotEchogramTheme(themeSId - 1)
-                    }
-                    break
-                }
-                case "nextTheme": {
-                    let themeId = waterViewFirst.getThemeId()
-                    if (themeId < 9) waterViewFirst.plotEchogramTheme(themeId + 1)
-                    if (waterViewSecond.enabled) {
-                        let themeSId = waterViewSecond.getThemeId()
-                        if (themeSId < 9) waterViewSecond.plotEchogramTheme(themeSId + 1)
-                    }
-                    break
-                }
                 case "toggleEchogramType": {
                     waterViewFirst.toggleEchogramType()
                     if (waterViewSecond.enabled) {
@@ -908,7 +890,7 @@ ApplicationWindow  {
                     mousearea3D.lastMouseKeyPressed = Qt.NoButton
                     longPressTimer.stop()
                     renderer.longPressTriggered     = false
-                    renderer.cancelPointerInteraction()
+                    // renderer.cancelPointerInteraction()
                 }
 
                 // onSendDataZoom: function(zoom) {

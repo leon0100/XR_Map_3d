@@ -81,6 +81,8 @@ public:
     Q_INVOKABLE void setMarkDistTimeVisible(bool visible, int dist0time1, int distInterval, int timeInterval,
                                     bool isFrame, bool isTime, bool isDepth, bool isCoordinate); //dist:0, time:1
 
+    Q_INVOKABLE void setColorScheme(int index);
+
 
 protected:
     Dataset* dataset_ = nullptr;
@@ -135,7 +137,6 @@ public slots:
     uint8_t   plotDatasetSubChannel2() { return cursor_.subChannel2; }
 
     void plotEchogramVisible(bool visible) { setEchogramVisible(visible); }
-    Q_INVOKABLE void plotEchogramTheme(int theme_id) { setEchogramTheme(theme_id); }
     void plotBottomTrackVisible(bool visible) { setBottomTrackVisible(visible); }
     void plotBottomTrackTheme(int theme_id) { setBottomTrackTheme(theme_id); }
 
@@ -164,7 +165,6 @@ public slots:
 
     Q_INVOKABLE float getLowEchogramLevel() const;
     Q_INVOKABLE float getHighEchogramLevel() const;
-    Q_INVOKABLE int   getThemeId() const;
 
     void drawPolygonOutline(bool outlineMode);
     void doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max,

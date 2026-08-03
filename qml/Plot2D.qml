@@ -405,33 +405,15 @@ WaterFall {
                         Component.onCompleted: plotEchogramVisible(checked)
                     }
 
-                    // CCombo {
-                    //     id: echoTheme
-                    //     Layout.fillWidth: true
-                    //     model: [qsTr("Blue"), qsTr("Sepia"), qsTr("WRGBD"), qsTr("WhiteBlack"), qsTr("BlackWhite")]
-                    //     currentIndex: 0
-                    //     height: plotIconSize
-
-                    //     onCurrentIndexChanged: plotEchogramTheme(currentIndex)
-                    //     Component.onCompleted: plotEchogramTheme(currentIndex)
-
-                    //     Settings {
-                    //         category: "Plot2D_" + plot.indx
-                    //         property alias waterfallThemeId: echoTheme.currentIndex
-                    //     }
-                    // }
                     XRColorScheme {
                         id: echoTheme
-                        // width: plotIconSize * 14
-                        // height: plotIconSize * 1.5
                         currentIndex: 0
-
                         onCurrentIndexChanged: {
-                            plotEchogramTheme(currentIndex)
+                            plot.setColorScheme(currentIndex)
                         }
 
                         Component.onCompleted: {
-                            plotEchogramTheme(currentIndex)
+                            plot.setColorScheme(currentIndex)
                         }
 
                     }

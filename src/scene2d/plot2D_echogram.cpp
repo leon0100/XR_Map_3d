@@ -9,7 +9,6 @@
 
 Plot2DEchogram::Plot2DEchogram()
 {
-    setThemeId(ClassicTheme);
     setLevels(10, 100);
 
     QString fileName = qApp->applicationDirPath() + "/dcs_caise.tcs";
@@ -43,87 +42,9 @@ void Plot2DEchogram::setLevels(float low, float high)
     _levels.high = high;
 }
 
-void Plot2DEchogram::setColorScheme(QVector<QColor> coloros, QVector<int> levels)
+void Plot2DEchogram::setColorScheme(int index)
 {
-    if(coloros.length() != levels.length()) { return; }
-
-    _colorTable.resize(256);
-    _colorLevels.resize(256);
-
-    int nbr_levels = coloros.length() - 1;
-    int i_level = 0;
-
-    for(int i = 0; i < nbr_levels; i++) {
-        while(levels[i + 1] >= i_level) {
-            float b_koef = (float)(i_level - levels[i]) / (float)(levels[i + 1] - levels[i]);
-            float a_koef = 1.0f - b_koef;
-
-            int red   = qRound(coloros[i].red()*a_koef + coloros[i + 1].red()*b_koef);
-            int green = qRound(coloros[i].green()*a_koef + coloros[i + 1].green()*b_koef);
-            int blue  = qRound(coloros[i].blue()*a_koef + coloros[i + 1].blue()*b_koef);
-            _colorHashMap[i_level] = ((red / 8) << 10) | ((green / 8) << 5) | ((blue / 8));
-
-            _colorTable[i_level] = qRgb(red, green, blue);
-            i_level++;
-        }
-    }
-
-}
-
-int Plot2DEchogram::getThemeId() const
-{
-    return static_cast<int>(themeId_);
-}
-
-void Plot2DEchogram::setThemeId(int theme_id)
-{
-    if (theme_id >= ClassicTheme && theme_id <= BWTheme) {
-        themeId_ = static_cast<ThemeId>(theme_id);
-    }
-    else {
-        themeId_ = ClassicTheme;
-    }
-
-    QVector<QColor> coloros;
-    QVector<int> levels;
-
-    if(theme_id == ClassicTheme) {
-        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(20, 5, 80),
-                   QColor::fromRgb(50, 180, 230), QColor::fromRgb(190, 240, 250), QColor::fromRgb(255, 255, 255)};
-        levels = {0, 30, 130, 220, 255};
-    }
-    else if(theme_id == SepiaTheme) {
-        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(50, 50, 10),
-                   QColor::fromRgb(230, 200, 100), QColor::fromRgb(255, 255, 220)};
-        levels = {0, 30, 130, 255};
-    }
-    else if(theme_id == WRGBDTheme) {
-        coloros = {
-            QColor::fromRgb(0, 0, 0),
-            QColor::fromRgb(40, 0, 80),
-            QColor::fromRgb(0, 30, 150),
-            QColor::fromRgb(20, 230, 30),
-            QColor::fromRgb(255, 50, 20),
-            QColor::fromRgb(255, 255, 255),
-        };
-
-        levels = {0, 30, 80, 120, 150, 255};
-    }
-    else if(theme_id == WBTheme) {
-        coloros = { QColor::fromRgb(0, 0, 0), QColor::fromRgb(190, 200, 200), QColor::fromRgb(230, 255, 255)};
-        levels = {0, 150, 255};
-    }
-    else if(theme_id == BWTheme) {
-        coloros = {QColor::fromRgb(230, 255, 255), QColor::fromRgb(70, 70, 70), QColor::fromRgb(0, 0, 0)};
-        levels = {0, 150, 255};
-    }
-
-    setColorScheme(coloros, levels);
-}
-
-void Plot2DEchogram::setCompensation(int compensation_id)
-{
-    _compensation_id = compensation_id;
+    zyColorScheme_->applyColorScheme(index);
     resetCash();
 }
 
@@ -1406,7 +1327,6 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
     Canvas& canvas = parent->canvas();
     DatasetCursor& cursor = parent->cursor();
 
-    _colorLevels.clear();
 
     if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
         int image_width  = canvas.width();
@@ -1434,7 +1354,7 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
         int cash_col = 0;
         while(cash_col < image_width) {
             int cash_col_1 = cash_col;
-            while(cash_col < image_width && (_cash[cash_col].isNeedUpdate || _flagColorChanged)) {
+            while(cash_col < image_width && (_cash[cash_col].isNeedUpdate)) {
                 _cash[cash_col].isNeedUpdate = false;
                 cash_col++;
             }
@@ -1448,7 +1368,6 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
             }
         }
 
-        _flagColorChanged = false;
 
         canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, image_width - cash_position, image_height);
         canvas.painter()->drawPixmap(image_width - cash_position, 0, _pixmap, 0, 0, cash_position, image_height);

@@ -31,7 +31,6 @@ Popup {
 
     Rectangle {
         id: contentItem
-        // color: theme.controlBackColor
         color: "#1e1e1e"
         opacity: 0.8
         anchors.centerIn: parent

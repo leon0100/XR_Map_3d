@@ -3,19 +3,7 @@
 
 
 #include <QObject>
-
-// #include <QWidget>
 #include <QtGui>
-#include <QLine>
-#include <QDesktopWidget>
-
-#include <QPainter>
-#include <QMouseEvent>
-#include <QCursor>
-#include <QPushButton>
-#include <QStringList>
-
-#include <QMessageBox>
 
 
 typedef struct
@@ -42,6 +30,11 @@ public:
     void getColorFromColorList_2();
 
     void initDefaultColorList();
+    void applyColorScheme(int index);
+
+    static const int COLOR_SCHEME_COUNT = 5;
+
+    static int colorSchemeIndex();
 
 
     /*---------------------------------*色表*---------------------------------*/
@@ -63,6 +56,8 @@ public:
     static int onlineColor;
     static int getOnlineColor();
     static void setOnlineColor(int value);
+
+    static int colorSchemeIndex_;
 
 private:
     QList<StructColorList> colorList_surface;

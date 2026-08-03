@@ -283,11 +283,6 @@ float SurfaceProcessor::getSurfaceStepSize() const
     return surfaceStepSize_;
 }
 
-int SurfaceProcessor::getThemeId() const
-{
-    return themeId_;
-}
-
 int SurfaceProcessor::getExtraWidth() const
 {
     return extraWidth_;
