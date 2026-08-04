@@ -32,6 +32,13 @@ ApplicationWindow  {
     readonly property int footHeight: screenSize * 0.02
     readonly property int iconSize:   footHeight * 0.5
 
+
+    onScreenChanged: {
+        if (theme) {
+            theme.refreshScreenSize()
+        }
+    }
+
     Settings {
         id: appSettings
         property bool isFullScreen: false
@@ -216,10 +223,6 @@ ApplicationWindow  {
             waterViewSecond.update()
         }
 
-        if (syncLoupePlot3D) {
-            syncLoupePlot3D.update()
-        }
-
         // if (syncLoupeOverlay && syncLoupeOverlay.visible) {
         //     syncLoupeOverlay.refreshLoupePlot()
         // }
@@ -261,23 +264,8 @@ ApplicationWindow  {
             return true
         }
 
-        if (typeof contactDialog !== "undefined" && contactDialog.visible) {
-            contactDialog.visible = false
-            return true
-        }
-
         if (menuBlock.visible) {
             menuBlock.visible = false
-            return true
-        }
-
-        if (geoMenuBlock.visible) {
-            geoMenuBlock.visible = false
-            return true
-        }
-
-        if (rulerMenuBlock.visible) {
-            rulerMenuBlock.visible = false
             return true
         }
 
@@ -287,15 +275,6 @@ ApplicationWindow  {
 
         if (waterViewSecond.visible && waterViewSecond.closeTransientUi && waterViewSecond.closeTransientUi()) {
             return true
-        }
-
-        // Step 2: cancel active editing modes.
-        if (renderer.geoJsonEnabled) {
-            const geo = renderer.geoJsonController
-            if (geo && geo.drawing) {
-                renderer.geojsonCancelDrawing()
-                return true
-            }
         }
 
         if (renderer.rulerDrawing) {
@@ -369,24 +348,9 @@ ApplicationWindow  {
         waterViewSecond.plotReleased.connect(handlePlotReleased)
         waterViewSecond.settingsClicked.connect(onPlotSettingsClicked)
 
-        scene3DToolbar.updateBottomTrack.connect(handleUpdateBottomTrack)
-        scene3DToolbar.mosaicLAngleOffsetChanged.connect(handleMosaicLOffsetChanged)
-        scene3DToolbar.mosaicRAngleOffsetChanged.connect(handleMosaicROffsetChanged)
-
         if (appSettings.isFullScreen) {
             mainview.showFullScreen()
         }
-
-        // contacts
-        function setupConnections() {
-            if (typeof contacts !== "undefined") {
-                contactConnections.target = contacts;
-            }
-            else {
-                Qt.callLater(setupConnections);
-            }
-        }
-        Qt.callLater(setupConnections);
     }
 
 
@@ -780,23 +744,6 @@ ApplicationWindow  {
             }
         }
 
-        // handle: Rectangle {
-        //     implicitHeight: theme.controlHeight/2
-        //     color:          SplitHandle.pressed ? "#A0A0A0" : "#707070"
-
-        //     Rectangle {
-        //         width:  parent.width
-        //         height: 1
-        //         color:  "#A0A0A0"
-        //     }
-
-        //     Rectangle {
-        //         y:      parent.height
-        //         width:  parent.width
-        //         height: 1
-        //         color:  "#A0A0A0"
-        //     }
-        // }
 
         Item {
             id:  visualisationLayout
@@ -900,7 +847,7 @@ ApplicationWindow  {
                 PinchArea {
                     id:    pinch3D
                     anchors.fill: parent
-                    enabled: !extraInfoPanel.touchInteractionActive
+                    // enabled: !extraInfoPanel.touchInteractionActive
 
                     onPinchStarted: {
                         menuBlock.visible = false
@@ -935,12 +882,8 @@ ApplicationWindow  {
                                     return
                                 }
                             }
-                            if (renderer.geoJsonEnabled) {
-                                renderer.geojsonCancelDrawing()
-                            }
-                            else {
-                                renderer.clearRuler()
-                            }
+
+                            renderer.clearRuler()
                         }
 
                         property int   lastMouseKeyPressed: Qt.NoButton // TODO: maybe this mouseArea should be outside pinchArea
@@ -965,16 +908,6 @@ ApplicationWindow  {
                                         wasMoved = true;
                                     }
                                 }
-                                // if (renderer.longPressTriggered && !wasMoved) {
-                                //     if (renderer.geoJsonEnabled || renderer.rulerEnabled || renderer.rulerHasGeometry) {
-                                        // vertexMode = true
-                                //     } else {
-                                //         if (!vertexMode) {
-                                //             renderer.switchToBottomTrackVertexComboSelectionMode(mouse.x, mouse.y)
-                                //         }
-                                //         vertexMode = true
-                                //     }
-                                // }
                             }
 
                             const activeButtons = (Qt.platform.os === "android" && lastMouseKeyPressed !== Qt.NoButton)
@@ -984,7 +917,6 @@ ApplicationWindow  {
 
                         onPressed: function(mouse) {
                             menuBlock.visible      = false
-                            geoMenuBlock.visible   = false
                             startMousePos          = Qt.point(mouse.x, mouse.y)
                             wasMoved               = false
                             vertexMode             = false
@@ -1009,15 +941,7 @@ ApplicationWindow  {
                             renderer.mouseReleaseTrigger(lastMouseKeyPressed, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
 
                             if (mouse.button === Qt.RightButton || (Qt.platform.os === "android" && vertexMode)) {
-                                if (renderer.geoJsonEnabled) {
-                                    geoMenuBlock.position(mouse.x, mouse.y)
-                                }
-                                else if (renderer.rulerEnabled || renderer.rulerSelected) {
-                                    rulerMenuBlock.position(mouse.x, mouse.y)
-                                }
-                                else {
-                                    menuBlock.position(mouse.x, mouse.y)
-                                }
+                                menuBlock.position(mouse.x, mouse.y)
                             }
 
                             vertexMode = false
@@ -1048,24 +972,6 @@ ApplicationWindow  {
                     visible: visualisationLayout.splitMode !== 1
                 }
 
-
-                Connections {
-                    id: contactConnections
-                    target: null
-                    function onContactChanged() {
-                        contactDialog.visible = contacts.contactVisible
-                        if (contacts.contactVisible) {
-                            contactDialog.info           = contacts.contactInfo
-                            contactDialog.inputFieldText = contacts.contactInfo
-                            contactDialog.x              = contacts.contactPositionX
-                            contactDialog.y              = contacts.contactPositionY
-                            contactDialog.indx           = contacts.contactIndx
-                            contactDialog.lat            = contacts.contactLat
-                            contactDialog.lon            = contacts.contactLon
-                            contactDialog.depth          = contacts.contactDepth
-                        }
-                    }
-                }
 
                 RowLayout {
                     id: menuBlock
@@ -1134,106 +1040,7 @@ ApplicationWindow  {
 
                         ButtonGroup.group: pencilbuttonGroup
                     }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/x.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-
-                        onClicked: {
-                            renderer.bottomTrackActionEvent(BottomTrack.Undefined)
-
-                            menuBlock.visible = false
-                        }
-
-                        ButtonGroup.group: pencilbuttonGroup
-                    }
                 }
-
-                RowLayout {
-                    id: geoMenuBlock
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 1
-                    visible: false
-                    Layout.margins: 0
-
-                    property var geo: renderer.geoJsonController
-
-                    onGeoChanged: {
-                        //console.log("GeoJson menu updated, drawing: " + geo.drawing + ", selectedFeatureId: " + geo.selectedFeatureId)
-                    }
-
-                    function position(mx, my) {
-                        var oy = renderer.height - (my + implicitHeight)
-                        if (oy < 0) {
-                            my = my + oy
-                        }
-                        if (my < 0) {
-                            my = 0
-                        }
-                        var ox = renderer.width - (mx - implicitWidth)
-                        if (ox < 0) {
-                            mx = mx + ox
-                        }
-                        x = mx
-                        y = my
-                        visible = true
-                    }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/plus.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-                        visible: geoMenuBlock.geo && geoMenuBlock.geo.drawing
-
-                        onClicked: {
-                            renderer.geojsonFinishDrawing()
-                            geoMenuBlock.visible = false
-                        }
-                    }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/stack_backward.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-                        visible: geoMenuBlock.geo && geoMenuBlock.geo.drawing
-
-                        onClicked: {
-                            renderer.geojsonUndoLastVertex()
-                            geoMenuBlock.visible = false
-                        }
-                    }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/x.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-                        visible: geoMenuBlock.geo && geoMenuBlock.geo.drawing
-
-                        onClicked: {
-                            renderer.geojsonCancelDrawing()
-                            geoMenuBlock.visible = false
-                        }
-                    }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/timeline_event_x.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-                        visible: geoMenuBlock.geo && !geoMenuBlock.geo.drawing && geoMenuBlock.geo.selectedFeatureId !== ""
-
-                        onClicked: {
-                            renderer.geojsonDeleteSelectedFeature()
-                            geoMenuBlock.visible = false
-                        }
-                    }
-                }
-
 
                 Rectangle {
                     anchors.left:   parent.left
@@ -1300,7 +1107,7 @@ ApplicationWindow  {
 
                 Rectangle {
                     x: visualisationLayout.cornerWindowWidth - width * 1.1
-                    y: visualisationLayout.cornerWindowHeight - height - 1
+                    y: visualisationLayout.cornerWindowHeight - height - 2
                     width: visualisationLayout.cornerWindowHeight * 0.12
                     height: width
                     color: "#fffafa"
@@ -1336,7 +1143,7 @@ ApplicationWindow  {
                 y: visualisationLayout.landscapeMode ? Math.round((visualisationLayout.height - height) * 0.5)
                    : Math.round(visualisationLayout.handlePaneLength - height * 0.5)
                 width:  iconSize * 2
-                height: screenSize * 0.2
+                height: screenSize * 0.15
                 z: 10000
 
                 Rectangle {
@@ -1488,7 +1295,7 @@ ApplicationWindow  {
 
                         Rectangle {
                             x: 1
-                            y: visualisationLayout.cornerWindowHeight - height - 1
+                            y: visualisationLayout.cornerWindowHeight - height - historyScroll.height
                             width: visualisationLayout.cornerWindowHeight * 0.12
                             height: width
                             color: "#fffafa"

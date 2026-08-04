@@ -380,47 +380,43 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
         }
     }
 
-
     float scaleY = wavePixel_.nowScaleY;
     int startIdx = wavePixel_.startIdx;
 
     QImage sonarWave     = QImage(panelW, height, QImage::Format_RGB32);
-    int *sonarWaveBuffer = reinterpret_cast<int *>(sonarWave.bits());
+    int *sonarWaveBuffer = reinterpret_cast<int*>(sonarWave.bits());
     std::fill(sonarWaveBuffer, sonarWaveBuffer+panelW*height, ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
 
     int ratio = 10;
+    int colorDataCnt = colorData.count();
     if(scaleY < 1 && scaleY > 0) {
         scaleY = 1 / scaleY;
-        /*-底色，防止拉伸在范围外-*/
         for(int i = 0; i < height; i++) {
-            for(int j = 1; j < panelW; j++) {
-                sonarWaveBuffer[(i)*panelW +j] = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-            }
-        }
-
-        for(int i = 0; (i < height) && ((startIdx+(int)(i*scaleY)) < colorData.count()); i++) {
-            for(int j = (panelW/2-(cacheData[startIdx+(int)(i*scaleY)]/ratio));
-                 j<(panelW/2+(cacheData[startIdx+(int)(i*scaleY)]/ratio)); j++) {
-                sonarWaveBuffer[(i)*panelW +j] = colorData[startIdx+(int)(i*scaleY)];
+            int idx = startIdx+(int)(i*scaleY);
+            if(idx < colorDataCnt) {
+                int halfWidth = cacheData[idx]/ratio;
+                int left = qMax(0, panelW/2-halfWidth);
+                int right = qMin(panelW, panelW/2+halfWidth);
+                for(int j = left; j < right; j++) {
+                    sonarWaveBuffer[i*panelW+j] = colorData[idx];
+                }
             }
         }
     }
     else if(scaleY >= 1) {
         for(int i = 0; i < height; i++) {
-            for(int j = 1; j < panelW; j++) {
-                sonarWaveBuffer[i*panelW+j] = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-            }
-        }
-        for(int i = 0; (i < height) && ((startIdx+(int)(i/scaleY))<colorData.count()); i++) {
-            for(int j = panelW/2-(cacheData[startIdx+(int)(i/scaleY)]/ratio);
-                 j < (panelW/2+(cacheData[startIdx+(int)(i/scaleY)]/ratio)); j++) {
-                sonarWaveBuffer[(i)*panelW +j] = colorData[startIdx+(int)(i/scaleY)];
+            int idx = startIdx+(int)(i/scaleY);
+            if(idx < colorDataCnt) {
+                int halfWidth = cacheData[idx]/ratio;
+                int left = qMax(0, panelW/2-halfWidth);
+                int right = qMin(panelW, panelW/2+halfWidth);
+                for(int j = left;j < right; j++) {
+                    sonarWaveBuffer[i*panelW+j] = colorData[idx];
+                }
             }
         }
     }
-
     p->drawImage(panelX, 0, sonarWave);
-
 
     if (bottomLineIdx >= 0 && bottomLineIdx < height) {
         QPen linePen(Qt::red);

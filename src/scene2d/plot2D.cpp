@@ -159,7 +159,6 @@ void Plot2D::draw(QPainter *painterPtr)
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
 
-    // echogram_.drawRealtime(this, datasetPtr_);
 
     // echogram_.draw(this, datasetPtr_);
     // attitude_.draw(this, datasetPtr_);
@@ -177,7 +176,7 @@ void Plot2D::draw(QPainter *painterPtr)
     grid_.draw(this, datasetPtr_);
     aim_.draw(this, datasetPtr_);
 
-    contacts_.draw(this, datasetPtr_);
+    // contacts_.draw(this, datasetPtr_);
 }
 
 bool Plot2D::isHorizontal()

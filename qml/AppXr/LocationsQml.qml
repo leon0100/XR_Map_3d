@@ -94,7 +94,7 @@ Rectangle {
                                 anchors.centerIn: parent
                                 width: boxSize
                                 height: boxSize
-                                source: "qrc:/XR/yeslogo.png"
+                                // source: "qrc:/XR/yeslogo.png"
                                 visible: locationStyle === 0
                             }
                         }

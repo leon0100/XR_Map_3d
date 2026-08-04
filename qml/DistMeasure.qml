@@ -81,7 +81,7 @@ Item {
         y: startPoint.y - boxSize
         width:  boxSize
         height: boxSize
-        source: "qrc:/XR/pin.png"
+        source: "qrc:/icons/ui/pin.svg"
         fillMode: Image.PreserveAspectFit
         visible: renderer.screetShot.isP1Visible
     }

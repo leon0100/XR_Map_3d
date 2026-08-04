@@ -5,12 +5,12 @@ import QtQuick.Layouts 1.15
 
 Item {
     id: root
-    width: theme.iconSize * 12
-    height: checkbox.height
+    width:  theme.iconSize * 12
+    height: theme.iconSize * 2.2
 
     property string text: qsTr("Check")
     property bool   checked:  false
-    property int iconSize: theme.iconSize * 1.5
+    property int    iconSize: theme.iconSize * 1.5
 
     signal checkClicked()
     signal textClicked()
@@ -18,13 +18,13 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        spacing: 5
+        spacing: 3
 
         CheckBox {
             id: checkbox
 
             width: parent.width
-            height: root.iconSize * 1.2
+            height: root.iconSize
             checked: root.checked
 
             indicator: Rectangle {

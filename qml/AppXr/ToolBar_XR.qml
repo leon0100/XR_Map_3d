@@ -16,7 +16,7 @@ Rectangle {
 
     property  var  menuPopup:     null
     property  var  targetPlot:    null
-    property  var  lastItem:      menuSettings
+    // property  var  lastItem:      menuSettings
     property  int  settingsWidth: theme.menuWidth*20
     property  int  iconSize:      Math.min(Screen.width, Screen.height) * 0.05
 
@@ -68,17 +68,17 @@ Rectangle {
 
     function itemChangeActive(currentItem) {
            let wasOpen = currentItem.active
-           let lastItemTmp = lastItem
+           // let lastItemTmp = lastItem
 
            if (currentItem) {
                currentItem.active = !(currentItem.active)
            }
 
-           if (lastItem && lastItem !== currentItem) {
-               lastItem.active = false
-           }
+           // if (lastItem && lastItem !== currentItem) {
+           //     lastItem.active = false
+           // }
 
-           lastItem = currentItem
+           // lastItem = currentItem
 
            if (!wasOpen && currentItem.active && (currentItem === menuSettings || currentItem === menuDisplay)) {
                menuBarSettingOpened()
@@ -530,7 +530,7 @@ Rectangle {
                     width:  toolBar_XR.iconSize * 3
                     height: toolBar_XR.iconSize
                     anchors.verticalCenter: parent.verticalCenter
-                    ToolTip.visible: toslonLogo.containsMouse
+                    // ToolTip.visible: toslonLogo.containsMouse
                     ToolTip.text: qsTr("TOSLON")
 
                     MouseArea {

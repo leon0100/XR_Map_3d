@@ -6,13 +6,8 @@
 
 Themes::Themes() : QObject(),
     instrumentsGrade_(-1),
-    resolutionCoeff_(1.0),
-    isFakeCoords_(false)
+    resolutionCoeff_(1.0)
 {
-#if defined (FAKE_COORDS)
-    isFakeCoords_ = true;
-#endif
-
     _isConsoleVisible = false;
 }
 
@@ -53,9 +48,6 @@ void Themes::setTheme(int theme_id)
         _controlBorderColor = new QColor(100, 100, 100);
         _controlSolidBackColor = new QColor(100, 100, 100);
         _controlSolidBorderColor = new QColor(150, 150, 150);
-
-        _disabledTextColor = new QColor(150, 150, 150);
-        _disabledBackColor = new QColor(50, 50, 50);
         _hoveredBackColor = new QColor(70,70,70);
     }
     else if(theme_id == 1) {
@@ -66,9 +58,6 @@ void Themes::setTheme(int theme_id)
         _controlBorderColor = new QColor(155, 155, 155);
         _controlSolidBackColor = new QColor(255, 255, 255);
         _controlSolidBorderColor = new QColor(0, 0, 0, 0);
-
-        _disabledTextColor = new QColor(150, 150, 150);
-        _disabledBackColor = new QColor(50, 50, 50);
     }
 
     QScreen *screen = QGuiApplication::primaryScreen();
@@ -77,8 +66,12 @@ void Themes::setTheme(int theme_id)
         screenWidth_  = size.width();
         screenHeight_ = size.height();
         screenSize_   = qMin(screenWidth_, screenHeight_);
-        menuWidth_    = screenSize_ * 0.06;
-        iconSize_     = menuWidth_  * 0.3;
+        menuWidth_    = screenSize_ * 0.05;
+        iconSize_     = menuWidth_  * 0.32;
+
+        connect(screen, &QScreen::geometryChanged, this, [this](const QRect&) {
+            refreshScreenSize();
+        });
     } else {
         screenSize_ = 600;
     }
@@ -89,6 +82,31 @@ void Themes::setTheme(int theme_id)
     m_batteryTimer.setTimerType(Qt::VeryCoarseTimer);
     connect(&m_batteryTimer, &QTimer::timeout, this, &Themes::updateSystemToolBarStatus);
     m_batteryTimer.start(55000);
+}
+
+void Themes::refreshScreenSize()
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (!screen) {
+        return;
+    }
+
+    QSize size = screen->size();
+    int newScreenWidth  = size.width();
+    int newScreenHeight = size.height();
+    int newScreenSize   = qMin(newScreenWidth, newScreenHeight);
+    int newMenuWidth    = newScreenSize * 0.06;
+    int newIconSize     = newMenuWidth  * 0.3;
+    qDebug() << "screenWidth_....." << newScreenWidth << "  " << newScreenHeight;
+    if ((newScreenWidth != screenWidth_) || (newScreenHeight != screenHeight_) || (newMenuWidth != menuWidth_)
+        || (newIconSize != iconSize_)) {
+            screenWidth_  = newScreenWidth;
+            screenHeight_ = newScreenHeight;
+            screenSize_   = newScreenSize;
+            menuWidth_    = newMenuWidth;
+            iconSize_     = newIconSize;
+            emit changed();
+    }
 }
 
 

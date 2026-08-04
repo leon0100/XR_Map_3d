@@ -185,26 +185,22 @@ class Themes : public QObject
 public:
     Themes();
 
-    Q_PROPERTY(bool  isFakeCoords READ getIsFakeCoords     NOTIFY changed)
     Q_PROPERTY(qreal resCoeff     READ getResolutionCoeff  NOTIFY changed)
 
-    Q_PROPERTY(QColor disabledTextColor READ disabledTextColor NOTIFY changed)
-    Q_PROPERTY(QColor disabledBackColor READ disabledBackColor NOTIFY changed)
-    Q_PROPERTY(QColor hoveredBackColor  READ hoveredBackColor  NOTIFY changed)
+    Q_PROPERTY(QFont  textFont        READ textFont       NOTIFY changed)
+    Q_PROPERTY(QFont  textFontS       READ textFontS      NOTIFY changed)
 
-    Q_PROPERTY(QColor textColor      READ textColor      NOTIFY changed)
-    Q_PROPERTY(QColor textSolidColor READ textSolidColor NOTIFY changed)
-    Q_PROPERTY(QColor textErrorColor READ textErrorColor NOTIFY changed)
-    Q_PROPERTY(QFont textFont        READ textFont       NOTIFY changed)
-    Q_PROPERTY(QFont textFontS       READ textFontS      NOTIFY changed)
+    Q_PROPERTY(QColor hoveredBackColor         READ hoveredBackColor         NOTIFY changed)
+    Q_PROPERTY(QColor textColor                READ textColor                NOTIFY changed)
+    Q_PROPERTY(QColor textSolidColor           READ textSolidColor           NOTIFY changed)
+    Q_PROPERTY(QColor textErrorColor           READ textErrorColor           NOTIFY changed)
+    Q_PROPERTY(QColor menuBackColor            READ menuBackColor            NOTIFY changed)
+    Q_PROPERTY(QColor frameBackColor           READ frameBackColor           NOTIFY changed)
+    Q_PROPERTY(QColor controlBackColor         READ controlBackColor         NOTIFY changed)
+    Q_PROPERTY(QColor controlBorderColor       READ controlBorderColor       NOTIFY changed)
+    Q_PROPERTY(QColor controlSolidBackColor    READ controlSolidBackColor    NOTIFY changed)
+    Q_PROPERTY(QColor controlSolidBorderColor  READ controlSolidBorderColor  NOTIFY changed)
 
-    Q_PROPERTY(QColor menuBackColor  READ menuBackColor  NOTIFY changed)
-    Q_PROPERTY(QColor frameBackColor READ frameBackColor NOTIFY changed)
-
-    Q_PROPERTY(QColor controlBackColor        READ controlBackColor        NOTIFY changed)
-    Q_PROPERTY(QColor controlBorderColor      READ controlBorderColor      NOTIFY changed)
-    Q_PROPERTY(QColor controlSolidBackColor   READ controlSolidBackColor   NOTIFY changed)
-    Q_PROPERTY(QColor controlSolidBorderColor READ controlSolidBorderColor NOTIFY changed)
     Q_PROPERTY(int screenSize   READ screenSize   NOTIFY changed)
     Q_PROPERTY(int screenWidth  READ screenWidth  NOTIFY changed)
     Q_PROPERTY(int screenHeight READ screenHeight NOTIFY changed)
@@ -229,12 +225,9 @@ public:
     Q_PROPERTY(int systemNetStatus       READ systemNetStatus    NOTIFY sysytemToolBarChanged)
     Q_PROPERTY(int currentCommPage       READ currentCommPage    WRITE setCurrentCommPage  NOTIFY currentCommPageChanged)
 
-    bool   getIsFakeCoords()    const { return isFakeCoords_; };
     qreal  getResolutionCoeff() const { return resolutionCoeff_; };
     QColor textColor()                { return *_textColor; }
     QColor textErrorColor()           { return *_textErrorColor; }
-    QColor disabledTextColor()        { return *_disabledTextColor; }
-    QColor disabledBackColor()        {return *_disabledBackColor;}
     QColor hoveredBackColor()         { return *_hoveredBackColor; }
     QColor textSolidColor()           { return *_textSolidColor; }
     QFont  textFont()                 { return *_textFont; }
@@ -309,6 +302,7 @@ public:
 
     Q_INVOKABLE void updateResCoeff();
     Q_INVOKABLE void openGoogleHelpDocument();
+    Q_INVOKABLE void refreshScreenSize();
 
 
 private:
@@ -338,11 +332,9 @@ protected:
     QColor* _textColor;
     QColor* _textSolidColor;
     QColor* _textErrorColor;
-    QColor* _disabledTextColor;
-    QColor* _disabledBackColor;
     QColor* _hoveredBackColor;
-    QFont* _textFont;
-    QFont* _textFontS;
+    QFont*  _textFont;
+    QFont*  _textFontS;
 
     QColor* _menuBackColor;
     QColor* _frameBackColor;
@@ -351,7 +343,7 @@ protected:
     QColor* _controlSolidBackColor;
     QColor* _controlSolidBorderColor;
     int32_t screenSize_, screenWidth_, screenHeight_;
-    int32_t menuWidth_ = 70;
+    int32_t menuWidth_ = 60;
     int32_t iconSize_ = 18;
 
     bool _isConsoleVisible;
@@ -362,7 +354,6 @@ private:
     QQmlApplicationEngine* qmlEngine_ = nullptr;
     qreal checkResolutionCoeff() const;
     qreal resolutionCoeff_;
-    bool isFakeCoords_;
 
     QTranslator *translator_;
     SoftwareParametersStru softwareParameters_;

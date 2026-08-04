@@ -24,22 +24,28 @@ qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(
 
 void qPlot2D::paint(QPainter *painter)
 {
+
     // qDebug() << "qPlot2D::paint(.........." << Plot2D::plotEnabled();
     if (!Plot2D::plotEnabled() || dataset_ == nullptr) {
         return;
     }
 
     int totalWidth = static_cast<int>(width());
+    int totalHeight = static_cast<int>(height());
+    if(totalWidth <= 1 || totalHeight <= 1) {
+        return;
+    }
+
     int waveWidth = totalWidth / WAVE_WIDTH_RATIO_DENOM;
     if(waveWidth < 1) {
         waveWidth = 1;
     }
 
-    Plot2D::getImage(totalWidth - waveWidth, (int)height(), painter, _isHorizontal);
+    Plot2D::getImage(totalWidth - waveWidth, totalHeight, painter, _isHorizontal);
     Plot2D::draw(painter);
-    if (Plot2D::getIsContactChanged()) {
-        emit contactChanged();
-    }
+    // if (Plot2D::getIsContactChanged()) {
+    //     emit contactChanged();
+    // }
 }
 
 void qPlot2D::setPlot(Dataset *dataset) {
@@ -188,6 +194,7 @@ void qPlot2D::setMinUpRng(int minUpRng)
 
 void qPlot2D::setMaxLoRng(int maxLoRng)
 {
+    qDebug() << "1111111111111" << maxLoRng;
     currentLoRng_ = maxLoRng;
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
     echogram_.setLowerRng(maxLoRng);
@@ -271,6 +278,8 @@ void qPlot2D::setIndx(int indx)
 
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
+    cursor_.distance.mode = AutoRangeMaxOnScreen;
+
     currentUpRng_ = upper * 100;
     currentLoRng_ = lower * 100;
     setMinUpRng(currentUpRng_);
@@ -279,7 +288,9 @@ void qPlot2D::resetUpLoRng(int upper, int lower)
     echogram_.setUpperRng(currentUpRng_);
     echogram_.setLowerRng(currentLoRng_);
 
-    plotUpdate();
+    plotUpdate();    
+
+    cursor_.distance.mode = AutoRangeNone;
 }
 
 void qPlot2D::setSensitivity(int sensitive)

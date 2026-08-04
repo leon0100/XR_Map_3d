@@ -168,10 +168,10 @@ Item  {
         CheckButton {
             id: northModeCheckButton
             iconSource: "qrc:/icons/ui/location_pin.svg"
-            backColor:  theme.controlBackColor
-            borderColor: theme.controlBackColor
-            checkedBorderColor: theme.controlBorderColor
+            backColor: "#879fc6"
             checked:    true
+            checkedColor: "white"
+            checkedBackColor: "white"
             implicitHeight: theme.menuWidth
             implicitWidth: theme.menuWidth
             opacity: toolbarHovered ? 1.0 : 0.5

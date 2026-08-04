@@ -439,20 +439,6 @@ WaterFall {
                        font.pixelSize: plotIconSize
                        selectByMouse: true
                        validator: IntValidator { bottom: 0; top: 511;}
-                       // onTextChanged: {
-                       //     let value    = parseInt(text)
-                       //     let lowValue = parseInt(lowerMax.text)
-                       //     if(isNaN(value)) {
-                       //         text = "0"
-                       //         // value = 0
-                       //     }
-                       //     else if(value > 511) {
-                       //         text = "511"
-                       //         // value = 511
-                       //     }
-                       //     // plot.minUpRng = value
-                       // }
-
                         text: (plot.minUpRng / 100).toFixed(0)
                         onEditingFinished: {
                             let value = parseInt(text, 10)
@@ -488,24 +474,6 @@ WaterFall {
                         font.pixelSize: plotIconSize
                         selectByMouse: true
                         validator: IntValidator { bottom: 1; top: 512;}
-                        // onTextChanged: {
-                        //     let value = parseInt(text)
-                        //     let upValue = parseInt(upperMin.text)
-                        //     if(isNaN(value)) {
-                        //         text = "1"
-                        //         // value = 1
-                        //     }
-                        //     else if(value > 512) {
-                        //         text = "512"
-                        //         // value = 512
-                        //     }
-                        //     else if(value < 1) {
-                        //         text= "1"
-                        //         // value = 1
-                        //     }
-                        //     // plot.maxLoRng = value
-                        // }
-
                         text: (plot.maxLoRng / 100).toFixed(0)
                         onEditingFinished: {
                             let value = parseInt(text, 10)

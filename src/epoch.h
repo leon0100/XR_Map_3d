@@ -207,17 +207,14 @@ public:
     void setDistProcessing(const ChannelId& channelId, float dist);
 
     void clearDistProcessing(const ChannelId& channelId);
-
     void setMinDistProc(const ChannelId& channelId, float dist);
-
     void setMaxDistProc(const ChannelId& channelId, float dist);
-
     void setMinMaxDistProc(const ChannelId& channelId, int min, int max,  bool isSave = true);
 
     bool eventAvail() { return flags.eventAvail; }
-    int eventID() { return _eventId; }
-    int eventTimestamp() {return _eventTimestamp_us; }
-    int eventUnix() { return _eventUnix; }
+    int  eventID() { return _eventId; }
+    int  eventTimestamp() {return _eventTimestamp_us; }
+    int  eventUnix() { return _eventUnix; }
 
     DateTime* time() { return &_time; }
 

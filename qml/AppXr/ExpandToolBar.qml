@@ -357,7 +357,7 @@ Rectangle {
     z: 9999
 
     // 让 root 的宽度始终等于展开后的总宽度，背景透明，靠内部组件来撑开视觉
-    width: iconSize * 1.1
+    width: iconSize
     height: expandedHeight
     color: "transparent"
 
@@ -408,10 +408,10 @@ Rectangle {
     MenuButton {
         id: handleBtn
         icon.source: root.expanded ? "qrc:/icons/ui/arrow_bar_to_down.svg" : "qrc:/XR/content.svg"
-        icon.width:  root.iconSize * 1.1
-        icon.height: root.iconSize * 1.1
-        width:       root.iconSize * 1.1
-        height:      root.iconSize * 1.1
+        icon.width:  root.iconSize
+        icon.height: root.iconSize
+        width:       root.iconSize
+        height:      root.iconSize
 
         Rectangle {
             anchors.fill: parent

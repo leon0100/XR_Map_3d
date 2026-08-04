@@ -132,7 +132,7 @@ Item {
                 spacing: 2
 
                 Image {
-                    source: "qrc:/icons/ui/focus_2.svg"
+                    source: "qrc:/icons/ui/file_settings.svg"
                     Layout.preferredWidth: iconSize * 1.1
                     Layout.preferredHeight: iconSize * 1.1
                     Layout.alignment: Qt.AlignHCenter

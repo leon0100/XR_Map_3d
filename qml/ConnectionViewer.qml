@@ -12,7 +12,8 @@ ColumnLayout
 {
     property var dev:         null
     property var devList:     deviceManagerWrapper.devs
-    property string filePath: pathText.text
+    // property string filePath: pathText.text
+    property string filePath
 
     Layout.margins: 0
     spacing: 10
@@ -367,20 +368,20 @@ ColumnLayout
                     }
                 }
 
-                Rectangle {
-                    id: firmwareBackground
-                    anchors.fill: parent
-                    visible: IsUpgradingState
-                    color: "#30ffffff"
-                    z: 10
+                // Rectangle {
+                //     id: firmwareBackground
+                //     anchors.fill: parent
+                //     visible: IsUpgradingState
+                //     color: "#30ffffff"
+                //     z: 10
 
-                    Image {
-                        anchors.fill: parent
-                        source: "qrc:/icons/ui/direction.svg"
-                        fillMode: Image.Tile
-                        opacity: 0.5
-                    }
-                }
+                //     Image {
+                //         anchors.fill: parent
+                //         source: "qrc:/icons/ui/direction.svg"
+                //         fillMode: Image.Tile
+                //         opacity: 0.5
+                //     }
+                // }
             }
         }
 
@@ -451,20 +452,20 @@ ColumnLayout
             }
         }
 
-        CheckButton {
-            id: loggingCheck2
-            text: qsTr("CSV")
-            checkedColor: "red"
-            color: "red"
+        // CheckButton {
+        //     id: loggingCheck2
+        //     text: qsTr("CSV")
+        //     checkedColor: "red"
+        //     color: "red"
 
-            Layout.alignment: Qt.AlignRight
+        //     Layout.alignment: Qt.AlignRight
 
-            Settings {
-                property alias loggingCheck2: loggingCheck2.checked
-            }
+        //     Settings {
+        //         property alias loggingCheck2: loggingCheck2.checked
+        //     }
 
-            icon.source: checked ? "qrc:/icons/ui/record_fill.svg": "qrc:/icons/ui/record.svg"
-        }
+        //     icon.source: checked ? "qrc:/icons/ui/record_fill.svg": "qrc:/icons/ui/record.svg"
+        // }
 
         CheckButton {
            id: importCheck
@@ -693,7 +694,7 @@ ColumnLayout
                 FileDialog {
                     id: importTrackFileDialog
                     title: "Please choose a file"
-                    folder: StandardPaths.writableLocation(StandardPaths.HomeLocation)
+                    // folder: StandardPaths.writableLocation(StandardPaths.HomeLocation)
 
                     nameFilters: ["Logs (*.csv *.txt)"]
 
@@ -801,133 +802,133 @@ ColumnLayout
         }
     }
 
-    MenuRow {
-        spacing: 4
-        CheckButton {
-            id: zeroingPosButton
-            icon.source: "qrc:/icons/ui/propeller_off.svg"
-            backColor: theme.controlSolidBackColor
-            borderWidth: 0
-            implicitWidth: theme.menuWidth
-            visible: theme.isFakeCoords
+    // MenuRow {
+    //     spacing: 4
+    //     CheckButton {
+    //         id: zeroingPosButton
+    //         icon.source: "qrc:/icons/ui/propeller_off.svg"
+    //         backColor: theme.controlSolidBackColor
+    //         borderWidth: 0
+    //         implicitWidth: theme.menuWidth
+    //         visible: theme.isFakeCoords
 
-            onCheckedChanged: {
-                if (theme.isFakeCoords) {
-                    core.setPosZeroing(checked);
-                }
-            }
+    //         onCheckedChanged: {
+    //             if (theme.isFakeCoords) {
+    //                 core.setPosZeroing(checked);
+    //             }
+    //         }
 
-            Component.onCompleted: { // maybe need del
-                if (theme.isFakeCoords) {
-                    core.setPosZeroing(checked);
-                }
-            }
+    //         Component.onCompleted: { // maybe need del
+    //             if (theme.isFakeCoords) {
+    //                 core.setPosZeroing(checked);
+    //             }
+    //         }
 
-            Settings {
-                property alias zeroingPosButtonCheched: zeroingPosButton.checked
-            }
-        }
+    //         Settings {
+    //             property alias zeroingPosButtonCheched: zeroingPosButton.checked
+    //         }
+    //     }
 
-        CTextField {
-            id: pathText
-            hoverEnabled: true
-            Layout.fillWidth: true
+    //     CTextField {
+    //         id: pathText
+    //         hoverEnabled: true
+    //         Layout.fillWidth: true
 
-            text: core.filePath
-            placeholderText: qsTr("Enter path")
+    //         text: core.filePath
+    //         placeholderText: qsTr("Enter path")
 
-            Keys.onPressed: function(event) {
-                if (event.key === 16777220 || event.key === Qt.Key_Enter) {
-                    core.openLogFile(pathText.text, false, false);
-                }
-            }
+    //         Keys.onPressed: function(event) {
+    //             if (event.key === 16777220 || event.key === Qt.Key_Enter) {
+    //                 core.openLogFile(pathText.text, false, false);
+    //             }
+    //         }
 
-            Settings {
-                property alias pathText: pathText.text
-            }
-        }
+    //         Settings {
+    //             property alias pathText: pathText.text
+    //         }
+    //     }
 
-        CheckButton {
-            icon.source: "qrc:/icons/ui/file.svg"
-            checkable: false
-            backColor: theme.controlSolidBackColor
-            borderWidth: 0
-            implicitWidth: theme.menuWidth
-            onClicked: newFileDialog.open()
+    //     CheckButton {
+    //         icon.source: "qrc:/icons/ui/file.svg"
+    //         checkable: false
+    //         backColor: theme.controlSolidBackColor
+    //         borderWidth: 0
+    //         implicitWidth: theme.menuWidth
+    //         onClicked: newFileDialog.open()
 
-            FileDialog {
-                id: newFileDialog
-                title: qsTr("Please choose a file")
-                nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Toslon log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
-                onAccepted: {
-                    const file = newFileDialog.selectedFile
-                    if (!file) {
-                        return
-                    }
+    //         FileDialog {
+    //             id: newFileDialog
+    //             title: qsTr("Please choose a file")
+    //             nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Toslon log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
+    //             onAccepted: {
+    //                 const file = newFileDialog.selectedFile
+    //                 if (!file) {
+    //                     return
+    //                 }
 
-                    const fileStr = file.toString()
-                    pathText.text = fileStr.replace("file:///", Qt.platform.os === "windows" ? "" : "/")
+    //                 const fileStr = file.toString()
+    //                 pathText.text = fileStr.replace("file:///", Qt.platform.os === "windows" ? "" : "/")
 
-                    var name_parts = fileStr.split('.')
+    //                 var name_parts = fileStr.split('.')
 
-                    core.openLogFile(pathText.text, false, false)
-                }
-                onRejected: {
-                }
-            }
-        }
+    //                 core.openLogFile(pathText.text, false, false)
+    //             }
+    //             onRejected: {
+    //             }
+    //         }
+    //     }
 
-        CheckButton {
-            icon.source: "qrc:/icons/ui/file_plus.svg"
-            checkable: false
-            backColor: theme.controlSolidBackColor
-            borderWidth: 0
-            implicitWidth: theme.menuWidth
+    //     CheckButton {
+    //         icon.source: "qrc:/icons/ui/file_plus.svg"
+    //         checkable: false
+    //         backColor: theme.controlSolidBackColor
+    //         borderWidth: 0
+    //         implicitWidth: theme.menuWidth
 
-            onClicked: {
-                appendFileDialog.open()
-            }
+    //         onClicked: {
+    //             appendFileDialog.open()
+    //         }
 
-            FileDialog {
-                id: appendFileDialog
-                title: qsTr("Please choose a file")
-                nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Kogger log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
-                onAccepted: {
-                    pathText.text = appendFileDialog.selectedFile.toString().replace("file:///", Qt.platform.os === "windows" ? "" : "/")
-                    var name_parts = appendFileDialog.selectedFile.toString().split('.')
-                    core.openLogFile(pathText.text, true, false);
-                }
-                onRejected: {
-                }
-            }
-        }
+    //         FileDialog {
+    //             id: appendFileDialog
+    //             title: qsTr("Please choose a file")
+    //             nameFilters: ["Logs (*.klf *.KLF *.ubx *.UBX *.xtf *.XTF)", "Kogger log files (*.klf *.KLF)", "U-blox (*.ubx *.UBX)"]
+    //             onAccepted: {
+    //                 pathText.text = appendFileDialog.selectedFile.toString().replace("file:///", Qt.platform.os === "windows" ? "" : "/")
+    //                 var name_parts = appendFileDialog.selectedFile.toString().split('.')
+    //                 core.openLogFile(pathText.text, true, false);
+    //             }
+    //             onRejected: {
+    //             }
+    //         }
+    //     }
 
-        CheckButton {
-            icon.source: "qrc:/icons/ui/file_off.svg"
-            checkable: false
-            backColor: theme.controlSolidBackColor
-            borderWidth: 0
-            implicitWidth: theme.menuWidth
-            onClicked: core.closeLogFile();
-        }
-    }
+    //     CheckButton {
+    //         icon.source: "qrc:/icons/ui/file_off.svg"
+    //         checkable: false
+    //         backColor: theme.controlSolidBackColor
+    //         borderWidth: 0
+    //         implicitWidth: theme.menuWidth
+    //         onClicked: core.closeLogFile();
+    //     }
+    // }
 
-    MenuRow {
-        visible: devList.length > 0
-        spacing: 10
+    // MenuRow {
+    //     visible: devList.length > 0
+    //     spacing: 10
 
-        Repeater {
-            model: devList
-            delegate: CButton {
-                text: modelData ? (modelData.devName + " " + modelData.fwVersion + " [" + modelData.devSN + "]") : qsTr("Undefined")
-                Layout.fillWidth: true
-                opacity: dev === modelData ? 1 : 0.5
-                visible: modelData ? (modelData.devType === 0 ? false : true) : false
+    //     Repeater {
+    //         model: devList
+    //         delegate: CButton {
+    //             text: modelData ? (modelData.devName + " " + modelData.fwVersion + " [" + modelData.devSN + "]") : qsTr("Undefined")
+    //             Layout.fillWidth: true
+    //             opacity: dev === modelData ? 1 : 0.5
+    //             visible: modelData ? (modelData.devType === 0 ? false : true) : false
 
-                onClicked: {
-                    dev = modelData
-                }
-            }
-        }
-    }
+    //             onClicked: {
+    //                 dev = modelData
+    //             }
+    //         }
+    //     }
+    // }
 }

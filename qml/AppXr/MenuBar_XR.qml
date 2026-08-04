@@ -30,10 +30,10 @@ Popup {
     }
 
 
-    property alias menuVisible: mainMenuPopup.visible
-    property int   menuSize: Math.min(Screen.width, Screen.height) * 0.2
+    property alias menuVisible:  mainMenuPopup.visible
+    property int   menuSize:     Math.min(Screen.width, Screen.height) * 0.2
     property int   itemFontSize: menuSize * 0.16
-    property int   itemHeight: menuSize * 0.2
+    property int   itemHeight:   menuSize * 0.2
     property int   start: 2
     property bool  layoutHorizontal: true
 
@@ -74,8 +74,8 @@ Popup {
             Image {
                 source: "qrc:/XR/triangle.svg"
                 rotation: 90
-                width: itemFontSize/2
-                height: itemFontSize/2
+                width:  itemFontSize * 0.5
+                height: itemFontSize * 0.5
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.right
                 anchors.rightMargin: 5
@@ -83,7 +83,6 @@ Popup {
 
             Menu {
                 id: fileSubMenu
-                background: menuBackground.createObject(fileSubMenu)
                 width: parent.width * 0.8
                 x: parent.width + start
 
@@ -169,7 +168,7 @@ Popup {
         }
 
 
-        // 菜单项 2--------------------------------------------------------
+        // 菜单项 2-------------------------------------------------------
         MenuItem {
             id: settings
             text: qsTr("Settings")
@@ -193,7 +192,6 @@ Popup {
 
             Menu {
                 id: settingsSubMenu
-                background: menuBackground.createObject(fileSubMenu)
                 width: parent.width
                 x: parent.width + start
 
@@ -218,7 +216,6 @@ Popup {
 
                     Menu {
                         id: langSubsubMenu
-                        background: menuBackground.createObject(fileSubMenu)
                         width: parent.width
                         x: 0
 
@@ -300,7 +297,6 @@ Popup {
 
                     Menu {
                         id: mapSubsubMenu
-                        background: menuBackground.createObject(fileSubMenu)
                         width: parent.width * 1.2
                         x: 0
 
@@ -446,7 +442,6 @@ Popup {
 
                     Menu {
                         id: unitsSubsubMenu
-                        background: menuBackground.createObject(fileSubMenu)
                         width: parent.width
                         x: 0
 
@@ -579,7 +574,6 @@ Popup {
 
             Menu {
                 id: helpSubMenu
-                background: menuBackground.createObject(fileSubMenu)
                 width: parent.width
                 x: parent.width + start
 

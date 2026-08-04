@@ -14,12 +14,13 @@ Button {
     property color  checkedBorderColor: "transparent"
     property color  borderColor: theme.controlSolidBorderColor
     property string iconSource: ""
-    property real   iconScale: 0.80
+    property real   iconScale: 0.8
 
+    implicitWidth:  theme.menuWidth
     implicitHeight: theme.menuWidth
 
     icon.source: iconSource
-    icon.width:  implicitHeight * control.iconScale
+    icon.width:  implicitWidth * control.iconScale
     icon.height: implicitHeight * control.iconScale
 
     hoverEnabled: true
@@ -27,38 +28,49 @@ Button {
     rightPadding: text === "" ? 2 : 6
     leftPadding: icon.source === "" ? 6 : 2
 
-
     font: theme.textFont
     palette.buttonText: active ? checkedColor : color
     palette.brightText: active ? checkedColor : color
-
     icon.color: active ? checkedColor : color
 
-    contentItem: RowLayout {
-        Item {
-            Layout.preferredWidth: control.height
-            Layout.fillHeight: true
+    // contentItem: RowLayout {
+    //     Item {
+    //         Layout.preferredWidth: control.width
+    //         Layout.preferredHeight: control.height
+    //         Layout.fillHeight: true
 
-            Image {
-                source: control.iconSource
-                anchors.centerIn: parent
-                width: icon.width
-                height: icon.height
-            }
-        }
+    //         Image {
+    //             source: control.iconSource
+    //             anchors.centerIn: parent
+    //             width: icon.width
+    //             height: icon.height
+    //         }
+    //     }
 
-        Text {
-            text: control.text
-            font: control.font
-            color: control.active ? control.checkedColor : control.color
-            elide: Text.ElideRight
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignLeft
-            Layout.fillWidth: true
+    //     Text {
+    //         text: control.text
+    //         font: control.font
+    //         color: control.active ? control.checkedColor : control.color
+    //         elide: Text.ElideRight
+    //         verticalAlignment: Text.AlignVCenter
+    //         horizontalAlignment: Text.AlignLeft
+    //         Layout.fillWidth: true
+    //     }
+    // }
+
+
+    contentItem: Item {
+        Layout.preferredWidth: control.width
+        Layout.preferredHeight: control.height
+        Layout.fillHeight: true
+
+        Image {
+            source: control.iconSource
+            anchors.centerIn: parent
+            width: icon.width
+            height: icon.height
         }
     }
-
-
 
     background: Rectangle {
         id: backRect

@@ -11,7 +11,6 @@ RowLayout {
     property  real   to: 100
     property  real   stepSize: 1
     property  string title: "Slider"
-    property  color  inactiveColor: "#cdc9c9"
     property  int    fontSize: theme.iconSize * 1.5
     property  real   handleWidth: fontSize * 0.5
     property  int    sliderLen: fontSize * 10
@@ -48,7 +47,7 @@ RowLayout {
                 anchors.rightMargin: fontSize * 0.2
                 height: 3
                 radius: 1
-                color: inactiveColor
+                color: "#cdc9c9"
             }
 
             // Repeater {
@@ -61,7 +60,7 @@ RowLayout {
             //         radius:1
             //         x:index*(parent.width-width)/(tickRepeater.count-1)
             //         y:(parent.height-height)/2
-            //         color: inactiveColor
+            //         color: "#cdc9c9"
             //     }
             // }
         }
@@ -80,7 +79,7 @@ RowLayout {
         Text {
             anchors.centerIn: parent
             text: Number(slider.value).toFixed(0) + unit
-            color: xrSlider.activeColor
+            color: "black"
             font.pixelSize: fontSize * 0.9
             font.bold: true
         }

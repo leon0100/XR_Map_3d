@@ -151,7 +151,7 @@ Rectangle {
                       anchors.centerIn: parent
                       width:  toolSize * 0.9
                       height: toolSize * 0.9
-                      source: "qrc:/XR/revokeedit.png"
+                      source: "qrc:/XR/undo.svg"
                    }
 
                    CMouseArea {

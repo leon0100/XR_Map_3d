@@ -12,7 +12,7 @@ Item {
     implicitWidth: menuLayout.width
 
     property  var    targetPlot:    null
-    property  var    lastItem:      menuSettings
+    // property  var    lastItem:      menuSettings
     // property  bool   is3DVisible:   visible3DButton.checked
     // property  bool   is2DVisible:   visible2DButton.checked
     property bool is3DVisible:  true
@@ -62,18 +62,18 @@ Item {
 
     function itemChangeActive(currentItem) {
         let wasOpen = currentItem.active
-        let lastItemTmp = lastItem
+        // let lastItemTmp = lastItem
 
         //控制DeviceSettingsViewer、DisplaySettingsViewer的显示和隐藏
         if (currentItem) {
             currentItem.active = !(currentItem.active)
         }
 
-        if (lastItem && lastItem !== currentItem) {
-            lastItem.active = false
-        }
+        // if (lastItem && lastItem !== currentItem) {
+        //     lastItem.active = false
+        // }
 
-        lastItem = currentItem
+        // lastItem = currentItem
 
         if (!wasOpen && currentItem.active && (currentItem === menuSettings || currentItem === menuDisplay)) {
             menuBarSettingOpened()
@@ -102,6 +102,20 @@ Item {
 
             function resetButtonOpacity() {
                 mainLayout.opacity = 0.5
+            }
+
+            MenuButton {
+                id: menuSettings
+                icon.source: "qrc:/icons/ui/plug.svg"
+                Layout.fillWidth: true
+                CMouseOpacityArea {
+                    toolTipText: qsTr("Connections")
+                    onContainsMouseChanged: containsMouse ? mainLayout.highlightAllButtons() : mainLayout.resetButtonOpacity()
+                }
+
+                onPressed: {
+                    itemChangeActive(menuSettings)
+                }
             }
 
         //     CheckButton {
