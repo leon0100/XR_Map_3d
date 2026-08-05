@@ -1,7 +1,5 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
-
 
 
 Popup {
@@ -11,7 +9,16 @@ Popup {
     x: start
     y: start
     padding: 10
-    closePolicy: Popup.NoAutoClose
+    closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
+
+    onClosed: {
+        fileSubMenu.close()
+        settingsSubMenu.close()
+        helpSubMenu.close()
+        langSubsubMenu.close()
+        mapSubsubMenu.close()
+        unitsSubsubMenu.close()
+    }
 
 
     background: Rectangle {
@@ -31,7 +38,7 @@ Popup {
 
 
     property alias menuVisible:  mainMenuPopup.visible
-    property int   menuSize:     Math.min(Screen.width, Screen.height) * 0.2
+    property int   menuSize:   theme.screenSize * 0.2
     property int   itemFontSize: menuSize * 0.16
     property int   itemHeight:   menuSize * 0.2
     property int   start: 2

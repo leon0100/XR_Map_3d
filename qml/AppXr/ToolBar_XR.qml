@@ -57,28 +57,12 @@ Rectangle {
         visible3DButton.clicked()
     }
 
-    function closeMenus() {
-        // if (menuSettings.active) {
-        //     menuSettings.active = false
-        // }
-        // if (menuDisplay.active) {
-        //     menuDisplay.active = false
-        // }
-    }
-
     function itemChangeActive(currentItem) {
            let wasOpen = currentItem.active
-           // let lastItemTmp = lastItem
 
            if (currentItem) {
                currentItem.active = !(currentItem.active)
            }
-
-           // if (lastItem && lastItem !== currentItem) {
-           //     lastItem.active = false
-           // }
-
-           // lastItem = currentItem
 
            if (!wasOpen && currentItem.active && (currentItem === menuSettings || currentItem === menuDisplay)) {
                menuBarSettingOpened()

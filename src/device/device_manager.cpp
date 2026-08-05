@@ -359,6 +359,12 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
         QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
+        if(fileIndex == fileCnt - 1) {
+            QTimer::singleShot(2500, progressDialog_, [this]() {
+                if(progressDialog_) {
+                    QMetaObject::invokeMethod(progressDialog_, "close");
+                }});
+        }
     }
 
     emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);
@@ -536,6 +542,12 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
         QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
+        if(fileIndex == fileCnt - 1) {
+            QTimer::singleShot(2500, progressDialog_, [this]() {
+                if(progressDialog_) {
+                    QMetaObject::invokeMethod(progressDialog_, "close");
+                }});
+        }
     }
 
     emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);

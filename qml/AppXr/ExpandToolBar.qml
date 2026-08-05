@@ -15,7 +15,7 @@
 //     height: iconSize
 //     color: "transparent"
 
-//     property int  landSize: Math.min(Screen.width, Screen.height) * 0.3
+//     property int  landSize: theme.screenSize * 0.3
 //     property int  iconSize: landSize * 0.2
 //     property bool expanded: false
 //     property color backColor: "#d6e6ff"
@@ -347,7 +347,6 @@
 /*---------------------------------------竖着展开-----------------------------------------*/
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
 
 
 Rectangle {
@@ -361,7 +360,7 @@ Rectangle {
     height: expandedHeight
     color: "transparent"
 
-    property int   landSize: Math.min(Screen.width, Screen.height) * 0.3
+    property int   landSize: theme.screenSize * 0.3
     property int   iconSize: landSize * 0.2
     property bool  expanded: false
     property color backColor: "#d6e6ff"
