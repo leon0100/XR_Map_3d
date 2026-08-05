@@ -13,7 +13,7 @@ WaterFall {
 
     property bool is3dVisible: false
     property int  indx: 0
-    property int  instruments: instrumentsGradeList.currentIndex
+    property int  instruments: 0
     property int  plotSize: theme.screenSize * 0.35
     property int  plotIconSize: theme.iconSize * 1.5
 
@@ -433,28 +433,13 @@ WaterFall {
                     }
                     TextField {
                        id: upperMin
-                       // text: (plot.minUpRng / 100).toFixed(0)
                        Layout.preferredWidth: plotIconSize * 3
                        horizontalAlignment: TextInput.AlignHCenter
                        font.pixelSize: plotIconSize
                        selectByMouse: true
                        validator: IntValidator { bottom: 0; top: 511;}
-                       // onTextChanged: {
-                       //     let value    = parseInt(text)
-                       //     let lowValue = parseInt(lowerMax.text)
-                       //     if(isNaN(value)) {
-                       //         text = "0"
-                       //         // value = 0
-                       //     }
-                       //     else if(value > 511) {
-                       //         text = "511"
-                       //         // value = 511
-                       //     }
-                       //     // plot.minUpRng = value
-                       // }
-
-                        text: (plot.minUpRng / 100).toFixed(0)
-                        onEditingFinished: {
+                       text: (plot.minUpRng / 100).toFixed(0)
+                       onEditingFinished: {
                             let value = parseInt(text, 10)
                             if(isNaN(value) || value < 0) { value = 0 }
                             if(value > 511) { value = 511 }
@@ -462,13 +447,13 @@ WaterFall {
                         }
 
                         Connections {
-                           target: plot
-                           onMinUpRngChanged: {
-                               if (!upperMin.activeFocus) {
-                                   upperMin.text = (plot.minUpRng / 100).toFixed(0)
-                               }
-                           }
-                       }
+                            target: plot
+                            function onMinUpRngChanged() {
+                                // if (!upperMin.activeFocus) {
+                                    upperMin.text = (plot.minUpRng / 100).toFixed(0)
+                                // }
+                            }
+                        }
                     }
 
                     Item {
@@ -488,24 +473,6 @@ WaterFall {
                         font.pixelSize: plotIconSize
                         selectByMouse: true
                         validator: IntValidator { bottom: 1; top: 512;}
-                        // onTextChanged: {
-                        //     let value = parseInt(text)
-                        //     let upValue = parseInt(upperMin.text)
-                        //     if(isNaN(value)) {
-                        //         text = "1"
-                        //         // value = 1
-                        //     }
-                        //     else if(value > 512) {
-                        //         text = "512"
-                        //         // value = 512
-                        //     }
-                        //     else if(value < 1) {
-                        //         text= "1"
-                        //         // value = 1
-                        //     }
-                        //     // plot.maxLoRng = value
-                        // }
-
                         text: (plot.maxLoRng / 100).toFixed(0)
                         onEditingFinished: {
                             let value = parseInt(text, 10)
@@ -515,12 +482,12 @@ WaterFall {
                         }
 
                         Connections {
-                          target: plot
-                          onMaxLoRngChanged: {
-                              if (!lowerMax.activeFocus) {
-                                  lowerMax.text = (plot.maxLoRng / 100).toFixed(0)
-                              }
-                           }
+                            target: plot
+                            function onMaxLoRngChanged() {
+                                // if (!lowerMax.activeFocus) {
+                                    lowerMax.text = (plot.maxLoRng / 100).toFixed(0)
+                                // }
+                            }
                         }
                     }
 
@@ -547,31 +514,18 @@ WaterFall {
                             id: mouseArea
                             anchors.fill: parent
                             onClicked: {
-                                // let upperVal = parseInt(upperMin.text)
-                                // let lowerVal = parseInt(lowerMax.text)
-                                // if(upperVal >= lowerVal) {
-                                //     upperVal = lowerVal - 1
-                                // }
-
                                 let upperVal = parseInt(upperMin.text, 10)
                                 let lowerVal = parseInt(lowerMax.text, 10)
                                 if(isNaN(upperVal)) { upperVal = 0 }
                                 if(isNaN(lowerVal)) { lowerVal = 1 }
-                                if(upperVal < 0)  { upperVal = 0 }
-                                if(upperVal > 511) { upperVal = 511 }
-                                if(lowerVal < 1)  { lowerVal = 1 }
-                                if(lowerVal > 512) { lowerVal = 512 }
-
+                                if(upperVal < 0)    { upperVal = 0 }
+                                if(upperVal > 511)  { upperVal = 511 }
+                                if(lowerVal < 1)    { lowerVal = 1 }
+                                if(lowerVal > 512)  { lowerVal = 512 }
 
                                 if(upperVal >= lowerVal) {
                                     upperVal = lowerVal - 1
-                                    // upperMin._syncing = true
-                                    // upperMin.text     = upperVal.toString()
-                                    // upperMin._syncing = false
                                 }
-
-                                // upperMin._syncing = false
-                                // lowerMax._syncing = false
                                 plot.resetUpLoRng(upperVal, lowerVal)
                             }
                         }
@@ -1111,6 +1065,7 @@ WaterFall {
 
                     ExpandCheckBox {
                         id: addMarks
+                        Layout.preferredWidth: plot.width * 0.2
                         text: qsTr("Add Marks")
                         onTextClicked: {
                             if(addMarks.isTextClicked) {
@@ -1119,7 +1074,6 @@ WaterFall {
                             else {
                                 marksDrawer.close()
                             }
-
                         }
                         onCheckClicked: {
                             marksDrawer.distInterval = parseInt(distanceValue.text)
@@ -1365,14 +1319,13 @@ WaterFall {
                                         var ok = plot.deleteSelectedFrames()
                                         if(ok) {
                                             fromValue.text = "0"
-                                            toValue.text = "0"
-                                            fromLonValue.text = "000.000000"
+                                            toValue.text   = "0"
+                                            fromLonValue.text  = "000.000000"
                                             fromLatiValue.text = "000.000000"
-                                            toLonValue.text = "000.000000"
+                                            toLonValue.text  = "000.000000"
                                             toLatiValue.text = "000.000000"
                                             plot.clearDeleteFrame()
                                         }
-
                                     }
                                 }
 
@@ -1404,6 +1357,7 @@ WaterFall {
 
                     CCheck {
                         id: deleteFrame
+                        Layout.fillWidth: true
                         checked: false
                         text: qsTr("Delete Frame")
                         height: plotIconSize
@@ -1418,6 +1372,7 @@ WaterFall {
                             }
                         }
                     }
+
                 }
             }
         }

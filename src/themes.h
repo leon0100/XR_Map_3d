@@ -6,6 +6,7 @@
 #include <QColor>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QWindow>
 #include <QtAlgorithms>
 #include <QDebug>
 #include <QFontDatabase>

@@ -223,10 +223,6 @@ ApplicationWindow  {
             waterViewSecond.update()
         }
 
-        // if (syncLoupeOverlay && syncLoupeOverlay.visible) {
-        //     syncLoupeOverlay.refreshLoupePlot()
-        // }
-
         mainview.update()
     }
 
@@ -300,11 +296,6 @@ ApplicationWindow  {
             settingsClosed = true
         }
 
-        if (menuBar.hasOpenMenus) {
-            menuBar.closeMenus()
-            settingsClosed = true
-        }
-
         if (settingsClosed) {
             return true
         }
@@ -332,21 +323,15 @@ ApplicationWindow  {
         theme.updateResCoeff()
         core.progress = fileProgress
 
-        menuBar.languageChanged.connect(handleChildSignal)
-        menuBar.syncPlotEnabled.connect(handleSyncPlotEnabled)
-        menuBar.menuBarSettingOpened.connect(onMenuBarSettingsOpened)
-
         waterViewFirst.plotCursorChanged.connect(handlePlotCursorChanged)
         waterViewFirst.updateOtherPlot.connect(handleUpdateOtherPlot)
         waterViewFirst. plotPressed.connect(handlePlotPressed)
         waterViewFirst. plotReleased.connect(handlePlotReleased)
-        waterViewFirst.settingsClicked.connect(onPlotSettingsClicked)
 
         waterViewSecond.plotCursorChanged.connect(handlePlotCursorChanged)
         waterViewSecond.updateOtherPlot.connect(handleUpdateOtherPlot)
         waterViewSecond.plotPressed.connect(handlePlotPressed)
         waterViewSecond.plotReleased.connect(handlePlotReleased)
-        waterViewSecond.settingsClicked.connect(onPlotSettingsClicked)
 
         if (appSettings.isFullScreen) {
             mainview.showFullScreen()
@@ -410,7 +395,6 @@ ApplicationWindow  {
         //添加键盘快捷键映射
         property var hotkeysMapScan: ({
             "57":  { "functionName":  "toggleFullScreen",  "parameter": undefined },   // F11
-            // "41":  { "functionName":  "openFile",          "parameter": undefined },   // O
             "44":  { "functionName":  "closeFile",         "parameter": undefined },   // W
             "33":  { "functionName":  "updateBottomTrack", "parameter": undefined },   // R
             "34":  { "functionName":  "updateMosaic",      "parameter": undefined },   // T
@@ -443,16 +427,9 @@ ApplicationWindow  {
                 toggleFullScreenMode()
                 return;
             }
-            if (fn === "openFileDialog") {
-                menuBar.openFileDialog()
-                return;
-            }
             if (fn === "closeFile") {
                 core.closeLogFile()
                 return;
-            }
-            if (fn === "updateBottomTrack") {
-                menuBar.updateBottomTrack()
             }
             if (fn === "updateMosaic") {
                 scene3DToolbar.updateMosaic()
@@ -462,7 +439,6 @@ ApplicationWindow  {
                 if (waterViewSecond.enabled) {
                     waterViewSecond.closeSettings()
                 }
-                menuBar.closeMenus()
                 splitLayer.focus = true
                 return;
             }
@@ -517,144 +493,6 @@ ApplicationWindow  {
                     waterViewFirst.verZoomEvent(p)
                     if (waterViewSecond.enabled) {
                         waterViewSecond.verZoomEvent(p)
-                    }
-                    break
-                }
-                case "scene3dZoomIn": {
-                    if (menuBar.is3DVisible) {
-                        renderer.zoomStepTrigger(1)
-                    }
-                    break
-                }
-                case "scene3dZoomOut": {
-                    if (menuBar.is3DVisible) {
-                        renderer.zoomStepTrigger(-1)
-                    }
-                    break
-                }
-                case "mosaicPrevTheme": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.mosaicPrevTheme()
-                    }
-                    break
-                }
-                case "mosaicNextTheme": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.mosaicNextTheme()
-                    }
-                    break
-                }
-                case "mosaicLowLevelUp": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.mosaicLowLevelUp(p)
-                    }
-                    break
-                }
-                case "mosaicLowLevelDown": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.mosaicLowLevelDown(p)
-                    }
-                    break
-                }
-                case "mosaicHighLevelUp": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.mosaicHighLevelUp(p)
-                    }
-                    break
-                }
-                case "mosaicHighLevelDown": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.mosaicHighLevelDown(p)
-                    }
-                    break
-                }
-                case "surfacePrevTheme": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.surfacePrevTheme()
-                    }
-                    break
-                }
-                case "surfaceNextTheme": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.surfaceNextTheme()
-                    }
-                    break
-                }
-                case "surfaceStepDown": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.surfaceStepDown(p)
-                    }
-                    break
-                }
-                case "surfaceStepUp": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.surfaceStepUp(p)
-                    }
-                    break
-                }
-                case "toggleBottomTrack3D": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.toggleBottomTrack()
-                    }
-                    break
-                }
-                case "toggleIsobaths3D": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.toggleIsobaths()
-                    }
-                    break
-                }
-                case "toggleMosaic3D": {
-                    if (menuBar.is3DVisible) {
-                        scene3DToolbar.toggleMosaic()
-                    }
-                    break
-                }
-                case "cameraShiftXMinus3D": {
-                    if (menuBar.is3DVisible) {
-                        renderer.panStepTrigger(-1, 0)
-                    }
-                    break
-                }
-                case "cameraShiftXPlus3D": {
-                    if (menuBar.is3DVisible) {
-                        renderer.panStepTrigger(1, 0)
-                    }
-                    break
-                }
-                case "cameraShiftYMinus3D": {
-                    if (menuBar.is3DVisible) {
-                        renderer.panStepTrigger(0, -1)
-                    }
-                    break
-                }
-                case "cameraShiftYPlus3D": {
-                    if (menuBar.is3DVisible) {
-                        renderer.panStepTrigger(0, 1)
-                    }
-                    break
-                }
-                case "resetCameraTop3D": {
-                    if (menuBar.is3DVisible) {
-                        renderer.resetCameraAngleTrigger()
-                    }
-                    break
-                }
-                case "cameraShiftZMinus3D": {
-                    if (menuBar.is3DVisible) {
-                        renderer.zStepTrigger(-1)
-                    }
-                    break
-                }
-                case "cameraShiftZPlus3D": {
-                    if (menuBar.is3DVisible) {
-                        renderer.zStepTrigger(1)
-                    }
-                    break
-                }
-                case "resetDepthZoom3D": {
-                    if (menuBar.is3DVisible) {
-                        Scene3dToolBarController.onCancelZoomButtonClicked()
                     }
                     break
                 }
@@ -721,22 +559,6 @@ ApplicationWindow  {
                     }
                     break
                 }
-                case "clickConnections": {
-                    menuBar.clickConnections()
-                    break
-                }
-                case "clickSettings": {
-                    menuBar.clickSettings()
-                    break
-                }
-                case "click3D": {
-                    menuBar.click3D()
-                    break
-                }
-                case "click2D": {
-                    menuBar.click2D()
-                    break
-                }
                 default: {
                     break
                 }
@@ -792,7 +614,8 @@ ApplicationWindow  {
 
             GraphicsScene3dView {
                 id:      renderer
-                visible: (menuBar !== null) ? menuBar.is3DVisible : false
+                // visible: (menuBar !== null) ? menuBar.is3DVisible : false
+                visible: true
                 objectName: "GraphicsScene3dView"
                 x: visualisationLayout.splitMode === 1 ? 10 : 0
                 y: visualisationLayout.splitMode === 1 ?
@@ -828,7 +651,6 @@ ApplicationWindow  {
 
                 property bool longPressTriggered: false
                 property int  currentZoom: -1
-                property bool syncLoupeUiAllowed: (menuBar !== null) ? (menuBar.is3DVisible && !menuBar.is2DVisible) : false
 
                 function resetScenePointerState() {
                     mousearea3D.startMousePos       = Qt.point(-1, -1)
@@ -1205,8 +1027,7 @@ ApplicationWindow  {
 
             Item {
                 id: plotsContainer
-                visible: menuBar.is2DVisible
-
+                visible: true
                 // 根据分割模式计算位置和尺寸
                 x: {
                     if (visualisationLayout.splitMode === 2) {
@@ -1260,9 +1081,8 @@ ApplicationWindow  {
                         Layout.rowSpan   : 1
                         Layout.columnSpan: 1
                         focus: true
-                        instruments: menuBar.instruments
                         indx: 1
-                        is3dVisible: menuBar.is3DVisible
+                        is3dVisible: true
                         onTimelinePositionChanged: historyScroll.value = waterViewFirst.timelinePosition
                         Component.onCompleted: waterViewFirst.setIndx(waterViewFirst.indx);
 
@@ -1323,14 +1143,12 @@ ApplicationWindow  {
 
                     Plot2D {
                         id: waterViewSecond
-                        enabled: menuBar.numPlots === 2
-                        visible: menuBar.numPlots === 2
+                        visible: false
                         Layout.fillHeight: true
                         Layout.fillWidth: true
                         Layout.rowSpan   : 1
                         Layout.columnSpan: 1
                         focus: true
-                        instruments: menuBar.instruments
                         indx: 2
 
                         onEnabledChanged: {
@@ -1338,7 +1156,7 @@ ApplicationWindow  {
                         }
 
                         onVisibleChanged: {
-                            if (visible && menuBar.syncPlots) {
+                            if (visible) {
                                 setCursorFromTo(waterViewFirst.cursorFrom(), waterViewFirst.cursorTo())
                                 update()
                             }
@@ -1373,18 +1191,6 @@ ApplicationWindow  {
 
     }
 
-
-    MainMenuBar {
-        id: menuBar
-        objectName: "menuBar"
-        Layout.fillHeight: true
-        Keys.forwardTo: [splitLayer, mousearea3D]
-        height: visualisationLayout.height
-        Component.onCompleted: {
-            menuBar.targetPlot = waterViewFirst
-        }
-        visible: !showBanner
-    }
 
     function handleChildSignal(langStr) {
         mainview.showBanner = true
@@ -1433,13 +1239,7 @@ ApplicationWindow  {
             waterViewFirst.resetAim()
         }
     }
-    function onPlotSettingsClicked() {
-        menuBar.closeMenus()
-    }
-    function onMenuBarSettingsOpened() {
-        waterViewFirst.closeSettings()
-        waterViewSecond.closeSettings()
-    }
+
     function handleMosaicLOffsetChanged(val) {
         waterViewFirst.mosaicLOffsetChanged(val)
         waterViewSecond.mosaicLOffsetChanged(val)

@@ -159,7 +159,6 @@ void Plot2D::draw(QPainter *painterPtr)
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
 
-
     // echogram_.draw(this, datasetPtr_);
     // attitude_.draw(this, datasetPtr_);
     // encoder_.draw(this, datasetPtr_);
@@ -940,7 +939,7 @@ void Plot2D::reindexingCursor()
     }
 
     const int image_width = canvas_.width();
-    const int data_width = datasetPtr_->size();
+    const int data_width  = datasetPtr_->size();
     const int last_indexes_size = cursor_.indexes.size();
 
     if(image_width != last_indexes_size) {

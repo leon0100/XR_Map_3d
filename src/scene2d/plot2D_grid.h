@@ -24,5 +24,5 @@ protected:
     bool temperatureVisible_ = true;
     bool invert_ = false;
 
-    int loRngMin_ = 0, loRngMax_ = 1600;
+    int loRngMin_ = 0, loRngMax_ = 1500;
 };

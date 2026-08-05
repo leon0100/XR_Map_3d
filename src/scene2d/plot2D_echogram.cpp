@@ -322,12 +322,13 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
         btStart = depthCorrectBtStart_;
     }
     QVector<uint8_t> cacheData = wavePixel_.waveData;
+    int cacheDataCnt = cacheData.size();
 
     QList<int> colorData;
     colorData.clear();
 
     /*-水表-*/
-    for(int j = 0; (j<sfEnd)&&(j<btStart)&&(j<height); j++) {
+    for(int j = 0; j<sfEnd && j<btStart && j<height && j<cacheDataCnt; j++) {
         if(cacheData[j] == 0) {
             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
         }
@@ -342,7 +343,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
         }
     }
     /*-水中-*/
-    for(int j = sfEnd; ((j<btStart)&&(j<height)); j++)
+    for(int j = sfEnd; j<btStart && j<height && j<cacheDataCnt; j++)
     {
         if(cacheData[j] == 0) {
             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
@@ -361,13 +362,12 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 
     }
     /*-水底-*/
-    for(int j = btStart; j < height; j++)
+    for(int j = btStart; j<height && j<cacheDataCnt; j++)
     {
         if(cacheData[j] == 0) {
             colorData.append(ZyColorScheme::background[ZyColorScheme::backgroundIndex]);
         }
-        else
-        {
+        else {
             if((cacheData[j]+ZyColorScheme::colorLine*COLOR_LINE) > 254) {
                 colorData.append(ZyColorScheme::colorScheme_bottom[254]);
             }
@@ -389,11 +389,12 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
 
     int ratio = 10;
     int colorDataCnt = colorData.count();
+
     if(scaleY < 1 && scaleY > 0) {
         scaleY = 1 / scaleY;
         for(int i = 0; i < height; i++) {
             int idx = startIdx+(int)(i*scaleY);
-            if(idx < colorDataCnt) {
+            if(idx >= 0 && idx < colorDataCnt && idx < cacheDataCnt) {
                 int halfWidth = cacheData[idx]/ratio;
                 int left = qMax(0, panelW/2-halfWidth);
                 int right = qMin(panelW, panelW/2+halfWidth);
@@ -406,7 +407,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     else if(scaleY >= 1) {
         for(int i = 0; i < height; i++) {
             int idx = startIdx+(int)(i/scaleY);
-            if(idx < colorDataCnt) {
+            if(idx >= 0 && idx < colorDataCnt && idx < cacheDataCnt) {
                 int halfWidth = cacheData[idx]/ratio;
                 int left = qMax(0, panelW/2-halfWidth);
                 int right = qMin(panelW, panelW/2+halfWidth);
@@ -451,7 +452,7 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     p->setPen(textPen);
 
     QFont font = p->font();
-    font.setPixelSize(infoBarHeight * 0.2);
+    font.setPixelSize(infoBarHeight * 0.3);
     font.setBold(true);
     p->setFont(font);
 
@@ -459,8 +460,8 @@ void Plot2DEchogram::drawLatestWavePixel(Plot2D* parent, int panelX, int panelW,
     int lineHeight  = fm.height();
     int textWidth = fm.horizontalAdvance(line1) > fm.horizontalAdvance(line2) ? fm.horizontalAdvance(line1)
                                                     :fm.horizontalAdvance(line2);
-    p->drawText(panelX - 32 - textWidth, infoBarHeight/2 - lineHeight + fm.ascent(), line1);
-    p->drawText(panelX - 32 - textWidth, infoBarHeight/2 - lineHeight + lineHeight + fm.ascent(), line2);
+    p->drawText(panelX - textWidth*1.1, infoBarHeight*0.5 - lineHeight + fm.ascent(), line1);
+    p->drawText(panelX - textWidth*1.1, infoBarHeight*0.5 - lineHeight + lineHeight + fm.ascent(), line2);
 
 }
 
@@ -564,9 +565,11 @@ void Plot2DEchogram::drawMarks(Plot2D* parent, int width, int height, int cash_p
     markPen.setStyle(Qt::DashDotLine);
     p->setPen(markPen);
 
-    QFont font = p->font();
+    // QFont font = p->font();
+    // font.setPixelSize(qMax(9, height / 70));
+    // p->setFont(font);
+    QFont font;
     font.setPixelSize(qMax(9, height / 70));
-    p->setFont(font);
     QFontMetrics fm(font);
 
     for(int x = 0; x < width; x++) {
@@ -1182,9 +1185,8 @@ void Plot2DEchogram::drawDeleteFrameHint(int width, int height)
     QPainter* p  = canvas.painter();
     if (p == nullptr) return;
 
-    QFont font = p->font();
+    QFont font;
     font.setPixelSize(qMax(9, height / 60));
-    p->setFont(font);
     QFontMetrics fm(font);
     QString text;
     if (deleteHint_ == 1) {
@@ -1193,7 +1195,8 @@ void Plot2DEchogram::drawDeleteFrameHint(int width, int height)
     else if(deleteHint_ == 2) {
         text = QObject::tr("select end frame");
     }
-    QRect textRect = fm.boundingRect(text);
+    int textWidth  = fm.horizontalAdvance(text);
+    int textHeight = fm.height();
 
     int mx = deleteFrameMouseX_;
     int my = deleteFrameMouseY_;
@@ -1202,14 +1205,14 @@ void Plot2DEchogram::drawDeleteFrameHint(int width, int height)
         my = height * 0.5;
     }
     int textX = mx + 10;
-    int textY = my - textRect.height() - 5;
-    if (textX + textRect.width() > width) {
-        textX = mx - textRect.width() - 10;
+    int textY = my - textHeight - 5;
+    if (textX + textWidth > width) {
+        textX = mx - textWidth - 10;
     }
     if (textY < 0) {
         textY = my + 10;
     }
-    p->fillRect(textX - 4, textY - 2, textRect.width() + 8, textRect.height() + 4, QColor(0, 0, 0, 180));
+    p->fillRect(textX - 4, textY - 2, textWidth * 1.5, textHeight + 4, QColor(0, 0, 0, 180));
     p->drawText(textX, textY + fm.ascent(), text);
 
     QPen spen(QColor(0, 255, 0, 200));
@@ -1323,9 +1326,8 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
     Canvas& canvas = parent->canvas();
     DatasetCursor& cursor = parent->cursor();
 
-
     if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
-        int image_width  = canvas.width();
+        int image_width        = canvas.width();
         const int image_height = canvas.height();
 
         if(_image.width() != image_width || _image.height() != image_height) {

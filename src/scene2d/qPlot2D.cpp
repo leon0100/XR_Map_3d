@@ -24,7 +24,6 @@ qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(
 
 void qPlot2D::paint(QPainter *painter)
 {
-
     // qDebug() << "qPlot2D::paint(.........." << Plot2D::plotEnabled();
     if (!Plot2D::plotEnabled() || dataset_ == nullptr) {
         return;
@@ -48,8 +47,11 @@ void qPlot2D::paint(QPainter *painter)
     // }
 }
 
-void qPlot2D::setPlot(Dataset *dataset) {
-    if(dataset == nullptr) { return; }
+void qPlot2D::setPlot(Dataset *dataset)
+{
+    if(dataset == nullptr) {
+        return;
+    }
     dataset_ = dataset;
     setDataset(dataset);
     connect(dataset, &Dataset::dataUpdate, this, &qPlot2D::dataUpdate);
@@ -106,7 +108,7 @@ void qPlot2D::plotUpdate()
     emit timelinePositionChanged();
 
     if(dataset_ && !dataset_->vec_CSV_.empty()  && cursor_.distance.mode == AutoRangeNone) {
-        setMaxLoRng((int)(currentViewMaxLoRng_ * 1.5f));
+        setMaxLoRng((int)(currentViewMaxLoRng_ * 1.25f));
     }
 
     update();
@@ -194,7 +196,6 @@ void qPlot2D::setMinUpRng(int minUpRng)
 
 void qPlot2D::setMaxLoRng(int maxLoRng)
 {
-    qDebug() << "1111111111111" << maxLoRng;
     currentLoRng_ = maxLoRng;
     grid_.setLoRngRange(currentUpRng_, currentLoRng_);
     echogram_.setLowerRng(maxLoRng);
@@ -297,9 +298,7 @@ void qPlot2D::setSensitivity(int sensitive)
 {
     echogram_.setSensitivity(sensitive);
     plotUpdate();
-
 }
-
 
 bool qPlot2D::deleteContact(int indx)
 {

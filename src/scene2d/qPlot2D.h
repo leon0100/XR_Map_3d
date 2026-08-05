@@ -193,6 +193,6 @@ public slots:
 
 private:
     int indx_ = -1;
-    int currentUpRng_ = 0, currentLoRng_ = 1600;
+    int currentUpRng_ = 0, currentLoRng_ = 1500;
     bool prompt_ = true;
 };

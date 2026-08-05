@@ -113,8 +113,6 @@ DISTFILES += \
     qml/SceneObjectsControlBar/SceneObjectsListDelegate.qml \
     qml/SceneObjectsList.qml \
     qml/SceneObjectsListDelegate.qml \
-    qml/AdjBox.qml \
-    qml/AdjBoxBack.qml \
     qml/BackStyle.qml \
     qml/ButtonBackStyle.qml \
     qml/CButton.qml \

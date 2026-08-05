@@ -6,22 +6,22 @@ Plot2DGrid::Plot2DGrid() : angleVisibility_(false)
 
 bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
 {
-    auto &canvas = parent->canvas();
-    auto &cursor = parent->cursor();
+    Canvas &canvas        = parent->canvas();
+    DatasetCursor &cursor = parent->cursor();
 
-    if (!isVisible())  return false;
+    if (!isVisible()) {
+       return false;
+    }
 
-    const int imageHeight = canvas.height();
-    const int imageWidth  = canvas.width();
-    const int linesCount  = 6;
+    const int imageWidth    = canvas.width();
+    const int imageHeight   = canvas.height();
+    const int linesCount    = 5;
     const int minorPerMajor = 5;
 
     QPen pen(Qt::white);
     QPainter* p = canvas.painter();
     p->setPen(pen);
-    QFont font = p->font();
-    font.setPixelSize(imageHeight * 0.02);
-    QFontMetrics fm(font);
+    QFontMetrics fm(p->font());
 
     float distFrom = 0.0f, distTo = 0.0f;
     bool rangeValid = false;
@@ -53,7 +53,6 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
         }
     }
 
-
     pen.setWidth(3);
     p->setPen(pen);
     for(int i = 0; i <= linesCount; ++i) {
@@ -67,7 +66,6 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
         }
 
         const int textW = fm.horizontalAdvance(lineText);
-
         if(invert_) {
             p->drawLine(0, posY, textW, posY);
         }
@@ -84,7 +82,7 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
             if(i == linesCount) {
                textY = posY - fm.descent() - 2;  //底部刻度文本往上偏移
             }
-            const int textX = invert_ ? textW * 0.15 : (imageWidth-textW * 1.2);
+            const int textX = invert_ ? textW * 0.15 : (imageWidth - textW * 1.2);
             p->drawText(textX, textY, lineText);
         }
     }

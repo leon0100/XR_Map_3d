@@ -68,10 +68,6 @@ void Themes::setTheme(int theme_id)
         screenSize_   = qMin(screenWidth_, screenHeight_);
         menuWidth_    = screenSize_ * 0.05;
         iconSize_     = menuWidth_  * 0.32;
-
-        connect(screen, &QScreen::geometryChanged, this, [this](const QRect&) {
-            refreshScreenSize();
-        });
     } else {
         screenSize_ = 600;
     }
@@ -86,7 +82,21 @@ void Themes::setTheme(int theme_id)
 
 void Themes::refreshScreenSize()
 {
-    QScreen *screen = QGuiApplication::primaryScreen();
+    QScreen *screen = nullptr;
+    QWindow *focusWin = QGuiApplication::focusWindow();
+    if(focusWin) {
+        screen = focusWin->screen();
+    }
+    if(!screen) {
+        auto windows = QGuiApplication::topLevelWindows();
+        if(!windows.isEmpty()) {
+            screen = windows.first()->screen();
+        }
+    }
+    if(!screen) {
+        screen = QGuiApplication::primaryScreen();
+    }
+
     if (!screen) {
         return;
     }
@@ -108,7 +118,6 @@ void Themes::refreshScreenSize()
             emit changed();
     }
 }
-
 
 void Themes::updateSystemToolBarStatus()
 {

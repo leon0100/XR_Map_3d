@@ -3,7 +3,6 @@
         <file>main.qml</file>
         <file>CustomGroupBox.qml</file>
         <file>MenuViewer.qml</file>
-        <file>MainMenuBar.qml</file>
         <file>ConnectionViewer.qml</file>
         <file>DeviceSettingsViewer.qml</file>
         <file>Console.qml</file>
@@ -13,10 +12,8 @@
         <file>ComboBackStyle.qml</file>
         <file>BackStyle.qml</file>
         <file>ButtonBackStyle.qml</file>
-        <file>AdjBox.qml</file>
         <file>CSlider.qml</file>
         <file>UpgradeBox.qml</file>
-        <file>AdjBoxBack.qml</file>
         <file>CRButton.qml</file>
         <file>CProgressButton.qml</file>
         <file>TitleSetup.qml</file>

@@ -161,12 +161,27 @@ Item {
     Rectangle {
         id: isobathsContent
         width:  isobathSize
-        height: isobathSize * 1.2
-        anchors.top: toggleButton.top
-        // anchors.right: toggleButton.left
-        // anchors.rightMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width)
-        anchors.left: toggleButton.right
-        anchors.leftMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
+        height: isobathSize * 1.25
+        // anchors.top: toggleButton.top
+        // anchors.left: toggleButton.right
+        // anchors.leftMargin: isobathsDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
+        x: {
+           if (!isobathsDrawOpen) {
+               return -(width + toggleButton.width * 1.5)
+           }
+           var margin = theme.screenSize * 0.03
+           var sonarLeft = visualisationLayout.handlePaneLength
+           if (visualisationLayout.splitMode === 2) {
+               sonarLeft = visualisationLayout.width - visualisationLayout.cornerWindowWidth - 10
+           }
+           else if (!visualisationLayout.landscapeMode) {
+               sonarLeft = 0
+           }
+           var localX = sonarLeft - isobathsSet.x + margin
+           var maxX = mainview.width - isobathsSet.x - width - margin
+           return Math.min(localX, maxX)
+        }
+        y : -isobathsSet.y + theme.screenSize * 0.016
 
         color: "#dbe3f2"
         border.color: "#d8e0ef"
@@ -917,11 +932,29 @@ Item {
     // ----------------- Bathymetry Config抽屉面板------------------
     Rectangle {
         id: bathymetryConfigContent
-        width:  isobathSize * 1.6
-        height: isobathSize * 0.6
-        anchors.top:  toggleButton.top
-        anchors.left: toggleButton.right
-        anchors.leftMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
+        width:  isobathSize * 1.7
+        height: iconSize * 11
+        // anchors.top:  toggleButton.top
+        // anchors.left: toggleButton.right
+        // anchors.leftMargin: bluetoothDrawOpen ? 0 : -(width + toggleButton.width * 1.5)
+        // x: bluetoothDrawOpen ? theme.screenWidth * 0.5 : -(width + toggleButton.width * 1.5)
+        x: {
+           if (!bluetoothDrawOpen) {
+               return -(width + toggleButton.width * 1.5)
+           }
+           var margin = theme.screenSize * 0.03
+           var sonarLeft = visualisationLayout.handlePaneLength
+           if (visualisationLayout.splitMode === 2) {
+               sonarLeft = visualisationLayout.width - visualisationLayout.cornerWindowWidth - 10
+           }
+           else if (!visualisationLayout.landscapeMode) {
+               sonarLeft = 0
+           }
+           var localX = sonarLeft - isobathsSet.x + margin
+           var maxX = mainview.width - isobathsSet.x - width - margin
+           return Math.min(localX, maxX)
+        }
+        y : -isobathsSet.y + theme.screenSize * 0.016
 
         color: "#dbe3f2"
         border.color: "#d8e0ef"
@@ -963,7 +996,7 @@ Item {
             anchors.leftMargin: iconSize
             anchors.right: parent.right
             anchors.rightMargin: iconSize
-            spacing: 12
+            spacing: iconSize * 0.32
 
 
             RowLayout {
@@ -1135,6 +1168,7 @@ Item {
                 color: "#555555"
             }
 
+            //第三行
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 10

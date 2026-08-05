@@ -1,5 +1,5 @@
 import QtQuick 2.15
-import QtQuick.Window 2.15
+// import QtQuick.Window 2.15
 
 
 Rectangle {
@@ -13,7 +13,8 @@ Rectangle {
     z: 3
     opacity: 0.4
 
-    readonly property int collapseWidth: Math.min(Screen.width, Screen.height) * 0.125
+    // readonly property int collapseWidth: Math.min(Screen.width, Screen.height) * 0.125
+    readonly property int collapseWidth: theme.screenSize * 0.125
     readonly property int collapseHeight: collapseWidth * 0.125
     property bool isExpanded: true
     property bool opacityHold: false

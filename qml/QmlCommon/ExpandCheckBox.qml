@@ -3,9 +3,10 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 
+
 Item {
     id: root
-    width:  theme.iconSize * 12
+    width:  theme.iconSize * 11
     height: theme.iconSize * 2.2
 
     property string text: qsTr("Check")
@@ -18,12 +19,13 @@ Item {
 
     RowLayout {
         anchors.fill: parent
-        spacing: 3
+        spacing: 2
 
         CheckBox {
             id: checkbox
 
-            width: parent.width
+            // width: parent.width
+            implicitWidth: root.iconSize * 1.25
             height: root.iconSize
             checked: root.checked
 
@@ -50,7 +52,6 @@ Item {
                 }
             }
 
-
             // contentItem: Text {
             //     id: labelText
             //     text: root.text
@@ -58,7 +59,6 @@ Item {
             //     verticalAlignment: Text.AlignVCenter
             //     leftPadding: checkbox.indicator.width + checkbox.spacing
             // }
-
 
             onClicked: {
                 root.checked = checked
@@ -72,7 +72,6 @@ Item {
             text: root.text
             Layout.fillWidth: true
             Layout.preferredHeight: root.iconSize * 1.2
-
             font.pixelSize: root.iconSize
             verticalAlignment: Text.AlignVCenter
             MouseArea {
