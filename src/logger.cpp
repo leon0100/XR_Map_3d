@@ -80,16 +80,16 @@ bool Logger::isOpenKlf()
     return klfLogFile_->isOpen();
 }
 
-void Logger::onFrameParserReceiveKlf(QUuid uuid, Link* linkPtr, FrameParser frame)
-{
-    Q_UNUSED(uuid);
-    Q_UNUSED(linkPtr);
+// void Logger::onFrameParserReceiveKlf(QUuid uuid, Link* linkPtr, FrameParser frame)
+// {
+//     Q_UNUSED(uuid);
+//     Q_UNUSED(linkPtr);
 
-    if (frame.isNested()) {
-        return;
-    }
+//     if (frame.isNested()) {
+//         return;
+//     }
 
-}
+// }
 
 bool Logger::startNewCsvLog()
 {

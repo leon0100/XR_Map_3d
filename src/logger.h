@@ -7,7 +7,7 @@
 #include <QString>
 #include <QUuid>
 #include "dataset.h"
-#include "link.h"
+// #include "link.h"
 #include "proto_binnary.h"
 
 
@@ -25,7 +25,7 @@ public slots:
     bool startNewKlfLog();
     bool stopKlfLogging();
     bool isOpenKlf();
-    void onFrameParserReceiveKlf(QUuid uuid, Link* link, FrameParser frame);
+    // void onFrameParserReceiveKlf(QUuid uuid, Link* link, FrameParser frame);
 
     // .csv
     bool startNewCsvLog();

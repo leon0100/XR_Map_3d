@@ -247,6 +247,7 @@ private:
     bool readingDrawTrack_ = true;
 
     QBluetoothLocalDevice *localDevice_;
+    ChannelId batchChannelId_{QUuid(), 0};
 };
 
 

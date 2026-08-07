@@ -18,15 +18,15 @@
 #include "mosaic_view_control_menu_controller.h"
 #include "image_view_control_menu_controller.h"
 #include "map_view_control_menu_controller.h"
-#include "usbl_view_control_menu_controller.h"
+// #include "usbl_view_control_menu_controller.h"
 #include "point_group_control_menu_controller.h"
-#include "polygon_group_control_menu_controller.h"
-#include "mpc_filter_control_menu_controller.h"
-#include "npd_filter_control_menu_controller.h"
+// #include "polygon_group_control_menu_controller.h"
+// #include "mpc_filter_control_menu_controller.h"
+// #include "npd_filter_control_menu_controller.h"
 #include "scene3d_toolbar_controller.h"
 #include "scene3d_control_menu_controller.h"
 #include "device_manager_wrapper.h"
-#include "link_manager_wrapper.h"
+// #include "link_manager_wrapper.h"
 #include "tile_manager.h"
 #include "data_horizon.h"
 #include "blemanager.h"
@@ -62,7 +62,7 @@ public:
     Dataset* getDatasetPtr();
     DataProcessor* getDataProcessorPtr() const;
     DeviceManagerWrapper* getDeviceManagerWrapperPtr() const;
-    LinkManagerWrapper* getLinkManagerWrapperPtr() const;
+    // LinkManagerWrapper* getLinkManagerWrapperPtr() const;
     void stopLinkManagerTimer() const;
     void refreshMap(LLA lla);
     void saveCurrentMapState(std::function<void(double lat, double lon)>writer);
@@ -71,7 +71,7 @@ public:
     void consoleWarning(QString msg);
     void consoleProto(FrameParser& parser, bool isIn = true);
     void saveLLARefToSettings();
-    void removeLinkManagerConnections();
+    // void removeLinkManagerConnections();
 
     QHash<QUuid, QString> getLinkNames() const;
 
@@ -193,19 +193,19 @@ private:
     std::shared_ptr<BoatTrackControlMenuController>       boatTrackControlMenuController_;
     std::shared_ptr<NavigationArrowControlMenuController> navigationArrowControlMenuController_;
     std::shared_ptr<BottomTrackControlMenuController>     bottomTrackControlMenuController_;
-    std::shared_ptr<MpcFilterControlMenuController>       mpcFilterControlMenuController_;
-    std::shared_ptr<NpdFilterControlMenuController>       npdFilterControlMenuController_;
+    // std::shared_ptr<MpcFilterControlMenuController>       mpcFilterControlMenuController_;
+    // std::shared_ptr<NpdFilterControlMenuController>       npdFilterControlMenuController_;
     std::shared_ptr<IsobathsViewControlMenuController>    isobathsViewControlMenuController_;
     std::shared_ptr<MosaicViewControlMenuController>      mosaicViewControlMenuController_;
     std::shared_ptr<ImageViewControlMenuController>       imageViewControlMenuController_;
     std::shared_ptr<MapViewControlMenuController>         mapViewControlMenuController_;
     std::shared_ptr<PointGroupControlMenuController>      pointGroupControlMenuController_;
-    std::shared_ptr<PolygonGroupControlMenuController>    polygonGroupControlMenuController_;
+    // std::shared_ptr<PolygonGroupControlMenuController>    polygonGroupControlMenuController_;
     std::shared_ptr<Scene3DControlMenuController>         scene3dControlMenuController_;
     std::shared_ptr<Scene3dToolBarController>             scene3dToolBarController_;
-    std::shared_ptr<UsblViewControlMenuController>        usblViewControlMenuController_;
+    // std::shared_ptr<UsblViewControlMenuController>        usblViewControlMenuController_;
     std::unique_ptr<DeviceManagerWrapper>                 deviceManagerWrapperPtr_;
-    std::unique_ptr<LinkManagerWrapper>                   linkManagerWrapperPtr_;
+    // std::unique_ptr<LinkManagerWrapper>                   linkManagerWrapperPtr_;
     std::unique_ptr<map::TileManager>                     tileManager_;
 
     std::shared_ptr<BLEManager>  bleManager_;
@@ -223,7 +223,7 @@ private:
     QPointer<GraphicsScene3dView> scene3dViewPtr_;
     Logger logger_;
     QList<qPlot2D*> plot2dList_;
-    QList<QMetaObject::Connection> linkManagerWrapperConnections_;
+    // QList<QMetaObject::Connection> linkManagerWrapperConnections_;
     QString openedfilePath_, openedFileFilter_;
     EnumFileType currentFileType_;
     QString filePath_;

@@ -8,9 +8,9 @@
 
 
 
-DeviceManager::DeviceManager()
-    : mavlinkLink_(nullptr),
-    streamList_(this),
+DeviceManager::DeviceManager():
+    // : mavlinkLink_(nullptr),
+    // streamList_(this),
     lastAddress_(-1),
     progress_(0),
     isConsoled_(false),
@@ -561,41 +561,41 @@ void DeviceManager::closeFile()
     emit vruChanged();
 }
 
-void DeviceManager::onLinkOpened(QUuid uuid, Link *link)
-{
-    if (link) {
-        if (link->getIsProxy()) {
-            proxyLinkUuid_ = uuid;
-            connect(this, &DeviceManager::writeProxyFrame, link, &Link::writeFrame);
-        }
-    }
-}
+// void DeviceManager::onLinkOpened(QUuid uuid, Link *link)
+// {
+//     if (link) {
+//         if (link->getIsProxy()) {
+//             proxyLinkUuid_ = uuid;
+//             connect(this, &DeviceManager::writeProxyFrame, link, &Link::writeFrame);
+//         }
+//     }
+// }
 
-void DeviceManager::onLinkClosed(QUuid uuid, Link *link)
-{
-    Q_UNUSED(uuid);
+// void DeviceManager::onLinkClosed(QUuid uuid, Link *link)
+// {
+//     Q_UNUSED(uuid);
 
-    if (link) {
-        this->disconnect(link);
-        otherProtocolStat_.remove(uuid);
-        if(uuid == mavlinUuid_) {
-            mavlinUuid_ = QUuid();
-        }
-    }
-}
+//     if (link) {
+//         this->disconnect(link);
+//         otherProtocolStat_.remove(uuid);
+//         if(uuid == mavlinUuid_) {
+//             mavlinUuid_ = QUuid();
+//         }
+//     }
+// }
 
-void DeviceManager::onLinkDeleted(QUuid uuid, Link *link)
-{
-    Q_UNUSED(uuid);
+// void DeviceManager::onLinkDeleted(QUuid uuid, Link *link)
+// {
+//     Q_UNUSED(uuid);
 
-    if (link) {
-        this->disconnect(link);
-        otherProtocolStat_.remove(uuid);
-        if(uuid == mavlinUuid_) {
-            mavlinUuid_ = QUuid();
-        }
-    }
-}
+//     if (link) {
+//         this->disconnect(link);
+//         otherProtocolStat_.remove(uuid);
+//         if(uuid == mavlinUuid_) {
+//             mavlinUuid_ = QUuid();
+//         }
+//     }
+// }
 
 void DeviceManager::binFrameOut(Parsers::ProtoBinOut protoOut)
 {

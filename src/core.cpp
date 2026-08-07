@@ -11,7 +11,7 @@
 Core::Core() : QObject(),
     consolePtr_(new Console),
     deviceManagerWrapperPtr_(std::make_unique<DeviceManagerWrapper>(this)),
-    linkManagerWrapperPtr_(std::make_unique<LinkManagerWrapper>(this)),
+    // linkManagerWrapperPtr_(std::make_unique<LinkManagerWrapper>(this)),
     dataProcessor_(nullptr),
     dataProcThread_(nullptr),
     dataHorizon_(std::make_unique<DataHorizon>()),
@@ -51,12 +51,12 @@ void Core::setEngine(QQmlApplicationEngine *engine)
     qmlAppEnginePtr_->rootContext()->setContextProperty("ImageViewControlMenuController",       imageViewControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("MapViewControlMenuController",         mapViewControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("PointGroupControlMenuController",      pointGroupControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("PolygonGroupControlMenuController",    polygonGroupControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("MpcFilterControlMenuController",       mpcFilterControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("NpdFilterControlMenuController",       npdFilterControlMenuController_.get());
+    // qmlAppEnginePtr_->rootContext()->setContextProperty("PolygonGroupControlMenuController",    polygonGroupControlMenuController_.get());
+    // qmlAppEnginePtr_->rootContext()->setContextProperty("MpcFilterControlMenuController",       mpcFilterControlMenuController_.get());
+    // qmlAppEnginePtr_->rootContext()->setContextProperty("NpdFilterControlMenuController",       npdFilterControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("Scene3DControlMenuController",         scene3dControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("Scene3dToolBarController",             scene3dToolBarController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("UsblViewControlMenuController",        usblViewControlMenuController_.get());
+    // qmlAppEnginePtr_->rootContext()->setContextProperty("UsblViewControlMenuController",        usblViewControlMenuController_.get());
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",      bleManager_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",      udpManager_.get());
@@ -94,14 +94,14 @@ DeviceManagerWrapper* Core::getDeviceManagerWrapperPtr() const
     return deviceManagerWrapperPtr_.get();
 }
 
-LinkManagerWrapper* Core::getLinkManagerWrapperPtr() const
-{
-    return linkManagerWrapperPtr_.get();
-}
+// LinkManagerWrapper* Core::getLinkManagerWrapperPtr() const
+// {
+//     return linkManagerWrapperPtr_.get();
+// }
 
 void Core::stopLinkManagerTimer() const
 {
-    emit linkManagerWrapperPtr_->sendStopTimer();
+    // emit deviceManagerWrapperPtr_->sendStopTimer();
 }
 
 void Core::refreshMap(LLA lla)
@@ -200,8 +200,8 @@ void Core::openLogFile(const QString& filePath, bool isAppend, bool onCustomEven
             emit filePathChanged();
         }
 
-        linkManagerWrapperPtr_->closeOpenedLinks();
-        removeLinkManagerConnections();
+        // linkManagerWrapperPtr_->closeOpenedLinks();
+        // removeLinkManagerConnections();
 
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -265,7 +265,7 @@ bool Core::closeLogFile()
     emit deviceManagerWrapperPtr_->sendCloseFile();
     createLinkManagerConnections();
     openedfilePath_.clear();
-    linkManagerWrapperPtr_->openClosedLinks();
+    // linkManagerWrapperPtr_->openClosedLinks();
 
     return true;
 }
@@ -335,8 +335,8 @@ bool Core::openCSV(QString name, int separatorType, int firstRow, int colTime,
             emit filePathChanged();
         }
 
-        linkManagerWrapperPtr_->closeOpenedLinks();
-        removeLinkManagerConnections();
+        // linkManagerWrapperPtr_->closeOpenedLinks();
+        // removeLinkManagerConnections();
 
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -848,17 +848,17 @@ void Core::UILoad(QObject* object, const QUrl& url)
     mapViewControlMenuController_->setQmlEngine(object);
     mapViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
-    npdFilterControlMenuController_->setQmlEngine(object);
-    npdFilterControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
+    // npdFilterControlMenuController_->setQmlEngine(object);
+    // npdFilterControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
-    mpcFilterControlMenuController_->setQmlEngine(object);
-    mpcFilterControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
+    // mpcFilterControlMenuController_->setQmlEngine(object);
+    // mpcFilterControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
     pointGroupControlMenuController_->setQmlEngine(object);
     pointGroupControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
-    polygonGroupControlMenuController_->setQmlEngine(object);
-    polygonGroupControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
+    // polygonGroupControlMenuController_->setQmlEngine(object);
+    // polygonGroupControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
     scene3dToolBarController_->setQmlEngine(object);
     scene3dToolBarController_->setDataProcessorPtr(dataProcessor_);
@@ -867,8 +867,8 @@ void Core::UILoad(QObject* object, const QUrl& url)
     scene3dControlMenuController_->setQmlEngine(object);
     scene3dControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
-    usblViewControlMenuController_->setQmlEngine(object);
-    usblViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
+    // usblViewControlMenuController_->setQmlEngine(object);
+    // usblViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
     onChannelsUpdated();
 
@@ -1358,13 +1358,11 @@ void Core::setKeelOffsetValue(int value)
 void Core::onTileSetChanged(std::shared_ptr<map::TileSet> tileSet)
 {
     if(!tileSet) {
-        qDebug() << "Core::onTileSetChanged: tileSet is null, returning";
         return;
     }
 
     // 清除 MapView 中的旧瓦片
     if (scene3dViewPtr_ && scene3dViewPtr_->getMapViewPtr()) {
-        qDebug() << "Core::onTileSetChanged: clearing old tiles from MapView";
         scene3dViewPtr_->getMapViewPtr()->clear();
     }
 
@@ -1475,17 +1473,17 @@ void Core::createControllers()
     boatTrackControlMenuController_       = std::make_shared<BoatTrackControlMenuController>();
     navigationArrowControlMenuController_ = std::make_shared<NavigationArrowControlMenuController>();
     bottomTrackControlMenuController_     = std::make_shared<BottomTrackControlMenuController>();
-    mpcFilterControlMenuController_       = std::make_shared<MpcFilterControlMenuController>();
-    npdFilterControlMenuController_       = std::make_shared<NpdFilterControlMenuController>();
+    // mpcFilterControlMenuController_       = std::make_shared<MpcFilterControlMenuController>();
+    // npdFilterControlMenuController_       = std::make_shared<NpdFilterControlMenuController>();
     isobathsViewControlMenuController_    = std::make_shared<IsobathsViewControlMenuController>();
     mosaicViewControlMenuController_      = std::make_shared<MosaicViewControlMenuController>();
     imageViewControlMenuController_       = std::make_shared<ImageViewControlMenuController>();
     mapViewControlMenuController_         = std::make_shared<MapViewControlMenuController>();
     pointGroupControlMenuController_      = std::make_shared<PointGroupControlMenuController>();
-    polygonGroupControlMenuController_    = std::make_shared<PolygonGroupControlMenuController>();
+    // polygonGroupControlMenuController_    = std::make_shared<PolygonGroupControlMenuController>();
     scene3dControlMenuController_         = std::make_shared<Scene3DControlMenuController>();
     scene3dToolBarController_             = std::make_shared<Scene3dToolBarController>();
-    usblViewControlMenuController_        = std::make_shared<UsblViewControlMenuController>();
+    // usblViewControlMenuController_        = std::make_shared<UsblViewControlMenuController>();
 
     bleManager_                           = std::make_shared<BLEManager>();
     udpManager_                           = std::make_shared<UdpManager>();
@@ -1536,27 +1534,27 @@ void Core::createDeviceManagerConnections()
 void Core::createLinkManagerConnections()
 {
     Qt::ConnectionType linkManagerConnection = Qt::ConnectionType::AutoConnection;
-    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkClosed,   linkManagerConnection));
-    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkOpened,   linkManagerConnection));
-    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkDeleted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkDeleted,  linkManagerConnection));
-    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  this, [this]() {
+    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkClosed,   linkManagerConnection));
+    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkOpened,   linkManagerConnection));
+    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkDeleted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkDeleted,  linkManagerConnection));
+    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  this, [this]() {
 
-    datasetPtr_->setState(Dataset::DatasetState::kConnection); }, linkManagerConnection));
-    linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  this, [this]() {
-        if (scene3dViewPtr_) {
-            scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
-        }
-    }, linkManagerConnection));
+    // datasetPtr_->setState(Dataset::DatasetState::kConnection); }, linkManagerConnection));
+    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  this, [this]() {
+    //     if (scene3dViewPtr_) {
+    //         scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+    //     }
+    // }, linkManagerConnection));
 }
 
-void Core::removeLinkManagerConnections()
-{
-    for (auto& itm : linkManagerWrapperConnections_) {
-        disconnect(itm);
-    }
+// void Core::removeLinkManagerConnections()
+// {
+//     for (auto& itm : linkManagerWrapperConnections_) {
+//         disconnect(itm);
+//     }
 
-    linkManagerWrapperConnections_.clear();
-}
+//     linkManagerWrapperConnections_.clear();
+// }
 
 QHash<QUuid, QString> Core::getLinkNames() const
 {
@@ -1566,10 +1564,10 @@ QHash<QUuid, QString> Core::getLinkNames() const
         retVal[deviceManagerWrapperPtr_->getFileUuid()] = QObject::tr("File");
     }
 
-    const auto linkNames = linkManagerWrapperPtr_->getLinkNames();
-    for (auto it = linkNames.constBegin(); it != linkNames.constEnd(); ++it) {
-        retVal.insert(it.key(), it.value());
-    }
+    // const auto linkNames = linkManagerWrapperPtr_->getLinkNames();
+    // for (auto it = linkNames.constBegin(); it != linkNames.constEnd(); ++it) {
+    //     retVal.insert(it.key(), it.value());
+    // }
 
     return retVal;
 }

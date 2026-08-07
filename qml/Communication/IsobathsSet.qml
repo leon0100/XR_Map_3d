@@ -998,7 +998,6 @@ Item {
             anchors.rightMargin: iconSize
             spacing: iconSize * 0.32
 
-
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8

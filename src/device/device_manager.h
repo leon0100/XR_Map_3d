@@ -7,7 +7,7 @@
 #include <QHash>
 #include <QGeoPositionInfoSource>
 #include <QUuid>
-#include "link.h"
+// #include "link.h"
 #include "stream_list.h"
 #include "id_binnary.h"
 
@@ -37,9 +37,9 @@ public slots:
     void openFile_CSV(QString filePath, int fileIndex, int fileCnt);
     void openFile_tsl(QString filePath, EnumFileType currentFileType, int fileIndex, int fileCnt);
     void closeFile();
-    void onLinkOpened(QUuid uuid, Link *link);
-    void onLinkClosed(QUuid uuid, Link* link);
-    void onLinkDeleted(QUuid uuid, Link* link);
+    // void onLinkOpened(QUuid uuid, Link *link);
+    // void onLinkClosed(QUuid uuid, Link* link);
+    // void onLinkDeleted(QUuid uuid, Link* link);
     void binFrameOut(Parsers::ProtoBinOut protoOut);
     void setProtoBinConsoled(bool isConsoled);
 
@@ -134,7 +134,7 @@ private:
     };
 
     VruData vru_;
-    Link* mavlinkLink_;
+    // Link* mavlinkLink_;
     QHash<QUuid, int> otherProtocolStat_;
     StreamList streamList_;
     QUuid lastUuid_;

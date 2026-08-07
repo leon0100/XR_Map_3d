@@ -14,14 +14,14 @@ import AppXr 1.0
 
 
 ApplicationWindow  {
-    id:        mainview
+    id:  mainview
 
     visible: true
-    width:  Screen.width * 0.5
+    width: Qt.platform.os === "android" ? Screen.width : Screen.width * 0.5
     minimumWidth: 512
-    height: Screen.height * 0.5
+    height: Qt.platform.os === "android" ? Screen.height : Screen.height * 0.5
     minimumHeight: 256
-    visibility: Window.FullScreen
+    visibility: Qt.platform.os === "android" ? Window.Windowed : Window.FullScreen
     color:      "black"
     title:      qsTr("XR-Viewer")
 
@@ -110,7 +110,7 @@ ApplicationWindow  {
         targetPlot: toolBarXR.targetPlot
     }
 
-    BleDataPanel {
+    LiveDataPanel {
        visible: liveDataPanel.isShowDataPanel
     }
 
@@ -376,6 +376,33 @@ ApplicationWindow  {
                 case 3: checkDialog2.flash(); break
             }
         }
+    }
+
+
+    MouseArea {
+        id: mousearea
+        enabled: true
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+
+        onClicked: function(mouse) {
+            var pos = plotCheckRec.mapFromItem(null, mouse.x, mouse.y)
+            if(plotCheckRec.expanded) {
+                if(pos.x < 0 || pos.y < 0 || pos.x > plotCheckRec.width ||
+                    pos.y > plotCheckRec.height) {
+                    if(pos.x < 0 || pos.y < 0 || pos.x > plotCheckBtn.width ||
+                            pos.y > plotCheckBtn.height) {
+                        plotCheckBtn.settingVisible = false;
+                        console.log("12132435345435")
+                        // plotCheckRec.expanded = false;
+                    }
+
+                }
+            }
+        }
+
+
     }
 
 
@@ -1054,8 +1081,8 @@ ApplicationWindow  {
                     }
                     // 正常分窗或声呐全屏模式
                     return visualisationLayout.landscapeMode ? (visualisationLayout.splitMode === 0
-                               ? Math.max(0, visualisationLayout.width - visualisationLayout.handlePaneLength)
-                               : visualisationLayout.width) : visualisationLayout.width
+                            ? Math.max(0, visualisationLayout.width - visualisationLayout.handlePaneLength)
+                            : visualisationLayout.width) : visualisationLayout.width
                 }
                 height: {
                     if (visualisationLayout.splitMode === 2) {

@@ -1,6 +1,6 @@
 module Communication
 
-BleDataPanel         1.0  BleDataPanel.qml
-loading              1.0  loading.qml
-IsobathsSet          1.0  IsobathsSet.qml
-LiveData             1.0  LiveData.qml
+LiveDataPanel      1.0  LiveDataPanel.qml
+loading            1.0  loading.qml
+IsobathsSet        1.0  IsobathsSet.qml
+LiveData           1.0  LiveData.qml

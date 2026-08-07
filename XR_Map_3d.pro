@@ -143,7 +143,7 @@ include($$PWD/src/data_processor/data_processor.pri)
 include($$PWD/src/scene2d/scene2d.pri)
 include($$PWD/src/scene3d/scene3d.pri)
 include($$PWD/src/device/device.pri)
-include($$PWD/src/link/link.pri)
+# include($$PWD/src/link/link.pri)
 include($$PWD/src/tile_engine/tile_engine.pri)
 
 

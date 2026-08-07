@@ -45,7 +45,7 @@ void registerQmlMetaTypes()
     qmlRegisterType<qPlot2D>("WaterFall", 1, 0, "WaterFall");
     qmlRegisterType<BottomTrack>("BottomTrack", 1, 0, "BottomTrack");
     qRegisterMetaType<BottomTrack::ActionEvent>("BottomTrack::ActionEvent");
-    qRegisterMetaType<LinkAttribute>("LinkAttribute");
+    // qRegisterMetaType<LinkAttribute>("LinkAttribute");
 }
 
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("dataset", corePtr->getDatasetPtr());
     engine.rootContext()->setContextProperty("core", corePtr);
     engine.rootContext()->setContextProperty("theme", &theme);
-    engine.rootContext()->setContextProperty("linkManagerWrapper", corePtr->getLinkManagerWrapperPtr());
+    // engine.rootContext()->setContextProperty("linkManagerWrapper", corePtr->getLinkManagerWrapperPtr());
     engine.rootContext()->setContextProperty("deviceManagerWrapper", corePtr->getDeviceManagerWrapperPtr());
     engine.rootContext()->setContextProperty("logViewer", corePtr->getConsolePtr());
     engine.rootContext()->setContextProperty("GetInterface", GetInterface::getInterface());
@@ -148,8 +148,8 @@ int main(int argc, char *argv[])
 
     QObject::connect(&app,  &QGuiApplication::aboutToQuit, corePtr, [&]() {
         // corePtr->saveLLARefToSettings();
-        corePtr->removeLinkManagerConnections();
-        corePtr->stopLinkManagerTimer();
+        // corePtr->removeLinkManagerConnections();
+        // corePtr->stopLinkManagerTimer();
         corePtr->saveCurrentMapState([](double lat, double lon) {
             theme.setCurrentMapLocation(lat, lon);
         });

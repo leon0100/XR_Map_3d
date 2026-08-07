@@ -275,12 +275,6 @@ BLEManager::BLEManager(QObject *parent) : QObject(parent)
     connect(discoveryAgent, QOverload<QBluetoothDeviceDiscoveryAgent::Error>::of(&QBluetoothDeviceDiscoveryAgent::error),
             this, &BLEManager::onScanError);
 
-    // loadingQuickView_ = new QQuickView();
-    // loadingQuickView_->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    // loadingQuickView_->setSource(QUrl("qrc:/Bluetooth/loading.qml"));
-    // loadingQuickView_->setResizeMode(QQuickView::SizeRootObjectToView);
-    // QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
-
     parser_ = new RealTimeParser();
     parserThread_ = new QThread(this);
     parser_->moveToThread(parserThread_);
@@ -288,7 +282,6 @@ BLEManager::BLEManager(QObject *parent) : QObject(parent)
     connect(parser_, &RealTimeParser::parsedPoint, this, &BLEManager::slot_parserRealtimePt,Qt::QueuedConnection);
     connect(parser_, &RealTimeParser::parsedPoint, this, &BLEManager::dataPanelUpdate);
     connect(parser_,&RealTimeParser::stopped, this, [this](){ parserThread_->quit(); });
-
 
     /*-----------------------------------tmodem----------------------------------*/
     // static quint8 rxBuffer[RX_FIFO_SIZE];
@@ -300,7 +293,6 @@ BLEManager::BLEManager(QObject *parent) : QObject(parent)
     }
 
     localDevice_ = new QBluetoothLocalDevice(this);
-
 }
 
 void BLEManager::translate()
@@ -449,6 +441,10 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
 
     latitude_  = pt.latitude;
     longitude_ = pt.longitude;
+
+    emit dataPanelUpdate();
+
+    // emit chartComplete(batchChannelId_, chartParams, dataVec, readingDrawTrack_);
     emit positionComplete(pt.latitude, pt.longitude, pt.depth, readingDrawTrack_);
 
     depthHistory_.append(static_cast<float>(pt.depth));
@@ -456,6 +452,11 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
     maxDepth_ = std::max(maxDepth_, pt.depth);
 
     emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
+
+
+
+
+
 }
 
 
@@ -468,6 +469,7 @@ void BLEManager::connectToDevice(int index)
     if(index < 0 || index >= devicesList_.size()) {
         return;
     }
+    // batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
     QBluetoothDeviceInfo chooseDevice = devicesList_.at(index);
     if (bleController_) {
         bleController_->disconnectFromDevice();
