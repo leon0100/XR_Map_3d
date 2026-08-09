@@ -18,15 +18,10 @@
 #include "mosaic_view_control_menu_controller.h"
 #include "image_view_control_menu_controller.h"
 #include "map_view_control_menu_controller.h"
-// #include "usbl_view_control_menu_controller.h"
 #include "point_group_control_menu_controller.h"
-// #include "polygon_group_control_menu_controller.h"
-// #include "mpc_filter_control_menu_controller.h"
-// #include "npd_filter_control_menu_controller.h"
 #include "scene3d_toolbar_controller.h"
 #include "scene3d_control_menu_controller.h"
 #include "device_manager_wrapper.h"
-// #include "link_manager_wrapper.h"
 #include "tile_manager.h"
 #include "data_horizon.h"
 #include "blemanager.h"
@@ -52,8 +47,6 @@ public:
     Q_PROPERTY(QString   ch2Name                      READ getChannel2Name                 NOTIFY channelListUpdated FINAL)
     Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel                 NOTIFY currentMapLevelChanged)
     Q_PROPERTY(QObject*  progress   READ progress       WRITE setProgress        NOTIFY progressChanged)
-    Q_PROPERTY(bool batchCorrect   READ batchCorrect    WRITE setBatchCorrect    NOTIFY drawBatchCorrectChanged)
-    Q_PROPERTY(bool depthCorrect   READ depthCorrect    WRITE setDepthCorrect    NOTIFY drawDepthCorrectChanged)
 
 
 
@@ -62,8 +55,6 @@ public:
     Dataset* getDatasetPtr();
     DataProcessor* getDataProcessorPtr() const;
     DeviceManagerWrapper* getDeviceManagerWrapperPtr() const;
-    // LinkManagerWrapper* getLinkManagerWrapperPtr() const;
-    void stopLinkManagerTimer() const;
     void refreshMap(LLA lla);
     void saveCurrentMapState(std::function<void(double lat, double lon)>writer);
 
@@ -71,7 +62,6 @@ public:
     void consoleWarning(QString msg);
     void consoleProto(FrameParser& parser, bool isIn = true);
     void saveLLARefToSettings();
-    // void removeLinkManagerConnections();
 
     QHash<QUuid, QString> getLinkNames() const;
 
@@ -82,7 +72,6 @@ public slots:
     bool getIsGPSAlive() const { return isGPSAlive_; };
     void openLogFile(const QString& filePath, bool isAppend = false, bool onCustomEvent = false);
     bool closeLogFile();
-    void onFileOpened();
     bool openXTF(const QByteArray& data);
     bool openCSV(QString name, int separatorType, int row = -1, int colTime = -1, bool isUtcTime = true, int colLat = -1, int colLon = -1, int colAltitude = -1, int colNorth = -1, int colEast = -1, int colUp = -1);
     bool openProxy(const QString& address, const int port, bool isTcp);
@@ -110,10 +99,6 @@ public slots:
 
     QObject* progress() const;
     void setProgress(QObject* dialog);
-    bool batchCorrect();
-    void setBatchCorrect(bool batchCorrect);
-    bool depthCorrect();
-    void setDepthCorrect(bool depthCorrect);
 
     Q_INVOKABLE QString getChannel1Name() const;
     Q_INVOKABLE QString getChannel2Name() const;
@@ -127,9 +112,6 @@ public slots:
     Q_INVOKABLE void setAutoRenderSpan(bool isAuto);
     Q_INVOKABLE void exitApp();
     Q_INVOKABLE void switchMapType(int sourceType);
-    Q_INVOKABLE void bathyMetryConfigApply(int soundVelocity, int draftOffset);
-    Q_INVOKABLE void setDepthFilterVisible(bool visible, int value);
-    Q_INVOKABLE void setKeelOffsetValue(int value);
 
 signals:
     void connectionChanged(bool duplex = false);
@@ -144,10 +126,6 @@ signals:
     void progressChanged();
 
     void drawRealtimeContour(bool isRead);
-
-    void drawBatchCorrectChanged();
-    void drawDepthCorrectChanged();
-
 
 private:
     QObject* progress_ = nullptr;
@@ -179,7 +157,6 @@ private:
     ConsoleListModel* consoleList();
     void createControllers();
     void createDeviceManagerConnections();
-    void createLinkManagerConnections();
     bool isOpenedFile() const;
     bool isFactoryMode() const;
 
@@ -193,19 +170,14 @@ private:
     std::shared_ptr<BoatTrackControlMenuController>       boatTrackControlMenuController_;
     std::shared_ptr<NavigationArrowControlMenuController> navigationArrowControlMenuController_;
     std::shared_ptr<BottomTrackControlMenuController>     bottomTrackControlMenuController_;
-    // std::shared_ptr<MpcFilterControlMenuController>       mpcFilterControlMenuController_;
-    // std::shared_ptr<NpdFilterControlMenuController>       npdFilterControlMenuController_;
     std::shared_ptr<IsobathsViewControlMenuController>    isobathsViewControlMenuController_;
     std::shared_ptr<MosaicViewControlMenuController>      mosaicViewControlMenuController_;
     std::shared_ptr<ImageViewControlMenuController>       imageViewControlMenuController_;
     std::shared_ptr<MapViewControlMenuController>         mapViewControlMenuController_;
     std::shared_ptr<PointGroupControlMenuController>      pointGroupControlMenuController_;
-    // std::shared_ptr<PolygonGroupControlMenuController>    polygonGroupControlMenuController_;
     std::shared_ptr<Scene3DControlMenuController>         scene3dControlMenuController_;
     std::shared_ptr<Scene3dToolBarController>             scene3dToolBarController_;
-    // std::shared_ptr<UsblViewControlMenuController>        usblViewControlMenuController_;
     std::unique_ptr<DeviceManagerWrapper>                 deviceManagerWrapperPtr_;
-    // std::unique_ptr<LinkManagerWrapper>                   linkManagerWrapperPtr_;
     std::unique_ptr<map::TileManager>                     tileManager_;
 
     std::shared_ptr<BLEManager>  bleManager_;
@@ -223,7 +195,6 @@ private:
     QPointer<GraphicsScene3dView> scene3dViewPtr_;
     Logger logger_;
     QList<qPlot2D*> plot2dList_;
-    // QList<QMetaObject::Connection> linkManagerWrapperConnections_;
     QString openedfilePath_, openedFileFilter_;
     EnumFileType currentFileType_;
     QString filePath_;
@@ -237,8 +208,6 @@ private:
     int  currMapLevel_ = 0;
     bool isAutoRenderSpan_ = true;
 
-    bool isBatchCorrect_ = false;
-    bool isDepthCorrect_ = false;
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;

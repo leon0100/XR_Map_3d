@@ -103,12 +103,12 @@ ApplicationWindow  {
 
     LandMarkPoint { }
 
-    IsobathsExtraSettings {
-        // visible: toolBarXR.contourMode
-        visible: expandToolBar.contourMode
-        x: toolBarXR.iconSize * 3.5
-        targetPlot: toolBarXR.targetPlot
-    }
+    // IsobathsExtraSettings {
+    //     // visible: toolBarXR.contourMode
+    //     visible: expandToolBar.contourMode
+    //     x: toolBarXR.iconSize * 3.5
+    //     targetPlot: toolBarXR.targetPlot
+    // }
 
     LiveDataPanel {
        visible: liveDataPanel.isShowDataPanel
@@ -126,13 +126,13 @@ ApplicationWindow  {
 
     }
 
-    IsobathsSet {
-        id: isobathsSet
-        visible: true
-        x: 2
-        y: expandToolBar.iconSize * 4
-        targetPlot: toolBarXR.targetPlot
-    }
+    // IsobathsSet {
+    //     id: isobathsSet
+    //     visible: true
+    //     x: 2
+    //     y: expandToolBar.iconSize * 4
+    //     targetPlot: waterViewFirst
+    // }
 
     Connections {
         target: mapTileLoad
@@ -379,33 +379,6 @@ ApplicationWindow  {
     }
 
 
-    MouseArea {
-        id: mousearea
-        enabled: true
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-
-
-        onClicked: function(mouse) {
-            var pos = plotCheckRec.mapFromItem(null, mouse.x, mouse.y)
-            if(plotCheckRec.expanded) {
-                if(pos.x < 0 || pos.y < 0 || pos.x > plotCheckRec.width ||
-                    pos.y > plotCheckRec.height) {
-                    if(pos.x < 0 || pos.y < 0 || pos.x > plotCheckBtn.width ||
-                            pos.y > plotCheckBtn.height) {
-                        plotCheckBtn.settingVisible = false;
-                        console.log("12132435345435")
-                        // plotCheckRec.expanded = false;
-                    }
-
-                }
-            }
-        }
-
-
-    }
-
-
     property bool   showBanner: false
     property string selectedLanguageStr: qsTr("Undefined")
 
@@ -527,40 +500,40 @@ ApplicationWindow  {
                     let newLow = Math.min(120, waterViewFirst.getLowEchogramLevel() + p)
                     let newHigh = waterViewFirst.getHighEchogramLevel()
                     if (newLow > newHigh) newHigh = newLow
-                    waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    waterViewFirst.setLevels(newLow, newHigh)
+                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
+                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSLow = Math.min(120, waterViewSecond.getLowEchogramLevel() + p)
                         let newSHigh = waterViewSecond.getHighEchogramLevel()
                         if (newSLow > newSHigh) newSHigh = newSLow
-                        waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        waterViewSecond.setLevels(newSLow, newSHigh)
+                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
+                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
                 case "decreaseLowLevel": {
                     let newLow = Math.max(0, waterViewFirst.getLowEchogramLevel() - p)
                     let newHigh = waterViewFirst.getHighEchogramLevel()
-                    waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    waterViewFirst.setLevels(newLow, newHigh)
+                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
+                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSLow = Math.max(0, waterViewSecond.getLowEchogramLevel() - p)
                         let newSHigh = waterViewSecond.getHighEchogramLevel()
-                        waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        waterViewSecond.setLevels(newSLow, newSHigh)
+                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
+                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
                 case "increaseHighLevel": {
                     let newHigh = Math.min(120, waterViewFirst.getHighEchogramLevel() + p)
                     let newLow = waterViewFirst.getLowEchogramLevel()
-                    waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    waterViewFirst.setLevels(newLow, newHigh)
+                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
+                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSHigh = Math.min(120, waterViewSecond.getHighEchogramLevel() + p)
                         let newSLow = waterViewSecond.getLowEchogramLevel()
-                        waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        waterViewSecond.setLevels(newSLow, newSHigh)
+                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
+                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
@@ -568,14 +541,14 @@ ApplicationWindow  {
                     let newHigh = Math.max(0, waterViewFirst.getHighEchogramLevel() - p)
                     let newLow = waterViewFirst.getLowEchogramLevel()
                     if (newHigh < newLow) newLow = newHigh
-                    waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    waterViewFirst.setLevels(newLow, newHigh)
+                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
+                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSHigh = Math.max(0, waterViewSecond.getHighEchogramLevel() - p)
                         let newSLow = waterViewSecond.getLowEchogramLevel()
                         if (newSHigh < newSLow) newSLow = newSHigh
-                        waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        waterViewSecond.setLevels(newSLow, newSHigh)
+                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
+                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
@@ -774,6 +747,8 @@ ApplicationWindow  {
 
                             lastMouseKeyPressed    = mouse.buttons
                             renderer.mousePressTrigger(mouse.buttons, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
+
+                            waterViewFirst.closePlotCheckOutside(mouse.x, mouse.y)
                         }
 
                         onDoubleClicked: function(mouse) {
@@ -1278,3 +1253,8 @@ ApplicationWindow  {
 
 
 }
+
+
+
+
+

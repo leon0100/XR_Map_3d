@@ -108,7 +108,7 @@ public:
     void setDistanceAutoRange(int auto_range_type);
 
     void setDistance(float from, float to);
-    void zoomDistance(float ratio);
+    // void zoomDistance(float ratio);
     void scrollDistance(float ratio);
 
     void setMousePosition(int x, int y, bool isSync = false);

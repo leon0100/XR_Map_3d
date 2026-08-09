@@ -11,7 +11,6 @@
 Core::Core() : QObject(),
     consolePtr_(new Console),
     deviceManagerWrapperPtr_(std::make_unique<DeviceManagerWrapper>(this)),
-    // linkManagerWrapperPtr_(std::make_unique<LinkManagerWrapper>(this)),
     dataProcessor_(nullptr),
     dataProcThread_(nullptr),
     dataHorizon_(std::make_unique<DataHorizon>()),
@@ -27,7 +26,6 @@ Core::Core() : QObject(),
     createControllers();
     logger_.setDatasetPtr(datasetPtr_);
     createDeviceManagerConnections();
-    createLinkManagerConnections();
     createDatasetConnections();
 
     createDataProcessor();
@@ -51,12 +49,8 @@ void Core::setEngine(QQmlApplicationEngine *engine)
     qmlAppEnginePtr_->rootContext()->setContextProperty("ImageViewControlMenuController",       imageViewControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("MapViewControlMenuController",         mapViewControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("PointGroupControlMenuController",      pointGroupControlMenuController_.get());
-    // qmlAppEnginePtr_->rootContext()->setContextProperty("PolygonGroupControlMenuController",    polygonGroupControlMenuController_.get());
-    // qmlAppEnginePtr_->rootContext()->setContextProperty("MpcFilterControlMenuController",       mpcFilterControlMenuController_.get());
-    // qmlAppEnginePtr_->rootContext()->setContextProperty("NpdFilterControlMenuController",       npdFilterControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("Scene3DControlMenuController",         scene3dControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("Scene3dToolBarController",             scene3dToolBarController_.get());
-    // qmlAppEnginePtr_->rootContext()->setContextProperty("UsblViewControlMenuController",        usblViewControlMenuController_.get());
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",      bleManager_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",      udpManager_.get());
@@ -92,16 +86,6 @@ DataProcessor* Core::getDataProcessorPtr() const
 DeviceManagerWrapper* Core::getDeviceManagerWrapperPtr() const
 {
     return deviceManagerWrapperPtr_.get();
-}
-
-// LinkManagerWrapper* Core::getLinkManagerWrapperPtr() const
-// {
-//     return linkManagerWrapperPtr_.get();
-// }
-
-void Core::stopLinkManagerTimer() const
-{
-    // emit deviceManagerWrapperPtr_->sendStopTimer();
 }
 
 void Core::refreshMap(LLA lla)
@@ -200,9 +184,6 @@ void Core::openLogFile(const QString& filePath, bool isAppend, bool onCustomEven
             emit filePathChanged();
         }
 
-        // linkManagerWrapperPtr_->closeOpenedLinks();
-        // removeLinkManagerConnections();
-
         QCoreApplication::processEvents(QEventLoop::AllEvents);
 
         if (!isAppend) {
@@ -263,19 +244,11 @@ bool Core::closeLogFile()
         datasetPtr_->resetDataset();
     }
     emit deviceManagerWrapperPtr_->sendCloseFile();
-    createLinkManagerConnections();
     openedfilePath_.clear();
-    // linkManagerWrapperPtr_->openClosedLinks();
 
     return true;
 }
 
-void Core::onFileOpened()
-{
-    qDebug() << "file opened!";
-
-    // QMetaObject::invokeMethod(dataProcessor_, "setIsOpeningFile", Qt::QueuedConnection, Q_ARG(bool, false));
-}
 
 bool Core::openXTF(const QByteArray& data)
 {
@@ -1322,38 +1295,27 @@ void Core::switchMapType(int sourceType)
     }
 }
 
-void Core::bathyMetryConfigApply(int soundVelocity, int draftOffset)
-{
-    const int numPlots = plot2dList_.size();
-    for(int i = 0; i < numPlots; i++) {
-        qPlot2D* plot2d = plot2dList_.at(i);
-        if(plot2d){
-            plot2d->setSoundVelocity(soundVelocity, draftOffset);
-        }
-    }
-}
+// void Core::setDepthFilterVisible(bool visible, int value)
+// {
+//     const int numPlots = plot2dList_.size();
+//     for(int i = 0; i < numPlots; i++) {
+//         qPlot2D* plot2d = plot2dList_.at(i);
+//         if(plot2d) {
+//             plot2d->setDepthFilterVisible(visible, value);
+//         }
+//     }
+// }
 
-void Core::setDepthFilterVisible(bool visible, int value)
-{
-    const int numPlots = plot2dList_.size();
-    for(int i = 0; i < numPlots; i++) {
-        qPlot2D* plot2d = plot2dList_.at(i);
-        if(plot2d) {
-            plot2d->setDepthFilterVisible(visible, value);
-        }
-    }
-}
-
-void Core::setKeelOffsetValue(int value)
-{
-    const int numPlots = plot2dList_.size();
-    for(int i = 0; i < numPlots; i++) {
-        qPlot2D* plot2d = plot2dList_.at(i);
-        if(plot2d) {
-            plot2d->setKeelOffsetValue(value);
-        }
-    }
-}
+// void Core::setKeelOffsetValue(int value)
+// {
+//     const int numPlots = plot2dList_.size();
+//     for(int i = 0; i < numPlots; i++) {
+//         qPlot2D* plot2d = plot2dList_.at(i);
+//         if(plot2d) {
+//             plot2d->setKeelOffsetValue(value);
+//         }
+//     }
+// }
 
 void Core::onTileSetChanged(std::shared_ptr<map::TileSet> tileSet)
 {
@@ -1519,7 +1481,6 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::gnssVelocityComplete, datasetPtr_, &Dataset::addGnssVelocity,   directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::attitudeComplete, datasetPtr_, &Dataset::addAtt,                directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::tempComplete, datasetPtr_, &Dataset::addTemp,                   directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileOpened, this, &Core::onFileOpened,                          directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::encoderComplete, datasetPtr_, &Dataset::addEncoder,             directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening, this,  &Core::onFileStopsOpening,             directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::fileStopsOpening2, this, &Core::onFileStopsOpening2,            directionConnection);
@@ -1530,31 +1491,6 @@ void Core::createDeviceManagerConnections()
 
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame,           directionConnection);
 }
-
-void Core::createLinkManagerConnections()
-{
-    Qt::ConnectionType linkManagerConnection = Qt::ConnectionType::AutoConnection;
-    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkClosed,   linkManagerConnection));
-    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkOpened,   linkManagerConnection));
-    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkDeleted, deviceManagerWrapperPtr_->getWorker(), &DeviceManager::onLinkDeleted,  linkManagerConnection));
-    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkOpened,  this, [this]() {
-
-    // datasetPtr_->setState(Dataset::DatasetState::kConnection); }, linkManagerConnection));
-    // linkManagerWrapperConnections_.append(QObject::connect(linkManagerWrapperPtr_->getWorker(), &LinkManager::linkClosed,  this, [this]() {
-    //     if (scene3dViewPtr_) {
-    //         scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
-    //     }
-    // }, linkManagerConnection));
-}
-
-// void Core::removeLinkManagerConnections()
-// {
-//     for (auto& itm : linkManagerWrapperConnections_) {
-//         disconnect(itm);
-//     }
-
-//     linkManagerWrapperConnections_.clear();
-// }
 
 QHash<QUuid, QString> Core::getLinkNames() const
 {
@@ -1836,47 +1772,6 @@ void Core::setProgress(QObject* dialog)
             deviceManager->setProgressDialog(dialog);
         }
         emit progressChanged();
-    }
-}
-
-bool Core::batchCorrect()
-{
-    return isBatchCorrect_;
-}
-
-void Core::setBatchCorrect(bool batchCorrect)
-{
-    if(batchCorrect) {
-        GIF->dialogInfo(Dialog_OK, "Right-click and Drag to Pan Sonar Image.");
-    }
-    isBatchCorrect_ = batchCorrect;
-    emit drawBatchCorrectChanged();
-
-    const int numPlots = plot2dList_.size();
-    for(int i = 0; i < numPlots; i++) {
-        qPlot2D* plot2d = plot2dList_.at(i);
-        if(plot2d) {
-            plot2d->setBatchCorrect(batchCorrect);
-        }
-    }
-}
-
-bool Core::depthCorrect()
-{
-    return isDepthCorrect_;
-}
-
-void Core::setDepthCorrect(bool depthCorrect)
-{
-    isDepthCorrect_ = depthCorrect;
-    emit drawDepthCorrectChanged();
-
-    const int numPlots = plot2dList_.size();
-    for(int i = 0; i < numPlots; i++) {
-        qPlot2D* plot2d = plot2dList_.at(i);
-        if(plot2d) {
-            plot2d->setDepthCorrect(depthCorrect);
-        }
     }
 }
 

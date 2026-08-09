@@ -97,7 +97,6 @@ signals:
     void fileStopsOpening2(QVector<float>& depth, double minZ, double maxZ);
     void chartLossesChanged();
     void sendProtoFrame(const Parsers::ProtoBinOut& protoOut);
-    void fileOpened();
 
 
 private:

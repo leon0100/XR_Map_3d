@@ -523,7 +523,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
         chartParams.latitude    = lla.latitude;
         emit chartComplete(batchChannelId_, chartParams, dataVec, true);
 
-        qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
+        // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (i + 1) == tsl3Cnt ? true : false;
         emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
 

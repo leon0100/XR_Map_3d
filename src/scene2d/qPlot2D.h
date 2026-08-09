@@ -22,6 +22,8 @@ public:
     Q_PROPERTY(int     contactIndx      READ getContactIndx                                NOTIFY contactChanged)
     Q_PROPERTY(double  contactLat       READ getContactLat                                 NOTIFY contactChanged)
     Q_PROPERTY(double  contactDepth     READ getContactDepth                               NOTIFY contactChanged)
+    Q_PROPERTY(bool batchCorrect   READ batchCorrect    WRITE setBatchCorrect    NOTIFY drawBatchCorrectChanged)
+    Q_PROPERTY(bool depthCorrect   READ depthCorrect    WRITE setDepthCorrect    NOTIFY drawDepthCorrectChanged)
 
     Q_PROPERTY(int  minUpRng  READ  getMinUpRng   WRITE  setMinUpRng   NOTIFY minUpRngChanged)
     Q_PROPERTY(int  maxLoRng  READ  getMaxLoRng   WRITE  setMaxLoRng   NOTIFY maxLoRngChanged)
@@ -51,10 +53,12 @@ public:
     void setMinUpRng(int minUpRng);
     int  getMaxLoRng();
     void setMaxLoRng(int maxLoRng);
-    void setSoundVelocity(int soundVelocity, int draftOffset);
-    void setDepthFilterVisible(bool visible, int value);
-    void setKeelOffsetValue(int value);
-    void setBatchCorrect(bool batch);
+    Q_INVOKABLE void setSoundVelocity(int soundVelocity, int draftOffset);
+    Q_INVOKABLE void setDepthFilterVisible(bool visible, int value);
+    Q_INVOKABLE void setKeelOffsetValue(int value);
+    bool batchCorrect();
+    bool depthCorrect();
+    void setBatchCorrect(bool batchCorrect);
     void setDepthCorrect(bool depthCorrect);
 
     QString fromLonStr();
@@ -89,6 +93,7 @@ protected:
     QTimer* m_updateTimer;
     bool _isHorizontal = true;
 
+
 signals:
     void timelinePositionChanged();
     void plotEnableChanged();
@@ -97,6 +102,9 @@ signals:
     void minUpRngChanged();
     void maxLoRngChanged();
     void fromToLonLatiChanged();
+    void drawBatchCorrectChanged();
+    void drawDepthCorrectChanged();
+
 
 protected slots:
     void dataUpdate();
@@ -104,7 +112,7 @@ protected slots:
 
 public slots:
     void horScrollEvent(int delta);
-    void verZoomEvent(int delta);
+    // void verZoomEvent(int delta);
     void verScrollEvent(int delta);
     Q_INVOKABLE void scaleYZoomEvent(int delta);
     Q_INVOKABLE void plotMousePosition(int x, int y, bool isSync = false);
@@ -195,4 +203,6 @@ private:
     int indx_ = -1;
     int currentUpRng_ = 0, currentLoRng_ = 1500;
     bool prompt_ = true;
+    bool isBatchCorrect_ = false;
+    bool isDepthCorrect_ = false;
 };

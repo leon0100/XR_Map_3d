@@ -4,3 +4,6 @@ LiveDataPanel      1.0  LiveDataPanel.qml
 loading            1.0  loading.qml
 IsobathsSet        1.0  IsobathsSet.qml
 LiveData           1.0  LiveData.qml
+BathymetryRec      1.0  BathymetryRec.qml
+IsobathsRec        1.0  IsobathsRec.qml
+Plot2DRec          1.0  Plot2DRec.qml

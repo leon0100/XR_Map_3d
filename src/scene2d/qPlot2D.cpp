@@ -151,10 +151,10 @@ void qPlot2D::horScrollEvent(int delta)
     }
 }
 
-void qPlot2D::verZoomEvent(int delta)
-{
-    zoomDistance(delta);
-}
+// void qPlot2D::verZoomEvent(int delta)
+// {
+    // zoomDistance(delta);
+// }
 
 void qPlot2D::verScrollEvent(int delta)
 {
@@ -204,6 +204,7 @@ void qPlot2D::setMaxLoRng(int maxLoRng)
 
 void qPlot2D::setSoundVelocity(int soundVelocity, int draftOffset)
 {
+    qDebug() << "soundVelocity..." << soundVelocity << "  " << draftOffset;
     echogram_.setSoundVelocity(soundVelocity, draftOffset);
     plotUpdate();
 }
@@ -220,13 +221,30 @@ void qPlot2D::setKeelOffsetValue(int value)
     plotUpdate();
 }
 
-void qPlot2D::setBatchCorrect(bool batch)
+bool qPlot2D::batchCorrect()
 {
-    echogram_.setBatchCorrect(batch);
+    return isBatchCorrect_;
+}
+
+void qPlot2D::setBatchCorrect(bool batchCorrect)
+{
+    if(batchCorrect) {
+        GIF->dialogInfo(Dialog_OK, "Right-click and Drag to Pan Sonar Image.");
+    }
+    isBatchCorrect_ = batchCorrect;
+    emit drawBatchCorrectChanged();
+    echogram_.setBatchCorrect(batchCorrect);
+}
+
+bool qPlot2D::depthCorrect()
+{
+    return isDepthCorrect_;
 }
 
 void qPlot2D::setDepthCorrect(bool depthCorrect)
 {
+    isDepthCorrect_ = depthCorrect;
+    emit drawDepthCorrectChanged();
     echogram_.setDepthCorrect(depthCorrect);
 }
 

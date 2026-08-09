@@ -149,7 +149,6 @@ int main(int argc, char *argv[])
     QObject::connect(&app,  &QGuiApplication::aboutToQuit, corePtr, [&]() {
         // corePtr->saveLLARefToSettings();
         // corePtr->removeLinkManagerConnections();
-        // corePtr->stopLinkManagerTimer();
         corePtr->saveCurrentMapState([](double lat, double lon) {
             theme.setCurrentMapLocation(lat, lon);
         });

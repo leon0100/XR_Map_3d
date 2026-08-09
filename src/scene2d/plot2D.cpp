@@ -469,51 +469,51 @@ void Plot2D::setDistance(float from, float to)
     cursor_.distance.set(from, to);
 }
 
-void Plot2D::zoomDistance(float ratio)
-{
-    qDebug() << "Plot2D::zoomDistance.........";
-    cursor_.distance.mode = AutoRangeNone;
+// void Plot2D::zoomDistance(float ratio)
+// {
+//     qDebug() << "Plot2D::zoomDistance.........";
+//     cursor_.distance.mode = AutoRangeNone;
 
-    int  delta = ratio;
-    if(delta == 0) return;
+//     int  delta = ratio;
+//     if(delta == 0) return;
 
-    float from = cursor_.distance.from;
-    float to = cursor_.distance.to;
-    float absrange = abs(to - from);
+//     float from = cursor_.distance.from;
+//     float to = cursor_.distance.to;
+//     float absrange = abs(to - from);
 
-    float zoom = delta < 0 ? -delta*0.01f : delta*0.01f;
-    float delta_range = absrange*zoom;
-    float new_range = 0;
+//     float zoom = delta < 0 ? -delta*0.01f : delta*0.01f;
+//     float delta_range = absrange*zoom;
+//     float new_range = 0;
 
-    if(delta_range < 0.1) {
-        delta_range = 0.1;
-    } else if(delta_range > 5) {
-        delta_range = 5;
-    }
+//     if(delta_range < 0.1) {
+//         delta_range = 0.1;
+//     } else if(delta_range > 5) {
+//         delta_range = 5;
+//     }
 
-    if(delta > 0) {
-        new_range = absrange + delta_range;
-    } else {
-        new_range = absrange - delta_range;
-    }
+//     if(delta > 0) {
+//         new_range = absrange + delta_range;
+//     } else {
+//         new_range = absrange - delta_range;
+//     }
 
-    if(new_range < 1) {
-        new_range = 1;
-    } else if(new_range > 500) {
-        new_range = 500;
-    }
+//     if(new_range < 1) {
+//         new_range = 1;
+//     } else if(new_range > 500) {
+//         new_range = 500;
+//     }
 
 
-    if (cursor_.isChannelDoubled()) {
-        cursor_.distance.from = -ceil(new_range / 2);
-        cursor_.distance.to = ceil(new_range / 2);
-    }
-    else {
-       cursor_.distance.to = ceil(cursor_.distance.from + new_range);
-    }
+//     if (cursor_.isChannelDoubled()) {
+//         cursor_.distance.from = -ceil(new_range / 2);
+//         cursor_.distance.to = ceil(new_range / 2);
+//     }
+//     else {
+//        cursor_.distance.to = ceil(cursor_.distance.from + new_range);
+//     }
 
-    plotUpdate();
-}
+//     plotUpdate();
+// }
 
 void Plot2D::scrollDistance(float ratio)
 {
