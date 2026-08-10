@@ -41,6 +41,7 @@ public:
     Q_PROPERTY(double currLat READ getCurrLat NOTIFY currentLatChanged)
     Q_PROPERTY(double currLon READ getCurrLon NOTIFY currentLonChanged)
     Q_PROPERTY(Qt::CursorShape cursorShape READ cursorShape WRITE setCursorShape NOTIFY cursorShapeChanged)
+    Q_PROPERTY(bool outlineCompleted READ outlineCompleted  NOTIFY outlineCompletedChanged)
 
 
     //Camera
@@ -229,6 +230,8 @@ public:
     double getCurrLon() const;
     void setCursorShape(Qt::CursorShape shape);
     Qt::CursorShape cursorShape() const { return cursorShape_; }
+    bool outlineCompleted() const { return outlineCompleted_; }
+    void setOutlineCompleted(bool completed) { outlineCompleted_ = completed; emit outlineCompletedChanged();}
     void clear(bool isClearTrack, bool cleanMap = false);
     QVector3D calculateIntersectionPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float planeZ);
     void updateProjection();
@@ -247,6 +250,7 @@ public:
     Q_INVOKABLE void keyPressTrigger(Qt::Key key);
     Q_INVOKABLE void bottomTrackActionEvent(BottomTrack::ActionEvent actionEvent);
     Q_INVOKABLE void zoomInOut(bool zoomIn);
+    Q_INVOKABLE void completeDrawOutline();
 
     void setTrackLastData(bool state);
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
@@ -299,6 +303,7 @@ signals:
     void currentLatChanged();
     void currentLonChanged();
     void cursorShapeChanged();
+    void outlineCompletedChanged();
 
 private:
     void updateBounds();
@@ -375,6 +380,7 @@ private:
     Qt::CursorShape cursorShape_;
 
     int currentMapLevel_,screetCurrentMapLevel_;
+    bool outlineCompleted_ = true;
 
 
 public:  //截图模块

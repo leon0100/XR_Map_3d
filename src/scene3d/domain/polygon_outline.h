@@ -19,7 +19,7 @@ public:
     void setDatasetPtr(Dataset* datasetPtr);
     void polygonAddPoint(double latitude, double longitude);
     void modifyPolygonVertex(int index, LLA lla);
-    int getNearestVertexIndex(LLA lla) const;
+    int  getNearestVertexIndex(LLA lla) const;
 
     void setQmlRootObject(QObject* object);
 
@@ -33,7 +33,6 @@ public:
 
     void setFatherVisible(bool visible);
     bool getFatherVisible();
-
 
 
 public:

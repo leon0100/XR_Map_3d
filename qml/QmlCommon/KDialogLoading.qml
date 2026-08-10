@@ -11,7 +11,7 @@ Rectangle {
     height: loadSize
     color: "#d6e6ff"
     visible: false
-    z: 9999
+    z: 99999
 
     property int loadSize: Math.min(Screen.width, Screen.height) * 0.075
     property int iconSize: loadSize * 0.3

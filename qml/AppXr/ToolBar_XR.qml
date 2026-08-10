@@ -16,6 +16,7 @@ Rectangle {
 
     property  var  menuPopup:     null
     property  var  targetPlot:    null
+    property  var  expandBar:     null
     // property  var  lastItem:      menuSettings
     property  int  settingsWidth: theme.menuWidth*20
     property  int  iconSize:      Math.min(Screen.width, Screen.height) * 0.05
@@ -67,6 +68,16 @@ Rectangle {
            if (!wasOpen && currentItem.active && (currentItem === menuSettings || currentItem === menuDisplay)) {
                menuBarSettingOpened()
            }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onPressed: {
+            if(targetPlot) {
+                targetPlot.closeEchoBathyIsobathOutside(0, 0)
+            }
+            expandBar.expanded = false
+        }
     }
 
 
@@ -408,6 +419,7 @@ Rectangle {
                 }
 
                 onPressed: {
+                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
                     if(menuPopup) {
                         if (menuPopup.menuVisible) {
                             menuPopup.close()
@@ -418,6 +430,11 @@ Rectangle {
                             bluetoothMode = false
                         }
                     }
+
+                    if(targetPlot) {
+                        targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                    }
+                    expandBar.expanded = false
                 }
             }
 
@@ -521,7 +538,14 @@ Rectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked:   Qt.openUrlExternally("https://www.Toslon.com")
+                        onClicked:  {
+                            Qt.openUrlExternally("https://www.Toslon.com")
+
+                            if(targetPlot) {
+                                targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                            }
+                            expandBar.expanded = false
+                        }
                     }
                 }
 

@@ -4,7 +4,6 @@
         <file>fonts/PTSansCaption-Regular.ttf</file>
         <file>icons/ui/access_point.svg</file>
         <file>icons/ui/access_point_off.svg</file>
-        <file>icons/ui/anchor.svg</file>
         <file>icons/ui/arrow_bar_down.svg</file>
         <file>icons/ui/arrow_bar_to_down.svg</file>
         <file>icons/ui/arrow_bar_to_up.svg</file>
@@ -82,6 +81,6 @@
         <file>XR/zoom_in.png</file>
         <file>XR/zoom_out.png</file>
         <file>XR/content.svg</file>
-	<file>XR/undo.svg</file>
+        <file>XR/undo.svg</file>
     </qresource>
 </RCC>

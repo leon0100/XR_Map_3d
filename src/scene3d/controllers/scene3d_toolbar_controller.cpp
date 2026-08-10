@@ -37,69 +37,11 @@ void Scene3dToolBarController::onSetCameraMapViewButtonClicked()
     }
 }
 
-void Scene3dToolBarController::onBottomTrackVertexEditingModeButtonChecked(bool checked)
-{
-    isVertexEditingMode_ = checked;
-
-    if (graphicsScene3dViewPtr_) {
-        if (isVertexEditingMode_) {
-            graphicsScene3dViewPtr_->setBottomTrackVertexSelectionMode();
-        }
-        else {
-            graphicsScene3dViewPtr_->setIdleMode();
-        }
-    }
-    else {
-        tryInitPendingLambda();
-    }
-}
-
 void Scene3dToolBarController::onCancelZoomButtonClicked()
 {
     graphicsScene3dViewPtr_->setCancelZoomView();
 }
 
-void Scene3dToolBarController::onTrackLastDataCheckButtonCheckedChanged(bool state)
-{
-    trackLastData_ = state;
-
-    if (graphicsScene3dViewPtr_) {
-        qDebug() << "graphicsScene3dViewPtr_ " << state;
-        graphicsScene3dViewPtr_->setTrackLastData(trackLastData_);
-    }
-    else {
-        qDebug() << "graphicsScene3dViewPtr_ is null:" << state;
-        tryInitPendingLambda();
-    }
-}
-
-void Scene3dToolBarController::onUpdateBottomTrackCheckButtonCheckedChanged(bool state)
-{
-    updateBottomTrack_ = state;
-
-    if (graphicsScene3dViewPtr_) {
-
-        if (dataProcessorPtr_) {
-            QMetaObject::invokeMethod(dataProcessorPtr_, "setUpdateBottomTrack", Qt::QueuedConnection, Q_ARG(bool, updateBottomTrack_));
-        }
-
-    }
-    else {
-        tryInitPendingLambda();
-    }
-}
-
-void Scene3dToolBarController::onGridVisibilityCheckedChanged(bool state)
-{
-    gridVisibility_ = state;
-
-    if (graphicsScene3dViewPtr_) {
-        graphicsScene3dViewPtr_->setGridVisibility(gridVisibility_);
-    }
-    else {
-        tryInitPendingLambda();
-    }
-}
 
 void Scene3dToolBarController::onUseAngleLocationButtonChanged(bool state)
 {

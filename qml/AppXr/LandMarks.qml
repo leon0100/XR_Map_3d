@@ -7,10 +7,10 @@ import QtQuick.Window 2.15
 
 Rectangle {
     id: root
-    width:  landSize * 1.2
-    height: landSize * 0.9
+    width:  landSize * 1.1
+    height: landSize * 0.8
     radius: 10
-    z: 999
+    z: 10000
     visible: renderer.screetShot.landMarkMode
 
 

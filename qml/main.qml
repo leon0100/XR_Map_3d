@@ -72,6 +72,7 @@ ApplicationWindow  {
             Component.onCompleted: {
                 toolBarXR.menuPopup  = menuToolBar
                 toolBarXR.targetPlot = waterViewFirst  //把qPlot2D类与ToolBar_XR绑定
+                toolBarXR.expandBar  = expandToolBar
             }
         }
     }
@@ -100,15 +101,6 @@ ApplicationWindow  {
     LocationsQml { }
 
     LandMarks { }
-
-    LandMarkPoint { }
-
-    // IsobathsExtraSettings {
-    //     // visible: toolBarXR.contourMode
-    //     visible: expandToolBar.contourMode
-    //     x: toolBarXR.iconSize * 3.5
-    //     targetPlot: toolBarXR.targetPlot
-    // }
 
     LiveDataPanel {
        visible: liveDataPanel.isShowDataPanel
@@ -500,40 +492,28 @@ ApplicationWindow  {
                     let newLow = Math.min(120, waterViewFirst.getLowEchogramLevel() + p)
                     let newHigh = waterViewFirst.getHighEchogramLevel()
                     if (newLow > newHigh) newHigh = newLow
-                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSLow = Math.min(120, waterViewSecond.getLowEchogramLevel() + p)
                         let newSHigh = waterViewSecond.getHighEchogramLevel()
                         if (newSLow > newSHigh) newSHigh = newSLow
-                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
                 case "decreaseLowLevel": {
                     let newLow = Math.max(0, waterViewFirst.getLowEchogramLevel() - p)
                     let newHigh = waterViewFirst.getHighEchogramLevel()
-                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSLow = Math.max(0, waterViewSecond.getLowEchogramLevel() - p)
                         let newSHigh = waterViewSecond.getHighEchogramLevel()
-                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
                 case "increaseHighLevel": {
                     let newHigh = Math.min(120, waterViewFirst.getHighEchogramLevel() + p)
                     let newLow = waterViewFirst.getLowEchogramLevel()
-                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSHigh = Math.min(120, waterViewSecond.getHighEchogramLevel() + p)
                         let newSLow = waterViewSecond.getLowEchogramLevel()
-                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
@@ -541,14 +521,10 @@ ApplicationWindow  {
                     let newHigh = Math.max(0, waterViewFirst.getHighEchogramLevel() - p)
                     let newLow = waterViewFirst.getLowEchogramLevel()
                     if (newHigh < newLow) newLow = newHigh
-                    // waterViewFirst.plotEchogramSetLevels(newLow, newHigh)
-                    // waterViewFirst.setLevels(newLow, newHigh)
                     if (waterViewSecond.enabled) {
                         let newSHigh = Math.max(0, waterViewSecond.getHighEchogramLevel() - p)
                         let newSLow = waterViewSecond.getLowEchogramLevel()
                         if (newSHigh < newSLow) newSLow = newSHigh
-                        // waterViewSecond.plotEchogramSetLevels(newSLow, newSHigh)
-                        // waterViewSecond.setLevels(newSLow, newSHigh)
                     }
                     break
                 }
@@ -649,6 +625,8 @@ ApplicationWindow  {
                     visible: toolBarXR.polygonMode
                 }
 
+                LandMarkPoint { }
+
                 property bool longPressTriggered: false
                 property int  currentZoom: -1
 
@@ -748,7 +726,11 @@ ApplicationWindow  {
                             lastMouseKeyPressed    = mouse.buttons
                             renderer.mousePressTrigger(mouse.buttons, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
 
-                            waterViewFirst.closePlotCheckOutside(mouse.x, mouse.y)
+                            expandToolBar.expanded = false
+                            waterViewFirst.closeEchoBathyIsobathOutside(mouse.x, mouse.y)
+                            if(mouse.button === Qt.RightButton && !renderer.outlineCompleted) {
+                                menuBlock.rightPosition(mouse.x, mouse.y)
+                            }
                         }
 
                         onDoubleClicked: function(mouse) {
@@ -764,9 +746,9 @@ ApplicationWindow  {
 
                             renderer.mouseReleaseTrigger(lastMouseKeyPressed, mouse.x, mouse.y, visualisationLayout.lastKeyPressed)
 
-                            if (mouse.button === Qt.RightButton || (Qt.platform.os === "android" && vertexMode)) {
-                                menuBlock.position(mouse.x, mouse.y)
-                            }
+                            // if (mouse.button === Qt.RightButton || (Qt.platform.os === "android" && vertexMode)) {
+                            //     menuBlock.rightPosition(mouse.x, mouse.y)
+                            // }
 
                             vertexMode = false
                             lastMouseKeyPressed = Qt.NoButton
@@ -792,6 +774,8 @@ ApplicationWindow  {
                     id: scene3DToolbar
                     x: renderer.width * 0.5
                     y: renderer.height - scene3DToolbar.height * 1.5
+                    targetPlot: waterViewFirst
+                    expandBar: expandToolBar
                     Keys.forwardTo: [mousearea3D]
                     visible: visualisationLayout.splitMode !== 1
                 }
@@ -804,7 +788,7 @@ ApplicationWindow  {
                     visible: false
                     Layout.margins: 0
 
-                    function position(mx, my) {
+                    function rightPosition(mx, my) {
                         var oy = renderer.height - (my + implicitHeight)
                         if (oy < 0) {
                             my = my + oy
@@ -821,50 +805,43 @@ ApplicationWindow  {
                         visible = true
                     }
 
-                    ButtonGroup { id: pencilbuttonGroup }
 
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/arrow_bar_to_down.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
+                    Rectangle {
+                        id: completeOutlineBtn
+                        Layout.alignment: Qt.AlignVCenter
+                        width: completeText.implicitWidth + 8
+                        height: completeText.implicitHeight + 4
+                        radius: 4
+                        // color: "#99000000"
+                        color: "#66000000"
+                        border.width: 1
+                        border.color: "#777777"
 
-                        onClicked: {
-                            renderer.bottomTrackActionEvent(BottomTrack.MinDistProc)
-                            menuBlock.visible = false
+                        CText {
+                            id: completeText
+                            anchors.centerIn: parent
+                            text: qsTr("Complete Outline")
+                            font.pixelSize: footHeight
+                            color: "yellow"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
 
-                        ButtonGroup.group: pencilbuttonGroup
-                    }
-
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/arrow_bar_to_up.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-
-                        onClicked: {
-                            renderer.bottomTrackActionEvent(BottomTrack.MaxDistProc)
-                            menuBlock.visible = false
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onPressed: {
+                                menuBlock.visible = false
+                                renderer.completeDrawOutline();
+                                completeOutlineBtn.color = "#bb666666"
+                            }
+                            onReleased: completeOutlineBtn.color = "#99000000"
                         }
-
-                        ButtonGroup.group: pencilbuttonGroup
                     }
 
-                    CheckButton {
-                        icon.source: "qrc:/icons/ui/eraser.svg"
-                        backColor: theme.controlBackColor
-                        checkable: false
-                        // implicitWidth: theme.controlHeight
-
-                        onClicked: {
-                            renderer.bottomTrackActionEvent(BottomTrack.ClearDistProc)
-                            menuBlock.visible = false
-                        }
-
-                        ButtonGroup.group: pencilbuttonGroup
-                    }
                 }
+
+
 
                 Rectangle {
                     anchors.left:   parent.left
@@ -1085,6 +1062,7 @@ ApplicationWindow  {
                         focus: true
                         indx: 1
                         is3dVisible: true
+                        expandBar: expandToolBar
                         onTimelinePositionChanged: historyScroll.value = waterViewFirst.timelinePosition
                         Component.onCompleted: waterViewFirst.setIndx(waterViewFirst.indx);
 

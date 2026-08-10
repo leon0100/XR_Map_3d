@@ -8,7 +8,7 @@ import AppXr 1.0
 // ----------------- Bathymetry Config抽屉面板------------------
 XRRectangle {
     id: bathymetry
-    width:  bathymetrySize * 1.5
+    width:  bathymetrySize * 1.6
     height: iconSize * 10
 
     color: "#dbe3f2"
@@ -17,9 +17,9 @@ XRRectangle {
     radius: iconSize * 0.25
 
 
-    property var  targetPlot:   null
+    property var  targetPlot:    null
     property int  bathymetrySize:  theme.screenSize * 0.35
-    property int  iconSize:     bathymetrySize * 0.05
+    property int  iconSize:      bathymetrySize * 0.05
 
     // 拦截鼠标事件，防止点击穿透到地图
     // MouseArea {

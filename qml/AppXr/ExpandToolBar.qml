@@ -371,7 +371,7 @@ Rectangle {
 
     property bool screenMode:    false
     property bool locationMode:  false
-    property bool landMarkMode:  false
+    property bool landMarkMode:  renderer.screetShot.landMarkMode
     property bool contourMode:   false
     property bool measureMode:   false
     property bool bluetoothMode: false
@@ -395,7 +395,7 @@ Rectangle {
 
     Timer {
         id: collapseTimer
-        interval: 5000
+        interval: 4000
         repeat: false
         onTriggered: {
             if(root.expanded) {
@@ -426,6 +426,7 @@ Rectangle {
             else {
                 collapseTimer.stop()
             }
+            waterViewFirst.closeEchoBathyIsobathOutside(0, 0)
         }
 
     }
@@ -538,9 +539,10 @@ Rectangle {
                 }
 
                 onPressed: {
-                    locationMode = !locationMode
-                    Locations.signalShowLocation(locationMode)
-                    collapseTimer.restart()
+                    // locationMode = !locationMode
+                    Locations.signalShowLocation(true)
+                    // collapseTimer.restart()
+                    root.expanded = false
                 }
             }
 
@@ -563,9 +565,15 @@ Rectangle {
                 }
 
                 onPressed: {
-                    landMarkMode = !landMarkMode
-                    renderer.setLandMarkMode(landMarkMode)
-                    collapseTimer.restart()
+                    if(landMarkMode === false) {
+                        renderer.setLandMarkMode(true)
+                    }
+                    else {
+                        renderer.setLandMarkMode(false)
+                    }
+
+                    // collapseTimer.restart()
+                    root.expanded = false
                 }
             }
 
@@ -590,7 +598,8 @@ Rectangle {
 
                 onPressed: {
                     core.clearRouteData()
-                    collapseTimer.restart()
+                    // collapseTimer.restart()
+                    root.expanded = false
                 }
             }
         }

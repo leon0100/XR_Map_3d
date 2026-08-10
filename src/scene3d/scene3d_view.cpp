@@ -360,11 +360,7 @@ void GraphicsScene3dView::mouseDoubleClickTrigger(Qt::MouseButtons mouseButton, 
 {
     Q_UNUSED(keyboardKey)
 
-    if(polygonOutline_->getOutlineMode()) {
-        polygonOutline_->setOutlineMode(false);
-        setCursorShape(Qt::ArrowCursor);
-        GIF->dialogInfo(Dialog_OK, tr("Isobaths Outline Create Successful!"));
-    }
+    completeDrawOutline();
 
 }
 
@@ -641,6 +637,22 @@ void GraphicsScene3dView::zoomInOut(bool zoomIn)
     updateDistance();
 }
 
+void GraphicsScene3dView::completeDrawOutline()
+{
+    if(polygonOutline_->getOutlineMode()) {
+        if(datasetPtr_->endPolygonOutlineindex() > 1) {
+            setOutlineCompleted(true);
+            polygonOutline_->setOutlineMode(false);
+            setCursorShape(Qt::ArrowCursor);
+            GIF->dialogInfo(Dialog_OK, tr("Isobaths Outline Create Successful"));
+        }
+        else {
+            GIF->dialogInfo(Dialog_OK, tr("Boundary Curve is Incomplete!"));
+        }
+
+    }
+}
+
 void GraphicsScene3dView::keyPressTrigger(Qt::Key key)
 {
     m_bottomTrack->keyPressEvent(key);
@@ -663,7 +675,6 @@ void GraphicsScene3dView::setCurrentMapLevel(int mapLevel)
 
 void GraphicsScene3dView::setScreenMode(bool isScreen)
 {
-    qDebug() << "isScreen:  "<< isScreen;
     screetShot_.isScreenMode_ = isScreen;
 
     if (m_camera && m_camera->getIsPerspective()) {
@@ -1131,10 +1142,12 @@ void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
             }
         }
         else {
+            setOutlineCompleted(false);
             polygonOutline_->setOutlineMode(true);
         }
     }
     else {
+        setOutlineCompleted(true);
         polygonOutline_->setOutlineMode(false);
         datasetPtr_->resetPolygonOutline();
         polygonOutline_->clearData();

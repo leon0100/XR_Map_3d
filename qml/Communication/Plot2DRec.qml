@@ -9,7 +9,7 @@ import QmlCommon 1.0
 
 
 XRRectangle {
-    id: plotCheckRec
+    id: echogramRec
     width: plotIconSize * 24
     height: plotIconSize * 9
 

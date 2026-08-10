@@ -1,21 +1,13 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>Console.qml</file>
         <file>CCombo.qml</file>
         <file>CButton.qml</file>
         <file>CSlider.qml</file>
-        <file>CRButton.qml</file>
         <file>CProgressButton.qml</file>
-        <file>TitleSetup.qml</file>
-        <file>MenuBlock.qml</file>
-        <file>TitleMenuBox.qml</file>
         <file>CProgress.qml</file>
         <file>CCheck.qml</file>
         <file>SpinBoxCustom.qml</file>
-        <file>ChartLevel.qml</file>
-        <file>ExportSettings.qml</file>
-        <file>ExportDist.qml</file>
         <file>CText.qml</file>
         <file>CTextField.qml</file>
         <file>Scene3DToolbar.qml</file>
@@ -35,17 +27,13 @@
         <file>QmlCommon/KSpinBox.qml</file>
         <file>QmlCommon/KWaitProgressBar.qml</file>
         <file>SceneControlMenu.qml</file>
-        <file>BottomTrackControlMenu.qml</file>
         <file>PointGroupControlMenu.qml</file>
         <file>Plot2D.qml</file>
-        <file>Scene3DControlMenu.qml</file>
         <file>MenuRow.qml</file>
         <file>ConnectionButton.qml</file>
         <file>MenuFrame.qml</file>
         <file>CheckButton.qml</file>
         <file>MouseOpacityArea.qml</file>
-        <file>CContact.qml</file>
-        <file>Settings3DExtraSettings.qml</file>
         <file>MosaicExtraSettings.qml</file>
         <file>ScreetRect.qml</file>
         <file>CMouseArea.qml</file>

@@ -107,7 +107,7 @@ void Themes::refreshScreenSize()
     int newScreenSize   = qMin(newScreenWidth, newScreenHeight);
     int newMenuWidth    = newScreenSize * 0.06;
     int newIconSize     = newMenuWidth  * 0.3;
-    qDebug() << "screenWidth_....." << newScreenWidth << "  " << newScreenHeight;
+    qDebug() << "refreshScreenSize()....." << newScreenWidth << "  " << newScreenHeight;
     if ((newScreenWidth != screenWidth_) || (newScreenHeight != screenHeight_) || (newMenuWidth != menuWidth_)
         || (newIconSize != iconSize_)) {
             screenWidth_  = newScreenWidth;

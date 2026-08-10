@@ -6,8 +6,17 @@ Item {
     id: root
     width:  boxSize
     height: boxSize
-    x: renderer.screetShot.landMarkPtX - boxSize * 0.5
-    y: renderer.screetShot.landMarkPtY - boxSize * 0.5
+    x: {
+        var half = boxSize * 0.5
+        var cx   = Math.max(half, Math.min(renderer.screetShot.landMarkPtX, renderer.width - half))
+        return cx - half
+    }
+    y: {
+        var half = boxSize * 0.5
+        var cy   = Math.max(half, Math.min(renderer.screetShot.landMarkPtY, renderer.height - half))
+        return cy - half
+    }
+
     z: 999
     visible: renderer.screetShot.landMarkMode
 
@@ -18,6 +27,19 @@ Item {
     property color lineColor: "#ffff00"
     property int lineLength: boxSize * 0.2
     property int lineWidth: 4
+
+
+    Connections {
+        target: renderer.screetShot
+        function onSignalLandMarkMode() {
+            if (renderer.screetShot.landMarkMode) {
+                renderer.screetShot.landMarkPtX = renderer.width  * 0.5
+                renderer.screetShot.landMarkPtY = renderer.height * 0.5
+            }
+        }
+    }
+
+
 
     Item {
         id: blinkGroup

@@ -11,7 +11,7 @@ Rectangle {
     anchors.fill: parent
     color: "transparent"
     visible: false
-    z: 9999
+    z: 99999
 
     MouseArea {
         anchors.fill: parent

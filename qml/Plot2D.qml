@@ -12,6 +12,7 @@ import Communication 1.0
 WaterFall {
     id: plot
 
+    property var  expandBar:    null
     property bool is3dVisible: false
     property int  indx: 0
     property int  instruments: 0
@@ -20,35 +21,68 @@ WaterFall {
 
     // horizontal: horisontalVertical.checked
     horizontal: menuToolBar.layoutHorizontal
-    property bool currentFrameChecked: plotCheckRec.currentFrameChecked
-    // property bool bottomLineChecked:   bottomLine.checked
+    property bool currentFrameChecked: echogramRec.currentFrameChecked
+    // property bool bottomLineChecked: bottomLine.checked
+    property bool  deleteFrameMode: echogramRec.deleteFrameChecked
+    property bool outlineCompleted: false
 
 
-    function closePlotCheckOutside(globalX, globalY) {
-        if (!plotCheckBtn.settingVisible) {
+    function closeEchogramOutside(globalX, globalY) {
+        if (!echogramBtn.settingVisible) {
             return
         }
-        var pos = plotCheckRec.mapFromItem(null, globalX, globalY)
-        if (pos.x < 0 || pos.y < 0 || pos.x > plotCheckRec.width ||
-                pos.y > plotCheckRec.height) {
-            var btnPos = plotCheckBtn.mapFromItem(null, globalX, globalY)
-            if (btnPos.x < 0 || btnPos.y < 0 || btnPos.x > plotCheckBtn.width ||
-                    btnPos.y > plotCheckBtn.height) {
-                plotCheckBtn.settingVisible = false
-                plotCheckBtn.color = "#879fc6"
-                plotCheckBtn.border.color = "#879fdd"
+        var pos = echogramRec.mapFromItem(null, globalX, globalY)
+        if (pos.x < 0 || pos.y < 0 || pos.x > echogramRec.width || pos.y > echogramRec.height) {
+            var btnPos = echogramBtn.mapFromItem(null, globalX, globalY)
+            if (btnPos.x < 0 || btnPos.y < 0 || btnPos.x > echogramBtn.width ||
+                    btnPos.y > echogramBtn.height) {
+                echogramBtn.settingVisible = false
+                echogramBtn.color          = "#879fc6"
+                echogramBtn.border.color   = "#879fdd"
             }
         }
 
     }
 
-    // function setLevels(low, high) {
-    //     echogramLevelsSlider.startValue   = low
-    //     echogramLevelsSlider.stopValue    = high
-    //     echogramLevelsSlider.startPointY  = echogramLevelsSlider.valueToPosition(low);
-    //     echogramLevelsSlider.stopPointY   = echogramLevelsSlider.valueToPosition(high);
-    //     echogramLevelsSlider.update()
-    // }
+    function closeBathymetryOutside(globalX, globalY) {
+        if(!bathymetryBtn.settingVisible) {
+            return;
+        }
+        var pos = bathymetryRec.mapFromItem(null, globalX, globalY)
+        if(pos.x < 0 || pos.y < 0 || pos.x > bathymetryRec.width || pos.y > bathymetryRec.height) {
+            var btnPos = bathymetryBtn.mapFromItem(null, globalX, globalY)
+            if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > bathymetryBtn.width
+                    || btnPos.y > bathymetryBtn.height) {
+                bathymetryBtn.settingVisible = false
+                bathymetryBtn.color          = "#879fc6"
+                bathymetryBtn.border.color   = "#879fdd"
+            }
+        }
+    }
+
+    function closeIsobathsOutside(globalX, globalY) {
+        if(!isobathsBtn.settingVisible) {
+            return;
+        }
+        var pos = isobathsRec.mapFromItem(null, globalX, globalY)
+        if(pos.x < 0 || pos.y < 0 || pos.x > isobathsRec.width || pos.y > isobathsRec.height) {
+            var btnPos = isobathsBtn.mapFromItem(null, globalX, globalY)
+            if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > isobathsBtn.width ||
+                    btnPos.y > isobathsBtn.height) {
+                isobathsBtn.settingVisible = false
+                isobathsBtn.color          = "#879fc6"
+                isobathsBtn.border.color   = "#879fdd"
+            }
+        }
+    }
+
+    function closeEchoBathyIsobathOutside(globalX, globalY) {
+        closeEchogramOutside(globalX, globalY);
+        closeBathymetryOutside(globalX, globalY);
+        closeIsobathsOutside(globalX, globalY)
+    }
+
+
 
     function setAim(mouseX, mouseY) {
         plot.plotMousePosition(mouseX, mouseY, true)
@@ -56,9 +90,6 @@ WaterFall {
     function resetAim() {
         plot.plotMousePosition(-1, -1)
     }
-    // function doVerZoomEvent(paramX) {
-    //     verZoomEvent(paramX)
-    // }
     function doVerScrollEvent(paramX) {
         verScrollEvent(paramX)
     }
@@ -156,7 +187,7 @@ WaterFall {
             property int   panStartX: -1
             property bool  batchCorrect: plot.batchCorrect
             property bool  depthCorrectMode: plot.depthCorrect
-            property bool  deleteFrameMode: plotCheckRec.deleteFrameChecked
+
 
             hoverEnabled: true
 
@@ -216,12 +247,16 @@ WaterFall {
                         isPanning = false
                         panStartX = mouse.x
                     }
-
                 }
 
                 wasMoved = false
 
-                closePlotCheckOutside(mouse.x, mouse.y)
+                expandBar.expanded = false
+                if(!deleteFrameMode) {
+                    closeEchogramOutside(mouse.x, mouse.y)
+                }
+                closeBathymetryOutside(mouseX, mouseY)
+                closeIsobathsOutside(mouseX, mouseY)
             }
 
             onReleased: function(mouse) {
@@ -330,7 +365,7 @@ WaterFall {
 
             onDoubleClicked: function(mouse) {
                if (deleteFrameMode && mouse.button === Qt.LeftButton) {
-                   plotCheckRec.deleteFrameFunc(mouse.x, mouse.y)
+                   echogramRec.deleteFrameFunc(mouse.x, mouse.y)
                }
             }
 
@@ -366,7 +401,7 @@ WaterFall {
 
 
     XRButton {
-        id: plotCheckBtn
+        id: echogramBtn
         buttonText: qsTr("Echogram")
         iconSource: "qrc:/icons/ui/ripple.svg"
 
@@ -376,20 +411,28 @@ WaterFall {
         anchors.bottomMargin: plotIconSize * 0.5
 
         clickAction: function() {
-            if(plotCheckBtn.settingVisible) {
-                plotCheckRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
-                plotCheckRec.y = plotCheckBtn.y - plotCheckRec.height - plotIconSize * 0.1
+            if(echogramBtn.settingVisible) {
+                echogramRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
+                echogramRec.y = echogramBtn.y - echogramRec.height - plotIconSize * 0.1
             }
+
+            bathymetryBtn.settingVisible = false
+            bathymetryBtn.color = "#879fc6"
+            bathymetryBtn.border.color = "#879fdd"
+            isobathsBtn.settingVisible = false
+            isobathsBtn.color = "#879fc6"
+            isobathsBtn.border.color = "#879fdd"
+            expandBar.expanded = false
         }
     }
 
     Plot2DRec {
-        id: plotCheckRec
+        id: echogramRec
         parent: mainview.contentItem
-        expanded: plotCheckBtn.settingVisible
-        visible: plotCheckBtn.settingVisible
+        expanded: echogramBtn.settingVisible
+        visible: echogramBtn.settingVisible
         x: theme.screenWidth * 0.5 + plotIconSize * 0.5
-        y: plotCheckBtn.y - plotCheckRec.height - plotIconSize * 0.1
+        y: echogramBtn.y - echogramRec.height - plotIconSize * 0.1
         dragArea: plot
         targetPlot: plot
     }
@@ -398,16 +441,24 @@ WaterFall {
         id: bathymetryBtn
         buttonText: qsTr("Bathymetry")
         iconSource: "qrc:/icons/ui/file_settings.svg"
-        anchors.left: plotCheckBtn.right
+        anchors.left: echogramBtn.right
         anchors.leftMargin: plotIconSize * 0.5
         anchors.bottom: parent.bottom
         anchors.bottomMargin: plotIconSize * 0.5
 
         clickAction: function() {
-            if(plotCheckBtn.settingVisible) {
+            if(bathymetryBtn.settingVisible) {
                 bathymetryRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
-                bathymetryRec.y = plotCheckBtn.y - bathymetryRec.height - plotIconSize * 0.1
+                bathymetryRec.y = echogramBtn.y - bathymetryRec.height - plotIconSize * 0.1
             }
+
+            echogramBtn.settingVisible = false
+            echogramBtn.color = "#879fc6"
+            echogramBtn.border.color = "#879fdd"
+            isobathsBtn.settingVisible = false
+            isobathsBtn.color = "#879fc6"
+            isobathsBtn.border.color = "#879fdd"
+            expandBar.expanded = false
         }
     }
 
@@ -417,7 +468,7 @@ WaterFall {
         expanded: bathymetryBtn.settingVisible
         visible: bathymetryBtn.settingVisible
         x: theme.screenWidth * 0.5 + plotIconSize * 0.5
-        y: plotCheckBtn.y - bathymetryRec.height - plotIconSize * 0.1
+        y: echogramBtn.y - bathymetryRec.height - plotIconSize * 0.1
         dragArea: plot
         targetPlot: plot
     }
@@ -432,7 +483,17 @@ WaterFall {
         anchors.bottomMargin: plotIconSize * 0.5
 
         clickAction: function() {
-
+            if(isobathsBtn.settingVisible) {
+                isobathsRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
+                isobathsRec.y = echogramBtn.y - isobathsRec.height - plotIconSize * 0.1
+            }
+            echogramBtn.settingVisible = false
+            echogramBtn.color = "#879fc6"
+            echogramBtn.border.color = "#879fdd"
+            bathymetryBtn.settingVisible = false
+            bathymetryBtn.color = "#879fc6"
+            bathymetryBtn.border.color = "#879fdd"
+            expandBar.expanded = false
         }
     }
 
@@ -442,10 +503,11 @@ WaterFall {
         expanded: isobathsBtn.settingVisible
         visible: isobathsBtn.settingVisible
         x: theme.screenWidth * 0.5 + plotIconSize * 0.5
-        y: plotCheckBtn.y - isobathsRec.height - plotIconSize * 0.1
+        y: echogramBtn.y - isobathsRec.height - plotIconSize * 0.1
         dragArea: plot
         targetPlot: plot
     }
+
 
 
     RowLayout {

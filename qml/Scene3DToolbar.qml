@@ -14,10 +14,12 @@ Item  {
     width:  theme.menuWidth * 4
     height: theme.menuWidth
 
-    property bool isNorthModeCheckButtonHovered: false
+    property var  targetPlot:  null
+    property var  expandBar:   null
 
-    property bool toolbarHovered: Qt.platform.os === "android" ?
-                northModeCheckButton.down : isNorthModeCheckButtonHovered
+    property bool isNorthModeBtnHovered: false
+
+    property bool toolbarHovered: Qt.platform.os === "android" ? northModeBtn.down : isNorthModeBtnHovered
 
     Behavior on opacity { NumberAnimation { duration: 120 } }
 
@@ -128,6 +130,10 @@ Item  {
 
             onClicked: {
                 renderer.zoomInOut(true)
+                if(targetPlot) {
+                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                }
+                expandBar.expanded = false
             }
 
         }
@@ -160,13 +166,17 @@ Item  {
 
             onClicked: {
                 renderer.zoomInOut(false)
+                if(targetPlot) {
+                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                }
+                expandBar.expanded = false
             }
 
         }
 
 
         CheckButton {
-            id: northModeCheckButton
+            id: northModeBtn
             iconSource: "qrc:/icons/ui/location_pin.svg"
             backColor: "#879fc6"
             checked:    true
@@ -184,6 +194,10 @@ Item  {
 
             onCheckedChanged: {
                 Scene3dToolBarController.onIsNorthLocationButtonChanged(checked)
+                if(targetPlot) {
+                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                }
+                expandBar.expanded = false
             }
 
             Component.onCompleted: {
@@ -191,37 +205,9 @@ Item  {
             }
 
             Settings {
-                property alias northModeCheckButton: northModeCheckButton.checked
+                property alias northModeBtn: northModeBtn.checked
             }
         }
-
-
-        // CheckButton {
-        //     id: mapCheckButton
-        //     iconSource: "qrc:/icons/ui/map.svg"
-        //     backColor:          theme.controlBackColor
-        //     borderColor:        theme.controlBackColor
-        //     checkedBorderColor: theme.controlBorderColor
-        //     checked:            true
-        //     implicitHeight:     theme.menuWidth * 0.8
-        //     implicitWidth:      theme.menuWidth * 0.8
-
-        //     hoverEnabled: true
-        //     onHoveredChanged: {
-        //         toolbarRoot.isMapCheckButtonHovered = hovered
-        //         mapCheckButton.opacity = 1.0;
-        //     }
-
-        //     CMouseOpacityArea {
-        //         toolTipText: qsTr("Map Visibility")
-        //         popupPosition: "topRight"
-        //     }
-
-        //     onCheckedChanged: MapViewControlMenuController.onVisibilityChanged(checked)
-
-        //     Component.onCompleted: MapViewControlMenuController.onVisibilityChanged(checked)
-
-        // }
 
     }
 
