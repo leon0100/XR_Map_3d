@@ -81,15 +81,30 @@ XRRectangle {
             spacing: 32
             Layout.alignment: Qt.AlignHCenter
 
-            Button {
+            // Button {
+            //     id: outlineButton
+            //     text: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
+            //     font.pixelSize: iconSize
+            //     implicitWidth:  isobathSize * 0.4
+            //     Layout.preferredHeight: iconSize * 1.5
+            //     palette.button: "#b9c6db"
+
+            //     onClicked: {
+            //         outlineMode = !outlineMode
+            //         if(targetPlot) {
+            //             targetPlot.drawPolygonOutline(outlineMode)
+            //         }
+            //     }
+            // }
+
+            XRButton {
                 id: outlineButton
-                text: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
-                font.pixelSize: iconSize
+                buttonText: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
+                checkable: true
                 implicitWidth:  isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.5
-                palette.button: "#b9c6db"
 
-                onClicked: {
+                clickAction: function() {
                     outlineMode = !outlineMode
                     if(targetPlot) {
                         targetPlot.drawPolygonOutline(outlineMode)
@@ -97,15 +112,28 @@ XRRectangle {
                 }
             }
 
-            Button {
+            // Button {
+            //     id: updateBottomTrackButton
+            //     text: qsTr("Draw Isobaths")
+            //     font.pixelSize: iconSize
+            //     implicitWidth:  isobathSize * 0.4
+            //     Layout.preferredHeight: iconSize * 1.5
+            //     palette.button: "#b9c6db"
+
+            //     onClicked: {
+            //         if (targetPlot) {
+            //             targetPlot.doDistProcessing( 0, 1, 0, 0, 1000, 1, 0, 0, 0, 0, false)
+            //         }
+            //     }
+            // }
+            XRButton {
                 id: updateBottomTrackButton
-                text: qsTr("Draw Isobaths")
-                font.pixelSize: iconSize
+                buttonText: qsTr("Draw Isobaths")
+                checkable: true
                 implicitWidth:  isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.5
-                palette.button: "#b9c6db"
 
-                onClicked: {
+                clickAction: function() {
                     if (targetPlot) {
                         targetPlot.doDistProcessing( 0, 1, 0, 0, 1000, 1, 0, 0, 0, 0, false)
                     }
@@ -173,20 +201,21 @@ XRRectangle {
                         }
 
                         Rectangle {
-                            width: iconSize * 1.1
-                            height: iconSize * 1.1
+                            width:  iconSize * 1.2
+                            height: iconSize * 1.2
                             radius: 5
                             border.color: "#b0b3b8"
                             border.width: 1
                             anchors.verticalCenter: parent.verticalCenter
 
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width * 0.8
-                                height: parent.height * 0.8
-                                radius: parent.height * 0.4
-                                color: "#66E07A"
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                width: parent.width * 0.9
+                                height: parent.width * 0.9
                                 visible: isShowBoatTrack
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.rightMargin: 2
                             }
                         }
 
@@ -257,20 +286,21 @@ XRRectangle {
                         }
 
                         Rectangle {
-                            width: iconSize * 1.1
-                            height: iconSize * 1.1
+                            width:  iconSize * 1.2
+                            height: iconSize * 1.2
                             radius: 5
                             border.color: "#b0b3b8"
                             border.width: 1
                             anchors.verticalCenter: parent.verticalCenter
 
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width * 0.8
-                                height: parent.height * 0.8
-                                radius: parent.height * 0.4
-                                color: "#66E07A"
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                width: parent.width * 0.9
+                                height: parent.width * 0.9
                                 visible: isShowOutline
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.rightMargin: 2
                             }
                         }
 
@@ -343,20 +373,21 @@ XRRectangle {
                         }
 
                         Rectangle {
-                            width: iconSize * 1.1
-                            height: iconSize * 1.1
+                            width:  iconSize * 1.2
+                            height: iconSize * 1.2
                             radius: 5
                             border.color: "#b0b3b8"
                             border.width: 1
                             anchors.verticalCenter: parent.verticalCenter
 
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width * 0.8
-                                height: parent.height * 0.8
-                                radius: parent.height * 0.4
-                                color: "#66E07A"
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                width: parent.width * 0.9
+                                height: parent.width * 0.9
                                 visible: isContours
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.rightMargin: 2
                             }
                         }
 
@@ -428,20 +459,21 @@ XRRectangle {
                         }
 
                         Rectangle {
-                            width: iconSize * 1.1
-                            height: iconSize * 1.1
+                            width:  iconSize * 1.2
+                            height: iconSize * 1.2
                             radius: 5
                             border.color: "#b0b3b8"
                             border.width: 1
                             anchors.verticalCenter: parent.verticalCenter
 
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width * 0.8
-                                height: parent.height * 0.8
-                                radius: parent.height * 0.4
-                                color: "#66E07A"
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                width: parent.width * 0.9
+                                height: parent.width * 0.9
                                 visible: isShowIsobaths
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.rightMargin: 2
                             }
                         }
 
@@ -513,20 +545,21 @@ XRRectangle {
                         }
 
                         Rectangle {
-                            width: iconSize * 1.1
-                            height: iconSize * 1.1
+                            width:  iconSize * 1.2
+                            height: iconSize * 1.2
                             radius: 5
                             border.color: "#b0b3b8"
                             border.width: 1
                             anchors.verticalCenter: parent.verticalCenter
 
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: parent.width * 0.8
-                                height: parent.height * 0.8
-                                radius: parent.height * 0.4
-                                color: "#66E07A"
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                width: parent.width * 0.9
+                                height: parent.width * 0.9
                                 visible: isShowBoat
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.rightMargin: 2
                             }
                         }
 
@@ -575,7 +608,7 @@ XRRectangle {
 
             Rectangle {
                 id: renderSpanControl
-                width:  iconSize * 3.3
+                width:  iconSize * 3
                 height: iconSize * 1.3
                 radius: iconSize * 0.65
                 color:  hovered ? (renderSpanControl.isOn ? "#36D85A" : "#AFCFFF")
@@ -609,7 +642,7 @@ XRRectangle {
                         verticalCenter: parent.verticalCenter
                     }
                     text: qsTr("Auto")
-                    font.pixelSize: iconSize * 0.8
+                    font.pixelSize: iconSize * 0.7
                     visible: renderSpanControl.isOn
                     Behavior on opacity { NumberAnimation { duration: 150 } }
                 }
@@ -636,6 +669,43 @@ XRRectangle {
                     ColorAnimation { duration: 200 }
                 }
             }
+
+            /*----备选----*/
+            // Rectangle {
+            //     id: renderSpanControl
+            //     width:  iconSize * 1.2
+            //     height: iconSize * 1.2
+            //     radius: 5
+            //     border.color: "#b0b3b8"
+            //     border.width: 1
+
+            //     property bool isOn: true
+
+            //     Image {
+            //         source: "qrc:/XR/check.svg"
+            //         width: parent.width * 0.9
+            //         height: parent.width * 0.9
+            //         visible: renderSpanControl.isOn
+            //         anchors.verticalCenter: parent.verticalCenter
+            //         anchors.horizontalCenter: parent.horizontalCenter
+            //         anchors.rightMargin: 2
+            //     }
+
+            //     MouseArea {
+            //         anchors.fill: parent
+            //         hoverEnabled: true
+            //         onPressed: {
+            //             if(renderSpanControl.isOn) {
+            //                 renderSpanControl.isOn = false;
+            //                 core.setAutoRenderSpan(false);
+            //             }
+            //             else {
+            //                 renderSpanControl.isOn = true
+            //                 core.setAutoRenderSpan(true);
+            //             }
+            //         }
+            //     }
+            // }
 
 
             SpinBoxCustom {

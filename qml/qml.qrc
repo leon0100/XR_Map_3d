@@ -68,10 +68,11 @@
         <file>Communication/LiveData.qml</file>
         <file>QmlCommon/ExpandCheckBox.qml</file>
         <file>AppXr/XRColorScheme.qml</file>
-        <file>XRButton.qml</file>
+        <file>XRTextButton.qml</file>
         <file>XRRectangle.qml</file>
         <file>Communication/BathymetryRec.qml</file>
         <file>Communication/IsobathsRec.qml</file>
         <file>Communication/Plot2DRec.qml</file>
+        <file>XRButton.qml</file>
     </qresource>
 </RCC>

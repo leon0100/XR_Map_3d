@@ -400,7 +400,7 @@ WaterFall {
     }
 
 
-    XRButton {
+    XRTextButton {
         id: echogramBtn
         buttonText: qsTr("Echogram")
         iconSource: "qrc:/icons/ui/ripple.svg"
@@ -437,7 +437,7 @@ WaterFall {
         targetPlot: plot
     }
 
-    XRButton {
+    XRTextButton {
         id: bathymetryBtn
         buttonText: qsTr("Bathymetry")
         iconSource: "qrc:/icons/ui/file_settings.svg"
@@ -473,7 +473,7 @@ WaterFall {
         targetPlot: plot
     }
 
-    XRButton {
+    XRTextButton {
         id: isobathsBtn
         buttonText: qsTr("Isobaths")
         iconSource: "qrc:/XR/contour.png"
