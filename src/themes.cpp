@@ -5,6 +5,7 @@
 
 
 Themes::Themes() : QObject(),
+    _controlHeight(0),
     instrumentsGrade_(-1),
     resolutionCoeff_(1.0)
 {
@@ -71,6 +72,14 @@ void Themes::setTheme(int theme_id)
     } else {
         screenSize_ = 600;
     }
+
+#if defined(Q_OS_ANDROID)
+    _controlHeight = 48;
+#elif defined(LINUX_ES)
+    _controlHeight = 38;
+#else
+    _controlHeight = 26;
+#endif
 
     emit changed();
 

@@ -13,7 +13,7 @@ Item {
     Layout.minimumWidth:  160
     Layout.minimumHeight: 240
 
-    MenuBlockEx {
+    Rectangle {
         id:           menuBlock
         anchors.fill: parent
 
@@ -33,11 +33,11 @@ Item {
             anchors.margins: 24
             spacing:         24
 
-            KCheck {
-                id:               visibilityCheckBox
-                text:             "Show"
-                onCheckedChanged: root.controller.onVisibilityCheckBoxCheckedChanged(checked)
-            }
+            // Check {
+            //     id:               visibilityCheckBox
+            //     text:             "Show"
+            //     onCheckedChanged: root.controller.onVisibilityCheckBoxCheckedChanged(checked)
+            // }
 
             Rectangle {
                 id: pointListViewRectangle
@@ -254,10 +254,12 @@ Item {
 
             }
 
-            KButton {
+            XRButton {
                 Layout.fillWidth: true
-                text: qsTr("Add point")
-                onClicked: root.controller.onAddPointButtonClicked()
+                buttonText: qsTr("Add point")
+                clickAction: function() {
+                    root.controller.onAddPointButtonClicked()
+                }
             }
         }
     }

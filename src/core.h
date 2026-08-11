@@ -37,7 +37,6 @@ public:
     Core();
     ~Core();
 
-    Q_PROPERTY(bool      isGPSAlive                   READ getIsGPSAlive                   NOTIFY isGPSAliveChanged)
     Q_PROPERTY(bool      isFactoryMode                READ isFactoryMode                   CONSTANT)
     Q_PROPERTY(ConsoleListModel* consoleList          READ consoleList                     CONSTANT)
     Q_PROPERTY(QString   filePath                     READ getFilePath                     NOTIFY filePathChanged)
@@ -68,19 +67,12 @@ public:
 
 
 public slots:
-    void setIsGPSAlive(bool state) { isGPSAlive_ = state; emit isGPSAliveChanged(); }
-    bool getIsGPSAlive() const { return isGPSAlive_; };
     void openLogFile(const QString& filePath, bool isAppend = false, bool onCustomEvent = false);
     bool closeLogFile();
-    bool openXTF(const QByteArray& data);
     bool openCSV(QString name, int separatorType, int row = -1, int colTime = -1, bool isUtcTime = true, int colLat = -1, int colLon = -1, int colAltitude = -1, int colNorth = -1, int colEast = -1, int colUp = -1);
     bool openProxy(const QString& address, const int port, bool isTcp);
     bool closeProxy();
-    bool upgradeFW(const QString& name, QObject* dev);
-    void upgradeChanged(int progressStatus);
-    bool exportUSBLToCSV(QString filePath);
     bool exportPlotAsCVS(QString filePath, const ChannelId& channelId, float decimation = 0);
-    bool exportPlotAsXTF(QString filePath);
     void setPlotStartLevel(int level);
     void setPlotStopLevel(int level);
     void setTimelinePosition(double position);
@@ -112,13 +104,13 @@ public slots:
     Q_INVOKABLE void setAutoRenderSpan(bool isAuto);
     Q_INVOKABLE void exitApp();
     Q_INVOKABLE void switchMapType(int sourceType);
+    Q_INVOKABLE int  poolSize();
 
 signals:
     void connectionChanged(bool duplex = false);
     void filePathChanged();
     void sendIsFileOpening();
     void channelListUpdated();
-    void isGPSAliveChanged();
 
     void scrrenModeChanged();
     void currentMapLevelChanged();
@@ -203,11 +195,8 @@ private:
 
     bool isFileOpening_;
 
-    bool isGPSAlive_;
-
     int  currMapLevel_ = 0;
     bool isAutoRenderSpan_ = true;
-
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;

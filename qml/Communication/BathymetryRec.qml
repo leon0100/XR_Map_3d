@@ -9,7 +9,7 @@ import AppXr 1.0
 XRRectangle {
     id: bathymetry
     width:  bathymetrySize * 1.6
-    height: iconSize * 10
+    height: iconSize * 11
 
     color: "#dbe3f2"
     border.color: "#d8e0ef"
@@ -129,30 +129,19 @@ XRRectangle {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            Rectangle {
+            XRButton{
                 id: applyBtn
                 width: iconSize * 3
                 height: iconSize * 1.2
-                radius: 4
-                color: mouseArea.pressed ? "#888888" : "#555555"
-                border.color: "#aaaaaa"
+                buttonText: qsTr("Apply")
+                recTextSize: iconSize
+                checkable: false
 
-                Text {
-                    anchors.centerIn: parent
-                    text: qsTr("Apply")
-                    color: "white"
-                    font.pixelSize: iconSize
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    onClicked: {
-                        let soundVelocity = parseInt(soundSpeedField.text)
-                        let draftOffset   = parseInt(draftOffsetField.text)
-                        if(targetPlot) {
-                            targetPlot.setSoundVelocity(soundVelocity, draftOffset)
-                        }
+                clickAction: function() {
+                    let soundVelocity = parseInt(soundSpeedField.text)
+                    let draftOffset   = parseInt(draftOffsetField.text)
+                    if(targetPlot) {
+                        targetPlot.setSoundVelocity(soundVelocity, draftOffset)
                     }
                 }
             }
@@ -195,7 +184,6 @@ XRRectangle {
                     if(targetPlot) {
                         targetPlot.setDepthFilterVisible(depthFilterCheck.checked, depthFilterXRSlider.value)
                     }
-
                 }
             }
 
@@ -218,7 +206,7 @@ XRRectangle {
                 from: -100
                 to: 100
                 value: 0
-                unit: "cm"
+                unit: " cm"
                 onValueChanged: {
                     targetPlot.setKeelOffsetValue(keelOffset.value)
                 }

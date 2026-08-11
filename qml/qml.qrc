@@ -11,21 +11,13 @@
         <file>CText.qml</file>
         <file>CTextField.qml</file>
         <file>Scene3DToolbar.qml</file>
-        <file>QmlCommon/MenuBlockEx.qml</file>
         <file>QmlCommon/qmldir</file>
-        <file>QmlCommon/KButton.qml</file>
-        <file>QmlCommon/KCheck.qml</file>
-        <file>QmlCommon/KCombo.qml</file>
-        <file>QmlCommon/KComboBox.qml</file>
         <file>QmlCommon/KProgress.qml</file>
-        <file>QmlCommon/KProgressButton.qml</file>
-        <file>QmlCommon/KRadioDel.qml</file>
         <file>QmlCommon/KRButton.qml</file>
         <file>QmlCommon/KSlider.qml</file>
         <file>QmlCommon/KText.qml</file>
         <file>QmlCommon/KTextField.qml</file>
         <file>QmlCommon/KSpinBox.qml</file>
-        <file>QmlCommon/KWaitProgressBar.qml</file>
         <file>SceneControlMenu.qml</file>
         <file>PointGroupControlMenu.qml</file>
         <file>Plot2D.qml</file>
@@ -74,5 +66,8 @@
         <file>Communication/IsobathsRec.qml</file>
         <file>Communication/Plot2DRec.qml</file>
         <file>XRButton.qml</file>
+        <file>QmlCommon/KToolTip.qml</file>
+        <file>QmlCommon/AppPalette.qml</file>
+        <file>QmlCommon/Tokens.qml</file>
     </qresource>
 </RCC>

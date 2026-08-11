@@ -1132,19 +1132,8 @@ void GraphicsScene3dView::setPolygonEditingMode()
 void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
 {
     if(isOutlineMode) {
-        QVector<Epoch> pool = datasetPtr_->getPool();
-        if(pool.isEmpty()) {
-            GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
-            if(qmlRootObject_) {
-                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSet")) {
-                    isobathsSet->setProperty("outlineMode", false);
-                }
-            }
-        }
-        else {
-            setOutlineCompleted(false);
-            polygonOutline_->setOutlineMode(true);
-        }
+        setOutlineCompleted(false);
+        polygonOutline_->setOutlineMode(true);
     }
     else {
         setOutlineCompleted(true);
@@ -1153,7 +1142,6 @@ void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
         polygonOutline_->clearData();
         setCursorShape(Qt::ArrowCursor);
     }
-
 }
 
 void GraphicsScene3dView::setDataset(Dataset *dataset)

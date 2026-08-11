@@ -37,6 +37,7 @@ ApplicationWindow  {
         if (theme) {
             theme.refreshScreenSize()
         }
+        waterViewFirst.closeEchoBathyIsobathOutside(0,0)
     }
 
     Settings {
@@ -1151,7 +1152,7 @@ ApplicationWindow  {
                         }
                     }
 
-                    CSlider {
+                    KSlider {
                         id: historyScroll
                         Layout.margins: 0
                         Layout.fillWidth: true
@@ -1161,7 +1162,8 @@ ApplicationWindow  {
                         stepSize: 0.0001
                         from: 0
                         to: 1
-                        barWidth: 50 * theme.resCoeff
+                        // barWidth: 50 * theme.resCoeff
+                        width: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
                         onMoved: core.resetAim();
                     }

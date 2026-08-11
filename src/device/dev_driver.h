@@ -201,8 +201,6 @@ signals:
     void transChanged();
     void soundChanged();
     void UARTChanged();
-    void upgradeProgressChanged(int progress_status);
-    void upgradeChanged();
     void deviceVersionChanged();
     void deviceIDChanged(QByteArray uid);
     void onReboot();

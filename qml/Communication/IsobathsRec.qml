@@ -16,7 +16,7 @@ XRRectangle {
     color: "#dbe3f2"
     border.color: "#d8e0ef"
     border.width: 1
-    radius: iconSize * 0.25
+    radius: iconSize * 0.3
 
 
     property int  isobathSize:  theme.screenSize * 0.35
@@ -81,30 +81,20 @@ XRRectangle {
             spacing: 32
             Layout.alignment: Qt.AlignHCenter
 
-            // Button {
-            //     id: outlineButton
-            //     text: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
-            //     font.pixelSize: iconSize
-            //     implicitWidth:  isobathSize * 0.4
-            //     Layout.preferredHeight: iconSize * 1.5
-            //     palette.button: "#b9c6db"
-
-            //     onClicked: {
-            //         outlineMode = !outlineMode
-            //         if(targetPlot) {
-            //             targetPlot.drawPolygonOutline(outlineMode)
-            //         }
-            //     }
-            // }
-
             XRButton {
                 id: outlineButton
                 buttonText: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
                 checkable: true
-                implicitWidth:  isobathSize * 0.4
+                implicitWidth: isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.5
 
                 clickAction: function() {
+                    var trackCnt = core.poolSize();
+                    if(trackCnt < 3) {
+                        checked = false
+                        GetInterface.showDialogInfo(0, qsTr("No Track Data Found!"))
+                        return
+                    }
                     outlineMode = !outlineMode
                     if(targetPlot) {
                         targetPlot.drawPolygonOutline(outlineMode)
@@ -112,24 +102,10 @@ XRRectangle {
                 }
             }
 
-            // Button {
-            //     id: updateBottomTrackButton
-            //     text: qsTr("Draw Isobaths")
-            //     font.pixelSize: iconSize
-            //     implicitWidth:  isobathSize * 0.4
-            //     Layout.preferredHeight: iconSize * 1.5
-            //     palette.button: "#b9c6db"
-
-            //     onClicked: {
-            //         if (targetPlot) {
-            //             targetPlot.doDistProcessing( 0, 1, 0, 0, 1000, 1, 0, 0, 0, 0, false)
-            //         }
-            //     }
-            // }
             XRButton {
                 id: updateBottomTrackButton
                 buttonText: qsTr("Draw Isobaths")
-                checkable: true
+                checkable: false
                 implicitWidth:  isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.5
 
@@ -152,6 +128,7 @@ XRRectangle {
 
             border.color: "#7f8fa6"
             border.width: 1
+            radius: iconSize * 0.3
 
             ColumnLayout {
                 anchors.fill: parent
@@ -608,7 +585,7 @@ XRRectangle {
 
             Rectangle {
                 id: renderSpanControl
-                width:  iconSize * 3
+                width:  iconSize * 3.2
                 height: iconSize * 1.3
                 radius: iconSize * 0.65
                 color:  hovered ? (renderSpanControl.isOn ? "#36D85A" : "#AFCFFF")

@@ -75,7 +75,6 @@ signals:
     void transChanged();
     void soundChanged();
     void UARTChanged();
-    void upgradeProgressChanged(int progressStatus);
     void deviceVersionChanged();
     void devChanged();
     void streamChanged();

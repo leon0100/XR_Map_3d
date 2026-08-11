@@ -1,31 +1,93 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.12
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 Slider {
-    id: slider
-    from: 0
-    value: 0
-    to: 0
-    horizontalPadding: 0
+    id: control
+
+    property color trackOffColor: AppPalette.trackOff
+    property color trackOffBorderColor: AppPalette.trackOffBorder
+    property color trackFillColor: AppPalette.accentBar
+    property color knobColor: AppPalette.knob
+    property color knobBorderColor: AppPalette.borderHover
+    property color knobBorderActiveColor: AppPalette.accentBorder
+
+    property int trackHeight: Math.round(8 * AppPalette.scale)
+    property int knobSize: Math.round(28 * AppPalette.scale)
+
+    property string toolTipText: ""
+    property bool showValueTip: true
+    property int valueDecimals: 0
+    property real valueDivisor: 1.0
+    property string valueSuffix: ""
+
+    signal valueModified(real val)
+
+    implicitWidth: 200
+    implicitHeight: Math.max(knobSize, Math.round(44 * AppPalette.scale))
+    horizontalPadding: knobSize / 2
+    verticalPadding: 0
     snapMode: Slider.SnapAlways
+    opacity: enabled ? 1.0 : 0.55
+    focusPolicy: Qt.StrongFocus
 
-    property real backHandleX: slider.horizontal ? slider.leftPadding + slider.visualPosition * (slider.width - slider.leftPadding - slider.rightPadding - handleControl.width): slider.leftPadding
-    property real backHandleY: slider.horizontal ? slider.topPadding + slider.availableHeight / 2 - handleControl.height / 2 : -slider.topPadding / 2 + slider.visualPosition * (slider.height) - handleControl.height / 2
+    onMoved: control.valueModified(value)
 
-    handle: Rectangle {
-        id: handleControl
-        x: backHandleX
-        y: backHandleY
-        width: 10
-        height: slider.height
-        color: slider.pressed ? theme.textSolidColor : theme.textColor
-    }
+    Keys.onLeftPressed:  function(e) { control.decrease(); control.valueModified(control.value); e.accepted = true }
+    Keys.onDownPressed:  function(e) { control.decrease(); control.valueModified(control.value); e.accepted = true }
+    Keys.onRightPressed: function(e) { control.increase(); control.valueModified(control.value); e.accepted = true }
+    Keys.onUpPressed:    function(e) { control.increase(); control.valueModified(control.value); e.accepted = true }
 
     background: Rectangle {
-        radius: 1
-        color: slider.pressed ? theme.controlSolidBackColor : theme.controlBackColor
-        border.color: slider.pressed ? theme.controlSolidBorderColor : theme.controlBorderColor
-        border.width: 0
+        x: control.leftPadding
+        y: control.topPadding + (control.availableHeight - height) / 2
+        width: control.availableWidth
+        height: control.trackHeight
+        radius: height / 2
+        color: control.trackOffColor
+        border.width: Tokens.cardBorderWidth
+        border.color: control.trackOffBorderColor
+
+        Rectangle {
+            width: control.visualPosition * parent.width
+            height: parent.height
+            radius: parent.radius
+            color: control.trackFillColor
+
+            Behavior on width {
+                enabled: !control.pressed
+                NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+            }
+        }
+    }
+
+    handle: Rectangle {
+        x: control.leftPadding + control.visualPosition * (control.availableWidth) - width / 2
+        y: control.topPadding + (control.availableHeight - height) / 2
+        width: control.knobSize * 1.8
+        height: control.knobSize
+        radius: width  * 0.5
+        color: "white"
+        border.width: control.pressed || control.hovered || control.visualFocus ? 2 : 1
+        border.color: control.pressed || control.hovered || control.visualFocus
+                      ? control.knobBorderActiveColor
+                      : control.knobBorderColor
+
+        Behavior on border.color {
+            ColorAnimation { duration: 100 }
+        }
+
+        scale: control.pressed ? 1.1 : 1.0
+        Behavior on scale {
+            NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+        }
+    }
+
+    KToolTip {
+        targetItem: control
+        // shown: control.showValueTip && (control.pressed || control.hovered) && control.enabled
+        shown: false
+        text: control.toolTipText.length > 0
+              ? control.toolTipText
+              : (control.value / control.valueDivisor).toFixed(control.valueDecimals) + control.valueSuffix
     }
 }

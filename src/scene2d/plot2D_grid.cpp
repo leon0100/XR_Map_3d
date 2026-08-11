@@ -62,7 +62,11 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
         if(rangeValid) {
             const float distRange{distTo - distFrom};
             const float rangeVal{distRange * i / linesCount + distFrom};
-            lineText = QString::number(rangeVal, 'f', 1) + "m";
+            if(i == linesCount) {
+                lineText = QString::number(rangeVal, 'f', 0) + "m";
+            } else {
+                lineText = QString::number(rangeVal, 'f', 1) + "m";
+            }
         }
 
         const int textW = fm.horizontalAdvance(lineText);

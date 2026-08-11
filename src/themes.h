@@ -207,6 +207,7 @@ public:
     Q_PROPERTY(int screenHeight READ screenHeight NOTIFY changed)
     Q_PROPERTY(int menuWidth    READ menuWidth    NOTIFY changed)
     Q_PROPERTY(int iconSize     READ iconSize     NOTIFY changed)
+    Q_PROPERTY(int controlHeight READ controlHeight NOTIFY changed)
 
     Q_PROPERTY(int themeID READ themeId WRITE setTheme NOTIFY changed)
 
@@ -246,6 +247,7 @@ public:
     int screenHeight() { return screenHeight_; }
     int menuWidth()    { return menuWidth_; }
     int iconSize()     { return iconSize_;  }
+
 
     int getCurrentLanguage();
     void setCurrentLanguage(int lang);
@@ -292,6 +294,7 @@ public:
         instrumentsGrade_ = instrumentsGrade;
         emit instrumentsGradeChanged();
     }
+    int controlHeight() { return _controlHeight ; }
 
     void bootConfig();
     SoftwareParametersStru getSoftwareParameters();
@@ -346,6 +349,7 @@ protected:
     int32_t screenSize_, screenWidth_, screenHeight_;
     int32_t menuWidth_ = 60;
     int32_t iconSize_ = 18;
+    int32_t _controlHeight;
 
     bool _isConsoleVisible;
     int instrumentsGrade_;

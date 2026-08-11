@@ -1134,8 +1134,6 @@ void DevDriver::receivedUpdate(Parsers::Type type, Parsers::Version ver, Parsers
     }
 
 
-    emit upgradeProgressChanged(m_upgrade_status);
-    emit upgradeChanged();
 }
 
 void DevDriver::receivedNav(Parsers::Type type, Parsers::Version ver, Parsers::Resp resp)

@@ -28,7 +28,7 @@ WaterFall {
 
 
     function closeEchogramOutside(globalX, globalY) {
-        if (!echogramBtn.settingVisible) {
+        if (!echogramBtn.checked) {
             return
         }
         var pos = echogramRec.mapFromItem(null, globalX, globalY)
@@ -36,16 +36,14 @@ WaterFall {
             var btnPos = echogramBtn.mapFromItem(null, globalX, globalY)
             if (btnPos.x < 0 || btnPos.y < 0 || btnPos.x > echogramBtn.width ||
                     btnPos.y > echogramBtn.height) {
-                echogramBtn.settingVisible = false
-                echogramBtn.color          = "#879fc6"
-                echogramBtn.border.color   = "#879fdd"
+                echogramBtn.checked = false
             }
         }
 
     }
 
     function closeBathymetryOutside(globalX, globalY) {
-        if(!bathymetryBtn.settingVisible) {
+        if(!bathymetryBtn.checked) {
             return;
         }
         var pos = bathymetryRec.mapFromItem(null, globalX, globalY)
@@ -53,15 +51,13 @@ WaterFall {
             var btnPos = bathymetryBtn.mapFromItem(null, globalX, globalY)
             if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > bathymetryBtn.width
                     || btnPos.y > bathymetryBtn.height) {
-                bathymetryBtn.settingVisible = false
-                bathymetryBtn.color          = "#879fc6"
-                bathymetryBtn.border.color   = "#879fdd"
+                bathymetryBtn.checked = false
             }
         }
     }
 
     function closeIsobathsOutside(globalX, globalY) {
-        if(!isobathsBtn.settingVisible) {
+        if(!isobathsBtn.checked) {
             return;
         }
         var pos = isobathsRec.mapFromItem(null, globalX, globalY)
@@ -69,9 +65,7 @@ WaterFall {
             var btnPos = isobathsBtn.mapFromItem(null, globalX, globalY)
             if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > isobathsBtn.width ||
                     btnPos.y > isobathsBtn.height) {
-                isobathsBtn.settingVisible = false
-                isobathsBtn.color          = "#879fc6"
-                isobathsBtn.border.color   = "#879fdd"
+                isobathsBtn.checked = false
             }
         }
     }
@@ -411,17 +405,13 @@ WaterFall {
         anchors.bottomMargin: plotIconSize * 0.5
 
         clickAction: function() {
-            if(echogramBtn.settingVisible) {
+            if(echogramBtn.checked) {
                 echogramRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
                 echogramRec.y = echogramBtn.y - echogramRec.height - plotIconSize * 0.1
             }
 
-            bathymetryBtn.settingVisible = false
-            bathymetryBtn.color = "#879fc6"
-            bathymetryBtn.border.color = "#879fdd"
-            isobathsBtn.settingVisible = false
-            isobathsBtn.color = "#879fc6"
-            isobathsBtn.border.color = "#879fdd"
+            bathymetryBtn.checked = false
+            isobathsBtn.checked = false
             expandBar.expanded = false
         }
     }
@@ -429,8 +419,8 @@ WaterFall {
     Plot2DRec {
         id: echogramRec
         parent: mainview.contentItem
-        expanded: echogramBtn.settingVisible
-        visible: echogramBtn.settingVisible
+        expanded: echogramBtn.checked
+        visible: echogramBtn.checked
         x: theme.screenWidth * 0.5 + plotIconSize * 0.5
         y: echogramBtn.y - echogramRec.height - plotIconSize * 0.1
         dragArea: plot
@@ -447,17 +437,13 @@ WaterFall {
         anchors.bottomMargin: plotIconSize * 0.5
 
         clickAction: function() {
-            if(bathymetryBtn.settingVisible) {
+            if(bathymetryBtn.checked) {
                 bathymetryRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
                 bathymetryRec.y = echogramBtn.y - bathymetryRec.height - plotIconSize * 0.1
             }
 
-            echogramBtn.settingVisible = false
-            echogramBtn.color = "#879fc6"
-            echogramBtn.border.color = "#879fdd"
-            isobathsBtn.settingVisible = false
-            isobathsBtn.color = "#879fc6"
-            isobathsBtn.border.color = "#879fdd"
+            echogramBtn.checked = false
+            isobathsBtn.checked = false
             expandBar.expanded = false
         }
     }
@@ -465,8 +451,8 @@ WaterFall {
     BathymetryRec {
         id: bathymetryRec
         parent: mainview.contentItem
-        expanded: bathymetryBtn.settingVisible
-        visible: bathymetryBtn.settingVisible
+        expanded: bathymetryBtn.checked
+        visible: bathymetryBtn.checked
         x: theme.screenWidth * 0.5 + plotIconSize * 0.5
         y: echogramBtn.y - bathymetryRec.height - plotIconSize * 0.1
         dragArea: plot
@@ -483,16 +469,12 @@ WaterFall {
         anchors.bottomMargin: plotIconSize * 0.5
 
         clickAction: function() {
-            if(isobathsBtn.settingVisible) {
+            if(isobathsBtn.checked) {
                 isobathsRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
                 isobathsRec.y = echogramBtn.y - isobathsRec.height - plotIconSize * 0.1
             }
-            echogramBtn.settingVisible = false
-            echogramBtn.color = "#879fc6"
-            echogramBtn.border.color = "#879fdd"
-            bathymetryBtn.settingVisible = false
-            bathymetryBtn.color = "#879fc6"
-            bathymetryBtn.border.color = "#879fdd"
+            echogramBtn.checked = false
+            bathymetryBtn.checked = false
             expandBar.expanded = false
         }
     }
@@ -500,8 +482,8 @@ WaterFall {
     IsobathsRec {
         id: isobathsRec
         parent: mainview.contentItem
-        expanded: isobathsBtn.settingVisible
-        visible: isobathsBtn.settingVisible
+        expanded: isobathsBtn.checked
+        visible: isobathsBtn.checked
         x: theme.screenWidth * 0.5 + plotIconSize * 0.5
         y: echogramBtn.y - isobathsRec.height - plotIconSize * 0.1
         dragArea: plot
