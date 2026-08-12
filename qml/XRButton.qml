@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.15
 Rectangle {
     id: xrBtn
     width:  recSize * 2
-    height: width * 0.5
+    // height: width * 0.5
     radius: width * 0.1
 
     property  int  recSize: theme.iconSize * 2

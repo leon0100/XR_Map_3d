@@ -902,6 +902,8 @@ ApplicationWindow  {
                         onClicked: {
                             visualisationLayout.splitMode  = 0
                             visualisationLayout.splitRatio = 0.5
+                            waterViewFirst.resetTreeButtonX(theme.iconSize * 0.75)
+                            waterViewFirst.closeEchoBathyIsobathOutside(0, 0)
                         }
                     }
                 }
@@ -930,6 +932,7 @@ ApplicationWindow  {
                         onClicked: {
                             visualisationLayout.splitMode  = 2
                             visualisationLayout.splitRatio = 1
+                            waterViewFirst.closeEchoBathyIsobathOutside(0, 0)
                         }
                     }
                 }
@@ -971,6 +974,7 @@ ApplicationWindow  {
                         dragStartRatio = visualisationLayout.splitRatio
                         const mappedPos = sceneSplitHandleMouse.mapToItem(visualisationLayout, mouse.x, mouse.y)
                         dragStartGlobalPos = visualisationLayout.landscapeMode ? mappedPos.x : mappedPos.y
+                        // waterViewFirst.closeEchoBathyIsobathOutside(0, 0)
                     }
 
                     onPositionChanged: function(mouse) {
@@ -989,16 +993,21 @@ ApplicationWindow  {
                             // 滑块靠近左边缘，触发声呐全屏模式
                             visualisationLayout.splitMode  = 1
                             visualisationLayout.splitRatio = 0
+                            waterViewFirst.resetTreeButtonX(renderer.width + 15)
                         }
                         else if (visualisationLayout.splitRatio > (1 - visualisationLayout.edgeThreshold)) {
                             // 滑块靠近右边缘，触发地图全屏模式
                             visualisationLayout.splitMode  = 2
                             visualisationLayout.splitRatio = 1
+                            waterViewFirst.resetTreeButtonX(renderer.width * 2)
+                            waterViewFirst.closeEchoBathyIsobathOutside(0, 0)
                         }
                         else {
                             // 正常分窗模式
                             visualisationLayout.splitMode = 0
+                            waterViewFirst.resetTreeButtonX(theme.iconSize * 0.75)
                         }
+
                     }
 
                 }
@@ -1090,6 +1099,7 @@ ApplicationWindow  {
                                 onClicked: {
                                     visualisationLayout.splitMode  = 0
                                     visualisationLayout.splitRatio = 0.5
+                                    waterViewFirst.resetTreeButtonX(theme.iconSize * 0.75)
                                 }
                             }
                         }
@@ -1117,6 +1127,7 @@ ApplicationWindow  {
                                 onClicked: {
                                     visualisationLayout.splitMode  = 1
                                     visualisationLayout.splitRatio = 1
+                                    waterViewFirst.resetTreeButtonX(renderer.width + 15)
                                 }
                             }
                         }

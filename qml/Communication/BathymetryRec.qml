@@ -9,7 +9,7 @@ import AppXr 1.0
 XRRectangle {
     id: bathymetry
     width:  bathymetrySize * 1.6
-    height: iconSize * 11
+    height: iconSize * 12
 
     color: "#dbe3f2"
     border.color: "#d8e0ef"
@@ -56,11 +56,11 @@ XRRectangle {
         anchors.leftMargin: iconSize
         anchors.right: parent.right
         anchors.rightMargin: iconSize
-        spacing: iconSize * 0.32
+        spacing: iconSize * 0.2
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: iconSize * 0.2
 
             Text {
                 text: qsTr("Parameter:")
@@ -159,7 +159,7 @@ XRRectangle {
         // 第二行:
         RowLayout {
             Layout.fillWidth: true
-            spacing: 8
+            spacing: iconSize * 0.3
 
             CheckBox {
                 id: depthFilterCheck
@@ -223,7 +223,7 @@ XRRectangle {
         //第三行
         RowLayout {
             Layout.fillWidth: true
-            spacing: 10
+            spacing: iconSize * 0.3
 
             CheckBox {
                 id: attitudeCorrectCheck

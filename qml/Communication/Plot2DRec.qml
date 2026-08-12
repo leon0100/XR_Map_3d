@@ -23,6 +23,13 @@ XRRectangle {
     property bool  deleteFrameChecked:   deleteFrame.checked
 
 
+    function closePanel() {
+        marksDrawer.close()
+        addMarks.isTextClicked = false
+        // deleteFramePanel.close()
+    }
+
+
     function deleteFrameFunc(globalX, globalY) {
         if(targetPlot) {
             var ok = targetPlot.onDoubleClick(globalX, globalY)
@@ -41,7 +48,6 @@ XRRectangle {
                 }
             }
         }
-
     }
 
 
@@ -59,8 +65,8 @@ XRRectangle {
                 checked: true
                 text: qsTr("Color Scheme")
                 height: plotIconSize
-                onCheckedChanged: plotEchogramVisible(checked)
-                Component.onCompleted: plotEchogramVisible(checked)
+                onCheckedChanged: plot.plotEchogramVisible(checked)
+                Component.onCompleted: plot.plotEchogramVisible(checked)
             }
 
             XRColorScheme {
@@ -94,14 +100,14 @@ XRRectangle {
                 Layout.alignment: Qt.AlignVCenter
             }
             TextField {
-               id: upperMin
-               Layout.preferredWidth: plotIconSize * 3
-               horizontalAlignment: TextInput.AlignHCenter
-               font.pixelSize: plotIconSize
-               selectByMouse: true
-               validator: IntValidator { bottom: 0; top: 511;}
-               text: (plot.minUpRng / 100).toFixed(0)
-               onEditingFinished: {
+                id: upperMin
+                Layout.preferredWidth: plotIconSize * 3
+                horizontalAlignment: TextInput.AlignHCenter
+                font.pixelSize: plotIconSize
+                selectByMouse: true
+                validator: IntValidator { bottom: 0; top: 511;}
+                text: (plot.minUpRng / 100).toFixed(0)
+                onEditingFinished: {
                     let value = parseInt(text, 10)
                     if(isNaN(value) || value < 0) { value = 0 }
                     if(value > 511) { value = 511 }
@@ -159,7 +165,7 @@ XRRectangle {
 
             XRButton {
                 id: applyBtn
-                width: plotIconSize * 4
+                width:  plotIconSize * 4
                 height: plotIconSize * 1.2
                 buttonText: qsTr("Apply")
                 recTextSize: plotIconSize
@@ -168,11 +174,11 @@ XRRectangle {
                 clickAction: function() {
                     let upperVal = parseInt(upperMin.text, 10)
                     let lowerVal = parseInt(lowerMax.text, 10)
-                    if(isNaN(upperVal)) { upperVal = 0 }
-                    if(isNaN(lowerVal)) { lowerVal = 1 }
-                    if(upperVal < 0)    { upperVal = 0 }
+                    if(isNaN(upperVal)) { upperVal = 0   }
+                    if(isNaN(lowerVal)) { lowerVal = 1   }
+                    if(upperVal < 0)    { upperVal = 0   }
                     if(upperVal > 511)  { upperVal = 511 }
-                    if(lowerVal < 1)    { lowerVal = 1 }
+                    if(lowerVal < 1)    { lowerVal = 1   }
                     if(lowerVal > 512)  { lowerVal = 512 }
 
                     if(upperVal >= lowerVal) {
@@ -189,7 +195,6 @@ XRRectangle {
             Layout.preferredHeight: 1
             color: "#555555"
         }
-
 
         RowLayout {
             Layout.fillWidth:  true
@@ -250,10 +255,10 @@ XRRectangle {
                 text: qsTr("Add Marks")
                 onTextClicked: {
                     if(addMarks.isTextClicked) {
-                        marksDrawer.open()
+                       marksDrawer.open()
                     }
                     else {
-                        marksDrawer.close()
+                       marksDrawer.close()
                     }
                 }
                 onCheckClicked: {

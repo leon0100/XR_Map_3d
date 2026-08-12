@@ -2,17 +2,18 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Dialogs 1.3
-import QtQuick.Window 2.15
 
+import "../"
 
 Rectangle {
     id: loadMap
     width:  loadSize * 1.5
     height: loadSize * 1.6
-    x: Screen.width * 0.5  - width * 0.5
-    y: Screen.height * 0.5 - height * 0.8
+    x: theme.screenWidth * 0.5  - width * 0.5
+    y: theme.screenHeight * 0.5 - height * 0.8
     z: 99
     visible: theme.mapSourceLoadVisible
+    radius: iconSize * 0.5
 
     Rectangle {
         anchors.fill: parent
@@ -20,10 +21,11 @@ Rectangle {
             GradientStop { position: 0.0;  color: "#f5f7fa" }
             GradientStop { position: 1.0;  color: "#c3cfe2" }
         }
+        radius: iconSize * 0.5
     }
 
 
-    property int  loadSize:  Math.min(Screen.width, Screen.height) * 0.35
+    property int  loadSize:  theme.screenSize * 0.35
     property int  iconSize:  loadSize * 0.06
     property bool googleMapExists_inLoadMap: theme.googleExist
 
@@ -311,17 +313,17 @@ Rectangle {
 
         Item { Layout.preferredHeight: loadSize * 0.05 }
 
-        // 底部按钮
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: loadSize * 0.5
+            spacing: loadSize * 0.4
 
-            Button {
-                text: qsTr("OK")
-                font.pixelSize: iconSize
-                implicitWidth: iconSize * 5
-                implicitHeight: iconSize
-                onClicked: {
+            XRButton {
+                buttonText: qsTr("OK")
+                recTextSize: iconSize
+                Layout.preferredWidth: iconSize * 5
+                Layout.preferredHeight: iconSize * 1.2
+
+                clickAction: function() {
                     if (!googleMapExists_inLoadMap) {
                         if ((urlInputContainer.inputText === urlInputContainer.googleUrlEn)
                         || (urlInputContainer.inputText === urlInputContainer.googoleUrlCh)) {
@@ -354,15 +356,19 @@ Rectangle {
                         }
 
                     }
-
                 }
+
             }
-            Button {
-                text: qsTr("Cancel")
-                font.pixelSize: iconSize
-                implicitWidth: iconSize * 5
-                implicitHeight: iconSize
-                onClicked: theme.mapSourceLoadVisible = false
+
+            XRButton {
+                buttonText: qsTr("Cancel")
+                recTextSize: iconSize
+                Layout.preferredWidth: iconSize * 5
+                Layout.preferredHeight: iconSize * 1.2
+
+                clickAction: function() {
+                    theme.mapSourceLoadVisible = false
+                }
             }
         }
     }

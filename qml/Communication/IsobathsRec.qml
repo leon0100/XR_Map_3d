@@ -7,7 +7,7 @@ import AppXr 1.0
 
 
 
-// ------------------------- isobaths抽屉 -------------------------
+// ---------------------------- isobaths抽屉 ----------------------------
 XRRectangle {
     id: isobathsContent
     width:  isobathSize
@@ -31,7 +31,6 @@ XRRectangle {
     property bool isContours:      true
     property bool isShowIsobaths:  true
     property bool isShowBoat:      true
-
 
 
     Component.onCompleted: {

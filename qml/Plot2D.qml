@@ -12,9 +12,9 @@ import Communication 1.0
 WaterFall {
     id: plot
 
-    property var  expandBar:    null
+    property var  expandBar:   null
     property bool is3dVisible: false
-    property int  indx: 0
+    property int  indx:        0
     property int  instruments: 0
     property int  plotSize: theme.screenSize * 0.35
     property int  plotIconSize: theme.iconSize * 1.5
@@ -23,9 +23,16 @@ WaterFall {
     horizontal: menuToolBar.layoutHorizontal
     property bool currentFrameChecked: echogramRec.currentFrameChecked
     // property bool bottomLineChecked: bottomLine.checked
-    property bool  deleteFrameMode: echogramRec.deleteFrameChecked
+    property bool deleteFrameMode: echogramRec.deleteFrameChecked
     property bool outlineCompleted: false
 
+
+    function resetTreeButtonX(x) {
+        echogramBtn.x   = x
+        echogramRec.x   = echogramBtn.mapToItem(mainview.contentItem, 0, 0).x
+        bathymetryRec.x = echogramBtn.mapToItem(mainview.contentItem, 0, 0).x
+        isobathsRec.x   = echogramBtn.mapFromItem(mainview.contentItem, 0, 0).x
+    }
 
     function closeEchogramOutside(globalX, globalY) {
         if (!echogramBtn.checked) {
@@ -34,12 +41,11 @@ WaterFall {
         var pos = echogramRec.mapFromItem(null, globalX, globalY)
         if (pos.x < 0 || pos.y < 0 || pos.x > echogramRec.width || pos.y > echogramRec.height) {
             var btnPos = echogramBtn.mapFromItem(null, globalX, globalY)
-            if (btnPos.x < 0 || btnPos.y < 0 || btnPos.x > echogramBtn.width ||
-                    btnPos.y > echogramBtn.height) {
+            if (btnPos.x < 0 || btnPos.y < 0 || btnPos.x > echogramBtn.width || btnPos.y > echogramBtn.height) {
                 echogramBtn.checked = false
+                echogramRec.closePanel()
             }
         }
-
     }
 
     function closeBathymetryOutside(globalX, globalY) {
@@ -49,8 +55,7 @@ WaterFall {
         var pos = bathymetryRec.mapFromItem(null, globalX, globalY)
         if(pos.x < 0 || pos.y < 0 || pos.x > bathymetryRec.width || pos.y > bathymetryRec.height) {
             var btnPos = bathymetryBtn.mapFromItem(null, globalX, globalY)
-            if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > bathymetryBtn.width
-                    || btnPos.y > bathymetryBtn.height) {
+            if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > bathymetryBtn.width || btnPos.y > bathymetryBtn.height) {
                 bathymetryBtn.checked = false
             }
         }
@@ -63,8 +68,7 @@ WaterFall {
         var pos = isobathsRec.mapFromItem(null, globalX, globalY)
         if(pos.x < 0 || pos.y < 0 || pos.x > isobathsRec.width || pos.y > isobathsRec.height) {
             var btnPos = isobathsBtn.mapFromItem(null, globalX, globalY)
-            if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > isobathsBtn.width ||
-                    btnPos.y > isobathsBtn.height) {
+            if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > isobathsBtn.width || btnPos.y > isobathsBtn.height) {
                 isobathsBtn.checked = false
             }
         }
@@ -75,7 +79,6 @@ WaterFall {
         closeBathymetryOutside(globalX, globalY);
         closeIsobathsOutside(globalX, globalY)
     }
-
 
 
     function setAim(mouseX, mouseY) {
@@ -399,14 +402,15 @@ WaterFall {
         buttonText: qsTr("Echogram")
         iconSource: "qrc:/icons/ui/ripple.svg"
 
-        anchors.left: parent.left
+        x: plotIconSize * 0.5
+        // anchors.left: parent.left
         anchors.leftMargin: plotIconSize * 0.5
         anchors.bottom: parent.bottom
         anchors.bottomMargin: plotIconSize * 0.5
 
         clickAction: function() {
             if(echogramBtn.checked) {
-                echogramRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
+                echogramRec.x = echogramBtn.mapToItem(mainview.contentItem, 0, 0).x
                 echogramRec.y = echogramBtn.y - echogramRec.height - plotIconSize * 0.1
             }
 
@@ -421,8 +425,6 @@ WaterFall {
         parent: mainview.contentItem
         expanded: echogramBtn.checked
         visible: echogramBtn.checked
-        x: theme.screenWidth * 0.5 + plotIconSize * 0.5
-        y: echogramBtn.y - echogramRec.height - plotIconSize * 0.1
         dragArea: plot
         targetPlot: plot
     }
@@ -438,11 +440,12 @@ WaterFall {
 
         clickAction: function() {
             if(bathymetryBtn.checked) {
-                bathymetryRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
+                bathymetryRec.x = echogramBtn.mapToItem(mainview.contentItem, 0, 0).x
                 bathymetryRec.y = echogramBtn.y - bathymetryRec.height - plotIconSize * 0.1
             }
 
             echogramBtn.checked = false
+            echogramRec.closePanel()
             isobathsBtn.checked = false
             expandBar.expanded = false
         }
@@ -453,8 +456,6 @@ WaterFall {
         parent: mainview.contentItem
         expanded: bathymetryBtn.checked
         visible: bathymetryBtn.checked
-        x: theme.screenWidth * 0.5 + plotIconSize * 0.5
-        y: echogramBtn.y - bathymetryRec.height - plotIconSize * 0.1
         dragArea: plot
         targetPlot: plot
     }
@@ -470,10 +471,11 @@ WaterFall {
 
         clickAction: function() {
             if(isobathsBtn.checked) {
-                isobathsRec.x = theme.screenWidth * 0.5 + plotIconSize * 0.5
+                isobathsRec.x = echogramBtn.mapToItem(mainview.contentItem, 0, 0).x
                 isobathsRec.y = echogramBtn.y - isobathsRec.height - plotIconSize * 0.1
             }
             echogramBtn.checked = false
+            echogramRec.closePanel()
             bathymetryBtn.checked = false
             expandBar.expanded = false
         }
@@ -484,12 +486,9 @@ WaterFall {
         parent: mainview.contentItem
         expanded: isobathsBtn.checked
         visible: isobathsBtn.checked
-        x: theme.screenWidth * 0.5 + plotIconSize * 0.5
-        y: echogramBtn.y - isobathsRec.height - plotIconSize * 0.1
         dragArea: plot
         targetPlot: plot
     }
-
 
 
     RowLayout {

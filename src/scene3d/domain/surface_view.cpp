@@ -440,10 +440,88 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
 
     auto mShP = shaderProgramMap.value("mosaic", nullptr);
     auto iShP = shaderProgramMap.value("isobaths", nullptr);
-    if (!mShP || !iShP) {
-        qWarning() << "Shader program 'mosaic'|'isobaths' not found!";
+    // if (!mShP || !iShP) {
+    //     qWarning() << "Shader program 'mosaic'|'isobaths' not found!";
+    //     return;
+    // }
+
+
+    auto sShP = shaderProgramMap.value("static", nullptr);
+    if (!mShP || !iShP || !sShP) {
+        qWarning() << "Shader program 'mosaic'|'isobaths'|'static' not found!";
         return;
     }
+
+    // 使用模板缓冲区实现"盆地"效果：高度场区域从陆地地面中挖空
+    QRectF bounds = getSurfaceBounds();
+    bool minZValid = qIsFinite(minZ_) && minZ_ < 1e6f && minZ_ > -1e6f;
+
+    if (!bounds.isEmpty() && minZValid) {
+        // === Pass 1: 将高度场几何体写入模板缓冲区（标记高度场区域为1） ===
+        ctx->glEnable(GL_STENCIL_TEST);
+        ctx->glClearStencil(0);
+        ctx->glClear(GL_STENCIL_BUFFER_BIT);
+        ctx->glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        ctx->glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+        ctx->glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        ctx->glDepthMask(GL_FALSE);
+        ctx->glDisable(GL_DEPTH_TEST);
+
+        sShP->bind();
+        sShP->setUniformValue("matrix", mvp);
+        int posLoc = sShP->attributeLocation("position");
+        sShP->enableAttributeArray(posLoc);
+        for (auto& itm : tiles_) {
+            if (!itm.getIsInited()) {
+                continue;
+            }
+            sShP->setAttributeArray(posLoc, itm.getHeightVerticesCRef().constData());
+            ctx->glDrawElements(GL_TRIANGLES, itm.getHeightIndicesCRef().size(),
+                                GL_UNSIGNED_INT, itm.getHeightIndicesCRef().constData());
+        }
+        sShP->disableAttributeArray(posLoc);
+        sShP->release();
+
+        ctx->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        ctx->glDepthMask(GL_TRUE);
+        ctx->glEnable(GL_DEPTH_TEST);
+
+        // === Pass 2: 绘制陆地地面（仅在模板值!=1的区域，即高度场外部） ===
+        ctx->glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        ctx->glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+        sShP->bind();
+        sShP->setUniformValue("matrix", mvp);
+        posLoc = sShP->attributeLocation("position");
+        int colorLoc = sShP->uniformLocation("color");
+        sShP->enableAttributeArray(posLoc);
+
+        float zRange = qMax(0.1f, maxZ_ - minZ_);
+        float groundZ = minZ_ - zRange * 0.05f - 0.05f;
+
+        float minX = static_cast<float>(bounds.left());
+        float minY = static_cast<float>(bounds.top());
+        float maxX = static_cast<float>(bounds.right());
+        float maxY = static_cast<float>(bounds.bottom());
+
+        QVector<QVector3D> groundPlane{
+            { minX, minY, groundZ },
+            { maxX, minY, groundZ },
+            { minX, maxY, groundZ },
+            { maxX, maxY, groundZ }
+        };
+
+        sShP->setUniformValue(colorLoc, QVector4D(0.82f, 0.75f, 0.55f, 1.0f));
+        sShP->setAttributeArray(posLoc, groundPlane.constData());
+        ctx->glDrawArrays(GL_TRIANGLE_STRIP, 0, groundPlane.size());
+
+        sShP->disableAttributeArray(posLoc);
+        sShP->release();
+
+        ctx->glDisable(GL_STENCIL_TEST);
+    }
+
 
     // tiles TODO OPTIMIZE
     for (auto& itm : tiles_) {
