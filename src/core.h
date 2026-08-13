@@ -48,7 +48,6 @@ public:
     Q_PROPERTY(QObject*  progress   READ progress       WRITE setProgress        NOTIFY progressChanged)
 
 
-
     void setEngine(QQmlApplicationEngine *engine);
     Console* getConsolePtr();
     Dataset* getDatasetPtr();
@@ -63,7 +62,6 @@ public:
     void saveLLARefToSettings();
 
     QHash<QUuid, QString> getLinkNames() const;
-
 
 
 public slots:

@@ -242,62 +242,62 @@ void Dataset::addRangefinder(const ChannelId& channelId, float distance)
     emit dataUpdate();
 }
 
-void Dataset::addUsblSolution(IDBinUsblSolution::UsblSolution data) {
-    int pool_index = endIndex();
-    if(pool_index < 0 || pool_[pool_index].isUsblSolutionAvailable() == true) {
-        // addNewEpoch();
-        pool_index = endIndex();
-    }
+// void Dataset::addUsblSolution(IDBinUsblSolution::UsblSolution data) {
+//     int pool_index = endIndex();
+//     if(pool_index < 0 || pool_[pool_index].isUsblSolutionAvailable() == true) {
+//         // addNewEpoch();
+//         pool_index = endIndex();
+//     }
 
-    tracks[-1].data_.append(QVector3D());
-    tracks[-1].objectColor_ = QColor(0, 255, 255);
+//     tracks[-1].data_.append(QVector3D());
+//     tracks[-1].objectColor_ = QColor(0, 255, 255);
 
-    Position pos;
-    pos.lla = LLA(data.usbl_latitude, data.usbl_longitude);
+//     Position pos;
+//     pos.lla = LLA(data.usbl_latitude, data.usbl_longitude);
 
-    static float dist_save = NAN;
-    static float angl_save = NAN;
+//     static float dist_save = NAN;
+//     static float angl_save = NAN;
 
-    Q_UNUSED(dist_save);
-    Q_UNUSED(angl_save);
+//     Q_UNUSED(dist_save);
+//     Q_UNUSED(angl_save);
 
-    float angl_usbl = data.azimuth_deg;
-    float dist = data.distance_m;
+//     float angl_usbl = data.azimuth_deg;
+//     float dist = data.distance_m;
 
-    if(pos.lla.isCoordinatesValid()) {
-        setLlaRef(LLARef(pos.lla), getCurrentLlaRefState());
+//     if(pos.lla.isCoordinatesValid()) {
+//         setLlaRef(LLARef(pos.lla), getCurrentLlaRefState());
 
-        pos.LLA2NED(&_llaRef);
-        // qDebug("usbl x %f, y %f", pos.ned.n, pos.ned.e);
+//         pos.LLA2NED(&_llaRef);
+//         // qDebug("usbl x %f, y %f", pos.ned.n, pos.ned.e);
 
-        tracks[-2].data_.append(QVector3D(pos.ned.n, pos.ned.e, 0));
-        tracks[-2].objectColor_ = QColor(0, 200, 0);
+//         tracks[-2].data_.append(QVector3D(pos.ned.n, pos.ned.e, 0));
+//         tracks[-2].objectColor_ = QColor(0, 200, 0);
 
-        float beacon_n = data.beacon_n;
-        float beacon_e = data.beacon_e;
+//         float beacon_n = data.beacon_n;
+//         float beacon_e = data.beacon_e;
 
-        if(pos.ned.isCoordinatesValid()) {
-            beacon_n += pos.ned.n;
-            beacon_e += pos.ned.e;
-        }
+//         if(pos.ned.isCoordinatesValid()) {
+//             beacon_n += pos.ned.n;
+//             beacon_e += pos.ned.e;
+//         }
 
-        tracks[-4].data_.append(QVector3D(beacon_n, beacon_e, 0));
-        tracks[-4].objectColor_ = QColor(200, 0, 0);
-        tracks[-4].lineWidth_ = 5;
+//         tracks[-4].data_.append(QVector3D(beacon_n, beacon_e, 0));
+//         tracks[-4].objectColor_ = QColor(200, 0, 0);
+//         tracks[-4].lineWidth_ = 5;
 
-    } else {
-         tracks[-4].data_.append(QVector3D(NAN, NAN, 0));
-    }
-    dist_save = dist;
-    angl_save = angl_usbl;
+//     } else {
+//          tracks[-4].data_.append(QVector3D(NAN, NAN, 0));
+//     }
+//     dist_save = dist;
+//     angl_save = angl_usbl;
 
-    std::shared_ptr<UsblView> view = scene3dViewPtr_->getUsblViewPtr();
-    view->setTrackRef(tracks);
+//     std::shared_ptr<UsblView> view = scene3dViewPtr_->getUsblViewPtr();
+//     view->setTrackRef(tracks);
 
-    pool_[endIndex()].setAtt(data.usbl_yaw, data.usbl_pitch, data.usbl_roll);
-    pool_[endIndex()].set(data);
-    emit dataUpdate();
-}
+//     pool_[endIndex()].setAtt(data.usbl_yaw, data.usbl_pitch, data.usbl_roll);
+//     pool_[endIndex()].set(data);
+//     emit dataUpdate();
+// }
 
 void Dataset::addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt) {
     int pool_index = endIndex();
@@ -412,20 +412,20 @@ void Dataset::addPosition(double lat, double lon, uint32_t unix_time, int32_t na
         boatLatitute_  = pos.lla.latitude;
         boatLongitude_ = pos.lla.longitude;
 
-        if (isValidActiveContactIndx()) {
-            if (auto* ep = fromIndex(activeContactIndx_); ep) {
-                const double latTarget = ep->contact_.lat;
-                const double lonTarget = ep->contact_.lon;
-                const double latBoat   = pos.lla.latitude;
-                const double lonBoat   = pos.lla.longitude;
-                distToActiveContact_ = distanceMetersLLA(latBoat, lonBoat, latTarget, lonTarget);
+        // if (isValidActiveContactIndx()) {
+        //     if (auto* ep = fromIndex(activeContactIndx_); ep) {
+        //         const double latTarget = ep->contact_.lat;
+        //         const double lonTarget = ep->contact_.lon;
+        //         const double latBoat   = pos.lla.latitude;
+        //         const double lonBoat   = pos.lla.longitude;
+        //         distToActiveContact_ = distanceMetersLLA(latBoat, lonBoat, latTarget, lonTarget);
 
-                const double yawDeg = _lastYaw;
-                if (qIsFinite(yawDeg)) {
-                    angleToActiveContact_ = angleToTargetDeg(latBoat, lonBoat, latTarget, lonTarget, yawDeg);
-                }
-            }
-        }
+        //         const double yawDeg = _lastYaw;
+        //         if (qIsFinite(yawDeg)) {
+        //             angleToActiveContact_ = angleToTargetDeg(latBoat, lonBoat, latTarget, lonTarget, yawDeg);
+        //         }
+        //     }
+        // }
         emit positionAdded(lastIndx);
         emit dataUpdate();
         emit lastPositionChanged();
@@ -578,7 +578,7 @@ void Dataset::addGnssVelocity(double h_speed, double course) {
 
 void Dataset::addTemp(float temp_c) {
     //qDebug() << "Dataset::addTemp" << temp_c;
-    lastTemp_ = temp_c;
+    // lastTemp_ = temp_c;
     Epoch* last_epoch = last();
     if (!last_epoch) {
         return;
@@ -639,45 +639,35 @@ void Dataset::mergeGnssTrack(QList<Position> track) {
 void Dataset::resetDataset()
 {
     {
-        QWriteLocker locker(&lock_);
-        channelsSetup_.clear();
-        firstChannelId_ = DatasetChannel();
+       QWriteLocker locker(&lock_);
+       channelsSetup_.clear();
+       firstChannelId_ = DatasetChannel();
     }
 
     resetRenderBuffers();
-    resetDistProcessing();
 
     usingRecordParameters_.clear();
     lastAddChartEpochIndx_.clear();
     channelsToResizeEthData_.clear();
     polygonOutlineNED_.clear();
-    autoBoundary_.clear();
 
-    activeContactIndx_    = -1;
     boatLatitute_         = 0.0f;
     boatLongitude_        = 0.0f;
-    distToActiveContact_  = 0.0f;
-    angleToActiveContact_ = 0.0f;
     lastDepth_            = 0.0f;
     speed_                = 0.0f;
     sonarPosIndx_         = 0;
-    minX_ = std::numeric_limits<float>::max();
-    maxX_ = std::numeric_limits<float>::lowest();
-    minY_ = std::numeric_limits<float>::max();
-    maxY_ = std::numeric_limits<float>::lowest();
-
     _llaRef.isInit        = false;
 
     emit lastDepthChanged();
     emit channelsUpdated();
     emit dataUpdate();
     emit lastPositionChanged();
-    emit activeContactChanged();
+    // emit activeContactChanged();
 }
 
 void Dataset::resetRenderBuffers()
 {
-    tracks.clear();
+    // tracks.clear();
     vec_CSV_.clear();
     {
         //加poolMtx_写锁，等待ComputeWorker读完再清空
@@ -685,6 +675,7 @@ void Dataset::resetRenderBuffers()
         pool_.clear();
         pool_.shrink_to_fit();
     }
+    autoBoundary_.clear();
     minX_ = std::numeric_limits<float>::max();
     maxX_ = std::numeric_limits<float>::lowest();
     minY_ = std::numeric_limits<float>::max();
@@ -692,10 +683,8 @@ void Dataset::resetRenderBuffers()
     _lastYaw   = 0;
     _lastPitch = 0;
     _lastRoll  = 0;
-    lastTemp_  = NAN;
     interpolator_.clear();
     _llaRef = LLARef();
-    // bSProc_->clear();
     lastBottomTrackEpoch_ = 0;
 }
 
@@ -727,14 +716,6 @@ void Dataset::removeFrames(int startIndex, int endIndex)
     }
     QWriteLocker wl(&poolMtx_);
     pool_.remove(startIndex, endIndex-startIndex+1);
-}
-
-void Dataset::resetDistProcessing() {
-//     int pool_size = size();
-//     for(int i = 0; i < pool_size; i++) {
-// //        Epoch* dataset = fromIndex(i);
-// //        dataset->resetDistProccesing();
-//     }
 }
 
 void Dataset::setChannelOffset(const ChannelId& channelId, float x, float y, float z)
@@ -898,13 +879,6 @@ QStringList Dataset::channelsNameList()
 
     return result;
 }
-
-void Dataset::interpolateData(bool fromStart)
-{
-    interpolator_.interpolatePos(fromStart);
-    interpolator_.interpolateAtt(fromStart);
-}
-
 
 void Dataset::onDistCompleted(int epIndx, const ChannelId& channelId, float dist)
 {
@@ -1118,17 +1092,17 @@ std::tuple<ChannelId, uint8_t, QString>  Dataset::channelIdFromName(const QStrin
     return retVal;
 }
 
-void Dataset::setActiveContactIndx(int64_t indx)
-{
-    activeContactIndx_ = indx;
-    emit activeContactChanged();
-    emit dataUpdate();
-}
+// void Dataset::setActiveContactIndx(int64_t indx)
+// {
+//     activeContactIndx_ = indx;
+//     emit activeContactChanged();
+//     emit dataUpdate();
+// }
 
-int64_t Dataset::getActiveContactIndx() const
-{
-    return activeContactIndx_;
-}
+// int64_t Dataset::getActiveContactIndx() const
+// {
+//     return activeContactIndx_;
+// }
 
 void Dataset::onSonarPosCanCalc(uint64_t indx)
 {

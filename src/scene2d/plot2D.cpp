@@ -159,7 +159,6 @@ void Plot2D::draw(QPainter *painterPtr)
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
 
-    // echogram_.draw(this, datasetPtr_);
     // attitude_.draw(this, datasetPtr_);
     // encoder_.draw(this, datasetPtr_);
     // dvlBeamVelocity_.draw(this, datasetPtr_);
@@ -825,69 +824,69 @@ bool Plot2D::setContact(int indx, const QString& text)
     return true;
 }
 
-bool Plot2D::setActiveContact(int indx)
-{
-    qDebug() << "Plot2D::setActiveContact.........";
-    if (!datasetPtr_) {
-        qDebug() << "Plot2D::setActiveContact returned: !_dataset";
-        return false;
-    }
+// bool Plot2D::setActiveContact(int indx)
+// {
+//     qDebug() << "Plot2D::setActiveContact.........";
+//     if (!datasetPtr_) {
+//         qDebug() << "Plot2D::setActiveContact returned: !_dataset";
+//         return false;
+//     }
 
-    auto* ep = datasetPtr_->fromIndex(indx);
-    if (!ep) {
-        qDebug() << "Plot2D::setActiveContact returned: !ep";
-        return false;
-    }
+//     auto* ep = datasetPtr_->fromIndex(indx);
+//     if (!ep) {
+//         qDebug() << "Plot2D::setActiveContact returned: !ep";
+//         return false;
+//     }
 
-    auto currActiveIndx = datasetPtr_->getActiveContactIndx();
-    if (currActiveIndx == indx) {
-        datasetPtr_->setActiveContactIndx(-1);
-        sendSyncEvent(-1, ContactActiveChanged);
-    }
-    else {
-        datasetPtr_->setActiveContactIndx(indx);
-        sendSyncEvent(indx, ContactActiveChanged);
-    }
+//     auto currActiveIndx = datasetPtr_->getActiveContactIndx();
+//     if (currActiveIndx == indx) {
+//         datasetPtr_->setActiveContactIndx(-1);
+//         sendSyncEvent(-1, ContactActiveChanged);
+//     }
+//     else {
+//         datasetPtr_->setActiveContactIndx(indx);
+//         sendSyncEvent(indx, ContactActiveChanged);
+//     }
 
-    plotUpdate();
-    return true;
-}
+//     plotUpdate();
+//     return true;
+// }
 
-bool Plot2D::deleteContact(int indx)
-{
-    qDebug() << "Plot2D::deleteContact.........";
-    if (!datasetPtr_) {
-        qDebug() << "Plot2D::deleteContact returned: !_dataset";
-        return false;
-    }
+// bool Plot2D::deleteContact(int indx)
+// {
+//     qDebug() << "Plot2D::deleteContact.........";
+//     if (!datasetPtr_) {
+//         qDebug() << "Plot2D::deleteContact returned: !_dataset";
+//         return false;
+//     }
 
-    //qDebug() << "indx" << indx << "currIndx" << currIndx << text;
+//     //qDebug() << "indx" << indx << "currIndx" << currIndx << text;
 
-    auto* ep = datasetPtr_->fromIndex(indx);
-    if (!ep) {
-        qDebug() << "Plot2D::deleteContact returned: !ep";
-        return false;
-    }
+//     auto* ep = datasetPtr_->fromIndex(indx);
+//     if (!ep) {
+//         qDebug() << "Plot2D::deleteContact returned: !ep";
+//         return false;
+//     }
 
-    ep->contact_.clear();
+//     ep->contact_.clear();
 
-    if (datasetPtr_->getActiveContactIndx() == indx) {
-        datasetPtr_->setActiveContactIndx(-1);
-    }
+//     if (datasetPtr_->getActiveContactIndx() == indx) {
+//         datasetPtr_->setActiveContactIndx(-1);
+//     }
 
-    sendSyncEvent(indx, ContactDeleted);
+//     sendSyncEvent(indx, ContactDeleted);
 
-    plotUpdate();
+//     plotUpdate();
 
-    return true;
-}
+//     return true;
+// }
 
-void Plot2D::updateContact()
-{
-    qDebug() << "Plot2D::updateContact.........";
-    contacts_.setMousePos(-1,-1);
-    plotUpdate();
-}
+// void Plot2D::updateContact()
+// {
+//     qDebug() << "Plot2D::updateContact.........";
+//     contacts_.setMousePos(-1,-1);
+//     plotUpdate();
+// }
 
 void Plot2D::onCursorMoved(int x, int y)
 {

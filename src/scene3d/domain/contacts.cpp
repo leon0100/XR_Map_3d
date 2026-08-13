@@ -140,109 +140,109 @@ bool Contacts::eventFilter(QObject *watched, QEvent *event)
     return false;
 }
 
-bool Contacts::setContact(int indx, const QString& text)
-{
-    if (!datasetPtr_) {
-        qDebug() << "Contacts::setContact returned: !_dataset";
-        return false;
-    }
+// bool Contacts::setContact(int indx, const QString& text)
+// {
+//     if (!datasetPtr_) {
+//         qDebug() << "Contacts::setContact returned: !_dataset";
+//         return false;
+//     }
 
-    if (text.isEmpty()) {
-        qDebug() << "Contacts::setContact returned: text.isEmpty()";
-        return false;
-    }
+//     if (text.isEmpty()) {
+//         qDebug() << "Contacts::setContact returned: text.isEmpty()";
+//         return false;
+//     }
 
-    auto* ep = datasetPtr_->fromIndex(indx);
-    if (!ep) {
-        qDebug() << "Contacts::setContact returned: !ep";
-        return false;
-    }
+//     auto* ep = datasetPtr_->fromIndex(indx);
+//     if (!ep) {
+//         qDebug() << "Contacts::setContact returned: !ep";
+//         return false;
+//     }
 
-    ep->contact_.info = text;
-    //qDebug() << "Plot2D::setContact: setted to epoch:" << indx << text;
+//     ep->contact_.info = text;
+//     //qDebug() << "Plot2D::setContact: setted to epoch:" << indx << text;
 
-    emit datasetPtr_->dataUpdate();
+//     emit datasetPtr_->dataUpdate();
 
-    auto* r = RENDER_IMPL(Contacts);
+//     auto* r = RENDER_IMPL(Contacts);
 
-    if (auto it = r->points_.find(indx); it != r->points_.end()) {
-        it.value().info = text;
-    }
+//     if (auto it = r->points_.find(indx); it != r->points_.end()) {
+//         it.value().info = text;
+//     }
 
-    setInterEpIndx(-1);
+//     setInterEpIndx(-1);
 
-    Q_EMIT changed();
+//     Q_EMIT changed();
 
-    return true;
-}
+//     return true;
+// }
 
-bool Contacts::deleteContact(int indx)
-{
-    if (!datasetPtr_) {
-        qDebug() << "Contacts::deleteContact: !datasetPtr_";
-        return false;
-    }
+// bool Contacts::deleteContact(int indx)
+// {
+//     if (!datasetPtr_) {
+//         qDebug() << "Contacts::deleteContact: !datasetPtr_";
+//         return false;
+//     }
 
-    auto* ep = datasetPtr_->fromIndex(indx);
-    if (!ep) {
-        qDebug() << "Contacts::deleteContact returned: !ep";
-        return false;
-    }
+//     auto* ep = datasetPtr_->fromIndex(indx);
+//     if (!ep) {
+//         qDebug() << "Contacts::deleteContact returned: !ep";
+//         return false;
+//     }
 
-    ep->contact_.clear();
+//     ep->contact_.clear();
 
-    if (datasetPtr_->getActiveContactIndx() == indx) {
-        datasetPtr_->setActiveContactIndx(-1);
-    }
+//     if (datasetPtr_->getActiveContactIndx() == indx) {
+//         datasetPtr_->setActiveContactIndx(-1);
+//     }
 
-    emit datasetPtr_->dataUpdate();
+//     emit datasetPtr_->dataUpdate();
 
-    auto* r = RENDER_IMPL(Contacts);
-    r->points_.remove(indx);
-    r->contactBounds_.remove(indx);
+//     auto* r = RENDER_IMPL(Contacts);
+//     r->points_.remove(indx);
+//     r->contactBounds_.remove(indx);
 
-    contactBounds_.remove(indx);
+//     contactBounds_.remove(indx);
 
-    Q_EMIT changed();
+//     Q_EMIT changed();
 
-    return true;
-}
+//     return true;
+// }
 
-bool Contacts::setActiveContact(int indx)
-{
-    if (!datasetPtr_) {
-        qDebug() << "Plot2D::setActiveContact returned: !_dataset";
-        return false;
-    }
+// bool Contacts::setActiveContact(int indx)
+// {
+//     if (!datasetPtr_) {
+//         qDebug() << "Plot2D::setActiveContact returned: !_dataset";
+//         return false;
+//     }
 
-    auto* ep = datasetPtr_->fromIndex(indx);
-    if (!ep) {
-        qDebug() << "Plot2D::setActiveContact returned: !ep";
-        return false;
-    }
+//     auto* ep = datasetPtr_->fromIndex(indx);
+//     if (!ep) {
+//         qDebug() << "Plot2D::setActiveContact returned: !ep";
+//         return false;
+//     }
 
-    auto* r = RENDER_IMPL(Contacts);
-    auto currActiveIndx = datasetPtr_->getActiveContactIndx();
-    if (currActiveIndx == indx) {
-        datasetPtr_->setActiveContactIndx(-1);
-        r->activeContactIndx_ = -1;
-    }
-    else {
-        datasetPtr_->setActiveContactIndx(indx);
-        r->activeContactIndx_ = indx;
-    }
+//     auto* r = RENDER_IMPL(Contacts);
+//     auto currActiveIndx = datasetPtr_->getActiveContactIndx();
+//     if (currActiveIndx == indx) {
+//         datasetPtr_->setActiveContactIndx(-1);
+//         r->activeContactIndx_ = -1;
+//     }
+//     else {
+//         datasetPtr_->setActiveContactIndx(indx);
+//         r->activeContactIndx_ = indx;
+//     }
 
-    Q_EMIT changed();
+//     Q_EMIT changed();
 
-    return true;
-}
+//     return true;
+// }
 
-void Contacts::update()
-{
-    setInterEpIndx(-1);
+// void Contacts::update()
+// {
+//     setInterEpIndx(-1);
 
-    Q_EMIT changed();
-}
+//     Q_EMIT changed();
+// }
 
 void Contacts::mouseMoveEvent(Qt::MouseButtons buttons, qreal x, qreal y)
 {

@@ -119,10 +119,10 @@ public slots:
     Q_INVOKABLE void simplePlotMousePosition(int x, int y);
     Q_INVOKABLE void onCursorMoved(int x, int y);
     Q_INVOKABLE void plotMouseTool(int mode);
-    Q_INVOKABLE bool setContact(int indx, const QString& text);
-    Q_INVOKABLE bool setActiveContact(int indx);
-    Q_INVOKABLE bool deleteContact(int indx);
-    Q_INVOKABLE void updateContact();
+    // Q_INVOKABLE bool setContact(int indx, const QString& text);
+    // Q_INVOKABLE bool setActiveContact(int indx);
+    // Q_INVOKABLE bool deleteContact(int indx);
+    // Q_INVOKABLE void updateContact();
 
 
     void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)

@@ -77,11 +77,6 @@ void Epoch::setChartParameters(const ChannelId& channelId, const ChartParameters
     }
 }
 
-void Epoch::setComplexF(const ChannelId& channelId, int group, QVector<ComplexSignal> signal)
-{
-    _complex[channelId][group] = signal;
-}
-
 void Epoch::setDist(const ChannelId& channelId, int dist)
 {
     rangefinders_[channelId] = dist * 0.001;
@@ -436,7 +431,6 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
 
     int rawSize = charts_[localChannelId][subChannelId].amplitude.size();
     qDebug() << "rawSize............." << rawSize;
-
     if (rawSize == 0) {
         memset(dst, 0, dstLen * 2);
         return false;
@@ -458,14 +452,13 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
     }
 
     start -= charts_[localChannelId][subChannelId].offset;
-    end -= charts_[localChannelId][subChannelId].offset;
+    end   -= charts_[localChannelId][subChannelId].offset;
     qDebug() << "start...." << start << "  " << end;
 
-    float rawRangeF = charts_[localChannelId][subChannelId].range();
+    float rawRangeF    = charts_[localChannelId][subChannelId].range();
     float targetRangeF = static_cast<float>(end - start);
-    float scaleFactor = (static_cast<float>(rawSize) / static_cast<float>(dstLen)) * (targetRangeF / rawRangeF);
-    int offset = start / charts_[localChannelId][subChannelId].resolution;
-
+    float scaleFactor  = (static_cast<float>(rawSize) / static_cast<float>(dstLen)) * (targetRangeF / rawRangeF);
+    int offset         = start / charts_[localChannelId][subChannelId].resolution;
     int srcStart = offset;
     int dir = reverse ? -1 : 1;
     int off = reverse ? (dstLen-1) : 0;
@@ -515,47 +508,13 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
 
 void Epoch::getSonarFramePixel(const ChannelId& channelId, uint8_t subChannelId, QVector<uint8_t>& pixelVec)
 {
-    Echogram& chart = charts_[channelId][subChannelId];
-    // auto it = charts_.find(channelId);
-    // if(it == charts_.end() || subChannelId >= it.value().size()) {
-    //     return;
-    // }
-    // Echogram& chart = it.value()[subChannelId];
-    pixelVec = chart.amplitude;
-}
-
-
-void Epoch::moveComplexToEchogram(ChannelId channel_id, int group_id, float offset_m, float levels_offset_db) {
-    QVector<ComplexSignal> chls = _complex[channel_id][group_id];
-    float sample_rate = chls[0].sampleRate;
-
-    QVector<QVector<uint8_t>> chart;
-    chart.resize(chls.size());
-
-    for(int ch_i = 0; ch_i < chls.size(); ch_i++) {
-        int ch_echo = ch_i;
-
-        int data_size = chls[ch_i].data.size();
-
-        chart[ch_echo].resize(chls[ch_i].data.size());
-        uint8_t* chart_data = chart[ch_echo].data();
-        ComplexF* compelex_data = chls[ch_i].data.data();
-
-        for (int k  = 0; k < data_size; k++) {
-            float amp = (compelex_data[k].logPow() + levels_offset_db)*2.5;
-
-            if (amp < 0) {
-                amp = 0;
-            }
-            else if(amp > 255) {
-                amp = 255;
-            }
-
-            chart_data[k] = amp;
-        }
+    // Echogram& chart = charts_[channelId][subChannelId];
+    auto it = charts_.find(channelId);
+    if(it == charts_.end() || subChannelId >= it.value().size()) {
+        return;
     }
-
-    setChart(ChannelId(channel_id.uuid, group_id), chart, 1500.0f/sample_rate, offset_m);
+    Echogram& chart = it.value()[subChannelId];
+    pixelVec = chart.amplitude;
 }
 
 uint8_t Epoch::getChartsSizeByChannelId(const ChannelId& channelId) const

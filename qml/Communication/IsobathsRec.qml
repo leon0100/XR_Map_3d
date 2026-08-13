@@ -82,7 +82,7 @@ XRRectangle {
 
             XRButton {
                 id: outlineButton
-                buttonText: outlineMode ? qsTr("Clear Outline") : qsTr("Draw Outline")
+                buttonText: outlineMode ? qsTr("Clear") : qsTr("Draw Outline")
                 checkable: true
                 implicitWidth: isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.5

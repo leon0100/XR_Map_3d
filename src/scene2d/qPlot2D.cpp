@@ -166,15 +166,15 @@ void qPlot2D::plotMouseTool(int mode)
     setMouseTool((MouseTool)mode);
 }
 
-bool qPlot2D::setContact(int indx, const QString& text)
-{
-    return Plot2D::setContact(indx, text);
-}
+// bool qPlot2D::setContact(int indx, const QString& text)
+// {
+//     return Plot2D::setContact(indx, text);
+// }
 
-bool qPlot2D::setActiveContact(int indx)
-{
-    return Plot2D::setActiveContact(indx);
-}
+// bool qPlot2D::setActiveContact(int indx)
+// {
+//     return Plot2D::setActiveContact(indx);
+// }
 
 int qPlot2D::getMinUpRng()
 {
@@ -318,15 +318,15 @@ void qPlot2D::setSensitivity(int sensitive)
     plotUpdate();
 }
 
-bool qPlot2D::deleteContact(int indx)
-{
-    return Plot2D::deleteContact(indx);
-}
+// bool qPlot2D::deleteContact(int indx)
+// {
+//     return Plot2D::deleteContact(indx);
+// }
 
-void qPlot2D::updateContact()
-{
-    Plot2D::updateContact();
-}
+// void qPlot2D::updateContact()
+// {
+//     Plot2D::updateContact();
+// }
 
 void qPlot2D::setBottomLineVisible(bool isVisible)
 {
@@ -414,6 +414,7 @@ void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, 
             GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
             return;
         }
+        datasetPtr_->setAutoBounadry();
         if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
             btpPtr->preset      = static_cast<BottomTrackPreset>(preset);
             btpPtr->gainSlope   = gain_slope;
@@ -442,18 +443,18 @@ void qPlot2D::refreshDistParams(int preset, int windowSize, float verticalGap, f
     auto btPRefreshFunc = [this, preset, windowSize, verticalGap, rangeMin, rangeMax, gainSlope, threshold, offsetX, offsetY, offsetZ]() {
         if (datasetPtr_) {
             if (auto btpPtr =datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
-                btpPtr->preset = static_cast<BottomTrackPreset>(preset);
-                btpPtr->gainSlope = gainSlope;
-                btpPtr->threshold = threshold;
-                btpPtr->windowSize = windowSize;
+                btpPtr->preset      = static_cast<BottomTrackPreset>(preset);
+                btpPtr->gainSlope   = gainSlope;
+                btpPtr->threshold   = threshold;
+                btpPtr->windowSize  = windowSize;
                 btpPtr->verticalGap = verticalGap;
                 btpPtr->minDistance = rangeMin;
                 btpPtr->maxDistance = rangeMax;
-                btpPtr->indexFrom = 0;
-                btpPtr->indexTo = datasetPtr_->size();
-                btpPtr->offset.x = offsetX;
-                btpPtr->offset.y = offsetY;
-                btpPtr->offset.z = offsetZ;
+                btpPtr->indexFrom   = 0;
+                btpPtr->indexTo     = datasetPtr_->size();
+                btpPtr->offset.x    = offsetX;
+                btpPtr->offset.y    = offsetY;
+                btpPtr->offset.z    = offsetZ;
             }
         }
     };

@@ -82,10 +82,10 @@ public:
     virtual bool eventFilter(QObject *watched, QEvent *event) override final;
 
 public slots:
-    Q_INVOKABLE bool setContact(int indx, const QString& text);
-    Q_INVOKABLE bool deleteContact(int indx);
-    Q_INVOKABLE bool setActiveContact(int indx);
-    Q_INVOKABLE void update();
+    // Q_INVOKABLE bool setContact(int indx, const QString& text);
+    // Q_INVOKABLE bool deleteContact(int indx);
+    // Q_INVOKABLE bool setActiveContact(int indx);
+    // Q_INVOKABLE void update();
 
 signals:
     void contactChanged();

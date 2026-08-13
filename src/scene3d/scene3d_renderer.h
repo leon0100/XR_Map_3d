@@ -83,7 +83,7 @@ private:
     Contacts::ContactsRenderImplementation               contactsRenderImpl_;
     BottomTrack::BottomTrackRenderImplementation         m_bottomTrackRenderImpl;
     PolygonGroup::PolygonGroupRenderImplementation       m_polygonGroupRenderImpl;
-    PointGroup::PointGroupRenderImplementation           m_pointGroupRenderImpl;
+    // PointGroup::PointGroupRenderImplementation           m_pointGroupRenderImpl;
     BoatTrack::BoatTrackRenderImplementation             m_boatTrackRenderImpl;
     NavigationArrow::NavigationArrowRenderImplementation navigationArrowRenderImpl_;
     UsblView::UsblViewRenderImplementation               usblViewRenderImpl_;

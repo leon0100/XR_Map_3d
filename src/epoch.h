@@ -183,9 +183,6 @@ public:
 
     void setSonarPositionDataType(DataType dataType);
     DataType getSonarPositionDataType() const { return sonarPosition_.dataType; };
-    void setComplexF(const ChannelId& channelId, int group, QVector<ComplexSignal> signal);
-    ComplexSignals& complexSignals() { return _complex; }
-    bool isComplexSignalAvail() { return _complex.size() > 0; }
 
     void set(IDBinUsblSolution::UsblSolution data) { _usblSolution = data;  _isUsblSolutionAvailable = true; }
 
@@ -302,7 +299,6 @@ public:
     bool chartTo(const ChannelId& channelId, uint8_t subChannelId, float start,
                  float end, int16_t* dst, int dstLen, int imageType, bool reverse = false);
     void getSonarFramePixel(const ChannelId& channelId, uint8_t subChannelId, QVector<uint8_t>& pixelVec);
-    void moveComplexToEchogram(ChannelId channel_id, int group_id, float offset_m, float levels_offset_db);
 
     void setResolution      (const ChannelId& channelId, uint16_t resolution);
     void setChartCount      (const ChannelId& channelId, uint16_t chartCount);
@@ -344,7 +340,6 @@ protected:
         }
     } _attitude;
 
-    ComplexSignals _complex;
 
     IDBinDVL::BeamSolution _dopplerBeams[4];
     uint16_t _dopplerBeamCount = 0;

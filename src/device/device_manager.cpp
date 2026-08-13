@@ -129,16 +129,18 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
         QStringList columns = row.split(",");
 
         Position pos;
-        pos.lla.latitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-        pos.lla.longitude = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-        pos.lla.altitude  = columns[6].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        // pos.lla.latitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        // pos.lla.longitude = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        // pos.lla.altitude  = columns[6].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        pos.lla.latitude  = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        pos.lla.longitude = columns[3].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        pos.lla.altitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
         track.append(pos);
 
         minZ_ = std::min(minZ_, pos.lla.altitude);
         maxZ_ = std::max(maxZ_, pos.lla.altitude);
         vec_CSV.append(pos.lla.altitude);
-        if (currentLine > 0 && (currentLine % progressInterval == 0 || currentLine == validTotal))
-        {
+        if (currentLine > 0 && (currentLine % progressInterval == 0 || currentLine == validTotal)) {
             double progress = static_cast<double>(currentLine) / validTotal;
 
             QString statusText = tr("Processing CSV %1 / %2 (%3%)").arg(currentLine)

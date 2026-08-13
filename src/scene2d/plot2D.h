@@ -115,9 +115,9 @@ public:
     void simpleSetMousePosition(int x, int y);
     void setMouseTool(MouseTool tool);
     bool setContact(int indx, const QString& text);
-    bool setActiveContact(int indx);
-    bool deleteContact(int indx);
-    void updateContact();
+    // bool setActiveContact(int indx);
+    // bool deleteContact(int indx);
+    // void updateContact();
     void onCursorMoved(int x, int y);
 
     Canvas& canvas();

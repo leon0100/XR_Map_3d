@@ -826,6 +826,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     cacheData.append(0);
                 }
 
+
+
                 float nowScaleY = (float)height / pingSize * (loRng / (currentLoRng_-currentUpRng_));
                 int startIdx = pingSize * currentUpRng_ / loRng;
                 int btStartNow = btStart;
@@ -1321,12 +1323,15 @@ void Plot2DEchogram::clearPlotData()
 
 bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
 {
-    plot2d_ = parent;
+    if(parent == nullptr || dataset == nullptr) {
+        return false;
+    }
+    plot2d_  = parent;
     dataset_ = dataset;
     Canvas& canvas = parent->canvas();
     DatasetCursor& cursor = parent->cursor();
 
-    if (isVisible() && dataset != nullptr && cursor.distance.isValid()) {
+    if (isVisible() && cursor.distance.isValid()) {
         int image_width        = canvas.width();
         const int image_height = canvas.height();
 

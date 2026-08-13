@@ -276,10 +276,6 @@ void BottomTrack::clearData()
 
     epIndxUpdated_.clear();
     vertIndxUpdated_.clear();
-    // minX_ = std::numeric_limits<float>::max();
-    // maxX_ = std::numeric_limits<float>::lowest();
-    // minY_ = std::numeric_limits<float>::max();
-    // maxY_ = std::numeric_limits<float>::lowest();
 
     auto r = RENDER_IMPL(BottomTrack);
     r->selectedVertexIndices_.clear();

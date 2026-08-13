@@ -61,7 +61,7 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(polygonOutline_.get(), &PolygonOutline::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(m_bottomTrack.get(), &BottomTrack::changed,  this, &QQuickFramebufferObject::update);
     QObject::connect(m_polygonGroup.get(), &PolygonGroup::changed, this, &QQuickFramebufferObject::update);
-    QObject::connect(m_pointGroup.get(),  &PointGroup::changed,   this, &QQuickFramebufferObject::update);
+    // QObject::connect(m_pointGroup.get(),  &PointGroup::changed,   this, &QQuickFramebufferObject::update);
     QObject::connect(m_coordAxes.get(),   &CoordinateAxes::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(m_planeGrid.get(),   &PlaneGrid::changed,    this, &QQuickFramebufferObject::update);
     QObject::connect(navigationArrow_.get(), &NavigationArrow::changed, this, &QQuickFramebufferObject::update);
@@ -76,7 +76,7 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(m_bottomTrack.get(), &BottomTrack::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
     QObject::connect(polygonOutline_.get(), &PolygonOutline::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_polygonGroup.get(), &PolygonGroup::boundsChanged, this, &GraphicsScene3dView::updateBounds);
-    QObject::connect(m_pointGroup.get(),  &PointGroup::boundsChanged,   this, &GraphicsScene3dView::updateBounds);
+    // QObject::connect(m_pointGroup.get(),  &PointGroup::boundsChanged,   this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_coordAxes.get(),   &CoordinateAxes::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(boatTrack_.get(),    &PlaneGrid::boundsChanged,    this, &GraphicsScene3dView::updateBounds);
     QObject::connect(navigationArrow_.get(), &NavigationArrow::boundsChanged, this, &GraphicsScene3dView::updateBounds);
@@ -213,19 +213,19 @@ void GraphicsScene3dView::clear(bool isClearTrack, bool cleanMap)
         boatTrack_->clearData();
         m_bottomTrack->clearData();
         navigationArrow_->clearData();
-        polygonOutline_->clearData();
     }
 
     isobathsView_->clear();
     surfaceView_->clear();
-    contacts_->clear();
+    // contacts_->clear();
     imageView_->clear();
     if (cleanMap) {
         mapView_->clear();
     }
     m_polygonGroup->clearData();
-    m_pointGroup->clearData();
-    usblView_->clearTracks();
+    polygonOutline_->clearData();
+    // m_pointGroup->clearData();
+    // usblView_->clearTracks();
     m_bounds = Cube();
 
     // setMapView();
@@ -1131,8 +1131,10 @@ void GraphicsScene3dView::setPolygonEditingMode()
 
 void GraphicsScene3dView::setPolygonOutlineMode(bool isOutlineMode)
 {
+    dataProcessorPtr_->clearProcessing2(false);
     if(isOutlineMode) {
         setOutlineCompleted(false);
+        clear(false);
         polygonOutline_->setOutlineMode(true);
     }
     else {
@@ -1238,7 +1240,7 @@ void GraphicsScene3dView::updateBounds()
                    .merge(m_bottomTrack->bounds())
                    .merge(polygonOutline_->bounds())
                    .merge(m_polygonGroup->bounds())
-                   .merge(m_pointGroup->bounds())
+                   // .merge(m_pointGroup->bounds())
                    .merge(surfaceView_->bounds())
                    .merge(imageView_->bounds())
                    .merge(usblView_->bounds());
@@ -1946,7 +1948,7 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fb
     m_renderer->imageViewRenderImpl_        = *(dynamic_cast<ImageView::ImageViewRenderImplementation*>(view->imageView_->m_renderImpl));
     m_renderer->contactsRenderImpl_         = *(dynamic_cast<Contacts::ContactsRenderImplementation*>(view->contacts_->m_renderImpl));
     m_renderer->m_polygonGroupRenderImpl    = *(dynamic_cast<PolygonGroup::PolygonGroupRenderImplementation*>(view->m_polygonGroup->m_renderImpl));
-    m_renderer->m_pointGroupRenderImpl      = *(dynamic_cast<PointGroup::PointGroupRenderImplementation*>(view->m_pointGroup->m_renderImpl));
+    // m_renderer->m_pointGroupRenderImpl      = *(dynamic_cast<PointGroup::PointGroupRenderImplementation*>(view->m_pointGroup->m_renderImpl));
     m_renderer->navigationArrowRenderImpl_  = *(dynamic_cast<NavigationArrow::NavigationArrowRenderImplementation*>(view->navigationArrow_->m_renderImpl));
     m_renderer->usblViewRenderImpl_         = *(dynamic_cast<UsblView::UsblViewRenderImplementation*>(view->usblView_->m_renderImpl));
     m_renderer->m_viewSize                  = view->size();

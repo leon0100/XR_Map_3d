@@ -440,20 +440,19 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
 
     auto mShP = shaderProgramMap.value("mosaic", nullptr);
     auto iShP = shaderProgramMap.value("isobaths", nullptr);
-    // if (!mShP || !iShP) {
-    //     qWarning() << "Shader program 'mosaic'|'isobaths' not found!";
-    //     return;
-    // }
-
+    if (!mShP || !iShP) {
+        qWarning() << "Shader program 'mosaic'|'isobaths' not found!";
+        return;
+    }
 
     auto sShP = shaderProgramMap.value("static", nullptr);
-    if (!mShP || !iShP || !sShP) {
+    if (!sShP) {
         qWarning() << "Shader program 'mosaic'|'isobaths'|'static' not found!";
         return;
     }
 
     // 使用模板缓冲区实现"盆地"效果：高度场区域从陆地地面中挖空
-    QRectF bounds = getSurfaceBounds();
+    QRectF bounds  = getSurfaceBounds();
     bool minZValid = qIsFinite(minZ_) && minZ_ < 1e6f && minZ_ > -1e6f;
 
     if (!bounds.isEmpty() && minZValid) {
