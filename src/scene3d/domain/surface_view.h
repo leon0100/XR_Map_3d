@@ -50,11 +50,14 @@ public:
         bool  iVis_;
         bool  mVis_;
 
-        // ===== 新增：边界顶点 =====
+        // =====边界顶点 =====
         QVector<QVector<QVector3D>> boundaryGroups_;  // 存储边界顶点
         QVector<QVector3D> boundaryVertices_;  // 存储边界顶点
         bool boundaryVerticesVisible_;  // 是否显示边界顶点
-    };    
+
+        float verticalScale_ = -1.0f;  // 与 renderer 一致的负值 vs，用于补偿水平陆地 Z
+        bool groundVisible_ = true;
+    };
 
     explicit SurfaceView(QObject* parent = nullptr);
     virtual ~SurfaceView();
@@ -80,9 +83,11 @@ public:
     void setLlaRef(LLARef llaRef);
     void saveVerticesToFile(const QString& path);
 
-    // ===== 新增：边界顶点相关方法 =====
+    // ===== 边界顶点相关方法 =====
     void setBoundaryVertices(const QVector<QVector3D>& vertices);
     void setBoundaryVerticesVisible(bool visible);
+    void setVerticalScale(float scale);
+    void setGroundVisible(bool visible);
 
 public slots: // from dataprocessor
     void clear();

@@ -775,7 +775,7 @@ ApplicationWindow  {
                     id: scene3DToolbar
                     x: renderer.width * 0.5
                     y: renderer.height - scene3DToolbar.height * 1.5
-                    targetPlot: waterViewFirst
+                    targetPlot2d: waterViewFirst
                     expandBar: expandToolBar
                     Keys.forwardTo: [mousearea3D]
                     visible: visualisationLayout.splitMode !== 1

@@ -1056,6 +1056,13 @@ void Core::clearRouteData()
                     scene3dViewPtr_->clear(true);
                     scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
                 }
+                const int numPlots = plot2dList_.size();
+                for(int i = 0; i < numPlots; i++) {
+                    qPlot2D* plot2d = plot2dList_.at(i);
+                    if(plot2d){
+                        plot2d->clearPlotData();
+                    }
+                }
 
                 emit isobathsViewControlMenuController_->edgeLimitChanged(100);
             }
@@ -1072,6 +1079,13 @@ void Core::clearRouteData()
                 if (scene3dViewPtr_) {
                     scene3dViewPtr_->clear(true);
                     scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
+                }
+                const int numPlots = plot2dList_.size();
+                for(int i = 0; i < numPlots; i++) {
+                    qPlot2D* plot2d = plot2dList_.at(i);
+                    if(plot2d){
+                        plot2d->clearPlotData();
+                    }
                 }
 
                 emit isobathsViewControlMenuController_->edgeLimitChanged(100);
@@ -1113,6 +1127,15 @@ void Core::clearRouteData()
                         scene3dViewPtr_->clear(true);
                         scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
                     }
+                    const int numPlots = plot2dList_.size();
+                    for(int i = 0; i < numPlots; i++) {
+                        qPlot2D* plot2d = plot2dList_.at(i);
+                        if(plot2d){
+                            plot2d->clearPlotData();
+                        }
+                    }
+
+                    emit isobathsViewControlMenuController_->edgeLimitChanged(100);
                 }
                 QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool,clearTrack));
             }

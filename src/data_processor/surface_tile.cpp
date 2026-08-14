@@ -133,7 +133,6 @@ UpdateHint SurfaceTile::updateHint() const
     return updateHint_;
 }
 
-
 void SurfaceTile::setMosaicTextureId(GLuint val)
 {
     textureId_ = val;
@@ -148,7 +147,6 @@ const TileKey &SurfaceTile::getKey() const
 {
     return key_;
 }
-
 
 QUuid SurfaceTile::getUuid() const
 {

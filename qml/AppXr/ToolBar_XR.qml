@@ -1,8 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
 import QtQuick.Layouts 1.15
 
+import "../"
 
 Rectangle {
     id: toolBar_XR
@@ -18,8 +18,8 @@ Rectangle {
     property  var  targetPlot:    null
     property  var  expandBar:     null
     // property  var  lastItem:      menuSettings
-    property  int  settingsWidth: theme.menuWidth*20
-    property  int  iconSize:      Math.min(Screen.width, Screen.height) * 0.05
+    property  int  settingsWidth: theme.menuWidth  * 20
+    property  int  iconSize:      theme.screenSize * 0.05
 
     property color backColor: "#d6e6ff"
 
@@ -99,29 +99,53 @@ Rectangle {
                 Layout.fillHeight: true
                 spacing: 3
 
-            MenuButton {  //菜单
+            // MenuButton {  //菜单
+            //     // id: menuBtn
+            //     icon.source: "qrc:/XR/config.png"
+            //     icon.width:  toolBar_XR.iconSize
+            //     icon.height: toolBar_XR.iconSize
+            //     width:       toolBar_XR.iconSize
+            //     height:      toolBar_XR.iconSize
+
+            //     Rectangle {
+            //         anchors.fill: parent
+            //         radius: 2
+            //     }
+
+            //     onPressed: {
+            //         if(menuPopup) {
+            //             if (menuPopup.visible) {
+            //                 // menuPopup.close()
+            //                 menuPopup.resuqestColoseMenu()
+            //             }
+            //             else {
+            //                 menuPopup.open()
+            //                 contourMode = false
+            //                 bluetoothMode = false
+            //             }
+            //         }
+            //     }
+            // }
+
+            XRButton {
                 id: menuBtn
-                icon.source: "qrc:/XR/config.png"
-                icon.width:  toolBar_XR.iconSize
-                icon.height: toolBar_XR.iconSize
-                width:       toolBar_XR.iconSize
-                height:      toolBar_XR.iconSize
+                iconSource: "qrc:/XR/config.png"
+                checkable: false
+                Layout.preferredWidth:  toolBar_XR.iconSize
+                Layout.preferredHeight: toolBar_XR.iconSize
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 2
-                }
-
-                onPressed: {
-                    if(menuPopup) {
-                        if (menuPopup.visible) {
-                            // menuPopup.close()
-                            menuPopup.resuqestColoseMenu()
-                        }
-                        else {
-                            menuPopup.open()
-                            contourMode = false
-                            bluetoothMode = false
+                clickAction: function() {
+                    if (targetPlot) {
+                        if(menuPopup) {
+                            if (menuPopup.visible) {
+                                // menuPopup.close()
+                                menuPopup.resuqestColoseMenu()
+                            }
+                            else {
+                                menuPopup.open()
+                                contourMode = false
+                                bluetoothMode = false
+                            }
                         }
                     }
                 }
@@ -401,25 +425,56 @@ Rectangle {
         Item {
             anchors.fill: parent
 
-            MenuButton {  //菜单
+            // MenuButton {  //菜单
+            //     id: menuBtn
+            //     anchors.left: parent.left
+            //     anchors.leftMargin: 2
+            //     anchors.verticalCenter: parent.verticalCenter
+            //     icon.source: "qrc:/XR/config.png"
+            //     icon.width:  toolBar_XR.iconSize
+            //     icon.height: toolBar_XR.iconSize
+            //     width:       toolBar_XR.iconSize
+            //     height:      toolBar_XR.iconSize
+
+            //     Rectangle {
+            //         anchors.fill: parent
+            //         radius: 2
+            //         color: contourMode ? backColor : "transparent"
+            //     }
+
+            //     onPressed: {
+            //         targetPlot.closeEchoBathyIsobathOutside(0, 0)
+            //         if(menuPopup) {
+            //             if (menuPopup.menuVisible) {
+            //                 menuPopup.close()
+            //             }
+            //             else {
+            //                 menuPopup.open()
+            //                 contourMode   = false
+            //                 bluetoothMode = false
+            //             }
+            //         }
+
+            //         if(targetPlot) {
+            //             targetPlot.closeEchoBathyIsobathOutside(0, 0)
+            //         }
+            //         expandBar.expanded = false
+            //     }
+            // }
+            XRButton {
                 id: menuBtn
                 anchors.left: parent.left
                 anchors.leftMargin: 2
                 anchors.verticalCenter: parent.verticalCenter
-                icon.source: "qrc:/XR/config.png"
-                icon.width:  toolBar_XR.iconSize
-                icon.height: toolBar_XR.iconSize
-                width:       toolBar_XR.iconSize
-                height:      toolBar_XR.iconSize
+                iconSource: "qrc:/XR/config.png"
+                checkable: false
+                border.width: 0
+                normalColor: "transparent"
+                radius: 0
+                width:  toolBar_XR.iconSize
+                height: toolBar_XR.iconSize
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: 2
-                    color: contourMode ? backColor : "transparent"
-                }
-
-                onPressed: {
-                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                clickAction: function() {
                     if(menuPopup) {
                         if (menuPopup.menuVisible) {
                             menuPopup.close()

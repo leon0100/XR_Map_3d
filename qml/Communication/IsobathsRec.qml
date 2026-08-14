@@ -31,12 +31,14 @@ XRRectangle {
     property bool isContours:      true
     property bool isShowIsobaths:  true
     property bool isShowBoat:      true
+    property bool isShowGround:    true
 
 
     Component.onCompleted: {
        IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
        IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isShowIsobaths)
        IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
+       IsobathsViewControlMenuController.onGroundVisibleChanged(isShowGround)
     }
 
     // 拦截鼠标事件，防止点击穿透到地图
@@ -384,6 +386,7 @@ XRRectangle {
                             isContours = !isContours
                             // IsobathsViewControlMenuController.onProcessStateChanged(isContours);
                             IsobathsViewControlMenuController.onContoursVisibilityCheckBoxCheckedChanged(isContours)
+                            IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isContours)
                         }
 
                         onEntered: parent.color = "#d6e6ff"
@@ -392,90 +395,89 @@ XRRectangle {
                 }
 
 
-                Rectangle {
-                    id: isobaths
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: layoutHeight
-                    color: "#f9f9fb"
+                // Rectangle {
+                //     id: isobaths
+                //     Layout.fillWidth: true
+                //     Layout.preferredHeight: layoutHeight
+                //     color: "#f9f9fb"
 
-                    property bool checked: true
+                //     property bool checked: true
 
-                    SequentialAnimation {
-                        id: flashAnim_isobaths
-                        running: false
-                        loops: 1
+                //     SequentialAnimation {
+                //         id: flashAnim_isobaths
+                //         running: false
+                //         loops: 1
 
-                        ColorAnimation {
-                            target: isobaths
-                            property: "color"
-                            to: "#9ecbff"
-                            duration: 100
-                        }
-                        ColorAnimation {
-                            target: isobaths
-                            property: "color"
-                            to: "#d6e6ff"
-                            duration: 100
-                        }
-                    }
+                //         ColorAnimation {
+                //             target: isobaths
+                //             property: "color"
+                //             to: "#9ecbff"
+                //             duration: 100
+                //         }
+                //         ColorAnimation {
+                //             target: isobaths
+                //             property: "color"
+                //             to: "#d6e6ff"
+                //             duration: 100
+                //         }
+                //     }
 
-                    Row {
-                        anchors.fill: parent
-                        anchors.leftMargin: iconSize * 0.5
-                        anchors.rightMargin: iconSize * 0.5
-                        spacing: iconSize * 0.5
-                        anchors.verticalCenter: parent.verticalCenter
+                //     Row {
+                //         anchors.fill: parent
+                //         anchors.leftMargin: iconSize * 0.5
+                //         anchors.rightMargin: iconSize * 0.5
+                //         spacing: iconSize * 0.5
+                //         anchors.verticalCenter: parent.verticalCenter
 
-                        Image {
-                            source: "qrc:/XR/contour.png"
-                            width: iconSize * 1.2
-                            height: iconSize * 1.2
-                            fillMode: Image.PreserveAspectFit
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
+                //         Image {
+                //             source: "qrc:/XR/contour.png"
+                //             width: iconSize * 1.2
+                //             height: iconSize * 1.2
+                //             fillMode: Image.PreserveAspectFit
+                //             anchors.verticalCenter: parent.verticalCenter
+                //         }
 
-                        Rectangle {
-                            width:  iconSize * 1.2
-                            height: iconSize * 1.2
-                            radius: 5
-                            border.color: "#b0b3b8"
-                            border.width: 1
-                            anchors.verticalCenter: parent.verticalCenter
+                //         Rectangle {
+                //             width:  iconSize * 1.2
+                //             height: iconSize * 1.2
+                //             radius: 5
+                //             border.color: "#b0b3b8"
+                //             border.width: 1
+                //             anchors.verticalCenter: parent.verticalCenter
 
-                            Image {
-                                source: "qrc:/XR/check.svg"
-                                width: parent.width * 0.9
-                                height: parent.width * 0.9
-                                visible: isShowIsobaths
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.rightMargin: 2
-                            }
-                        }
+                //             Image {
+                //                 source: "qrc:/XR/check.svg"
+                //                 width: parent.width * 0.9
+                //                 height: parent.width * 0.9
+                //                 visible: isShowIsobaths
+                //                 anchors.verticalCenter: parent.verticalCenter
+                //                 anchors.horizontalCenter: parent.horizontalCenter
+                //                 anchors.rightMargin: 2
+                //             }
+                //         }
 
-                        Text {
-                            text: qsTr("Isobaths")
-                            font.pixelSize: iconSize
-                            color: "black"
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
+                //         Text {
+                //             text: qsTr("Isobaths")
+                //             font.pixelSize: iconSize
+                //             color: "black"
+                //             anchors.verticalCenter: parent.verticalCenter
+                //         }
+                //     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
+                //     MouseArea {
+                //         anchors.fill: parent
+                //         hoverEnabled: true
 
-                        onClicked: {
-                            flashAnim_isobaths.restart()
-                            isShowIsobaths = !isShowIsobaths
-                            // IsobathsViewControlMenuController.onProcessStateChanged(isShowIsobaths);
-                            IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
-                        }
+                //         onClicked: {
+                //             flashAnim_isobaths.restart()
+                //             isShowIsobaths = !isShowIsobaths
+                //             IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
+                //         }
 
-                        onEntered: parent.color = "#d6e6ff"
-                        onExited:  parent.color = "#f9f9fb"
-                    }
-                }
+                //         onEntered: parent.color = "#d6e6ff"
+                //         onExited:  parent.color = "#f9f9fb"
+                //     }
+                // }
 
 
                 Rectangle {
@@ -560,6 +562,91 @@ XRRectangle {
 
                         onEntered: parent.color = "#d6e6ff"
                         onExited: parent.color = "#f9f9fb"
+                    }
+                }
+
+
+                Rectangle {
+                    id: showGround
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: layoutHeight
+                    color: "#f9f9fb"
+
+                    property bool checked: true
+
+                    SequentialAnimation {
+                        id: flashAnimGround
+                        running: false
+                        loops: 1
+
+                        ColorAnimation {
+                            target: showGround
+                            property: "color"
+                            to: "#9ecbff"
+                            duration: 100
+                        }
+                        ColorAnimation {
+                            target: showGround
+                            property: "color"
+                            to: "#d6e6ff"
+                            duration: 100
+                        }
+                    }
+
+                    Row {
+                        anchors.fill: parent
+                        anchors.leftMargin: iconSize * 0.5
+                        anchors.rightMargin: iconSize * 0.5
+                        spacing: iconSize * 0.5
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Image {
+                            source: "qrc:/icons/ui/stack_forward.svg"
+                            width:  iconSize * 1.2
+                            height: iconSize * 1.2
+                            fillMode: Image.PreserveAspectFit
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Rectangle {
+                            width:  iconSize * 1.2
+                            height: iconSize * 1.2
+                            radius: 5
+                            border.color: "#b0b3b8"
+                            border.width: 1
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Image {
+                                source: "qrc:/XR/check.svg"
+                                width:  parent.width * 0.9
+                                height: parent.width * 0.9
+                                visible: isShowGround
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.rightMargin: 2
+                            }
+                        }
+
+                        Text {
+                            text: qsTr("Ground")
+                            font.pixelSize: iconSize
+                            color: "black"
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+
+                        onClicked: {
+                            flashAnimGround.restart()
+                            isShowGround = !isShowGround
+                            IsobathsViewControlMenuController.onGroundVisibleChanged(isShowGround)
+                        }
+
+                        onEntered: parent.color = "#d6e6ff"
+                        onExited:  parent.color = "#f9f9fb"
                     }
                 }
 

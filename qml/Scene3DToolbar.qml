@@ -5,6 +5,7 @@ import QtQuick.Dialogs 1.3
 import Qt.labs.settings 1.1
 
 import AppXr 1.0
+import Communication 1.0
 
 
 //地图下侧的工具栏
@@ -14,7 +15,7 @@ Item  {
     width:  theme.menuWidth * 4
     height: theme.menuWidth
 
-    property var  targetPlot:  null
+    property var  targetPlot2d:  null
     property var  expandBar:   null
 
     property bool isNorthModeBtnHovered: false
@@ -130,8 +131,8 @@ Item  {
 
             onClicked: {
                 renderer.zoomInOut(true)
-                if(targetPlot) {
-                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                if(targetPlot2d) {
+                    targetPlot2d.closeEchoBathyIsobathOutside(0, 0)
                 }
                 expandBar.expanded = false
             }
@@ -166,8 +167,8 @@ Item  {
 
             onClicked: {
                 renderer.zoomInOut(false)
-                if(targetPlot) {
-                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                if(targetPlot2d) {
+                    targetPlot2d.closeEchoBathyIsobathOutside(0, 0)
                 }
                 expandBar.expanded = false
             }
@@ -194,8 +195,8 @@ Item  {
 
             onCheckedChanged: {
                 Scene3dToolBarController.onIsNorthLocationButtonChanged(checked)
-                if(targetPlot) {
-                    targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                if(targetPlot2d) {
+                    targetPlot2d.closeEchoBathyIsobathOutside(0, 0)
                 }
                 expandBar.expanded = false
             }
@@ -207,6 +208,35 @@ Item  {
             Settings {
                 property alias northModeBtn: northModeBtn.checked
             }
+        }
+
+
+        XRTextButton {
+            id: mainviewIsobathsBtn
+            buttonText: qsTr("Isobaths")
+            iconSource: "qrc:/XR/contour.png"
+            visible: visualisationLayout.splitMode === 2
+            // anchors.left: bathymetryBtn.right
+            // anchors.leftMargin: plotIconSize * 0.5
+            // anchors.bottom: parent.bottom
+            // anchors.bottomMargin: plotIconSize * 0.5
+
+            clickAction: function() {
+                if(mainviewIsobathsBtn.checked) {
+                    mainIsobathsRec.x = northModeBtn.mapToItem(mainview.contentItem, 0, 0).x
+                    // mainIsobathsRec.y = mainviewIsobathsBtn.y - mainIsobathsRec.height - theme.iconSize * 0.15
+                    mainIsobathsRec.y = mainviewIsobathsBtn.y - theme.iconSize * 0.15
+                }
+            }
+        }
+
+        IsobathsRec {
+            id: mainIsobathsRec
+            parent: mainview.contentItem
+            expanded: mainviewIsobathsBtn.checked
+            visible: mainviewIsobathsBtn.checked
+            dragArea: targetPlot2d
+            targetPlot: targetPlot2d
         }
 
     }

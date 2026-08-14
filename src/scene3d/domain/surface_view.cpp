@@ -26,6 +26,26 @@ void SurfaceView::setBoundaryVerticesVisible(bool visible)
     }
 }
 
+void SurfaceView::setVerticalScale(float scale)
+{
+    if (auto* r = RENDER_IMPL(SurfaceView); r) {
+        if (!qFuzzyCompare(r->verticalScale_, scale)) {
+            r->verticalScale_ = scale;
+            Q_EMIT changed();
+        }
+    }
+}
+
+void SurfaceView::setGroundVisible(bool visible)
+{
+    if(auto* r = RENDER_IMPL(SurfaceView); r) {
+        if(r->groundVisible_ != visible) {
+            r->groundVisible_ = visible;
+            Q_EMIT changed();
+        }
+    }
+}
+
 QRectF SurfaceView::getSurfaceBounds() const
 {
     auto r = RENDER_IMPL(SurfaceView);
@@ -455,7 +475,7 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
     QRectF bounds  = getSurfaceBounds();
     bool minZValid = qIsFinite(minZ_) && minZ_ < 1e6f && minZ_ > -1e6f;
 
-    if (!bounds.isEmpty() && minZValid) {
+    if (groundVisible_ && !bounds.isEmpty() && minZValid) {
         // === Pass 1: 将高度场几何体写入模板缓冲区（标记高度场区域为1） ===
         ctx->glEnable(GL_STENCIL_TEST);
         ctx->glClearStencil(0);
@@ -497,7 +517,10 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
         sShP->enableAttributeArray(posLoc);
 
         float zRange = qMax(0.1f, maxZ_ - minZ_);
-        float groundZ = minZ_ - zRange * 0.05f - 0.05f;
+        float groundZBase = minZ_ - zRange * 0.05f - 0.05f;
+        // 补偿surfaceModel的Z平移+缩放，使水平陆地经变换后Z位置恒定不随垂直缩放变化
+        float groundZ = qFuzzyIsNull(verticalScale_) ? groundZBase : (-groundZBase / verticalScale_
+                                        + minZ_ * (1.0f + verticalScale_));
 
         float minX = static_cast<float>(bounds.left());
         float minY = static_cast<float>(bounds.top());
@@ -589,7 +612,7 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
         }
     }
 
-    // ===== 新增：渲染边界顶点 =====
+    // ===== 渲染边界顶点 =====
     // renderBoundaryVertices(ctx, mvp,shaderProgramMap);
 }
 

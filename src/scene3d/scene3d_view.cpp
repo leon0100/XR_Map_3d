@@ -1087,6 +1087,10 @@ void GraphicsScene3dView::setVerticalScale(float scale)
     else if(scale > 10.f)   m_verticalScale = -10.0f;
     else                    m_verticalScale = -scale;
 
+    if (surfaceView_) {
+        surfaceView_->setVerticalScale(m_verticalScale);
+    }
+
     QQuickFramebufferObject::update();
 }
 

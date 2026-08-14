@@ -23,6 +23,7 @@ public:
     Q_INVOKABLE void onContoursVisibilityCheckBoxCheckedChanged(bool checked);
     Q_INVOKABLE void onVertexVisibilityCheckBoxCheckedChanged(bool checked);
     Q_INVOKABLE void onOutlineVisibleChanged(bool visible);
+    Q_INVOKABLE void onGroundVisibleChanged(bool visible);
     Q_INVOKABLE void onUpdateIsobathsButtonClicked();
     Q_INVOKABLE void onTrianglesVisible(bool state);
     Q_INVOKABLE void onEdgesVisible(bool state);

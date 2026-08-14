@@ -132,6 +132,15 @@ void IsobathsViewControlMenuController::onOutlineVisibleChanged(bool visible)
     }
 }
 
+void IsobathsViewControlMenuController::onGroundVisibleChanged(bool visible)
+{
+    if(graphicsSceneViewPtr_) {
+        if(auto surfacePtr = graphicsSceneViewPtr_->getSurfaceViewPtr(); surfacePtr) {
+            surfacePtr->setGroundVisible(visible);
+        }
+    }
+}
+
 void IsobathsViewControlMenuController::onUpdateIsobathsButtonClicked()
 {
     //if (graphicsSceneViewPtr_) {

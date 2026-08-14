@@ -139,7 +139,6 @@ double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,doubl
     return x_now;
 }
 
-
 void Plot2DEchogram::drawDepthFilter(Canvas canvas, int width, int cash_position, bool isVisible)
 {
     if(!isVisible) {
@@ -247,7 +246,6 @@ QList<int> Plot2DEchogram::getDepthListKF()
 
         isFirst = 0;
     }
-
 
     return list_kf;
 }
@@ -1318,6 +1316,8 @@ void Plot2DEchogram::clearPlotData()
 {
     clearDeleteFrame();
     clearBatchCorrect();
+    _cash.clear();
+    resetCash();
     wavePixel_ = CashLine();
 }
 
