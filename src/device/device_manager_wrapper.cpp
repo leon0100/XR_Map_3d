@@ -36,10 +36,10 @@ QUuid DeviceManagerWrapper::getFileUuid() const
     return QUuid(kFileUuidStr);
 }
 
-void DeviceManagerWrapper::initStreamList()
-{
-    workerObject_->initStreamList();
-}
+// void DeviceManagerWrapper::initStreamList()
+// {
+//     workerObject_->initStreamList();
+// }
 
 void DeviceManagerWrapper::resetFileAndChannelId(int fileCnt)
 {

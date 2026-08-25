@@ -2,7 +2,6 @@
 #include <QHash>
 #include <QDebug>
 #include <QMetaType>
-#include <cmath>
 #include <QVector2D>
 
 
@@ -25,7 +24,6 @@ enum class DataProcessorType {
     staticTrack,
     kmlkmzFile,
 };
-
 Q_DECLARE_METATYPE(DataProcessorType)
 
 enum class HeightType {
@@ -35,18 +33,18 @@ enum class HeightType {
     kTriangulation,
 };
 
-static inline bool canOverwriteHeight(HeightType srcMark, HeightType dstMark) {
-    if (srcMark == HeightType::kTriangulation) {
-        return true;
-    }
-    if (srcMark == HeightType::kMosaic) {
-        return dstMark != HeightType::kTriangulation;
-    }
-    if (srcMark == HeightType::kExrtapolation) {
-        return dstMark == HeightType::kExrtapolation || dstMark == HeightType::kUndefined;
-    }
-    return false;
-}
+// static inline bool canOverwriteHeight(HeightType srcMark, HeightType dstMark) {
+//     if (srcMark == HeightType::kTriangulation) {
+//         return true;
+//     }
+//     if (srcMark == HeightType::kMosaic) {
+//         return dstMark != HeightType::kTriangulation;
+//     }
+//     if (srcMark == HeightType::kExrtapolation) {
+//         return dstMark == HeightType::kExrtapolation || dstMark == HeightType::kUndefined;
+//     }
+//     return false;
+// }
 
 enum WorkFlag : quint32 {
     WF_None     = 0,
@@ -72,33 +70,33 @@ ZL[] = {
     {7, 1.5625f}
 };
 
-inline int pickZoomByDistance(float meters)
-{
-    //if (meters < 10.0f)   return 1;   // 100 px/m
-    if (meters < 40.0f)   return 2;   // 50
-    if (meters < 100.0f)  return 3;   // 25
-    if (meters < 200.0f)  return 4;   // 12.5
-    if (meters < 500.0f)  return 5;   // 6.25
-    //if (meters < 800.0f) return 6;   // 3.125
-    return 6;                    // 1.5625
-}
+// inline int pickZoomByDistance(float meters)
+// {
+//     //if (meters < 10.0f)   return 1;   // 100 px/m
+//     if (meters < 40.0f)   return 2;   // 50
+//     if (meters < 100.0f)  return 3;   // 25
+//     if (meters < 200.0f)  return 4;   // 12.5
+//     if (meters < 500.0f)  return 5;   // 6.25
+//     //if (meters < 800.0f) return 6;   // 3.125
+//     return 6;                    // 1.5625
+// }
 
-inline int zoomFromMpp(float mpp)
-{
-    // mpp = 1 / pxPerMeter - ближайший
-    float bestDiff = 1e9f;
-    int bestZoom = 1;
-    for (auto z : ZL) {
-        float mppZ = 1.0f / z.pxPerMeter;
-        float d = std::fabs(mpp - mppZ);
-        if (d < bestDiff) {
-            bestDiff = d;
-            bestZoom = z.zoom;
-        }
-    }
+// inline int zoomFromMpp(float mpp)
+// {
+//     // mpp = 1 / pxPerMeter - ближайший
+//     float bestDiff = 1e9f;
+//     int bestZoom = 1;
+//     for (auto z : ZL) {
+//         float mppZ = 1.0f / z.pxPerMeter;
+//         float d = std::fabs(mpp - mppZ);
+//         if (d < bestDiff) {
+//             bestDiff = d;
+//             bestZoom = z.zoom;
+//         }
+//     }
 
-    return bestZoom;
-}
+//     return bestZoom;
+// }
 
 inline float mppFromZoom(int zoom)
 {
@@ -111,10 +109,10 @@ inline float mppFromZoom(int zoom)
     return 1.0f / 12.5f; // by def
 }
 
-inline float tileSideMetersFromZoom(int zoom, int tileSidePx = 256)
-{
-    return tileSidePx * mppFromZoom(zoom);
-}
+// inline float tileSideMetersFromZoom(int zoom, int tileSidePx = 256)
+// {
+//     return tileSidePx * mppFromZoom(zoom);
+// }
 
 
 struct TileKey {
@@ -153,16 +151,16 @@ inline int floor_div(int a, int b) {
     return q;
 }
 
-inline void childrenOf(const TileKey& p, TileKey out[4]) {
-    out[0] = { 2 * p.x    , 2 * p.y    , p.zoom + 1 };
-    out[1] = { 2 * p.x + 1, 2 * p.y    , p.zoom + 1 };
-    out[2] = { 2 * p.x    , 2 * p.y + 1, p.zoom + 1 };
-    out[3] = { 2 * p.x + 1, 2 * p.y + 1, p.zoom + 1 };
-}
+// inline void childrenOf(const TileKey& p, TileKey out[4]) {
+//     out[0] = { 2 * p.x    , 2 * p.y    , p.zoom + 1 };
+//     out[1] = { 2 * p.x + 1, 2 * p.y    , p.zoom + 1 };
+//     out[2] = { 2 * p.x    , 2 * p.y + 1, p.zoom + 1 };
+//     out[3] = { 2 * p.x + 1, 2 * p.y + 1, p.zoom + 1 };
+// }
 
-inline TileKey parentOf(const TileKey& c) {
-    return { floor_div(c.x,2), floor_div(c.y,2), c.zoom-1 };
-}
+// inline TileKey parentOf(const TileKey& c) {
+//     return { floor_div(c.x,2), floor_div(c.y,2), c.zoom-1 };
+// }
 
 
 namespace mosaic {
@@ -173,22 +171,22 @@ namespace mosaic {
 // };
 }
 
-inline int tileIndexFromCoord(double coordMeters, double tileSideMeters) {
-    const double q = coordMeters / tileSideMeters;
-    return static_cast<int>(std::floor(q + 1e-12));
-}
+// inline int tileIndexFromCoord(double coordMeters, double tileSideMeters) {
+//     const double q = coordMeters / tileSideMeters;
+//     return static_cast<int>(std::floor(q + 1e-12));
+// }
 
-inline TileKey tileKeyFromWorld(float worldX, float worldY, int zoom, int tileSidePx = 256)
-{
-    const float tileSideMeters = tileSideMetersFromZoom(zoom, tileSidePx);
-    const int x = tileIndexFromCoord(worldX, tileSideMeters);
-    const int y = tileIndexFromCoord(worldY, tileSideMeters);
-    return { x, y, zoom };
-}
+// inline TileKey tileKeyFromWorld(float worldX, float worldY, int zoom, int tileSidePx = 256)
+// {
+//     const float tileSideMeters = tileSideMetersFromZoom(zoom, tileSidePx);
+//     const int x = tileIndexFromCoord(worldX, tileSideMeters);
+//     const int y = tileIndexFromCoord(worldY, tileSideMeters);
+//     return { x, y, zoom };
+// }
 
-inline QVector2D worldOriginFromKey(const TileKey& k, int tileSidePx = 256)
-{
-    const float S = tileSideMetersFromZoom(k.zoom, tileSidePx);
-    return { k.x * S, k.y * S };
-}
+// inline QVector2D worldOriginFromKey(const TileKey& k, int tileSidePx = 256)
+// {
+//     const float S = tileSideMetersFromZoom(k.zoom, tileSidePx);
+//     return { k.x * S, k.y * S };
+// }
 

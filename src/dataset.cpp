@@ -299,30 +299,30 @@ void Dataset::addRangefinder(const ChannelId& channelId, float distance)
 //     emit dataUpdate();
 // }
 
-void Dataset::addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt) {
-    int pool_index = endIndex();
+// void Dataset::addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt) {
+//     int pool_index = endIndex();
 
-    if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == true)) {
-        // addNewEpoch();
-    }
+//     if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == true)) {
+//         // addNewEpoch();
+//     }
 
-    pool_index = endIndex();
+//     pool_index = endIndex();
 
-    pool_[pool_index].setDopplerBeam(beams, cnt);
-    emit dataUpdate();
-}
+//     pool_[pool_index].setDopplerBeam(beams, cnt);
+//     emit dataUpdate();
+// }
 
-void Dataset::addDVLSolution(IDBinDVL::DVLSolution dvlSolution) {
-    int pool_index = endIndex();
+// void Dataset::addDVLSolution(IDBinDVL::DVLSolution dvlSolution) {
+//     int pool_index = endIndex();
 
-    if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == false)) {
-        // addNewEpoch();
-        pool_index = endIndex();
-    }
+//     if(pool_index < 0 || (pool_[pool_index].isDopplerBeamAvail() == false)) {
+//         // addNewEpoch();
+//         pool_index = endIndex();
+//     }
 
-    pool_[pool_index].setDVLSolution(dvlSolution);
-    emit dataUpdate();
-}
+//     pool_[pool_index].setDVLSolution(dvlSolution);
+//     emit dataUpdate();
+// }
 
 void Dataset::addAtt(float yaw, float pitch, float roll)
 {
@@ -772,33 +772,33 @@ void Dataset::spatialProcessing() {
     }
 }
 
-void Dataset::usblProcessing() {
-    const int to_size = size();
-    int from_index = 0;
+// void Dataset::usblProcessing() {
+//     const int to_size = size();
+//     int from_index = 0;
 
-    _beaconTrack.clear();
-    _beaconTrack1.clear();
+//     _beaconTrack.clear();
+//     _beaconTrack1.clear();
 
-    for(int i = from_index; i < to_size; i+=1) {
-        Epoch* epoch = fromIndex(i);
-        Position boatPos = epoch->getPositionGNSS();
+//     for(int i = from_index; i < to_size; i+=1) {
+//         Epoch* epoch = fromIndex(i);
+//         Position boatPos = epoch->getPositionGNSS();
 
-        if(boatPos.ned.isCoordinatesValid() && epoch->isAttAvail() && epoch->isUsblSolutionAvailable()) {
-            double n = boatPos.ned.n, e = boatPos.ned.e;
-            Q_UNUSED(n);
-            Q_UNUSED(e);
-            double yaw = epoch->yaw();
-            double azimuth = epoch->usblSolution().azimuth_deg-180;
-            double dist = epoch->usblSolution().distance_m;
-            double dir = ((yaw + azimuth) + 120);
-            double rel_n = dist*cos(qDegreesToRadians(dir));
-            double rel_e = dist*sin(qDegreesToRadians(dir));
-            Q_UNUSED(rel_n);
-            Q_UNUSED(rel_e);
+//         if(boatPos.ned.isCoordinatesValid() && epoch->isAttAvail() && epoch->isUsblSolutionAvailable()) {
+//             double n = boatPos.ned.n, e = boatPos.ned.e;
+//             Q_UNUSED(n);
+//             Q_UNUSED(e);
+//             double yaw = epoch->yaw();
+//             double azimuth = epoch->usblSolution().azimuth_deg-180;
+//             double dist = epoch->usblSolution().distance_m;
+//             double dir = ((yaw + azimuth) + 120);
+//             double rel_n = dist*cos(qDegreesToRadians(dir));
+//             double rel_e = dist*sin(qDegreesToRadians(dir));
+//             Q_UNUSED(rel_n);
+//             Q_UNUSED(rel_e);
 
-        }
-    }
-}
+//         }
+//     }
+// }
 
 void Dataset::setRefPosition(int epoch_index) {
     qDebug() << "Dataset::setRefPosition000000.................";

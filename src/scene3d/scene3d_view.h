@@ -3,20 +3,20 @@
 
 #include <QQuickFramebufferObject>
 #include <QtMath>
+// #include <QQmlApplicationEngine>
 #include "coordinate_axes.h"
 #include "plane_grid.h"
 #include "ray_caster.h"
 #include "surface_view.h"
 #include "image_view.h"
 #include "map_view.h"
-#include "contacts.h"
 #include "boat_track.h"
 #include "bottom_track.h"
 #include "polygon_group.h"
 #include "point_group.h"
 #include "ray.h"
 #include "navigation_arrow.h"
-#include "usbl_view.h"
+// #include "usbl_view.h"
 #include "isobaths_view.h"
 #include "data_processor.h"
 #include "screetShot.h"
@@ -129,14 +129,14 @@ public:
         LLA yerevanLla = LLA(32.262781f, 118.702785f, 0.0f);
 
 
-        // 偏航滤波器
-        float navYawFilteredRad_        = 0.f;
-        bool  navYawInited_             = false;
-        QElapsedTimer navYawTmr_;
-        float navYawTauSec_             = 1.2;
-        float navYawDeadbandRad_        = qDegreesToRadians(2.0f);
-        float navYawMaxRateRadPerSec_   = qDegreesToRadians(90.0f);
-        float navYawSnapRad_            = qDegreesToRadians(120.0f);
+        // // 偏航滤波器
+        // float navYawFilteredRad_        = 0.f;
+        // bool  navYawInited_             = false;
+        // QElapsedTimer navYawTmr_;
+        // float navYawTauSec_             = 1.2;
+        // float navYawDeadbandRad_        = qDegreesToRadians(2.0f);
+        // float navYawMaxRateRadPerSec_   = qDegreesToRadians(90.0f);
+        // float navYawSnapRad_            = qDegreesToRadians(120.0f);
 
     };
 
@@ -217,10 +217,9 @@ public:
     std::shared_ptr<SurfaceView>     getSurfaceViewPtr() const;
     std::shared_ptr<ImageView>       getImageViewPtr() const;
     std::shared_ptr<MapView>         getMapViewPtr() const;
-    std::shared_ptr<Contacts>        getContactsPtr() const;
     std::shared_ptr<PointGroup>      pointGroup() const;
     std::shared_ptr<PolygonGroup>    polygonGroup() const;
-    std::shared_ptr<UsblView>        getUsblViewPtr() const;
+    // std::shared_ptr<UsblView>        getUsblViewPtr() const;
     std::shared_ptr<NavigationArrow> getNavigationArrowPtr() const;
     std::weak_ptr<Camera>            camera() const;
     float verticalScale() const;
@@ -259,7 +258,6 @@ public:
     void setNavigatorViewLocation(bool state);
 
 
-
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
@@ -283,7 +281,6 @@ public Q_SLOTS:
     void setDataProcessorPtr(DataProcessor* dataProcessorPtr);
     void addPoints(QVector<QVector3D>, QColor color, float width = 1);
     void setQmlRootObject(QObject* object);
-    void setQmlAppEngine(QQmlApplicationEngine* engine);
     void updateMapView();
     void updateViews();
 
@@ -309,7 +306,6 @@ private:
     void updateBounds();
     void updatePlaneGrid();
     void clearComboSelectionRect();
-    void initAutoDistTimer();
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
     QVector3D calculateToWorldCoor(qreal x, qreal y);
     void updateDistance();
@@ -327,7 +323,6 @@ private:
     std::shared_ptr<SurfaceView>  surfaceView_;
     std::shared_ptr<ImageView>    imageView_; //管理和渲染多个瓦片组成地图
     std::shared_ptr<MapView>      mapView_;   //渲染单个图片/纹理
-    std::shared_ptr<Contacts>     contacts_;
     std::shared_ptr<BoatTrack>    boatTrack_;
     std::shared_ptr<PolygonOutline>  polygonOutline_;
     std::shared_ptr<BottomTrack>  m_bottomTrack;
@@ -337,7 +332,7 @@ private:
     std::shared_ptr<PlaneGrid>    m_planeGrid; //辅助网格
     std::shared_ptr<SceneObject>  m_vertexSynchroCursour;
     std::shared_ptr<NavigationArrow> navigationArrow_;
-    std::shared_ptr<UsblView>     usblView_;
+    // std::shared_ptr<UsblView>     usblView_;
 
     QMatrix4x4 m_model;
     QMatrix4x4 m_projection;

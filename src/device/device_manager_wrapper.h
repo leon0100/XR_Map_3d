@@ -18,7 +18,7 @@ public:
     ~DeviceManagerWrapper();
 
     Q_PROPERTY(bool protoBinConsoled READ getProtoBinConsoled WRITE setProtoBinConsoled)
-    Q_PROPERTY(StreamListModel* streamsList READ streamsList NOTIFY streamChanged)
+    // Q_PROPERTY(StreamListModel* streamsList READ streamsList NOTIFY streamChanged)
     Q_PROPERTY(float vruVoltage READ vruVoltage NOTIFY vruChanged)
     Q_PROPERTY(float vruCurrent READ vruCurrent NOTIFY vruChanged)
     Q_PROPERTY(float vruVelocityH READ vruVelocityH NOTIFY vruChanged)
@@ -30,7 +30,7 @@ public:
     DeviceManager* getWorker();
     QUuid getFileUuid() const;
 
-    StreamListModel*     streamsList    () { return getWorker()->streamsList();    }
+    // StreamListModel*     streamsList    () { return getWorker()->streamsList();    }
     float                vruVoltage     () { return getWorker()->vruVoltage();     }
     float                vruCurrent     () { return getWorker()->vruCurrent();     }
     float                vruVelocityH   () { return getWorker()->vruVelocityH();   }
@@ -49,7 +49,7 @@ public:
         getWorker()->setUSBLBeaconDirectAsk(USBLBeaconDirectAskState_);
     }
 
-    void initStreamList();
+    // void initStreamList();
 
     int getAverageChartLosses() const {
         return averageChartLosses_;

@@ -8,7 +8,7 @@
 #include <QUuid>
 #include "dataset.h"
 // #include "link.h"
-#include "proto_binnary.h"
+// #include "proto_binnary.h"
 
 
 class Logger : public QObject
@@ -40,7 +40,7 @@ public slots:
     bool dataByteExport(QByteArray data);
     bool endExportStream();
 
-    void receiveProtoFrame(ProtoBinOut protoBinOut);
+    // void receiveProtoFrame(ProtoBinOut protoBinOut);
 
 private:
     struct {

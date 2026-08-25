@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
     QCoreApplication::addLibraryPath(QStringLiteral(":/android_rcc_bundle/plugins"));
 
     corePtr = new Core();   // 在QApplication创建后初始化，避免QEventLoop错误
-    corePtr->initStreamList();
+    // corePtr->initStreamList();
 
     // setApplicationDisplayName(app);
     QQmlApplicationEngine engine;

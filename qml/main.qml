@@ -38,6 +38,7 @@ ApplicationWindow  {
             theme.refreshScreenSize()
         }
         waterViewFirst.closeEchoBathyIsobathOutside(0,0)
+        scene3DToolbar.closeIsobathsOutside(0, 0)
     }
 
     Settings {
@@ -82,7 +83,6 @@ ApplicationWindow  {
         id: expandToolBar
         visible: visualisationLayout.splitMode !== 1
     }
-
 
     CollapseRectangle {
         id: collapseBar
@@ -539,7 +539,7 @@ ApplicationWindow  {
                 default: {
                     break
                 }
-                }
+              }
             }
         }
 
@@ -729,6 +729,7 @@ ApplicationWindow  {
 
                             expandToolBar.expanded = false
                             waterViewFirst.closeEchoBathyIsobathOutside(mouse.x, mouse.y)
+                            scene3DToolbar.closeIsobathsOutside(mouse.x, mouse.y)
                             if(mouse.button === Qt.RightButton && !renderer.outlineCompleted) {
                                 menuBlock.rightPosition(mouse.x, mouse.y)
                             }
@@ -904,6 +905,7 @@ ApplicationWindow  {
                             visualisationLayout.splitRatio = 0.5
                             waterViewFirst.resetTreeButtonX(theme.iconSize * 0.75)
                             waterViewFirst.closeEchoBathyIsobathOutside(0, 0)
+                            waterViewFirst.setIsobathsButtonVisible(true)
                         }
                     }
                 }
@@ -994,6 +996,7 @@ ApplicationWindow  {
                             visualisationLayout.splitMode  = 1
                             visualisationLayout.splitRatio = 0
                             waterViewFirst.resetTreeButtonX(renderer.width + 15)
+                            waterViewFirst.setIsobathsButtonVisible(false)
                         }
                         else if (visualisationLayout.splitRatio > (1 - visualisationLayout.edgeThreshold)) {
                             // 滑块靠近右边缘，触发地图全屏模式
@@ -1006,6 +1009,7 @@ ApplicationWindow  {
                             // 正常分窗模式
                             visualisationLayout.splitMode = 0
                             waterViewFirst.resetTreeButtonX(theme.iconSize * 0.75)
+                            waterViewFirst.setIsobathsButtonVisible(true)
                         }
 
                     }
@@ -1100,6 +1104,8 @@ ApplicationWindow  {
                                     visualisationLayout.splitMode  = 0
                                     visualisationLayout.splitRatio = 0.5
                                     waterViewFirst.resetTreeButtonX(theme.iconSize * 0.75)
+                                    scene3DToolbar.closeIsobathsOutside(0, 0)
+                                    waterViewFirst.setIsobathsButtonVisible(true)
                                 }
                             }
                         }
@@ -1128,6 +1134,8 @@ ApplicationWindow  {
                                     visualisationLayout.splitMode  = 1
                                     visualisationLayout.splitRatio = 1
                                     waterViewFirst.resetTreeButtonX(renderer.width + 15)
+                                    scene3DToolbar.closeIsobathsOutside(0, 0)
+                                    waterViewFirst.setIsobathsButtonVisible(false)
                                 }
                             }
                         }

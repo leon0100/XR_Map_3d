@@ -29,6 +29,8 @@
 #include "serialportmanager.h"
 #include "location.h"
 
+
+
 class Core : public QObject
 {
     Q_OBJECT
@@ -58,7 +60,7 @@ public:
 
     void consoleInfo(QString msg);
     void consoleWarning(QString msg);
-    void consoleProto(FrameParser& parser, bool isIn = true);
+    // void consoleProto(FrameParser& parser, bool isIn = true);
     void saveLLARefToSettings();
 
     QHash<QUuid, QString> getLinkNames() const;
@@ -81,7 +83,7 @@ public slots:
     bool getIsSeparateReading() const;
     void onChannelsUpdated();
     int  getDataProcessorState() const;
-    void initStreamList();
+    // void initStreamList();
     int  getCurrMapLevel() const;
     void createDatasetConnections();
     void createScene3dConnections();

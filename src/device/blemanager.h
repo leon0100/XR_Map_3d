@@ -21,11 +21,9 @@
 
 
 #include "dataset_defs.h"
-#include "id_binnary.h"
+// #include "id_binnary.h"
 
-// #include "tmodem.h"
-// #include "../Code/fifotmodem.h"
-// #include "../Map/gpsprocessing.h"
+
 #define RX_FIFO_SIZE (1024 * 1024 * 4)
 
 

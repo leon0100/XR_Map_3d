@@ -8,7 +8,7 @@
 #include <QGeoPositionInfoSource>
 #include <QUuid>
 // #include "link.h"
-#include "stream_list.h"
+// #include "stream_list.h"
 #include "id_binnary.h"
 
 class LocationReader;
@@ -31,16 +31,16 @@ public:
 
 
 public slots:
-    Q_INVOKABLE StreamListModel* streamsList();
+    // Q_INVOKABLE StreamListModel* streamsList();
 
-    void initStreamList();
+    // void initStreamList();
     void openFile_CSV(QString filePath, int fileIndex, int fileCnt);
     void openFile_tsl(QString filePath, EnumFileType currentFileType, int fileIndex, int fileCnt);
     void closeFile();
     // void onLinkOpened(QUuid uuid, Link *link);
     // void onLinkClosed(QUuid uuid, Link* link);
     // void onLinkDeleted(QUuid uuid, Link* link);
-    void binFrameOut(Parsers::ProtoBinOut protoOut);
+    // void binFrameOut(Parsers::ProtoBinOut protoOut);
     void setProtoBinConsoled(bool isConsoled);
 
     void beaconActivationReceive(uint8_t id);
@@ -51,11 +51,11 @@ public slots:
     void onStartUpgradingFirmware(QUuid linkUuid, uint8_t address, const QByteArray& firmware);
     void onUpgradingFirmwareDone();
 
-    void createLocationReader();
-    void destroyLocationReader();
-    void shutdown();
+    // void createLocationReader();
+    // void destroyLocationReader();
+    // void shutdown();
 
-    void onPositionUpdated(const QGeoPositionInfo& info);
+    // void onPositionUpdated(const QGeoPositionInfo& info);
 
 signals:
     void sendChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
@@ -66,9 +66,9 @@ signals:
     void chartComplete(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void rawDataRecieved(const ChannelId& channelId, RawData rawData);
     void distComplete(const ChannelId& channelId, int dist);
-    void usblSolutionComplete(IDBinUsblSolution::UsblSolution data);
-    void dopplerBeamComlete(IDBinDVL::BeamSolution* beams, uint16_t cnt);
-    void dvlSolutionComplete(IDBinDVL::DVLSolution dvlSolution);
+    // void usblSolutionComplete(IDBinUsblSolution::UsblSolution data);
+    // void dopplerBeamComlete(IDBinDVL::BeamSolution* beams, uint16_t cnt);
+    // void dvlSolutionComplete(IDBinDVL::DVLSolution dvlSolution);
     void chartSetupChanged();
     void distSetupChanged();
     void datasetChanged();
@@ -79,8 +79,8 @@ signals:
     void devChanged();
     void streamChanged();
     void vruChanged();
-    void writeProxyFrame(Parsers::FrameParser frame);
-    void writeMavlinkFrame(Parsers::FrameParser frame);
+    // void writeProxyFrame(Parsers::FrameParser frame);
+    // void writeMavlinkFrame(Parsers::FrameParser frame);
     void eventComplete(int timestamp, int id, int unixt);
     void rangefinderComplete(const ChannelId& channelId, float distance);
     void positionComplete(double lat, double lon, uint32_t date, uint32_t time);
@@ -95,7 +95,7 @@ signals:
     void fileStopsOpening();
     void fileStopsOpening2(QVector<float>& depth, double minZ, double maxZ);
     void chartLossesChanged();
-    void sendProtoFrame(const Parsers::ProtoBinOut& protoOut);
+    // void sendProtoFrame(const Parsers::ProtoBinOut& protoOut);
 
 
 private:
@@ -134,7 +134,7 @@ private:
     VruData vru_;
     // Link* mavlinkLink_;
     QHash<QUuid, int> otherProtocolStat_;
-    StreamList streamList_;
+    // StreamList streamList_;
     QUuid lastUuid_;
     QUuid proxyLinkUuid_;
     QUuid mavlinUuid_;

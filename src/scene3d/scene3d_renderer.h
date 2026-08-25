@@ -7,8 +7,8 @@
 #include "surface_view.h"
 #include "image_view.h"
 #include "map_view.h"
-#include "contacts.h"
-#include "point_group.h"
+// #include "contacts.h"
+// #include "point_group.h"
 #include "polygon_group.h"
 #include "scene3d_view.h"
 #include "navigation_arrow.h"
@@ -80,7 +80,7 @@ private:
     SurfaceView::SurfaceViewRenderImplementation         surfaceViewRenderImpl_;
     ImageView::ImageViewRenderImplementation             imageViewRenderImpl_;
     MapView::MapViewRenderImplementation                 mapViewRenderImpl_;
-    Contacts::ContactsRenderImplementation               contactsRenderImpl_;
+    // Contacts::ContactsRenderImplementation               contactsRenderImpl_;
     BottomTrack::BottomTrackRenderImplementation         m_bottomTrackRenderImpl;
     PolygonGroup::PolygonGroupRenderImplementation       m_polygonGroupRenderImpl;
     // PointGroup::PointGroupRenderImplementation           m_pointGroupRenderImpl;

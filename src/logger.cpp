@@ -373,20 +373,20 @@ bool Logger::endExportStream()
     return true;
 }
 
-void Logger::receiveProtoFrame(ProtoBinOut protoBinOut)
-{
-    QByteArray data = QByteArray((const char*)protoBinOut.frame(), protoBinOut.frameLen());
+// void Logger::receiveProtoFrame(ProtoBinOut protoBinOut)
+// {
+//     QByteArray data = QByteArray((const char*)protoBinOut.frame(), protoBinOut.frameLen());
 
-    if (isOpenKlf()) {
-        klfLogFile_->write(data);
+//     if (isOpenKlf()) {
+//         klfLogFile_->write(data);
 
-        if (klfCurrentIteration_ > klfFlushInterval_) {
-            klfLogFile_->flush();
-            klfCurrentIteration_ = 0;
-        }
-        else {
-            ++klfCurrentIteration_;
-        }
-    }
-}
+//         if (klfCurrentIteration_ > klfFlushInterval_) {
+//             klfLogFile_->flush();
+//             klfCurrentIteration_ = 0;
+//         }
+//         else {
+//             ++klfCurrentIteration_;
+//         }
+//     }
+// }
 

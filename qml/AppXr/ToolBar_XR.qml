@@ -75,6 +75,7 @@ Rectangle {
         onPressed: {
             if(targetPlot) {
                 targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                scene3DToolbar.closeIsobathsOutside(0, 0)
             }
             expandBar.expanded = false
         }
@@ -488,6 +489,7 @@ Rectangle {
 
                     if(targetPlot) {
                         targetPlot.closeEchoBathyIsobathOutside(0, 0)
+                        scene3DToolbar.closeIsobathsOutside(0, 0)
                     }
                     expandBar.expanded = false
                 }
@@ -599,6 +601,7 @@ Rectangle {
                             if(targetPlot) {
                                 targetPlot.closeEchoBathyIsobathOutside(0, 0)
                             }
+                            scene3DToolbar.closeIsobathsOutside(0, 0)
                             expandBar.expanded = false
                         }
                     }

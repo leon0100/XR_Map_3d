@@ -5,7 +5,6 @@
 #include <QtAndroid>
 #endif
 
-// #include "serialport.h"
 #include "console.h"
 
 

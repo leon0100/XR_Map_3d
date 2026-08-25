@@ -1,16 +1,14 @@
 #include "device_manager.h"
-#include "location_reader.h"
+// #include "location_reader.h"
 
 #include <QTimeZone>
 #include <QDateTime>
 #include <QUrl>
 #include <QCoreApplication>
-
+#include <QTimer>
 
 
 DeviceManager::DeviceManager():
-    // : mavlinkLink_(nullptr),
-    // streamList_(this),
     lastAddress_(-1),
     progress_(0),
     isConsoled_(false),
@@ -18,16 +16,16 @@ DeviceManager::DeviceManager():
     upgradeUuid_(QUuid()),
     upgradeAddr_(0)
 {
-    qRegisterMetaType<ProtoBinOut>("ProtoBinOut");
+    // qRegisterMetaType<ProtoBinOut>("ProtoBinOut");
     qRegisterMetaType<int16_t>("int16_t");
     qRegisterMetaType<QVector<uint8_t>>("QVector<uint8_t>");
     qRegisterMetaType<QByteArray>("QByteArray");
-    qRegisterMetaType<IDBinUsblSolution::UsblSolution>("IDBinUsblSolution::UsblSolution");
-    qRegisterMetaType<IDBinDVL::BeamSolution>("IDBinDVL::BeamSolution");
+    // qRegisterMetaType<IDBinUsblSolution::UsblSolution>("IDBinUsblSolution::UsblSolution");
+    // qRegisterMetaType<IDBinDVL::BeamSolution>("IDBinDVL::BeamSolution");
     qRegisterMetaType<uint16_t>("uint16_t");
-    qRegisterMetaType<IDBinDVL::DVLSolution>("IDBinDVL::DVLSolution");
+    // qRegisterMetaType<IDBinDVL::DVLSolution>("IDBinDVL::DVLSolution");
     qRegisterMetaType<uint32_t>("uint32_t");
-    qRegisterMetaType<FrameParser>("FrameParser");
+    // qRegisterMetaType<FrameParser>("FrameParser");
     qRegisterMetaType<EnumFileType>("EnumFileType");
 }
 
@@ -75,10 +73,10 @@ void DeviceManager::resetFileAndChannelId(int fileCnt)
     maxZ_ = 0.0;
 }
 
-void DeviceManager::initStreamList()
-{
-    streamList_.initTimer();
-}
+// void DeviceManager::initStreamList()
+// {
+//     streamList_.initTimer();
+// }
 
 void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
 {
@@ -98,7 +96,7 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
         return;
     }
 
-    Parsers::FrameParser frameParser;
+    // Parsers::FrameParser frameParser;
     constexpr auto kFileUuidStr = "12345678-1234-1234-1234-1234567890ab";
     const QUuid someUuid(kFileUuidStr);
 
@@ -129,9 +127,6 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
         QStringList columns = row.split(",");
 
         Position pos;
-        // pos.lla.latitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-        // pos.lla.longitude = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-        // pos.lla.altitude  = columns[6].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
         pos.lla.latitude  = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
         pos.lla.longitude = columns[3].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
         pos.lla.altitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
@@ -599,10 +594,10 @@ void DeviceManager::closeFile()
 //     }
 // }
 
-void DeviceManager::binFrameOut(Parsers::ProtoBinOut protoOut)
-{
-    emit sendProtoFrame(protoOut);
-}
+// void DeviceManager::binFrameOut(Parsers::ProtoBinOut protoOut)
+// {
+//     emit sendProtoFrame(protoOut);
+// }
 
 void DeviceManager::setProtoBinConsoled(bool isConsoled)
 {
@@ -633,10 +628,10 @@ void DeviceManager::setUSBLBeaconDirectAsk(bool is_ask) {
     }
 }
 
-StreamListModel* DeviceManager::streamsList()
-{
-    return streamList_.streamsList();
-}
+// StreamListModel* DeviceManager::streamsList()
+// {
+//     return streamList_.streamsList();
+// }
 
 void DeviceManager::onStartUpgradingFirmware(QUuid linkUuid, uint8_t address, const QByteArray& firmware)
 {
@@ -652,44 +647,44 @@ void DeviceManager::onUpgradingFirmwareDone()
     upgradeData_.clear();
 }
 
-void DeviceManager::createLocationReader()
-{
-    if (locReader_) {
-        return;
-    }
+// void DeviceManager::createLocationReader()
+// {
+//     if (locReader_) {
+//         return;
+//     }
 
-    locReader_ = new LocationReader(this);
-    connect(locReader_, &LocationReader::positionUpdated, this, &DeviceManager::onPositionUpdated, Qt::QueuedConnection);
-}
+//     locReader_ = new LocationReader(this);
+//     connect(locReader_, &LocationReader::positionUpdated, this, &DeviceManager::onPositionUpdated, Qt::QueuedConnection);
+// }
 
-void DeviceManager::destroyLocationReader()
-{
-    if (!locReader_) {
-        return;
-    }
+// void DeviceManager::destroyLocationReader()
+// {
+//     if (!locReader_) {
+//         return;
+//     }
 
-    locReader_->deleteLater();
-    locReader_ = nullptr;
-}
+//     locReader_->deleteLater();
+//     locReader_ = nullptr;
+// }
 
-void DeviceManager::shutdown()
-{
-    destroyLocationReader();
-}
+// void DeviceManager::shutdown()
+// {
+    // destroyLocationReader();
+// }
 
-void DeviceManager::onPositionUpdated(const QGeoPositionInfo &info)
-{
-    IDBinNav::SimpleNav smplNav;
-    smplNav.latitude = info.coordinate().latitude();
-    smplNav.longitude = info.coordinate().longitude();
-    smplNav.depth = 0;
-    smplNav.yaw = info.attribute(QGeoPositionInfo::Attribute::Direction) ;
-    smplNav.pitch = 0;
-    smplNav.roll = 0;
+// void DeviceManager::onPositionUpdated(const QGeoPositionInfo &info)
+// {
+    // IDBinNav::SimpleNav smplNav;
+    // smplNav.latitude = info.coordinate().latitude();
+    // smplNav.longitude = info.coordinate().longitude();
+    // smplNav.depth = 0;
+    // smplNav.yaw = info.attribute(QGeoPositionInfo::Attribute::Direction) ;
+    // smplNav.pitch = 0;
+    // smplNav.roll = 0;
 
-    emit positionComplete(smplNav.latitude, smplNav.longitude, info.timestamp().toSecsSinceEpoch(), info.timestamp().toMSecsSinceEpoch());
-    emit attitudeComplete(smplNav.yaw, 0.0, 0.0);
-}
+    // emit positionComplete(smplNav.latitude, smplNav.longitude, info.timestamp().toSecsSinceEpoch(), info.timestamp().toMSecsSinceEpoch());
+    // emit attitudeComplete(smplNav.yaw, 0.0, 0.0);
+// }
 
 void DeviceManager::delAllDev()
 {

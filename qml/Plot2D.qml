@@ -80,6 +80,12 @@ WaterFall {
         closeIsobathsOutside(globalX, globalY)
     }
 
+    function setIsobathsButtonVisible(visible) {
+        isobathsBtn.visible = visible
+        if(visible) {
+            isobathsBtn.checked = false
+        }
+    }
 
     function setAim(mouseX, mouseY) {
         plot.plotMousePosition(mouseX, mouseY, true)

@@ -427,6 +427,7 @@ Rectangle {
                 collapseTimer.stop()
             }
             waterViewFirst.closeEchoBathyIsobathOutside(0, 0)
+            scene3DToolbar.closeIsobathsOutside(0, 0)
         }
 
     }

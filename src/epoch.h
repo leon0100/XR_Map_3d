@@ -163,8 +163,8 @@ public:
     void setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams);
     void setDist(const ChannelId& channelId, int dist);
     void setRangefinder(const ChannelId& channelId, float distance);
-    void setDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
-    void setDVLSolution(IDBinDVL::DVLSolution dvlSolution);
+    // void setDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
+    // void setDVLSolution(IDBinDVL::DVLSolution dvlSolution);
     void setPositionLLA(double lat, double lon, LLARef* ref = NULL, uint32_t unix_time = 0, int32_t nanosec = 0);
     void setPositionLLA(Position position);
     void setSonarPosition(Position val);
@@ -184,7 +184,7 @@ public:
     void setSonarPositionDataType(DataType dataType);
     DataType getSonarPositionDataType() const { return sonarPosition_.dataType; };
 
-    void set(IDBinUsblSolution::UsblSolution data) { _usblSolution = data;  _isUsblSolutionAvailable = true; }
+    // void set(IDBinUsblSolution::UsblSolution data) { _usblSolution = data;  _isUsblSolutionAvailable = true; }
 
     void setGnssVelocity(double h_speed, double course);
 
@@ -258,19 +258,19 @@ public:
     float pitch() { return _attitude.pitch; }
     float roll() { return _attitude.roll; }
 
-    bool isDopplerAvail() { return doppler.isAvai; }
-    float dopplerX() { return doppler.velocityX; }
+    // bool isDopplerAvail() { return doppler.isAvai; }
+    // float dopplerX() { return doppler.velocityX; }
 
-    bool isDopplerBeamAvail() { return _dopplerBeamCount > 0; }
-    bool isDopplerBeamAvail(uint16_t num) { return _dopplerBeamCount > num; }
-    IDBinDVL::BeamSolution dopplerBeam(uint16_t num) { return _dopplerBeams[num]; }
-    uint16_t dopplerBeamCount() {return _dopplerBeamCount; }
+    // bool isDopplerBeamAvail() { return _dopplerBeamCount > 0; }
+    // bool isDopplerBeamAvail(uint16_t num) { return _dopplerBeamCount > num; }
+    // IDBinDVL::BeamSolution dopplerBeam(uint16_t num) { return _dopplerBeams[num]; }
+    // uint16_t dopplerBeamCount() {return _dopplerBeamCount; }
 
-    IDBinDVL::DVLSolution dvlSolution() { return _dvlSolution; }
-    bool isDVLSolutionAvail() {  return flags.isDVLSolutionAvail; }
+    // IDBinDVL::DVLSolution dvlSolution() { return _dvlSolution; }
+    // bool isDVLSolutionAvail() {  return flags.isDVLSolutionAvail; }
 
-    bool isUsblSolutionAvailable() { return _isUsblSolutionAvailable; }
-    IDBinUsblSolution::UsblSolution usblSolution() { return _usblSolution; }
+    // bool isUsblSolutionAvailable() { return _isUsblSolutionAvailable; }
+    // IDBinUsblSolution::UsblSolution usblSolution() { return _usblSolution; }
 
     double lat() { return _positionGNSS.lla.latitude; }
     double lon() { return _positionGNSS.lla.longitude; }
@@ -341,13 +341,13 @@ protected:
     } _attitude;
 
 
-    IDBinDVL::BeamSolution _dopplerBeams[4];
-    uint16_t _dopplerBeamCount = 0;
+    // IDBinDVL::BeamSolution _dopplerBeams[4];
+    // uint16_t _dopplerBeamCount = 0;
 
-    IDBinDVL::DVLSolution _dvlSolution;
+    // IDBinDVL::DVLSolution _dvlSolution;
 
-    IDBinUsblSolution::UsblSolution _usblSolution;
-    bool _isUsblSolutionAvailable = false;
+    // IDBinUsblSolution::UsblSolution _usblSolution;
+    // bool _isUsblSolutionAvailable = false;
 
     Position _positionGNSS;
     Position _positionExternal;

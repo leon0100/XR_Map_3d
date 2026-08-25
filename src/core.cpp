@@ -125,50 +125,6 @@ void Core::consoleWarning(QString msg)
     getConsolePtr()->put(QtMsgType::QtWarningMsg, msg);
 }
 
-void Core::consoleProto(FrameParser &parser, bool isIn)
-{
-    QString str_mode;
-    QString comment = "";
-
-    switch (parser.type()) {
-        case CONTENT:
-            str_mode = "DATA";
-            if (parser.resp()) {
-                switch(parser.frame()[6]) {
-                    case respNone:          comment = "[respNone]";         break;
-                    case respOk:            comment = "[respOk]";           break;
-                    case respErrorCheck:    comment = "[respErrorCheck]";   break;
-                    case respErrorPayload:  comment = "[respErrorPayload]"; break;
-                    case respErrorID:       comment = "[respErrorID]";      break;
-                    case respErrorVersion:  comment = "[respErrorVersion]"; break;
-                    case respErrorType:     comment = "[respErrorType]";    break;
-                    case respErrorKey:      comment = "[respErrorKey]";     break;
-                    case respErrorRuntime:  comment = "[respErrorRuntime]"; break;
-                    default: comment = QString("[resp %1]").arg((int)parser.frame()[6]);  break;
-                }
-            }
-            else {
-                if (parser.id() == ID_EVENT) {
-                    comment = QString("Event ID %1").arg(*(uint32_t*)(&parser.frame()[10]));
-                }
-            }
-            break;
-        case SETTING:
-            str_mode = "SET";
-            break;
-        case GETTING:
-            str_mode = "GET";
-            break;
-        default:
-            str_mode = "NAN";
-            break;
-    }
-
-    QString str_dir;
-    isIn ? str_dir = "-->> " : str_dir = "<<-- ";
-}
-
-
 void Core::openLogFile(const QString& filePath, bool isAppend, bool onCustomEvent)
 {
     isFileOpening_ = true;
@@ -211,7 +167,7 @@ void Core::openLogFile(const QString& filePath, bool isAppend, bool onCustomEven
             scene3dViewPtr_->fitAllInView();
         }
         datasetPtr_->setRefPositionByFirstValid();
-        datasetPtr_->usblProcessing();
+        // datasetPtr_->usblProcessing();
 
         if (scene3dViewPtr_) {
             scene3dViewPtr_->addPoints(datasetPtr_->beaconTrack(), QColor(255, 0, 0), 10);
@@ -667,15 +623,12 @@ void Core::UILoad(QObject* object, const QUrl& url)
             plot2dList_.at(i)->setDataProcessor(dataProcessor_);
             scene3dViewPtr_->bottomTrack()->installEventFilter(plot2dList_.at(i));
             scene3dViewPtr_->getBoatTrackPtr()->installEventFilter(plot2dList_.at(i));
-            scene3dViewPtr_->getContactsPtr()->installEventFilter(plot2dList_.at(i));
             plot2dList_.at(i)->installEventFilter(scene3dViewPtr_->bottomTrack().get());
             plot2dList_.at(i)->installEventFilter(scene3dViewPtr_->getBoatTrackPtr().get());
-            plot2dList_.at(i)->installEventFilter(scene3dViewPtr_->getContactsPtr().get());
         }
     }
 
     scene3dViewPtr_->setQmlRootObject(object);
-    scene3dViewPtr_->setQmlAppEngine(qmlAppEnginePtr_);
 
     boatTrackControlMenuController_->setQmlEngine(object);
     boatTrackControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
@@ -729,7 +682,7 @@ void Core::UILoad(QObject* object, const QUrl& url)
 
     QMetaObject::invokeMethod(dataProcessor_, "setBottomTrackPtr", Qt::QueuedConnection,
                               Q_ARG(BottomTrack*, scene3dViewPtr_->bottomTrack().get()));
-    QMetaObject::invokeMethod(deviceManagerWrapperPtr_->getWorker(), "createLocationReader", Qt::QueuedConnection);
+    // QMetaObject::invokeMethod(deviceManagerWrapperPtr_->getWorker(), "createLocationReader", Qt::QueuedConnection);
 }
 
 void Core::setMosaicChannels(const QString& firstChStr, const QString& secondChStr)
@@ -1352,8 +1305,8 @@ void Core::createDeviceManagerConnections()
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::chartComplete, datasetPtr_,   &Dataset::addChart,              directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::distComplete, datasetPtr_,    &Dataset::addDist,               directionConnection);
     // QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::usblSolutionComplete, datasetPtr_, &Dataset::addUsblSolution,  directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::dopplerBeamComlete, datasetPtr_, &Dataset::addDopplerBeam,     directionConnection);
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::dvlSolutionComplete, datasetPtr_, &Dataset::addDVLSolution,    directionConnection);
+    // QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::dopplerBeamComlete, datasetPtr_, &Dataset::addDopplerBeam,     directionConnection);
+    // QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::dvlSolutionComplete, datasetPtr_, &Dataset::addDVLSolution,    directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::eventComplete, datasetPtr_,   &Dataset::addEvent,              directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::rangefinderComplete, datasetPtr_, &Dataset::addRangefinder,    directionConnection);
     QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::positionComplete, datasetPtr_,&Dataset::addPosition,           directionConnection);
@@ -1378,7 +1331,7 @@ void Core::createDeviceManagerConnections()
     QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi,                 directionConnection);
     QObject::connect(serialPortManager_.get(), &SerialPortManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourSerialPort, directionConnection);
 
-    QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame,           directionConnection);
+    // QObject::connect(deviceManagerWrapperPtr_->getWorker(), &DeviceManager::sendProtoFrame, &logger_, &Logger::receiveProtoFrame,           directionConnection);
 }
 
 QHash<QUuid, QString> Core::getLinkNames() const
@@ -1643,10 +1596,10 @@ int Core::getDataProcessorState() const
     return static_cast<int>(dataProcessorState_);
 }
 
-void Core::initStreamList()
-{
-    deviceManagerWrapperPtr_->initStreamList();
-}
+// void Core::initStreamList()
+// {
+//     deviceManagerWrapperPtr_->initStreamList();
+// }
 
 QObject* Core::progress() const
 {

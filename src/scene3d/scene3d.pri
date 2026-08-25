@@ -1,5 +1,3 @@
-# src/scene3d/scene3d.pri
-
 include($$PWD/controllers/controllers.pri)
 include($$PWD/core/core.pri)
 include($$PWD/domain/domain.pri)

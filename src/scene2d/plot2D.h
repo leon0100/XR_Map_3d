@@ -12,10 +12,9 @@
 #include "plot2D_aim.h"
 // #include "plot2D_attitude.h"
 // #include "plot2D_bottom_processing.h"
-#include "plot2D_contact.h"
+// #include "plot2D_contact.h"
 #include "plot2D_defs.h"
 // #include "plot2D_dvl_beam_velocity.h"
-// #include "plot2D_dvl_solution.h"
 #include "plot2D_echogram.h"
 // #include "plot2D_encoder.h"
 // #include "plot2D_gnss.h"
@@ -60,18 +59,18 @@ public:
 
     void setDataChannel(bool fromGui, const ChannelId& channel, uint8_t subChannel1, const QString& portName1, const ChannelId& channel2 = CHANNEL_NONE, uint8_t subChannel2 = 0, const QString& portName2 = QString());
 
-    bool getIsContactChanged();
+    // bool getIsContactChanged();
 
-    QString getContactInfo();
-    void    setContactInfo(const QString& str);
-    bool    getContactVisible();
-    void    setContactVisible(bool state);
-    int     getContactPositionX();
-    int     getContactPositionY();
-    int     getContactIndx();
-    double  getContactLat();
-    double  getContactLon();
-    double  getContactDepth();
+    // QString getContactInfo();
+    // void    setContactInfo(const QString& str);
+    // bool    getContactVisible();
+    // void    setContactVisible(bool state);
+    // int     getContactPositionX();
+    // int     getContactPositionY();
+    // int     getContactIndx();
+    // double  getContactLat();
+    // double  getContactLon();
+    // double  getContactDepth();
 
     bool getImage(int width, int height, QPainter* painter, bool is_horizontal);
     void draw(QPainter* painterPtr);
@@ -114,11 +113,11 @@ public:
     void setMousePosition(int x, int y, bool isSync = false);
     void simpleSetMousePosition(int x, int y);
     void setMouseTool(MouseTool tool);
-    bool setContact(int indx, const QString& text);
+    // bool setContact(int indx, const QString& text);
     // bool setActiveContact(int indx);
     // bool deleteContact(int indx);
     // void updateContact();
-    void onCursorMoved(int x, int y);
+    // void onCursorMoved(int x, int y);
 
     Canvas& canvas();
     DatasetCursor& cursor();
@@ -144,7 +143,7 @@ protected:
     Plot2DAim               aim_;
     // Plot2DAttitude          attitude_;
     // Plot2DBottomProcessing  bottomProcessing_;
-    Plot2DContact           contacts_;
+    // Plot2DContact           contacts_;
     // Plot2DDVLBeamVelocity   dvlBeamVelocity_;
     // Plot2DDVLSolution       dvlSolution_;
     Plot2DEchogram          echogram_;

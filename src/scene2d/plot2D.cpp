@@ -11,17 +11,8 @@ Plot2D::Plot2D()
     qRegisterMetaType<ChannelId>("ChannelId");
 
     echogram_.setVisible(true);
-    // attitude_.setVisible(true);
-    // encoder_.setVisible(true);
-    // dvlBeamVelocity_.setVisible(true);
-    // dvlSolution_.setVisible(true);
-    // usblSolution_.setVisible(true);
-    // bottomProcessing_.setVisible(true);
-    // rangefinder_.setVisible(true);
-    // depth_.setVisible(true);
     grid_.setVisible(true);
     aim_.setVisible(true);
-    // quadrature_.setVisible(false);
     setDataChannel(false, CHANNEL_NONE, 0, {});
     cursor_.attitude.from = -180;
     cursor_.attitude.to = 180;
@@ -51,10 +42,6 @@ std::tuple<ChannelId, uint8_t, QString> Plot2D::getSelectedChannelId(float curso
 void Plot2D::setDataset(Dataset *dataset)
 {
     datasetPtr_ = dataset;
-    // if (pendingBtpLambda_) {
-    //     pendingBtpLambda_();
-    //     pendingBtpLambda_ = nullptr;
-    // }
 }
 
 void Plot2D::setDataProcessorPtr(DataProcessor *dataProcessorPtr)
@@ -159,22 +146,9 @@ void Plot2D::draw(QPainter *painterPtr)
     //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
 
-    // attitude_.draw(this, datasetPtr_);
-    // encoder_.draw(this, datasetPtr_);
-    // dvlBeamVelocity_.draw(this, datasetPtr_);
-    // dvlSolution_.draw(this, datasetPtr_);
-    // usblSolution_.draw(this, datasetPtr_);
-    // bottomProcessing_.draw(this, datasetPtr_);
-    // rangefinder_.draw(this, datasetPtr_);
-    // depth_.draw(this, datasetPtr_);
-    // gnss_.draw(this, datasetPtr_);
-    // quadrature_.draw(this, datasetPtr_);
-
     painterPtr->setCompositionMode(QPainter::CompositionMode_Exclusion);
     grid_.draw(this, datasetPtr_);
     aim_.draw(this, datasetPtr_);
-
-    // contacts_.draw(this, datasetPtr_);
 }
 
 bool Plot2D::isHorizontal()
@@ -185,7 +159,7 @@ bool Plot2D::isHorizontal()
 void Plot2D::setHorizontal(bool is_horizontal)
 {
     isHorizontal_ = is_horizontal;
-    contacts_.setIsHorizontal(isHorizontal_);
+    // contacts_.setIsHorizontal(isHorizontal_);
 }
 
 void Plot2D::setAimEpochEventState(bool state)
@@ -262,60 +236,60 @@ void Plot2D::setDataChannel(bool fromGui, const ChannelId& channel, uint8_t subC
     resetCash();
 }
 
-bool Plot2D::getIsContactChanged()
-{
-    return contacts_.isChanged();
-}
+// bool Plot2D::getIsContactChanged()
+// {
+//     return contacts_.isChanged();
+// }
 
-QString Plot2D::getContactInfo()
-{
-    return contacts_.getInfo();
-}
+// QString Plot2D::getContactInfo()
+// {
+//     return contacts_.getInfo();
+// }
 
-void Plot2D::setContactInfo(const QString& str)
-{
-    contacts_.setInfo(str);
-}
+// void Plot2D::setContactInfo(const QString& str)
+// {
+//     contacts_.setInfo(str);
+// }
 
-bool Plot2D::getContactVisible()
-{
-    return contacts_.getVisible();
-}
+// bool Plot2D::getContactVisible()
+// {
+//     return contacts_.getVisible();
+// }
 
-void Plot2D::setContactVisible(bool state)
-{
-    contacts_.setVisible(state);
-}
+// void Plot2D::setContactVisible(bool state)
+// {
+//     contacts_.setVisible(state);
+// }
 
-int Plot2D::getContactPositionX()
-{
-    return contacts_.getPosition().x();
-}
+// int Plot2D::getContactPositionX()
+// {
+//     return contacts_.getPosition().x();
+// }
 
-int Plot2D::getContactPositionY()
-{
-    return contacts_.getPosition().y();
-}
+// int Plot2D::getContactPositionY()
+// {
+//     return contacts_.getPosition().y();
+// }
 
-int Plot2D::getContactIndx()
-{
-    return contacts_.getIndx();
-}
+// int Plot2D::getContactIndx()
+// {
+//     return contacts_.getIndx();
+// }
 
-double Plot2D::getContactLat()
-{
-    return contacts_.getLat();
-}
+// double Plot2D::getContactLat()
+// {
+//     return contacts_.getLat();
+// }
 
-double Plot2D::getContactLon()
-{
-    return contacts_.getLon();
-}
+// double Plot2D::getContactLon()
+// {
+//     return contacts_.getLon();
+// }
 
-double Plot2D::getContactDepth()
-{
-    return contacts_.getDepth();
-}
+// double Plot2D::getContactDepth()
+// {
+//     return contacts_.getDepth();
+// }
 
 float Plot2D::getEchogramLowLevel() const
 {
@@ -350,15 +324,9 @@ void Plot2D::setEchogramVisible(bool visible)
 }
 
 
-// float Plot2D::getEchogramScaleYFactor() const
-// {
-//     return echogram_.getScaleYFactor();
-// }
-
 void Plot2D::setBottomTrackVisible(bool visible)
 {
     // qDebug() << "Plot2D::setBottomTrackVisible.........";
-    // bottomProcessing_.setVisible(visible);
     plotUpdate();
 }
 
@@ -467,52 +435,6 @@ void Plot2D::setDistance(float from, float to)
 {
     cursor_.distance.set(from, to);
 }
-
-// void Plot2D::zoomDistance(float ratio)
-// {
-//     qDebug() << "Plot2D::zoomDistance.........";
-//     cursor_.distance.mode = AutoRangeNone;
-
-//     int  delta = ratio;
-//     if(delta == 0) return;
-
-//     float from = cursor_.distance.from;
-//     float to = cursor_.distance.to;
-//     float absrange = abs(to - from);
-
-//     float zoom = delta < 0 ? -delta*0.01f : delta*0.01f;
-//     float delta_range = absrange*zoom;
-//     float new_range = 0;
-
-//     if(delta_range < 0.1) {
-//         delta_range = 0.1;
-//     } else if(delta_range > 5) {
-//         delta_range = 5;
-//     }
-
-//     if(delta > 0) {
-//         new_range = absrange + delta_range;
-//     } else {
-//         new_range = absrange - delta_range;
-//     }
-
-//     if(new_range < 1) {
-//         new_range = 1;
-//     } else if(new_range > 500) {
-//         new_range = 500;
-//     }
-
-
-//     if (cursor_.isChannelDoubled()) {
-//         cursor_.distance.from = -ceil(new_range / 2);
-//         cursor_.distance.to = ceil(new_range / 2);
-//     }
-//     else {
-//        cursor_.distance.to = ceil(cursor_.distance.from + new_range);
-//     }
-
-//     plotUpdate();
-// }
 
 void Plot2D::scrollDistance(float ratio)
 {
@@ -728,101 +650,96 @@ void Plot2D::setMouseTool(MouseTool tool)
     cursor_.setTool(tool);
 }
 
-bool Plot2D::setContact(int indx, const QString& text)
-{
-    qDebug() << "Plot2D::setContact.........";
-    if (!datasetPtr_) {
-        qDebug() << "Plot2D::setContact returned: !_dataset";
-        return false;
-    }
+// bool Plot2D::setContact(int indx, const QString& text)
+// {
+//     qDebug() << "Plot2D::setContact.........";
+//     if (!datasetPtr_) {
+//         qDebug() << "Plot2D::setContact returned: !_dataset";
+//         return false;
+//     }
 
-    if (text.isEmpty()) {
-        qDebug() << "Plot2D::setContact returned: text.isEmpty()";
-        return false;
-    }
+//     if (text.isEmpty()) {
+//         qDebug() << "Plot2D::setContact returned: text.isEmpty()";
+//         return false;
+//     }
 
-    bool primary = indx == -1;
-    int currIndx = primary ? cursor_.lastEpochIndx : indx;
+//     bool primary = indx == -1;
+//     int currIndx = primary ? cursor_.lastEpochIndx : indx;
 
-    //qDebug() << "indx" << indx << "currIndx" << currIndx << text;
+//     //qDebug() << "indx" << indx << "currIndx" << currIndx << text;
 
-    auto* ep = datasetPtr_->fromIndex(currIndx);
-    if (!ep) {
-        qDebug() << "Plot2D::setContact returned: !ep";
-        return false;
-    }
+//     auto* ep = datasetPtr_->fromIndex(currIndx);
+//     if (!ep) {
+//         qDebug() << "Plot2D::setContact returned: !ep";
+//         return false;
+//     }
 
-    ep->contact_.info = text;
+//     ep->contact_.info = text;
 
-    if (primary) {
-        ep->contact_.cursorX = cursor_.contactX;
-        ep->contact_.cursorY = cursor_.contactY;
+//     if (primary) {
+//         ep->contact_.cursorX = cursor_.contactX;
+//         ep->contact_.cursorY = cursor_.contactY;
 
-        const float canvas_height = canvas_.height();
-        float value_range = cursor_.distance.to - cursor_.distance.from;
-        float value_scale = float(cursor_.contactY) / canvas_height;
-        float cursor_distance = value_scale * value_range + cursor_.distance.from;
+//         const float canvas_height = canvas_.height();
+//         float value_range = cursor_.distance.to - cursor_.distance.from;
+//         float value_scale = float(cursor_.contactY) / canvas_height;
+//         float cursor_distance = value_scale * value_range + cursor_.distance.from;
 
-        const auto [channelId, subIndx, name] = getSelectedChannelId(cursor_distance); // *
-        const float bottomTrack = ep->distProccesing(channelId);
-        const auto  sonarNed         = ep->getSonarPosition().ned;
-        const auto  sonarLla         = ep->getSonarPosition().lla;
+//         const auto [channelId, subIndx, name] = getSelectedChannelId(cursor_distance); // *
+//         const float bottomTrack = ep->distProccesing(channelId);
+//         const auto  sonarNed         = ep->getSonarPosition().ned;
+//         const auto  sonarLla         = ep->getSonarPosition().lla;
 
+//         ep->contact_.nedX             = sonarNed.n;
+//         ep->contact_.nedY             = sonarNed.e;
+//         ep->contact_.lat              = sonarLla.latitude;
+//         ep->contact_.lon              = sonarLla.longitude;
+//         ep->contact_.echogramDistance = cursor_distance;
 
-        ep->contact_.nedX             = sonarNed.n;
-        ep->contact_.nedY             = sonarNed.e;
-        ep->contact_.lat              = sonarLla.latitude;
-        ep->contact_.lon              = sonarLla.longitude;
-        ep->contact_.echogramDistance = cursor_distance;
+//         if (!cursor_.isChannelDoubled()) { // basic
+//             ep->contact_.depth            = cursor_distance;
+//         }
+//         else { // side scan
+//             if (!qIsFinite(bottomTrack)) {
+//                 ep->contact_.depth            = 0;
+//             }
+//             else  if (std::fabs(cursor_distance) < std::fabs(bottomTrack)) {
+//                 ep->contact_.depth            = bottomTrack;
+//             }
+//             else {
+//                 const float  calcRange        = std::sqrt(std::max(0.0, std::pow(cursor_distance, 2) - std::pow(bottomTrack, 2)));
+//                 const bool   goRight          = cursor_distance > 0; // *
+//                 const float  lAngleOffsetDeg  = 0.f;
+//                 const float  rAngleOffsetDeg  = 0.f;
+//                 const double yawRad           = qDegreesToRadians(ep->yaw());
+//                 const double leftAzRad        = yawRad - M_PI_2 + qDegreesToRadians(lAngleOffsetDeg);
+//                 const double rightAzRad       = yawRad + M_PI_2 - qDegreesToRadians(rAngleOffsetDeg);
+//                 const double beamAz           = goRight ? rightAzRad : leftAzRad;
+//                 const double dN               = calcRange * std::cos(beamAz);
+//                 const double dE               = calcRange * std::sin(beamAz);
+//                 const double R                = 6378137.0;
+//                 const double lat0_deg         = sonarLla.latitude;
+//                 const double lon0_deg         = sonarLla.longitude;
+//                 const double lat0_rad         = qDegreesToRadians(lat0_deg);
+//                 const double dLat_deg         = (dN / R) * (180.0 / M_PI);
+//                 const double dLon_deg         = (dE / (R * std::cos(lat0_rad))) * (180.0 / M_PI);
 
+//                 ep->contact_.nedX             = sonarNed.n + dN;
+//                 ep->contact_.nedY             = sonarNed.e + dE;
+//                 ep->contact_.echogramDistance = cursor_distance;
+//                 ep->contact_.depth            = bottomTrack;
+//                 ep->contact_.lat              = lat0_deg + dLat_deg;
+//                 ep->contact_.lon              = lon0_deg + dLon_deg;
+//             }
+//         }
+//     }
 
-        if (!cursor_.isChannelDoubled()) { // basic
-            ep->contact_.depth            = cursor_distance;
-        }
-        else { // side scan
-            if (!qIsFinite(bottomTrack)) {
-                ep->contact_.depth            = 0;
-            }
-            else  if (std::fabs(cursor_distance) < std::fabs(bottomTrack)) {
-                ep->contact_.depth            = bottomTrack;
-            }
-            else {
-                const float  calcRange        = std::sqrt(std::max(0.0, std::pow(cursor_distance, 2) - std::pow(bottomTrack, 2)));
-                const bool   goRight          = cursor_distance > 0; // *
-                const float  lAngleOffsetDeg  = 0.f;
-                const float  rAngleOffsetDeg  = 0.f;
-                const double yawRad           = qDegreesToRadians(ep->yaw());
-                const double leftAzRad        = yawRad - M_PI_2 + qDegreesToRadians(lAngleOffsetDeg);
-                const double rightAzRad       = yawRad + M_PI_2 - qDegreesToRadians(rAngleOffsetDeg);
-                const double beamAz           = goRight ? rightAzRad : leftAzRad;
-                const double dN               = calcRange * std::cos(beamAz);
-                const double dE               = calcRange * std::sin(beamAz);
-                const double R                = 6378137.0;
-                const double lat0_deg         = sonarLla.latitude;
-                const double lon0_deg         = sonarLla.longitude;
-                const double lat0_rad         = qDegreesToRadians(lat0_deg);
-                const double dLat_deg         = (dN / R) * (180.0 / M_PI);
-                const double dLon_deg         = (dE / (R * std::cos(lat0_rad))) * (180.0 / M_PI);
+//     sendSyncEvent(currIndx, ContactCreated);
 
-                ep->contact_.nedX             = sonarNed.n + dN;
-                ep->contact_.nedY             = sonarNed.e + dE;
-                ep->contact_.echogramDistance = cursor_distance;
-                ep->contact_.depth            = bottomTrack;
-                ep->contact_.lat              = lat0_deg + dLat_deg;
-                ep->contact_.lon              = lon0_deg + dLon_deg;
-            }
-        }
-    }
-    else {
-        // update rect
-    }
+//     plotUpdate();
 
-    sendSyncEvent(currIndx, ContactCreated);
-
-    plotUpdate();
-
-    return true;
-}
+//     return true;
+// }
 
 // bool Plot2D::setActiveContact(int indx)
 // {
@@ -888,21 +805,21 @@ bool Plot2D::setContact(int indx, const QString& text)
 //     plotUpdate();
 // }
 
-void Plot2D::onCursorMoved(int x, int y)
-{
-    if (isHorizontal_) {
-        contacts_.setMousePos(x, y);
-    } 
-    else {
-        const int horX = canvas_.width() - 1 - y;
-        const int horY = x;
-        const int clampedX = std::clamp(horX, 0, canvas_.width() - 1);
-        const int clampedY = std::clamp(horY, 0, canvas_.height() - 1);
-        contacts_.setMousePos(clampedX, clampedY);
-    }
+// void Plot2D::onCursorMoved(int x, int y)
+// {
+//     if (isHorizontal_) {
+//         // contacts_.setMousePos(x, y);
+//     }
+//     else {
+//         const int horX = canvas_.width() - 1 - y;
+//         const int horY = x;
+//         const int clampedX = std::clamp(horX, 0, canvas_.width() - 1);
+//         const int clampedY = std::clamp(horY, 0, canvas_.height() - 1);
+//         // contacts_.setMousePos(clampedX, clampedY);
+//     }
 
-    plotUpdate();
-}
+//     plotUpdate();
+// }
 
 Canvas &Plot2D::canvas()
 {
@@ -921,7 +838,6 @@ void Plot2D::resetCash()
 
 void Plot2D::plotUpdate()
 {
-
 }
 
 void Plot2D::sendSyncEvent(int epoch_index, QEvent::Type eventType)

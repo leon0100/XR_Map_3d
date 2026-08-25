@@ -42,9 +42,6 @@ void qPlot2D::paint(QPainter *painter)
 
     Plot2D::getImage(totalWidth - waveWidth, totalHeight, painter, _isHorizontal);
     Plot2D::draw(painter);
-    // if (Plot2D::getIsContactChanged()) {
-    //     emit contactChanged();
-    // }
 }
 
 void qPlot2D::setPlot(Dataset *dataset)
@@ -55,7 +52,6 @@ void qPlot2D::setPlot(Dataset *dataset)
     dataset_ = dataset;
     setDataset(dataset);
     connect(dataset, &Dataset::dataUpdate, this, &qPlot2D::dataUpdate);
-    // connect(dataset, &Dataset::updateMinMaxLoRng, this, &qPlot2D::updateMinMaxLoRng);
 }
 
 void qPlot2D::setDataProcessor(DataProcessor *dataProcessorPtr)
@@ -165,16 +161,6 @@ void qPlot2D::plotMouseTool(int mode)
 {
     setMouseTool((MouseTool)mode);
 }
-
-// bool qPlot2D::setContact(int indx, const QString& text)
-// {
-//     return Plot2D::setContact(indx, text);
-// }
-
-// bool qPlot2D::setActiveContact(int indx)
-// {
-//     return Plot2D::setActiveContact(indx);
-// }
 
 int qPlot2D::getMinUpRng()
 {
@@ -317,16 +303,6 @@ void qPlot2D::setSensitivity(int sensitive)
     echogram_.setSensitivity(sensitive);
     plotUpdate();
 }
-
-// bool qPlot2D::deleteContact(int indx)
-// {
-//     return Plot2D::deleteContact(indx);
-// }
-
-// void qPlot2D::updateContact()
-// {
-//     Plot2D::updateContact();
-// }
 
 void qPlot2D::setBottomLineVisible(bool isVisible)
 {
@@ -614,10 +590,10 @@ void qPlot2D::simplePlotMousePosition(int x, int y)
     }
 }
 
-void qPlot2D::onCursorMoved(int x, int y)
-{
-    Plot2D::onCursorMoved(x, y);
-}
+// void qPlot2D::onCursorMoved(int x, int y)
+// {
+//     Plot2D::onCursorMoved(x, y);
+// }
 
 void qPlot2D::dataUpdate()
 {

@@ -39,6 +39,25 @@ Item  {
     }
 
 
+
+    function closeIsobathsOutside(globalX, globalY) {
+        if(!mainviewIsobathsBtn.checked) {
+            return;
+        }
+        var pos = mainIsobathsRec.mapFromItem(null, globalX, globalY)
+        if(pos.x < 0 || pos.y < 0 || pos.x > mainIsobathsRec.width || pos.y > mainIsobathsRec.height) {
+            var btnPos = mainviewIsobathsBtn.mapFromItem(null, globalX, globalY)
+            if(btnPos.x < 0 || btnPos.y < 0 || btnPos.x > mainviewIsobathsBtn.width
+                    || btnPos.y > mainviewIsobathsBtn.height) {
+                mainviewIsobathsBtn.checked = false
+            }
+        }
+    }
+
+
+
+
+
     RowLayout {
         id: rowButtons
         spacing: 8
@@ -134,6 +153,7 @@ Item  {
                 if(targetPlot2d) {
                     targetPlot2d.closeEchoBathyIsobathOutside(0, 0)
                 }
+                scene3DToolbar.closeIsobathsOutside(0, 0)
                 expandBar.expanded = false
             }
 
@@ -170,6 +190,7 @@ Item  {
                 if(targetPlot2d) {
                     targetPlot2d.closeEchoBathyIsobathOutside(0, 0)
                 }
+                scene3DToolbar.closeIsobathsOutside(0, 0)
                 expandBar.expanded = false
             }
 
@@ -198,6 +219,7 @@ Item  {
                 if(targetPlot2d) {
                     targetPlot2d.closeEchoBathyIsobathOutside(0, 0)
                 }
+                scene3DToolbar.closeIsobathsOutside(0, 0)
                 expandBar.expanded = false
             }
 
@@ -216,16 +238,11 @@ Item  {
             buttonText: qsTr("Isobaths")
             iconSource: "qrc:/XR/contour.png"
             visible: visualisationLayout.splitMode === 2
-            // anchors.left: bathymetryBtn.right
-            // anchors.leftMargin: plotIconSize * 0.5
-            // anchors.bottom: parent.bottom
-            // anchors.bottomMargin: plotIconSize * 0.5
-
             clickAction: function() {
                 if(mainviewIsobathsBtn.checked) {
-                    mainIsobathsRec.x = northModeBtn.mapToItem(mainview.contentItem, 0, 0).x
-                    // mainIsobathsRec.y = mainviewIsobathsBtn.y - mainIsobathsRec.height - theme.iconSize * 0.15
-                    mainIsobathsRec.y = mainviewIsobathsBtn.y - theme.iconSize * 0.15
+                    var btnPos = mainviewIsobathsBtn.mapToItem(mainview.contentItem, 0, 0)
+                    mainIsobathsRec.x = btnPos.x - mainIsobathsRec.width * 0.32
+                    mainIsobathsRec.y = btnPos.y - mainIsobathsRec.height * 1.1
                 }
             }
         }

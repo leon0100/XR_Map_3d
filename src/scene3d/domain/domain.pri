@@ -2,12 +2,10 @@ INCLUDEPATH *= $$PWD
 DEPENDPATH *= $$PWD
 
 HEADERS += \
-    $$PWD/barycentric_interpolator.h \
     $$PWD/boat_track.h \
     $$PWD/bottom_track.h \
     $$PWD/boundary_detector.h \
     $$PWD/circle.h \
-    $$PWD/contour.h \
     $$PWD/coordinate_axes.h \
     $$PWD/cube.h \
     $$PWD/delaunay_triangulation.h \
@@ -31,15 +29,12 @@ HEADERS += \
     $$PWD/isobaths_view.h \
     $$PWD/triangle.h \
     $$PWD/usbl_view.h \
-    $$PWD/contacts.h
 
 
 
 SOURCES += \
     $$PWD/boat_track.cpp \
     $$PWD/bottom_track.cpp \
-    $$PWD/contacts.cpp \
-    $$PWD/contour.cpp \
     $$PWD/coordinate_axes.cpp \
     $$PWD/cube.cpp \
     $$PWD/image_view.cpp \

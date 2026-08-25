@@ -40,15 +40,10 @@ HEADERS += \
     src/map_defs.h \
     src/isobaths_defs.h \
     src/math_defs.h \
-    src/mav_link_conf.h \
-    src/proto_binnary.h \
-    src/stream_list.h \
-    src/stream_list_model.h \
     src/themes.h \
     src/tsl3.h \
     src/tslw.h \
-    src/xtf_conf.h \
-    src/location_reader.h
+
 
 ### SOURCES
 SOURCES += \
@@ -60,14 +55,10 @@ SOURCES += \
     src/data_horizon.cpp \
     src/epoch.cpp \
     src/hotkeys_manager.cpp \
-    src/id_binnary.cpp \
     src/location.cpp \
     src/logger.cpp \
     src/main.cpp \
     src/map_defs.cpp \
-    src/stream_list.cpp \
-    src/stream_list_model.cpp \
-    src/location_reader.cpp \
     src/themes.cpp
 
 FLASHER {
@@ -143,7 +134,6 @@ include($$PWD/src/data_processor/data_processor.pri)
 include($$PWD/src/scene2d/scene2d.pri)
 include($$PWD/src/scene3d/scene3d.pri)
 include($$PWD/src/device/device.pri)
-# include($$PWD/src/link/link.pri)
 include($$PWD/src/tile_engine/tile_engine.pri)
 
 

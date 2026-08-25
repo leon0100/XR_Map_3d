@@ -10,11 +10,11 @@
 
 #include "epoch.h"
 #include "data_interpolator.h"
-#include "usbl_view.h"
+// #include "usbl_view.h"
 #include "data_processor_defs.h"
 
 
-
+class GraphicsScene3dView;
 class Dataset : public QObject
 {
     Q_OBJECT
@@ -274,8 +274,8 @@ public slots:
     void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void  addDist(const ChannelId& channelId, int dist);
     void  addRangefinder(const ChannelId& channelId, float distance);
-    void  addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
-    void  addDVLSolution(IDBinDVL::DVLSolution dvlSolution);
+    // void  addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
+    // void  addDVLSolution(IDBinDVL::DVLSolution dvlSolution);
     void  addAtt(float yaw, float pitch, float roll);
     void  addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
     void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
@@ -298,7 +298,7 @@ public slots:
     void setChannelOffset(const ChannelId& channelId, float x, float y, float z);
     void spatialProcessing();
 
-    void usblProcessing();
+    // void usblProcessing();
     QVector<QVector3D> beaconTrack() {
         return _beaconTrack;
     }

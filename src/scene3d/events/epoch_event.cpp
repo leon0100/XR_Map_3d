@@ -1,9 +1,6 @@
 #include "epoch_event.h"
 
-EpochEvent::EpochEvent(Type eventType,
-                       Epoch *epoch,
-                       int epochIndex,
-                       const DatasetChannel& channelId)
+EpochEvent::EpochEvent(Type eventType, Epoch *epoch, int epochIndex, const DatasetChannel& channelId)
     : QEvent(eventType)
     , m_epoch(epoch)
     , m_epochIndex(epochIndex)

@@ -15,13 +15,13 @@ public:
     Q_PROPERTY(bool horizontal          READ isHorizontal        WRITE setHorizontal)
     Q_PROPERTY(float timelinePosition   READ timelinePosition    WRITE setTimelinePosition NOTIFY timelinePositionChanged)
     Q_PROPERTY(bool isEnabled           READ getPlotEnabled      WRITE setPlotEnabled)
-    Q_PROPERTY(QString contactInfo      READ getContactInfo      WRITE setContactInfo      NOTIFY contactChanged)
-    Q_PROPERTY(bool    contactVisible   READ getContactVisible   WRITE setContactVisible   NOTIFY contactChanged)
-    Q_PROPERTY(int     contactPositionX READ getContactPositionX                           NOTIFY contactChanged)
-    Q_PROPERTY(int     contactPositionY READ getContactPositionY                           NOTIFY contactChanged)
-    Q_PROPERTY(int     contactIndx      READ getContactIndx                                NOTIFY contactChanged)
-    Q_PROPERTY(double  contactLat       READ getContactLat                                 NOTIFY contactChanged)
-    Q_PROPERTY(double  contactDepth     READ getContactDepth                               NOTIFY contactChanged)
+    // Q_PROPERTY(QString contactInfo      READ getContactInfo      WRITE setContactInfo      NOTIFY contactChanged)
+    // Q_PROPERTY(bool    contactVisible   READ getContactVisible   WRITE setContactVisible   NOTIFY contactChanged)
+    // Q_PROPERTY(int     contactPositionX READ getContactPositionX                           NOTIFY contactChanged)
+    // Q_PROPERTY(int     contactPositionY READ getContactPositionY                           NOTIFY contactChanged)
+    // Q_PROPERTY(int     contactIndx      READ getContactIndx                                NOTIFY contactChanged)
+    // Q_PROPERTY(double  contactLat       READ getContactLat                                 NOTIFY contactChanged)
+    // Q_PROPERTY(double  contactDepth     READ getContactDepth                               NOTIFY contactChanged)
     Q_PROPERTY(bool batchCorrect   READ batchCorrect    WRITE setBatchCorrect    NOTIFY drawBatchCorrectChanged)
     Q_PROPERTY(bool depthCorrect   READ depthCorrect    WRITE setDepthCorrect    NOTIFY drawDepthCorrectChanged)
 
@@ -34,7 +34,6 @@ public:
 
     qPlot2D(QQuickItem* parent = nullptr);
     void paint(QPainter *painter) override;
-//    QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) override;
 
     void setPlot(Dataset* plot);
     void setDataProcessor(DataProcessor* dataProcessorPtr);
@@ -112,18 +111,12 @@ protected slots:
 
 public slots:
     void horScrollEvent(int delta);
-    // void verZoomEvent(int delta);
     void verScrollEvent(int delta);
     Q_INVOKABLE void scaleYZoomEvent(int delta);
     Q_INVOKABLE void plotMousePosition(int x, int y, bool isSync = false);
     Q_INVOKABLE void simplePlotMousePosition(int x, int y);
-    Q_INVOKABLE void onCursorMoved(int x, int y);
+    // Q_INVOKABLE void onCursorMoved(int x, int y);
     Q_INVOKABLE void plotMouseTool(int mode);
-    // Q_INVOKABLE bool setContact(int indx, const QString& text);
-    // Q_INVOKABLE bool setActiveContact(int indx);
-    // Q_INVOKABLE bool deleteContact(int indx);
-    // Q_INVOKABLE void updateContact();
-
 
     void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)
     {
