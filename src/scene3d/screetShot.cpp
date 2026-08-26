@@ -24,19 +24,6 @@
 /*---------------------------------------ScreetShot-----------------------------------------*/
 ScreetShot::ScreetShot(QObject *parent) : QObject{parent}
 {
-    // loadingQuickView_ = new QQuickView();
-    // loadingQuickView_->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    // loadingQuickView_->setSource(QUrl("qrc:/Bluetooth/loading.qml"));
-    // loadingQuickView_->setResizeMode(QQuickView::SizeRootObjectToView);
-
-    // QSize screen = QApplication::primaryScreen()->size();
-    // int screenSize   = qMin(screen.width(), screen.height()) * 0.075;
-    // loadingQuickView_->setGeometry((screen.width() - screenSize) / 2,
-    //                                (screen.height() - screenSize) / 2, screenSize, screenSize);
-
-
-    // GIF->dialogInfo(Dialog_Loading, "hide");
-
     connect(AppController::instance(), &AppController::safResultReceived,this,&ScreetShot::slot_safResultReceived);
 
     translate();
@@ -814,7 +801,6 @@ void ScreetShot::doSaveMapLevelProcess()
     QTimer* timeoutTimer = new QTimer(this);
     timeoutTimer->setSingleShot(true);
     connect(timeoutTimer, &QTimer::timeout, [this]() {
-        // QMetaObject::invokeMethod(loadingQuickView_, [this]() { loadingQuickView_->hide(); }, Qt::QueuedConnection);
         GIF->dialogInfo(Dialog_Loading, "hide");
         if(!openMapLevelList_) {
             judgeLevelCount_ = 13;
@@ -822,7 +808,6 @@ void ScreetShot::doSaveMapLevelProcess()
         }
     });
     timeoutTimer->start(7000);
-    // QMetaObject::invokeMethod(loadingQuickView_, [](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
     GIF->dialogInfo(Dialog_Loading, "hide");
     judgeLevelCount_ = (currMapLevel_ > 13) ? currMapLevel_ : 13;
 
@@ -918,7 +903,6 @@ void ScreetShot::judgeCurrentLevelExist(double longitude,double latitude,int lev
 void ScreetShot::slot_judgeLevelExist()
 {
     openMapLevelList_ = true;
-    // QMetaObject::invokeMethod(loadingQuickView_, [this]() {loadingQuickView_->hide(); }, Qt::QueuedConnection);
     GIF->dialogInfo(Dialog_Loading, "hide");
 
     setDataStatistics(topWidth_,rightHeight_);

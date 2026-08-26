@@ -251,11 +251,11 @@ public:
     Q_INVOKABLE void zoomInOut(bool zoomIn);
     Q_INVOKABLE void completeDrawOutline();
 
-    void setTrackLastData(bool state);
+    // void setTrackLastData(bool state);
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
     void setGridVisibility(bool state);
-    void setUseAngleLocation(bool state);
-    void setNavigatorViewLocation(bool state);
+    // void setUseAngleLocation(bool state);
+    // void setNavigatorViewLocation(bool state);
 
 
 protected:
@@ -268,7 +268,7 @@ public Q_SLOTS:
     void setIsometricView();
     void setCancelZoomView();
     void setMapView();//将3D视图切换到地图视图模式，也就是正交投影、俯视角度
-    void setLastEpochFocusView(bool useAngle, bool useNavigatorView);
+    // void setLastEpochFocusView(bool useAngle, bool useNavigatorView);
     void setIdleMode();
     void setVerticalScale(float scale);
     void shiftCameraZAxis(float shift);
@@ -363,10 +363,10 @@ private:
     bool switchedToBottomTrackVertexComboSelectionMode_;
     bool needToResetStartPos_;
     float lastCameraDist_;
-    bool trackLastData_;
+    // bool trackLastData_;
     bool gridVisibility_;
-    bool useAngleLocation_;
-    bool navigatorViewLocation_;
+    // bool useAngleLocation_;
+    // bool navigatorViewLocation_;
     bool isNorth_;
     QTimer* testingTimer_;
 

@@ -8,7 +8,6 @@
 #include "surface_processor.h"
 #include "isobaths_processor.h"
 #include "mosaic_processor.h"
-#include "bottom_track_processor.h"
 
 
 struct WorkBundle
@@ -37,7 +36,6 @@ public slots:
     void clearSurface();
     void clearMosaic();
     void clearIsobaths();
-    void clearBottomTrack();
 
     // settings
     void setDatasetPtr(Dataset* ds);
@@ -59,14 +57,11 @@ public slots:
     void setMinZ(float v);
     void setMaxZ(float v);
 
-    // tasks
-    void bottomTrackProcessing(const DatasetChannel& ch1, const DatasetChannel& ch2, const BottomTrackParam& p, bool manual, bool redrawAll);
     void processBundle(const WorkBundle& wb); // 依次执行一批任务
 
 signals:
     void jobFinished(); //用于 dataProcessor（正常，取消）
-    void bottomTrackStarted();
-    void bottomTrackFinished();
+
 
 private:
     inline bool isCanceled() const noexcept;
@@ -79,5 +74,4 @@ private:
     SurfaceProcessor     surface_;
     IsobathsProcessor    isobaths_;
     MosaicProcessor      mosaic_;
-    BottomTrackProcessor bottom_;
 };

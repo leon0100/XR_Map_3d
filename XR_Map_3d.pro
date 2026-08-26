@@ -23,11 +23,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 HEADERS += \
     src/console.h \
-    src/console_list_model.h \
     src/core.h \
     src/dataset.h \
     src/dataset_defs.h \
-    src/data_interpolator.h \
     src/data_horizon.h \
     src/dsp_defs.h \
     src/epoch.h \
@@ -36,7 +34,6 @@ HEADERS += \
     src/delaunay.h \
     src/delaunay_defs.h \
     src/location.h \
-    src/logger.h \
     src/map_defs.h \
     src/isobaths_defs.h \
     src/math_defs.h \
@@ -45,18 +42,14 @@ HEADERS += \
     src/tslw.h \
 
 
-### SOURCES
 SOURCES += \
     src/console.cpp \
-    src/console_list_model.cpp \
     src/core.cpp \
     src/dataset.cpp \
-    src/data_interpolator.cpp \
     src/data_horizon.cpp \
     src/epoch.cpp \
     src/hotkeys_manager.cpp \
     src/location.cpp \
-    src/logger.cpp \
     src/main.cpp \
     src/map_defs.cpp \
     src/themes.cpp

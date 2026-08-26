@@ -45,7 +45,6 @@ void registerQmlMetaTypes()
     qmlRegisterType<qPlot2D>("WaterFall", 1, 0, "WaterFall");
     qmlRegisterType<BottomTrack>("BottomTrack", 1, 0, "BottomTrack");
     qRegisterMetaType<BottomTrack::ActionEvent>("BottomTrack::ActionEvent");
-    // qRegisterMetaType<LinkAttribute>("LinkAttribute");
 }
 
 
@@ -89,7 +88,6 @@ int main(int argc, char *argv[])
     QCoreApplication::addLibraryPath(QStringLiteral(":/android_rcc_bundle/plugins"));
 
     corePtr = new Core();   // 在QApplication创建后初始化，避免QEventLoop错误
-    // corePtr->initStreamList();
 
     // setApplicationDisplayName(app);
     QQmlApplicationEngine engine;
@@ -106,17 +104,12 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("dataset", corePtr->getDatasetPtr());
     engine.rootContext()->setContextProperty("core", corePtr);
     engine.rootContext()->setContextProperty("theme", &theme);
-    // engine.rootContext()->setContextProperty("linkManagerWrapper", corePtr->getLinkManagerWrapperPtr());
-    engine.rootContext()->setContextProperty("deviceManagerWrapper", corePtr->getDeviceManagerWrapperPtr());
-    engine.rootContext()->setContextProperty("logViewer", corePtr->getConsolePtr());
     engine.rootContext()->setContextProperty("GetInterface", GetInterface::getInterface());
 
-    corePtr->consoleInfo("Run...");
     corePtr->setEngine(&engine);
 
     theme.bootConfig();
 
-    //qDebug() << "SQL drivers =" << QSqlDatabase::drivers(); // тут должен появиться QSQLITE
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &app,[url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {
@@ -136,19 +129,7 @@ int main(int argc, char *argv[])
         corePtr->switchMapType(softPar.mapSourceType);
     }, Qt::QueuedConnection);
 
-
-// file opening on startup
-#ifndef Q_OS_ANDROID
-    if (argc > 1) {
-        QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, corePtr, [&argv]() {
-            corePtr->openLogFile(argv[1], false, true);
-        }, Qt::QueuedConnection);
-    }
-#endif
-
     QObject::connect(&app,  &QGuiApplication::aboutToQuit, corePtr, [&]() {
-        // corePtr->saveLLARefToSettings();
-        // corePtr->removeLinkManagerConnections();
         corePtr->saveCurrentMapState([](double lat, double lon) {
             theme.setCurrentMapLocation(lat, lon);
         });

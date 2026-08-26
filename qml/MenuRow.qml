@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 
+
 RowLayout {
     // Layout.fillWidth: true
     width: parent.width - (Layout.leftMargin + Layout.rightMargin)

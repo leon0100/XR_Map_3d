@@ -94,30 +94,30 @@ public:
 
         QVector<uint8_t> compensated;
 
-        void updateCompesated() {
-            int raw_size = amplitude.size();
-            if(compensated.size() != raw_size) {
-                compensated.resize(raw_size);
-            }
+        // void updateCompesated() {
+        //     int raw_size = amplitude.size();
+        //     if(compensated.size() != raw_size) {
+        //         compensated.resize(raw_size);
+        //     }
 
-            const uint8_t* src = amplitude.constData();
-            uint8_t* procData = compensated.data();
+        //     const uint8_t* src = amplitude.constData();
+        //     uint8_t* procData = compensated.data();
 
-            const float resol = resolution;
+        //     const float resol = resolution;
 
-            float avrg = 255;
-            for(int i = 0; i < raw_size; i ++) {
-                float val = src[i];
+        //     float avrg = 255;
+        //     for(int i = 0; i < raw_size; i ++) {
+        //         float val = src[i];
 
-                avrg += (val - avrg)*(0.05f + avrg*0.0006);
-                val = (val - avrg*0.55f)*(0.85f +float(i*resol)*0.006f)*2.f;
+        //         avrg += (val - avrg)*(0.05f + avrg*0.0006);
+        //         val = (val - avrg*0.55f)*(0.85f +float(i*resol)*0.006f)*2.f;
 
-                if(val < 0) { val = 0; }
-                else if(val > 255) { val = 255; }
+        //         if(val < 0) { val = 0; }
+        //         else if(val > 255) { val = 255; }
 
-                procData[i] = val;
-            }
-        }
+        //         procData[i] = val;
+        //     }
+        // }
 
         DistProcessing bottomProcessing;
         Position sensorPosition;
@@ -162,9 +162,6 @@ public:
     void setRecParameters(const ChannelId& channelId, const RecordParameters& recParams);
     void setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams);
     void setDist(const ChannelId& channelId, int dist);
-    void setRangefinder(const ChannelId& channelId, float distance);
-    // void setDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
-    // void setDVLSolution(IDBinDVL::DVLSolution dvlSolution);
     void setPositionLLA(double lat, double lon, LLARef* ref = NULL, uint32_t unix_time = 0, int32_t nanosec = 0);
     void setPositionLLA(Position position);
     void setSonarPosition(Position val);
@@ -183,8 +180,6 @@ public:
 
     void setSonarPositionDataType(DataType dataType);
     DataType getSonarPositionDataType() const { return sonarPosition_.dataType; };
-
-    // void set(IDBinUsblSolution::UsblSolution data) { _usblSolution = data;  _isUsblSolutionAvailable = true; }
 
     void setGnssVelocity(double h_speed, double course);
 
@@ -232,23 +227,12 @@ public:
 
     double distProccesing(const ChannelId& channelId = CHANNEL_NONE);
 
-    QVector<double> vec_CSV_;
-    void setDistProcesing_CSV(double depth) {
-        vec_CSV_.append(depth);
-    }
-    double distProccesing_CSV(int index) {
-        if(index >= vec_CSV_.size()) {
-            return 0.0;
-        }
-        return vec_CSV_.at(index);
-    }
-
-    float rangeFinder() const {
-        if(rangefinders_.size() > 0) {
-            return rangefinders_.first();
-        }
-        return NAN;
-    }
+    // float rangeFinder() const {
+    //     if(rangefinders_.size() > 0) {
+    //         return rangefinders_.first();
+    //     }
+    //     return NAN;
+    // }
 
     float temperature() { return m_temp_c; }
     bool temperatureAvail() { return flags.tempAvail; }
@@ -257,20 +241,6 @@ public:
     float yaw() { return _attitude.yaw; }
     float pitch() { return _attitude.pitch; }
     float roll() { return _attitude.roll; }
-
-    // bool isDopplerAvail() { return doppler.isAvai; }
-    // float dopplerX() { return doppler.velocityX; }
-
-    // bool isDopplerBeamAvail() { return _dopplerBeamCount > 0; }
-    // bool isDopplerBeamAvail(uint16_t num) { return _dopplerBeamCount > num; }
-    // IDBinDVL::BeamSolution dopplerBeam(uint16_t num) { return _dopplerBeams[num]; }
-    // uint16_t dopplerBeamCount() {return _dopplerBeamCount; }
-
-    // IDBinDVL::DVLSolution dvlSolution() { return _dvlSolution; }
-    // bool isDVLSolutionAvail() {  return flags.isDVLSolutionAvail; }
-
-    // bool isUsblSolutionAvailable() { return _isUsblSolutionAvailable; }
-    // IDBinUsblSolution::UsblSolution usblSolution() { return _usblSolution; }
 
     double lat() { return _positionGNSS.lla.latitude; }
     double lon() { return _positionGNSS.lla.longitude; }
@@ -339,15 +309,6 @@ protected:
             return qIsFinite(yaw) && qIsFinite(pitch) && qIsFinite(roll);
         }
     } _attitude;
-
-
-    // IDBinDVL::BeamSolution _dopplerBeams[4];
-    // uint16_t _dopplerBeamCount = 0;
-
-    // IDBinDVL::DVLSolution _dvlSolution;
-
-    // IDBinUsblSolution::UsblSolution _usblSolution;
-    // bool _isUsblSolutionAvailable = false;
 
     Position _positionGNSS;
     Position _positionExternal;

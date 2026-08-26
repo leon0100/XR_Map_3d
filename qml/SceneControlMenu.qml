@@ -80,10 +80,10 @@ ColumnLayout {
             text:             qsTr("Point group")
             Layout.maximumWidth: menuLoader.width/buttonGroup.buttons.length
 
-            onCheckedChanged: {
-                if(checked)
-                    loader.source = "PointGroupControlMenu.qml"
-            }
+            // onCheckedChanged: {
+            //     if(checked)
+            //         loader.source = "PointGroupControlMenu.qml"
+            // }
         }
 
         Button{

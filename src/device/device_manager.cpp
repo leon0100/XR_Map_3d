@@ -1,5 +1,4 @@
 #include "device_manager.h"
-// #include "location_reader.h"
 
 #include <QTimeZone>
 #include <QDateTime>
@@ -16,47 +15,16 @@ DeviceManager::DeviceManager():
     upgradeUuid_(QUuid()),
     upgradeAddr_(0)
 {
-    // qRegisterMetaType<ProtoBinOut>("ProtoBinOut");
     qRegisterMetaType<int16_t>("int16_t");
     qRegisterMetaType<QVector<uint8_t>>("QVector<uint8_t>");
     qRegisterMetaType<QByteArray>("QByteArray");
-    // qRegisterMetaType<IDBinUsblSolution::UsblSolution>("IDBinUsblSolution::UsblSolution");
-    // qRegisterMetaType<IDBinDVL::BeamSolution>("IDBinDVL::BeamSolution");
     qRegisterMetaType<uint16_t>("uint16_t");
-    // qRegisterMetaType<IDBinDVL::DVLSolution>("IDBinDVL::DVLSolution");
     qRegisterMetaType<uint32_t>("uint32_t");
-    // qRegisterMetaType<FrameParser>("FrameParser");
     qRegisterMetaType<EnumFileType>("EnumFileType");
 }
 
 DeviceManager::~DeviceManager()
 {
-
-}
-
-float DeviceManager::vruVoltage()
-{
-    return vru_.voltage;
-}
-
-float DeviceManager::vruCurrent()
-{
-    return vru_.current;
-}
-
-float DeviceManager::vruVelocityH()
-{
-    return vru_.velocityH;
-}
-
-int DeviceManager::pilotArmState()
-{
-    return vru_.armState;
-}
-
-int DeviceManager::pilotModeState()
-{
-    return vru_.flightMode;
 }
 
 void DeviceManager::setProgressDialog(QObject* dialog)
@@ -66,17 +34,13 @@ void DeviceManager::setProgressDialog(QObject* dialog)
     }
 }
 
-void DeviceManager::resetFileAndChannelId(int fileCnt)
+void DeviceManager::resetFileAndChannel(int fileCnt)
 {
     batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
     minZ_ = 0.0;
     maxZ_ = 0.0;
+    depthVec_.clear();
 }
-
-// void DeviceManager::initStreamList()
-// {
-//     streamList_.initTimer();
-// }
 
 void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
 {
@@ -96,7 +60,6 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
         return;
     }
 
-    // Parsers::FrameParser frameParser;
     constexpr auto kFileUuidStr = "12345678-1234-1234-1234-1234567890ab";
     const QUuid someUuid(kFileUuidStr);
 
@@ -175,19 +138,16 @@ void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType,
 
     QFile tslFile;
     tslFile.setFileName(filePath);
-    {
-        QByteArray tslByteArray;
-        if(tslFile.open(QFileDevice::ReadOnly)) {
-            tslByteArray = tslFile.readAll();
-            tslFile.close();
-        }
-        if(currentFileType == filetype_tslw) {
-            openFileData_tslw(tslByteArray, fileIndex, fileCnt);
-        }
-        else if(currentFileType == filetype_tsl3) {
-            openFileData_tsl3(tslByteArray, fileIndex, fileCnt);
-        }
-
+    QByteArray tslByteArray;
+    if(tslFile.open(QFileDevice::ReadOnly)) {
+        tslByteArray = tslFile.readAll();
+        tslFile.close();
+    }
+    if(currentFileType == filetype_tslw) {
+        openFileData_tslw(tslByteArray, fileIndex, fileCnt);
+    }
+    else if(currentFileType == filetype_tsl3) {
+        openFileData_tsl3(tslByteArray, fileIndex, fileCnt);
     }
 
     isOpeningFile_ = false;
@@ -236,9 +196,6 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
     if(tslByteList.isEmpty()) return;
 
     int tslWCnt = tslByteList.count();
-    QVector<float> vec_CSV;
-    QList<LLA> track;
-    // ============ 声呐数据参数 =============
     qDebug() << "tslWCnt.size()........." << tslWCnt;
     const int MEDIAN_WINDOW = 13;          // 窗口大小（奇数）
     const float SPIKE_THRESHOLD = 10.0f;   // 跳变阈值（米），超过用中值替代
@@ -267,8 +224,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
             if (buffer.size() <= MEDIAN_WINDOW * 0.5) {
                 minZ_ = std::min(minZ_, lla.altitude);
                 maxZ_ = std::max(maxZ_, lla.altitude);
-                vec_CSV.append(lla.altitude);
-                track.append(lla);
+                depthVec_.append(lla.altitude);
             }
         }
         else {
@@ -299,8 +255,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
             // 将过滤后的中心点加入最终轨迹
             minZ_ = std::min(minZ_, targetLla.altitude);
             maxZ_ = std::max(maxZ_, targetLla.altitude);
-            vec_CSV.append(targetLla.altitude);
-            track.append(targetLla);
+            depthVec_.append(targetLla.altitude);
         }
 
 
@@ -333,7 +288,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
         chartParams.time        = tslSingleStru.boat.time;
         chartParams.longitude   = lla.longitude;
         chartParams.latitude    = lla.latitude;
-        emit chartComplete(batchChannelId_, chartParams, dataVec, true);
+        // emit chartComplete(batchChannelId_, chartParams, dataVec, true);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (cnt + 1) == tslWCnt ? true : false;
@@ -364,7 +319,10 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
         }
     }
 
-    emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);
+    if(fileIndex == (fileCnt-1)) {
+       emit fileStopsOpening2(depthVec_, minZ_, maxZ_);
+    }
+
 }
 
 
@@ -376,7 +334,6 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
     int nowIndex = 0;
     int byteCount = 0;
     int tslWCnt = tslByteArray.count();
-    int progressInterval = qMax(1, tslWCnt / 3);
     while((nowIndex) < (tslWCnt-100))
     {
         if('#' == tslByteArray.at(nowIndex)) {
@@ -419,8 +376,6 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
 
     int tsl3Cnt = tslByteList.count();
     int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
-    QVector<float> vec_CSV;
-    QList<LLA> track;
     qDebug() << "tsl3Cnt.size()........." << tsl3Cnt;
     const int   MEDIAN_WINDOW   = 13;     // 窗口大小（奇数）
     const float SPIKE_THRESHOLD = 10.0f;  // 跳变阈值（米），超过用中值替代
@@ -446,8 +401,8 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
             if (bufSize <= MEDIAN_WINDOW * 0.5) {
                 minZ_ = std::min(minZ_, lla.altitude);
                 maxZ_ = std::max(maxZ_, lla.altitude);
-                vec_CSV.append(lla.altitude);
-                track.append(lla);
+                depthVec_.append(lla.altitude);
+                // track.append(lla);
             }
         }
         else {
@@ -478,8 +433,8 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
             // 将过滤后的中心点加入最终轨迹
             minZ_ = std::min(minZ_, targetLla.altitude);
             maxZ_ = std::max(maxZ_, targetLla.altitude);
-            vec_CSV.append(targetLla.altitude);
-            track.append(targetLla);
+            depthVec_.append(targetLla.altitude);
+            // track.append(targetLla);
         }
 
 
@@ -518,17 +473,17 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
         chartParams.time        = tslSingleStru.boat.time;
         chartParams.longitude   = lla.longitude;
         chartParams.latitude    = lla.latitude;
-        emit chartComplete(batchChannelId_, chartParams, dataVec, true);
-
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
-        bool enableRender = (i + 1) == tsl3Cnt ? true : false;
+        bool enableRender = (fileIndex == fileCnt - 1) && ((i + 1) == tsl3Cnt);
+        emit chartComplete(batchChannelId_, chartParams, dataVec, enableRender);
+
         emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
 
         // 更新进度条
-        if (progressDialog_ && (i % progressInterval == 0 || i == (tsl3Cnt - 1))) {
+        if (progressDialog_ && (i % 200 == 0 || i == (tsl3Cnt - 1))) {
             double progress = static_cast<double>(i + 1) / tsl3Cnt;
             QString statusText = tr("Openging files %1 of %2 (%3%)")
-                                     .arg(fileIndex+1).arg(fileCnt).arg(static_cast<int>(progress * 100.0 + 0.5));
+                            .arg(fileIndex+1).arg(fileCnt).arg(static_cast<int>(progress * 100.0 + 0.5));
             QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
@@ -547,57 +502,18 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
         }
     }
 
-    emit fileStopsOpening2(vec_CSV, minZ_, maxZ_);
+    if(fileIndex == fileCnt - 1) {
+        emit fileStopsOpening2(depthVec_, minZ_, maxZ_);
+    }
 }
 
 
 void DeviceManager::closeFile()
 {
     delAllDev();
-    vru_.cleanVru();
+    // vru_.cleanVru();
     emit vruChanged();
 }
-
-// void DeviceManager::onLinkOpened(QUuid uuid, Link *link)
-// {
-//     if (link) {
-//         if (link->getIsProxy()) {
-//             proxyLinkUuid_ = uuid;
-//             connect(this, &DeviceManager::writeProxyFrame, link, &Link::writeFrame);
-//         }
-//     }
-// }
-
-// void DeviceManager::onLinkClosed(QUuid uuid, Link *link)
-// {
-//     Q_UNUSED(uuid);
-
-//     if (link) {
-//         this->disconnect(link);
-//         otherProtocolStat_.remove(uuid);
-//         if(uuid == mavlinUuid_) {
-//             mavlinUuid_ = QUuid();
-//         }
-//     }
-// }
-
-// void DeviceManager::onLinkDeleted(QUuid uuid, Link *link)
-// {
-//     Q_UNUSED(uuid);
-
-//     if (link) {
-//         this->disconnect(link);
-//         otherProtocolStat_.remove(uuid);
-//         if(uuid == mavlinUuid_) {
-//             mavlinUuid_ = QUuid();
-//         }
-//     }
-// }
-
-// void DeviceManager::binFrameOut(Parsers::ProtoBinOut protoOut)
-// {
-//     emit sendProtoFrame(protoOut);
-// }
 
 void DeviceManager::setProtoBinConsoled(bool isConsoled)
 {
@@ -607,31 +523,6 @@ void DeviceManager::setProtoBinConsoled(bool isConsoled)
 void DeviceManager::beaconActivationReceive(uint8_t id) {
     Q_UNUSED(id)
 }
-
-void DeviceManager::beaconDirectQueueAsk() {
-}
-
-void DeviceManager::setUSBLBeaconDirectAsk(bool is_ask) {
-    isUSBLBeaconDirectAsk = is_ask;
-    qDebug("Beacon auto scan is: %d", is_ask);
-    if(is_ask == true) {
-        if (!beacon_timer) {
-            beacon_timer = new QTimer(this);
-            QObject::connect(beacon_timer, &QTimer::timeout, this, &DeviceManager::beaconDirectQueueAsk);
-        }
-        beacon_timer->setInterval(3000);
-        beacon_timer->start();
-    } else {
-        if (beacon_timer) {
-            beacon_timer->stop();
-        }
-    }
-}
-
-// StreamListModel* DeviceManager::streamsList()
-// {
-//     return streamList_.streamsList();
-// }
 
 void DeviceManager::onStartUpgradingFirmware(QUuid linkUuid, uint8_t address, const QByteArray& firmware)
 {
@@ -647,47 +538,7 @@ void DeviceManager::onUpgradingFirmwareDone()
     upgradeData_.clear();
 }
 
-// void DeviceManager::createLocationReader()
-// {
-//     if (locReader_) {
-//         return;
-//     }
-
-//     locReader_ = new LocationReader(this);
-//     connect(locReader_, &LocationReader::positionUpdated, this, &DeviceManager::onPositionUpdated, Qt::QueuedConnection);
-// }
-
-// void DeviceManager::destroyLocationReader()
-// {
-//     if (!locReader_) {
-//         return;
-//     }
-
-//     locReader_->deleteLater();
-//     locReader_ = nullptr;
-// }
-
-// void DeviceManager::shutdown()
-// {
-    // destroyLocationReader();
-// }
-
-// void DeviceManager::onPositionUpdated(const QGeoPositionInfo &info)
-// {
-    // IDBinNav::SimpleNav smplNav;
-    // smplNav.latitude = info.coordinate().latitude();
-    // smplNav.longitude = info.coordinate().longitude();
-    // smplNav.depth = 0;
-    // smplNav.yaw = info.attribute(QGeoPositionInfo::Attribute::Direction) ;
-    // smplNav.pitch = 0;
-    // smplNav.roll = 0;
-
-    // emit positionComplete(smplNav.latitude, smplNav.longitude, info.timestamp().toSecsSinceEpoch(), info.timestamp().toMSecsSinceEpoch());
-    // emit attitudeComplete(smplNav.yaw, 0.0, 0.0);
-// }
-
 void DeviceManager::delAllDev()
 {
     QList<QUuid> keysToDelete;
-
 }

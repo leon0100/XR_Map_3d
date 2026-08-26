@@ -4,7 +4,7 @@
 
 
 #include <QObject>
-#include <console_list_model.h>
+// #include <console_list_model.h>
 #include <QLoggingCategory>
 #include <QQuickTextDocument>
 
@@ -134,20 +134,20 @@ signals:
 
 
 /*----------------------------------------Console----------------------------------------------*/
-class Console : public QObject
-{
-    Q_OBJECT
-public:
-    Console();
-    ConsoleListModel* listModel() const;
+// class Console : public QObject
+// {
+//     Q_OBJECT
+// public:
+//     Console();
+//     ConsoleListModel* listModel() const;
 
-    void put(QtMsgType type, const QString &msg);
+//     void put(QtMsgType type, const QString &msg);
 
-public slots:
+// public slots:
 
 
-private:
-    ConsoleListModel *m_list;
-};
+// private:
+//     ConsoleListModel *m_list;
+// };
 
 #endif // CONSOLE_H

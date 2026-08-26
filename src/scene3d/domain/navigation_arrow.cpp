@@ -57,7 +57,9 @@ void NavigationArrow::resetPositionAndAngle()
 {
     auto* r = RENDER_IMPL(NavigationArrow);
     r->position_ = QVector3D(0.0f, 0.0f, 0.0f);
+    r->lastPosition_ = QVector3D(0.0f, 0.0f, 0.0f);
     r->angle_ = 0.0f;
+    lastHeading_ = 0.0;
 
     Q_EMIT changed();
 }

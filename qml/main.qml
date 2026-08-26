@@ -415,13 +415,8 @@ ApplicationWindow  {
             let fn = hotkeyData["functionName"];
             let p = hotkeyData["parameter"];
 
-            // high priority
             if (fn === "toggleFullScreen") {
                 toggleFullScreenMode()
-                return;
-            }
-            if (fn === "closeFile") {
-                core.closeLogFile()
                 return;
             }
             if (fn === "updateMosaic") {

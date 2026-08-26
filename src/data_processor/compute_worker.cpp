@@ -13,8 +13,8 @@ ComputeWorker::ComputeWorker(DataProcessor* ownerDp, Dataset* dataset, QObject* 
       surfaceMesh_(defaultTileSidePixelSize, defaultTileHeightMatrixRatio, defaultTileResolution),
       surface_(ownerDp),
       isobaths_(ownerDp),
-      mosaic_(ownerDp),
-      bottom_(ownerDp)
+      mosaic_(ownerDp)
+      // bottom_(ownerDp)
 {
     qRegisterMetaType<WorkBundle>("WorkBundle");
 
@@ -22,7 +22,7 @@ ComputeWorker::ComputeWorker(DataProcessor* ownerDp, Dataset* dataset, QObject* 
     isobaths_.setSurfaceMeshPtr(&surfaceMesh_);
     mosaic_  .setSurfaceMeshPtr(&surfaceMesh_);
 
-    bottom_.setDatasetPtr(dataset_);
+    // bottom_.setDatasetPtr(dataset_);
     mosaic_.setDatasetPtr(dataset_);
 }
 
@@ -33,7 +33,6 @@ void ComputeWorker::clearAll()
     surface_.clear();
     mosaic_.clear();
     isobaths_.clear();
-    bottom_.clear();
 
     surfaceMesh_.clear();
 }
@@ -53,11 +52,6 @@ void ComputeWorker::clearIsobaths()
     isobaths_.clear();
 }
 
-void ComputeWorker::clearBottomTrack()
-{
-    bottom_.clear();
-}
-
 inline bool ComputeWorker::isCanceled() const noexcept
 {
     return dp_ && dp_->isCancelRequested();
@@ -66,7 +60,7 @@ inline bool ComputeWorker::isCanceled() const noexcept
 void ComputeWorker::setDatasetPtr(Dataset* ds)
 {
     dataset_ = ds;
-    bottom_.setDatasetPtr(ds);
+    // bottom_.setDatasetPtr(ds);
     mosaic_.setDatasetPtr(ds);
 }
 
@@ -167,17 +161,6 @@ void ComputeWorker::setMaxZ(float v)
 {
     // qDebug() << "ComputeWorker::setMaxZ.................";
     isobaths_.setMaxZ(v);
-}
-
-void ComputeWorker::bottomTrackProcessing(const DatasetChannel& ch1, const DatasetChannel& ch2, const BottomTrackParam& p, bool manual, bool redrawAll)
-{
-    // qDebug() << "ComputeWorker::bottomTrackProcessing............";
-    emit bottomTrackStarted();
-
-    // bottom_.bottomTrackProcessing(ch1, ch2, p, manual, redrawAll);
-    bottom_.bottomTrackProcessing_file(ch1, p, manual, redrawAll);
-
-    emit bottomTrackFinished();
 }
 
 void ComputeWorker::processBundle(const WorkBundle& wb)

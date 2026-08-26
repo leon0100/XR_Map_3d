@@ -215,7 +215,7 @@ Item  {
             }
 
             onCheckedChanged: {
-                Scene3dToolBarController.onIsNorthLocationButtonChanged(checked)
+                core.onIsNorthLocationButtonChanged(checked)
                 if(targetPlot2d) {
                     targetPlot2d.closeEchoBathyIsobathOutside(0, 0)
                 }
@@ -224,7 +224,7 @@ Item  {
             }
 
             Component.onCompleted: {
-                Scene3dToolBarController.onIsNorthLocationButtonChanged(checked)
+                core.onIsNorthLocationButtonChanged(checked)
             }
 
             Settings {

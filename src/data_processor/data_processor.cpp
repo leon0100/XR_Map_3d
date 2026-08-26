@@ -54,8 +54,6 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     connect(&pendingWorkTimer_, &QTimer::timeout, this, &DataProcessor::runCoalescedWork);
 
     connect(worker_, &ComputeWorker::jobFinished,          this, &DataProcessor::onWorkerFinished,      Qt::QueuedConnection);
-    connect(worker_, &ComputeWorker::bottomTrackStarted,   this, &DataProcessor::onBottomTrackStarted,  Qt::QueuedConnection);
-    connect(worker_, &ComputeWorker::bottomTrackFinished,  this, &DataProcessor::onBottomTrackFinished, Qt::QueuedConnection);
 
     computeThread_.setObjectName("ComputeWorkerThread");
     computeThread_.start();
@@ -87,15 +85,15 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     requestCancel();
 
     switch (procType) {
-     case DataProcessorType::kUndefined:    clearAllProcessings();                                             break;
-     case DataProcessorType::kBottomTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
-     case DataProcessorType::kIsobaths:     clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
-     case DataProcessorType::kMosaic:       clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
-     case DataProcessorType::kSurface:      clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
-     case DataProcessorType::bletoothTrack: clearAllProcessings();                                             break;
-     case DataProcessorType::wifiTrack:     clearAllProcessings();                                             break;
-     case DataProcessorType::staticTrack:   clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
-     default: break;
+      case DataProcessorType::kUndefined:    clearAllProcessings();                                             break;
+      case DataProcessorType::kBottomTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
+      case DataProcessorType::kIsobaths:     clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
+      case DataProcessorType::kMosaic:       clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
+      case DataProcessorType::kSurface:      clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
+      case DataProcessorType::bletoothTrack: clearAllProcessings();                                             break;
+      case DataProcessorType::wifiTrack:     clearAllProcessings();                                             break;
+      case DataProcessorType::staticTrack:   clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
+      default: break;
     }
 
     chartsCounter_ = 0;
@@ -104,8 +102,6 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     positionCounter_ = 0;
     attitudeCounter_ = 0;
     mosaicCounter_ = 0;
-
-    // emit sendPolygonOulineAuto(false);
 }
 
 void DataProcessor::clearProcessing2(bool isClearTrack)
@@ -126,13 +122,11 @@ void DataProcessor::clearProcessing2(bool isClearTrack)
         clearSurfaceProcessing();
         emit surfaceProcessingCleared();
     }
-
-    // emit sendPolygonOulineAuto(false);
 }
 
 void DataProcessor::setUpdateBottomTrack(bool state)
 {
-    // qDebug() << "DataProcessor::setUpdateBottomTrack(bool state)..........";
+    qDebug() << "DataProcessor::setUpdateBottomTrack(bool state)..........";
     updateBottomTrack_ = state;
 
     // if ((updateBottomTrack_ || updateIsobaths_ || updateMosaic_) && !pendingSurfaceIndxs_.empty()) {
@@ -183,17 +177,6 @@ void DataProcessor::onChartsAdded(uint64_t indx)
             auto additionalBTPGap = windowSize / 2;
             btP.indexFrom = std::max(0, windowSize * bottomTrackWindowCounter_ - (windowSize / 2 + 1) - additionalBTPGap);
             btP.indexTo   = std::max(0, windowSize * currCount - (windowSize / 2 + 1) - additionalBTPGap);
-
-            const auto channels = datasetPtr_->channelsList();
-            if (!channels.isEmpty()) {
-                const DatasetChannel ch1 = channels[0];
-                const DatasetChannel ch2 = (channels.size() >= 2) ? channels[1] : DatasetChannel();
-                QMetaObject::invokeMethod(worker_, "bottomTrackProcessing", Qt::QueuedConnection,
-                                          Q_ARG(DatasetChannel, ch1), Q_ARG(DatasetChannel, ch2),
-                                          Q_ARG(BottomTrackParam, btP),
-                                          Q_ARG(bool, false),/*manual*/
-                                          Q_ARG(bool, false)/*redrawAll*/);
-            }
             bottomTrackWindowCounter_ = currCount;
         }
     }
@@ -238,18 +221,6 @@ void DataProcessor::onAttitudeAdded(uint64_t indx)
 void DataProcessor::onMosaicCanCalc(uint64_t indx)
 {
     mosaicCounter_   = indx;
-}
-
-void DataProcessor::bottomTrackProcessing(const DatasetChannel &ch1, const DatasetChannel &ch2, const BottomTrackParam &p, bool manual, bool redrawAll)
-{
-    // qDebug() << "DataProcessor::bottomTrackProcessing.............." << btBusy_;
-    if (btBusy_) {
-        return;
-    }
-
-    QMetaObject::invokeMethod(worker_, "bottomTrackProcessing", Qt::QueuedConnection,
-                        Q_ARG(DatasetChannel, ch1), Q_ARG(DatasetChannel, ch2), Q_ARG(BottomTrackParam, p),
-                        Q_ARG(bool, manual), Q_ARG(bool, redrawAll));
 }
 
 void DataProcessor::setSurfaceColorTableThemeById(int id)
@@ -612,8 +583,6 @@ void DataProcessor::clearBottomTrackProcessing()
 {
     bottomTrackWindowCounter_ = 0;
     btBusy_ = false;
-
-    QMetaObject::invokeMethod(worker_, "clearBottomTrack", Qt::QueuedConnection);
 }
 
 void DataProcessor::clearIsobathsProcessing()

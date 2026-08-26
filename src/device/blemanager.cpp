@@ -462,13 +462,11 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
 void BLEManager::connectToDevice(int index)
 {
 #ifdef Q_OS_WIN
-    // QMetaObject::invokeMethod(loadingQuickView_, [this](){ loadingQuickView_->show(); }, Qt::QueuedConnection);
     GIF->dialogInfo(Dialog_Loading, "show");
 #endif
     if(index < 0 || index >= devicesList_.size()) {
         return;
     }
-    // batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
     QBluetoothDeviceInfo chooseDevice = devicesList_.at(index);
     if (bleController_) {
         bleController_->disconnectFromDevice();
@@ -641,13 +639,10 @@ void BLEManager::onServiceDiscovered(const QBluetoothUuid &uuid)
 
 void BLEManager::onServiceScanDone()
 {
-    // QMetaObject::invokeMethod(loadingQuickView_, [this]() {
-        // loadingQuickView_->hide();
     GIF->dialogInfo(Dialog_Loading, "hide");
         m_connected = true;
         readingDrawTrack_ = true;
         emit connectedChanged(true);
-    // }, Qt::QueuedConnection);
 
     if(bleServer_) {
         bleServer_->disconnect();

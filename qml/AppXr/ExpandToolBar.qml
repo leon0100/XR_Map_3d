@@ -599,7 +599,6 @@ Rectangle {
 
                 onPressed: {
                     core.clearRouteData()
-                    // collapseTimer.restart()
                     root.expanded = false
                 }
             }

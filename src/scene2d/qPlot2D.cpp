@@ -147,11 +147,6 @@ void qPlot2D::horScrollEvent(int delta)
     }
 }
 
-// void qPlot2D::verZoomEvent(int delta)
-// {
-    // zoomDistance(delta);
-// }
-
 void qPlot2D::verScrollEvent(int delta)
 {
     scrollDistance(delta);
@@ -383,7 +378,7 @@ void qPlot2D::drawPolygonOutline(bool outlineMode)
 
 void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, float range_min, float range_max,
                         float gain_slope, float threshold, float offsetx, float offsety, float offsetz, bool manual) {
-    // qDebug() << "开始绘制等高线 qPlot2D::doDistProcessing.........";
+    qDebug() << "开始绘制等高线 qPlot2D::doDistProcessing.........";
     if (datasetPtr_ != nullptr) {
         QVector<Epoch> pool = datasetPtr_->getPool();
         if(pool.isEmpty()) {
@@ -405,13 +400,9 @@ void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, 
             btpPtr->offset.y    = offsety;
             btpPtr->offset.z    = offsetz;
 
-            QMetaObject::invokeMethod(dataProcessorPtr_, "bottomTrackProcessing", Qt::QueuedConnection,
-                            Q_ARG(DatasetChannel, DatasetChannel(cursor_.channel1, cursor_.subChannel1)),
-                            Q_ARG(DatasetChannel, DatasetChannel(cursor_.channel2, cursor_.subChannel2)),
-                            Q_ARG(BottomTrackParam, *btpPtr), Q_ARG(bool, manual), Q_ARG(bool, true));
+            datasetPtr_->onLastBottomTrackEpochChanged(cursor_.channel1, btpPtr->indexTo, *btpPtr, manual, true);
         }
     }
-    // plotUpdate();
 }
 
 void qPlot2D::refreshDistParams(int preset, int windowSize, float verticalGap, float rangeMin, float rangeMax, float gainSlope, float threshold, float offsetX, float offsetY, float offsetZ)

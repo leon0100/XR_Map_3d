@@ -10,7 +10,7 @@
 #include <QThread>
 #include <QUuid>
 #include "dataset_defs.h"
-#include "bottom_track_processor.h"
+// #include "bottom_track_processor.h"
 #include "isobaths_processor.h"
 #include "mosaic_processor.h"
 #include "surface_processor.h"
@@ -49,8 +49,6 @@ public slots:
     void onPositionAdded(uint64_t indx);
     void onAttitudeAdded(uint64_t indx);
     void onMosaicCanCalc(uint64_t indx);
-    // BottomTrackProcessor
-    void bottomTrackProcessing(const DatasetChannel& channel1, const DatasetChannel& channel2, const BottomTrackParam& bottomTrackParam, bool manual, bool redrawAll); // CALC BOTTOM TRACK BY BUTTON, qPlot2D
 
     // SurfaceProcessor
     void setSurfaceColorTableThemeById(int id);

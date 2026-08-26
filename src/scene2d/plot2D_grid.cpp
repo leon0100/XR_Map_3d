@@ -95,69 +95,6 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
         p->drawLine(imageWidth, 0, imageWidth, imageHeight);
     }
 
-    // // 图像深度
-    // if (cursor.distance.isValid()) {
-    //     p->setFont(QFont("Asap", 26, QFont::Normal));
-    //     QFontMetrics fm2(p->font());
-    //     float val{ cursor.distance.to };
-    //     bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
-    //     QString rangeText = QString::number(val, 'f', isInteger ? 0 : 2) + QObject::tr(" m");
-    //     const int w = fm2.horizontalAdvance(rangeText);
-    //     const int x = invert_ ? (textXOffset * 2) : (imageWidth - textXOffset * 0.5 - w);
-    //     p->drawText(x, imageHeight - 10, rangeText);
-    // }
-
-    // rangefinder
-    // if (_rangeFinderLastVisible && cursor.distance.isValid()) {
-    //     Epoch* lastEpoch = dataset->last();
-    //     Epoch* preLastEpoch = dataset->lastlast();
-    //     if (!lastEpoch || !preLastEpoch) {
-    //         return false;
-    //     }
-    //     float distance = NAN;
-
-    //     if (lastEpoch != NULL && qIsFinite(lastEpoch->rangeFinder())) {
-    //         distance = lastEpoch->rangeFinder();
-    //     }
-    //     else if (preLastEpoch != NULL && qIsFinite(preLastEpoch->rangeFinder())) {
-    //         distance = preLastEpoch->rangeFinder();
-    //     }
-
-    //     if (qIsFinite(distance)) {
-    //         pen.setColor(QColor(250, 100, 0));
-    //         p->setPen(pen);
-    //         p->setFont(QFont("Asap", 40, QFont::Normal));
-    //         float val{ round(distance * 100.f) / 100.f };
-    //         bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
-    //         QString rangeText = QString::number(val, 'f', isInteger ? 0 : 2) + QObject::tr(" m");
-    //         p->drawText(imageWidth / 2 - rangeText.size() * 32, imageHeight - 15, rangeText);
-    //     }
-    // }
-
-    // if(true) {
-    //     Epoch* lastEpoch = dataset->last();
-    //     Epoch* preLastEpoch = dataset->lastlast();
-    //     if (!lastEpoch || !preLastEpoch) {
-    //         return false;
-    //     }
-
-    //     Q_UNUSED(lastEpoch)
-    //     Q_UNUSED(preLastEpoch)
-
-    //     float temp = NAN;
-    //     temp = dataset->getLastTemp();
-
-    //     if (temperatureVisible_ && qIsFinite(temp)) {
-    //         pen.setColor(QColor(80, 200, 0));
-    //         p->setPen(pen);
-    //         p->setFont(QFont("Asap", 40, QFont::Normal));
-    //         float val{ round(temp * 100.f) / 100.f };
-    //         bool isInteger = std::abs(val - std::round(val)) < kmath::fltEps;
-    //         QString rangeText = QString::number(val, 'f', isInteger ? 0 : 1) + QObject::tr("°");
-    //         p->drawText(imageWidth / 2 - 300, imageHeight - 15, rangeText);
-    //     }
-    // }
-
     return true;
 }
 

@@ -2,7 +2,6 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.12
 import QtQuick.Dialogs 1.3
-// import QtCore
 import Qt.labs.settings 1.1
 
 
@@ -84,30 +83,30 @@ MenuFrame {
                     text: mosaicLevelsSlider.stopValue
                     small: true
                 }
-                ChartLevel {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
-                    Layout.preferredWidth: theme.menuWidth
-                    id: mosaicLevelsSlider
-                    Layout.alignment: Qt.AlignHCenter
+                // ChartLevel {
+                //     Layout.fillHeight: true
+                //     Layout.fillWidth: true
+                //     Layout.preferredWidth: theme.menuWidth
+                //     id: mosaicLevelsSlider
+                //     Layout.alignment: Qt.AlignHCenter
 
-                    onStartValueChanged: {
-                       MosaicViewControlMenuController.onLevelChanged(startValue, stopValue);
-                    }
+                //     onStartValueChanged: {
+                //        MosaicViewControlMenuController.onLevelChanged(startValue, stopValue);
+                //     }
 
-                    onStopValueChanged: {
-                       MosaicViewControlMenuController.onLevelChanged(startValue, stopValue);
-                    }
+                //     onStopValueChanged: {
+                //        MosaicViewControlMenuController.onLevelChanged(startValue, stopValue);
+                //     }
 
-                    Component.onCompleted: {
-                        MosaicViewControlMenuController.onLevelChanged(startValue, stopValue);
-                    }
+                //     Component.onCompleted: {
+                //         MosaicViewControlMenuController.onLevelChanged(startValue, stopValue);
+                //     }
 
-                    Settings {
-                        property alias mosaicLevelsStart: mosaicLevelsSlider.startValue
-                        property alias mosaicLevelsStop: mosaicLevelsSlider.stopValue
-                    }
-                }
+                //     Settings {
+                //         property alias mosaicLevelsStart: mosaicLevelsSlider.startValue
+                //         property alias mosaicLevelsStop: mosaicLevelsSlider.stopValue
+                //     }
+                // }
                 CText {
                     Layout.fillWidth: true
                     Layout.preferredWidth: theme.menuWidth

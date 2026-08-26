@@ -9,8 +9,6 @@
 #include <QReadWriteLock>
 
 #include "epoch.h"
-#include "data_interpolator.h"
-// #include "usbl_view.h"
 #include "data_processor_defs.h"
 
 
@@ -35,9 +33,6 @@ public:
 
     Q_PROPERTY(float boatLatitude             READ getBoatLatitude          NOTIFY lastPositionChanged)
     Q_PROPERTY(float boatLongitude            READ getBoatLongitude         NOTIFY lastPositionChanged)
-    // Q_PROPERTY(float distToContact            READ getDistToContact         NOTIFY lastPositionChanged)
-    // Q_PROPERTY(float angleToContact           READ getAngleToContact        NOTIFY lastPositionChanged)
-    // Q_PROPERTY(bool  isActiveContactIndxValid READ isValidActiveContactIndx NOTIFY activeContactChanged)
     Q_PROPERTY(bool  isBoatCoordinateValid    READ isValidBoatCoordinate    NOTIFY lastPositionChanged)
     Q_PROPERTY(float isLastDepthValid         READ isValidLastDepth         NOTIFY lastDepthChanged)
     Q_PROPERTY(float depth                    READ getLastDepth             NOTIFY lastDepthChanged)
@@ -206,10 +201,6 @@ public:
         return _lastYaw;
     }
 
-    // float getLastTemp() {
-    //     return lastTemp_;
-    // }
-
     BottomTrackParam getBottomTrackParam() {
         QReadLocker rl(&lock_);
 
@@ -260,35 +251,17 @@ public slots:
     bool  isValidSpeed()             const  { return qFuzzyIsNull(speed_);      };
     float getBoatLatitude()          const  { return boatLatitute_;             };
     float getBoatLongitude()         const  { return boatLongitude_;            };
-    // float getDistToContact()         const  { return distToActiveContact_;      };
-    // float getAngleToContact()        const  { return angleToActiveContact_;     };
     float getLastDepth()             const  { return lastDepth_;                };
     float getSpeed()                 const  { return speed_;                    };
     void  addEvent(int timestamp, int id, int unixt = 0);
-    void  addEncoder(float angle1_deg, float angle2_deg = NAN, float angle3_deg = NAN);
-    void  addTimestamp(int timestamp);
     void  setChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
     void  setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
     void  setSoundSpeed (const ChannelId& channelId, uint32_t soundSpeed);
     void  setSonarOffset(float x, float y, float z);
     void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
-    void  addDist(const ChannelId& channelId, int dist);
-    void  addRangefinder(const ChannelId& channelId, float distance);
-    // void  addDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt);
-    // void  addDVLSolution(IDBinDVL::DVLSolution dvlSolution);
-    void  addAtt(float yaw, float pitch, float roll);
     void  addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
     void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
     void  addPosition_file(double lat, double lon, int depth, bool enableRender);
-    void  addPositionRTK(Position position);
-
-    void addDepth(float depth);
-
-    void addGnssVelocity(double h_speed, double course);
-
-    void addTemp(float temp_c);
-
-    void mergeGnssTrack(QList<Position> track);
 
     void resetDataset();
     void resetRenderBuffers();
@@ -298,7 +271,6 @@ public slots:
     void setChannelOffset(const ChannelId& channelId, float x, float y, float z);
     void spatialProcessing();
 
-    // void usblProcessing();
     QVector<QVector3D> beaconTrack() {
         return _beaconTrack;
     }
@@ -317,22 +289,19 @@ public slots:
 
     QStringList channelsNameList();
 
-    void onDistCompleted(int epIndx, const ChannelId& channelId, float dist);
     void onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll);
 
 signals:
     void epochAdded(uint64_t indx);
     void positionAdded(uint64_t indx);
-    void chartAdded(uint64_t indx); // without ChartId
+    void chartAdded(uint64_t indx);
     void attitudeAdded(uint64_t indx);
-    void bottomTrackAdded(uint64_t indx);
     void dataUpdate();
     void bottomTrackUpdated(const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll);
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
     void channelsUpdated();
     void lastPositionChanged();
-    // void activeContactChanged();
     void lastDepthChanged();
     void speedChanged();
 
@@ -346,11 +315,6 @@ protected:
     int lastEventId = 0;
     float _lastEncoder = 0;
 
-#if defined(FAKE_COORDS)
-    bool activeZeroing_ = false;
-    uint64_t testTime_ = 1740466541;
-#endif
-
     DatasetChannel firstChannelId_ = DatasetChannel(); // TODO: temp solution
     QVector<DatasetChannel> channelsSetup_;
 
@@ -359,14 +323,11 @@ protected:
     QVector<QVector3D> _beaconTrack;
     QVector<QVector3D> _beaconTrack1;
 
-    // QMap<int, UsblView::UsblObjectParams> tracks;
-
     QVector<Epoch> pool_;
     QVector<Epoch> polygonOutline_;
     QVector<North_East_Down> polygonOutlineNED_;
 
     float _lastYaw = 0, _lastPitch = 0, _lastRoll = 0;
-    // float lastTemp_ = NAN;
 
 public:
     Epoch* addNewEpoch();
@@ -381,7 +342,7 @@ public:
     void location(double lat, double lon);
 
 private:
-    friend class DataInterpolator;
+    // friend class DataInterpolator;
 
     /*methods*/
     LlaRefState getCurrentLlaRefState() const;
@@ -397,7 +358,7 @@ private:
     LLARef _llaRef;
     LlaRefState llaRefState_ = LlaRefState::kUndefined;
     DatasetState state_ = DatasetState::kUndefined;
-    DataInterpolator interpolator_;
+    // DataInterpolator interpolator_;
     int lastBottomTrackEpoch_;
     BottomTrackParam bottomTrackParam_;
     QMap<ChannelId, RecordParameters> usingRecordParameters_;
@@ -409,11 +370,8 @@ private:
     QList<QString> channelsNames_;
     QList<ChannelId> channelsIds_;
     QList<uint8_t> subChannelIds_;
-    // int64_t activeContactIndx_  = -1;
     float boatLatitute_         = 0.0f;
     float boatLongitude_        = 0.0f;
-    // float distToActiveContact_  = 0.0f;
-    // float angleToActiveContact_ = 0.0f;
     float lastDepth_            = 0.0f;
     float speed_                = 0.0f;
     QVector3D sonarOffset_;

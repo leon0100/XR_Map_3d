@@ -37,10 +37,10 @@ GraphicsScene3dView::GraphicsScene3dView() :
     switchedToBottomTrackVertexComboSelectionMode_(false),
     needToResetStartPos_(false),
     lastCameraDist_(m_camera->distForMapView()),
-    trackLastData_(false),
+    // trackLastData_(false),
     gridVisibility_(true),
-    useAngleLocation_(false),
-    navigatorViewLocation_(false),
+    // useAngleLocation_(false),
+    // navigatorViewLocation_(false),
     isNorth_(false),
     testingTimer_(nullptr)
 {
@@ -144,11 +144,6 @@ std::shared_ptr<PolygonGroup> GraphicsScene3dView::polygonGroup() const
 {
     return m_polygonGroup;
 }
-
-// std::shared_ptr<UsblView> GraphicsScene3dView::getUsblViewPtr() const
-// {
-//     return usblView_;
-// }
 
 std::shared_ptr<NavigationArrow> GraphicsScene3dView::getNavigationArrowPtr() const
 {
@@ -740,17 +735,10 @@ void GraphicsScene3dView::setLandMarkMode(bool mark)
 
 }
 
-void GraphicsScene3dView::setTrackLastData(bool state)
-{
-    trackLastData_ = state;
-
-    //测试使用
-    // Position boatPos;
-    // boatPos.lla.latitude = 32.0603;
-    // boatPos.lla.longitude = 118.7969;
-
-    // navigationArrow_->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e),0); // 把船开到这里
-}
+// void GraphicsScene3dView::setTrackLastData(bool state)
+// {
+    // trackLastData_ = state;
+// }
 
 void GraphicsScene3dView::setTextureIdByTileIndx(const map::TileIndex &tileIndx, GLuint textureId)
 {
@@ -764,15 +752,15 @@ void GraphicsScene3dView::setGridVisibility(bool state)
     QQuickFramebufferObject::update();
 }
 
-void GraphicsScene3dView::setUseAngleLocation(bool state)
-{
-    useAngleLocation_ = state;
-}
+// void GraphicsScene3dView::setUseAngleLocation(bool state)
+// {
+//     useAngleLocation_ = state;
+// }
 
-void GraphicsScene3dView::setNavigatorViewLocation(bool state)
-{
-    navigatorViewLocation_ = state;
-}
+// void GraphicsScene3dView::setNavigatorViewLocation(bool state)
+// {
+//     navigatorViewLocation_ = state;
+// }
 
 void GraphicsScene3dView::updateProjection()
 {
@@ -925,7 +913,6 @@ void GraphicsScene3dView::setIsometricView()
     m_axesThumbnailCamera->setIsometricView();
 
     fitAllInView();
-    // updatePlaneGrid();
 
     QQuickFramebufferObject::update();
 
@@ -956,103 +943,57 @@ void GraphicsScene3dView::setMapView()
     emit cameraIsMoved();
 }
 
-void GraphicsScene3dView::setLastEpochFocusView(bool useAngle, bool useNavigatorView)
-{
-    if (!m_camera->isPerspective_ || !datasetPtr_) {
-        return;
-    }
+// void GraphicsScene3dView::setLastEpochFocusView(bool useAngle, bool useNavigatorView)
+// {
+//     if (!m_camera->isPerspective_ || !datasetPtr_) {
+//         return;
+//     }
 
-    auto* epoch = datasetPtr_->last();
-    if (!epoch) {
-        return;
-    }
+//     auto* epoch = datasetPtr_->last();
+//     if (!epoch) {
+//         return;
+//     }
 
-    // if (useAngle && !isNorth_) {
-        // const float yawDeg = datasetPtr_->getLastYaw();
-        // if (std::isfinite(yawDeg)) {
-            // const float targetYaw = -yawDeg * static_cast<float>(M_PI) / 180.0f;
-
-            // if (!m_camera->navYawInited_) {
-            //     m_camera->navYawFilteredRad_ = targetYaw;
-            //     m_camera->navYawInited_      = true;
-            //     m_camera->navYawTmr_.restart();
-            // }
-
-            // double dt = m_camera->navYawTmr_.restart() / 1000.0;
-            // if (dt <= 0.0 || dt > 0.5) {
-            //     dt = 0.016; // 60hz
-            // }
-
-            // float diff = shortestDiff(m_camera->navYawFilteredRad_, targetYaw); // разница по кратчайшей дуге + deadband
-            // if (std::fabs(diff) < m_camera->navYawDeadbandRad_) {
-            //     diff = 0.f;
-            // }
-
-            // if (std::fabs(diff) > m_camera->navYawSnapRad_) {
-            //     m_camera->navYawFilteredRad_ = targetYaw;
-            // }
-            // else {
-            //     const float alpha = 1.0f - std::exp(-float(dt) / m_camera->navYawTauSec_); // time-based EMA
-            //     float step = diff * alpha;
-
-            //     const float maxStep = m_camera->navYawMaxRateRadPerSec_ * float(dt); // ограничение скорости поворота
-            //     if (step >  maxStep) {
-            //         step =  maxStep;
-            //     }
-            //     if (step < -maxStep) {
-            //         step = -maxStep;
-            //     }
-
-            //     m_camera->navYawFilteredRad_ = wrapPi(m_camera->navYawFilteredRad_ + step);
-            // }
-
-            // m_camera->m_rotAngle.setX(m_camera->navYawFilteredRad_);
-        // }
-    // }
-
-    // pos
-    North_East_Down boatPosNed = epoch->getPositionGNSS().ned;
-    QVector3D currPos(boatPosNed.n, boatPosNed.e, 1);
-    if (currPos == QVector3D()) {
-        return;
-    }
-
-    QVector3D focusPoint = currPos;
+//     North_East_Down boatPosNed = epoch->getPositionGNSS().ned;
+//     QVector3D currPos(boatPosNed.n, boatPosNed.e, 1);
+//     if (currPos == QVector3D()) {
+//         return;
+//     }
 
 
-    if (useNavigatorView) {
-        // смещение
-        const float yawRadForDir = -m_camera->m_rotAngle.x();
-        QVector3D forwardXY(std::cos(yawRadForDir), std::sin(yawRadForDir), 0.0f);
-        if (!forwardXY.isNull()) {
-            forwardXY.normalize();
-        }
-        const float dist = std::max(1.0f, static_cast<float>(m_camera->distForMapView())) * 0.7f;
-        const float kMin      = 10.0f;
-        const float kFrac     = 0.30f;
-        const float kMaxFrac  = 0.85f;
-        float offset = std::max(kMin, dist * kFrac);
-        offset = std::min(offset, dist * kMaxFrac);
-        focusPoint += forwardXY * offset;
+//     if (useNavigatorView) {
+//         // смещение
+//         const float yawRadForDir = -m_camera->m_rotAngle.x();
+//         QVector3D forwardXY(std::cos(yawRadForDir), std::sin(yawRadForDir), 0.0f);
+//         if (!forwardXY.isNull()) {
+//             forwardXY.normalize();
+//         }
+//         const float dist = std::max(1.0f, static_cast<float>(m_camera->distForMapView())) * 0.7f;
+//         const float kMin      = 10.0f;
+//         const float kFrac     = 0.30f;
+//         const float kMaxFrac  = 0.85f;
+//         float offset = std::max(kMin, dist * kFrac);
+//         offset = std::min(offset, dist * kMaxFrac);
+//         currPos += forwardXY * offset;
 
-        // тангаж
-        const float targetPitchRad = isNorth_ ? 0.0f : qDegreesToRadians(30.0f);
-        const float alpha = 0.3f;
-        const float curr = m_camera->m_rotAngle.y();
-        float next = curr + (targetPitchRad - curr) * alpha;
-        if (next < 0.0f) {
-            next = 0.0f;
-        }
-        if (next > float(M_PI_2)) {
-            next = float(M_PI_2);
-        }
-        m_camera->m_rotAngle.setY(next);
-    }
+//         // тангаж
+//         const float targetPitchRad = isNorth_ ? 0.0f : qDegreesToRadians(30.0f);
+//         const float alpha = 0.3f;
+//         const float curr = m_camera->m_rotAngle.y();
+//         float next = curr + (targetPitchRad - curr) * alpha;
+//         if (next < 0.0f) {
+//             next = 0.0f;
+//         }
+//         if (next > float(M_PI_2)) {
+//             next = float(M_PI_2);
+//         }
+//         m_camera->m_rotAngle.setY(next);
+//     }
 
-    m_camera->focusOnPosition(focusPoint);
-    QQuickFramebufferObject::update();
-    emit cameraIsMoved();
-}
+//     m_camera->focusOnPosition(currPos);
+//     QQuickFramebufferObject::update();
+//     emit cameraIsMoved();
+// }
 
 void GraphicsScene3dView::setIdleMode()
 {
@@ -1155,7 +1096,7 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
         this, [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll)->void {
-        // qDebug() << "connect&Dataset::bottomTrackUpdated...........";
+            // qDebug() << "connect&Dataset::bottomTrackUpdated...........";
             //暂时注释
             // auto chList = datasetPtr_->channelsList();
             // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
@@ -1215,11 +1156,6 @@ void GraphicsScene3dView::setQmlRootObject(QObject* object)
     polygonOutline_->setQmlRootObject(object);
 }
 
-// void GraphicsScene3dView::setQmlAppEngine(QQmlApplicationEngine* engine)
-// {
-    // Contacts::setQmlInstance(contacts_.get(), engine);
-// }
-
 void GraphicsScene3dView::updateBounds()
 {
     // qDebug() << "GraphicsScene3dView::updateBounds........";
@@ -1230,7 +1166,6 @@ void GraphicsScene3dView::updateBounds()
                    .merge(m_polygonGroup->bounds())
                    .merge(surfaceView_->bounds())
                    .merge(imageView_->bounds());
-                   // .merge(usblView_->bounds());
 
     QQuickFramebufferObject::update();
 }
@@ -1462,9 +1397,9 @@ void GraphicsScene3dView::onPositionAdded(uint64_t indx)
                     !isfinite(boatPos.ned.d) ? 0.f : boatPos.ned.d), lastYaw - 90.f);
     }
 
-    if (trackLastData_) {
-        setLastEpochFocusView(useAngleLocation_, navigatorViewLocation_);
-    }
+    // if (trackLastData_) {
+    //     setLastEpochFocusView(useAngleLocation_, navigatorViewLocation_);
+    // }
 }
 
 void GraphicsScene3dView::setIsNorth(bool state)
@@ -1540,14 +1475,7 @@ void GraphicsScene3dView::slotScreetGraphics()
     request.append(LLA(minLat, maxLon, targetHeight));
     request.append(LLA(minLat, minLon, targetHeight));
     emit sendRectRequest(request, m_camera->getIsPerspective(), m_camera->viewLlaRef_, true);
-    // QMetaObject::invokeMethod(screetShot_.loadingQuickView_, [this](){
-    //     screetShot_.loadingQuickView_->show(); }, Qt::QueuedConnection);
     GIF->dialogInfo(Dialog_Loading, "show");
-
-    // QTimer::singleShot(4000, this, [this]() {
-    //     screenshotPending_ = true;
-    //     QQuickFramebufferObject::update();
-    // });
 }
 
 void GraphicsScene3dView::onTargetTilesLoaded()

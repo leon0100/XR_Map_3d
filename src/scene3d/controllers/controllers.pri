@@ -5,12 +5,7 @@ HEADERS += \
     $$PWD/boat_track_control_menu_controller.h \
     $$PWD/bottom_track_control_menu_controller.h \
     $$PWD/image_view_control_menu_controller.h \
-    $$PWD/map_view_control_menu_controller.h \
-    $$PWD/navigation_arrow_control_menu_controller.h \
-    $$PWD/point_group_control_menu_controller.h \
     $$PWD/qml_component_controller.h \
-    $$PWD/scene3d_control_menu_controller.h \
-    $$PWD/scene3d_toolbar_controller.h \
     $$PWD/mosaic_view_control_menu_controller.h \
     $$PWD/isobaths_view_control_menu_controller.h
 
@@ -18,11 +13,6 @@ SOURCES += \
     $$PWD/boat_track_control_menu_controller.cpp \
     $$PWD/bottom_track_control_menu_controller.cpp \
     $$PWD/image_view_control_menu_controller.cpp \
-    $$PWD/map_view_control_menu_controller.cpp \
-    $$PWD/navigation_arrow_control_menu_controller.cpp \
-    $$PWD/point_group_control_menu_controller.cpp \
     $$PWD/qml_component_controller.cpp \
-    $$PWD/scene3d_control_menu_controller.cpp \
-    $$PWD/scene3d_toolbar_controller.cpp \
     $$PWD/mosaic_view_control_menu_controller.cpp \
     $$PWD/isobaths_view_control_menu_controller.cpp

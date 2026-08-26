@@ -83,25 +83,6 @@ void Epoch::setDist(const ChannelId& channelId, int dist)
     flags.distAvail = true;
 }
 
-void Epoch::setRangefinder(const ChannelId& channelId, float distance)
-{
-    rangefinders_[channelId] = distance;
-}
-
-// void Epoch::setDopplerBeam(IDBinDVL::BeamSolution *beams, uint16_t cnt)
-// {
-//     for(uint16_t i = 0; i < cnt; i++) {
-//         _dopplerBeams[i] = beams[i];
-//     }
-//     //    setDist(beams[0].distance*1000.0f);
-//     _dopplerBeamCount = cnt;
-// }
-
-// void Epoch::setDVLSolution(IDBinDVL::DVLSolution dvlSolution)
-// {
-//     _dvlSolution = dvlSolution;
-//     flags.isDVLSolutionAvail = true;
-// }
 
 void Epoch::setPositionLLA(double lat, double lon, LLARef* ref, uint32_t unix_time, int32_t nanosec)
 {
@@ -439,9 +420,9 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
     uint8_t* src = charts_[localChannelId][subChannelId].amplitude.data();
 
     if (imageType == 1) {
-        if (charts_[localChannelId][subChannelId].compensated.size() == 0) {
-            charts_[localChannelId][subChannelId].updateCompesated();
-        }
+        // if (charts_[localChannelId][subChannelId].compensated.size() == 0) {
+        //     charts_[localChannelId][subChannelId].updateCompesated();
+        // }
         src = charts_[localChannelId][subChannelId].compensated.data();
     }
 

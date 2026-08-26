@@ -1,8 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Window 2.15
-
 
 
 Rectangle {
@@ -14,7 +12,7 @@ Rectangle {
     visible: renderer.screetShot.landMarkMode
 
 
-    property int landSize: Math.min(Screen.width, Screen.height) * 0.3
+    property int landSize: theme.screenSize * 0.3
     property int iconSize: landSize * 0.05
     property int boxSize:  iconSize * 2
 
@@ -51,7 +49,7 @@ Rectangle {
 
         // Name
         RowLayout {
-            Layout.fillWidth: true
+            // Layout.fillWidth: true
             spacing: 10
             Label {
                 text: qsTr("Name")
@@ -101,7 +99,7 @@ Rectangle {
 
         // Latitude
         RowLayout {
-            Layout.fillWidth: true
+            // Layout.fillWidth: true
             spacing: 10
 
             Label {

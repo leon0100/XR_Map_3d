@@ -552,12 +552,12 @@ void MosaicProcessor::updateData(const QVector<int>& indxs)
             !qIsFinite(segSCharts->bottomProcessing.getDistance())) {
             continue;
         }
-        if (segFCharts->amplitude.size() != segFCharts->compensated.size()) {
-            segFCharts->updateCompesated();
-        }
-        if (segSCharts->amplitude.size() != segSCharts->compensated.size()) {
-            segSCharts->updateCompesated();
-        }
+        // if (segFCharts->amplitude.size() != segFCharts->compensated.size()) {
+        //     segFCharts->updateCompesated();
+        // }
+        // if (segSCharts->amplitude.size() != segSCharts->compensated.size()) {
+        //     segSCharts->updateCompesated();
+        // }
 
         // Bresenham
         // first segment

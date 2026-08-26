@@ -19,7 +19,6 @@
         <file>QmlCommon/KTextField.qml</file>
         <file>QmlCommon/KSpinBox.qml</file>
         <file>SceneControlMenu.qml</file>
-        <file>PointGroupControlMenu.qml</file>
         <file>Plot2D.qml</file>
         <file>MenuRow.qml</file>
         <file>ConnectionButton.qml</file>

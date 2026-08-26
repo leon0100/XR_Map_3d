@@ -1,11 +1,9 @@
 <RCC>
     <qresource prefix="/">
         <file>../translations/translation_en.qm</file>
-	<file>../translations/translation_ch.qm</file>
-        <file>../translations/translation_ru.qm</file>
-        <file>../translations/translation_pl.qm</file>
+        <file>../translations/translation_ch.qm</file>
         <file>version.txt</file>
-	<file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
-	<file>config/cfg</file>
+        <file>fonts/AlibabaPuHuiTi-3-55-Regular.ttf</file>
+        <file>config/cfg</file>
     </qresource>
 </RCC>

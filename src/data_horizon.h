@@ -16,18 +16,12 @@ public:
     void setIsFileOpening(bool state);
     void setIsAttitudeExpected(bool state);
 
-    uint64_t getEpochSize() const { return epochIndx_; };
-    uint64_t getPositionIndx() const { return positionIndx_; };
-    uint64_t getChartIndx() const { return chartIndx_; };
-    uint64_t getAttitudeIndx() const { return attitudeIndx_; };
-    uint64_t getBottomTrackIndx() const { return bottomTrackIndx_; };
-
 signals:
     void epochAdded(uint64_t indx);
     void positionAdded(uint64_t indx);
     void chartAdded(uint64_t indx);
     void attitudeAdded(uint64_t indx);
-    void bottomTrackAdded(uint64_t indx);
+    // void bottomTrackAdded(uint64_t indx);
     void bottomTrack3DAdded(const QVector<int>& epIndxs, const QVector<int>& vertIndxs, bool isManual);
     void mosaicCanCalc(uint64_t indx);
     void sonarPosCanCalc(uint64_t indx);
@@ -38,7 +32,7 @@ public slots:
     void onAddedPosition(uint64_t indx);
     void onAddedChart(uint64_t indx);
     void onAddedAttitude(uint64_t indx);
-    void onAddedBottomTrack(uint64_t indx); // from bottom track algorithm
+    // void onAddedBottomTrack(uint64_t indx); // from bottom track algorithm
     void onAddedBottomTrack3D(const QVector<int>& epIndxs, const QVector<int>& vertIndxs, bool isManual); // from 2D (editing), 3D
 
 private:

@@ -556,8 +556,8 @@ XRRectangle {
                         onClicked: {
                             flashAnim4.restart()
                             isShowBoat = !isShowBoat
-                            NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
-                            // IsobathsViewControlMenuController.onVertexVisibilityCheckBoxCheckedChanged(isShowBoat)
+                            // NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
+                            core.onNavigationArrowVisibleChanged(isShowBoat)
                         }
 
                         onEntered: parent.color = "#d6e6ff"

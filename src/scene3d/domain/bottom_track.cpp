@@ -76,32 +76,6 @@ void BottomTrack::actionEvent(ActionEvent actionEvent)
             sequenceVector.shrink_to_fit();
             const auto subArraysVec{ getSubarrays(sequenceVector) };
             const auto channels = datasetPtr_->channelsList();
-            const auto btP = datasetPtr_->getBottomTrackParam();
-
-            for (auto& itm : subArraysVec) {
-                if (auto* btp = datasetPtr_->getBottomTrackParamPtr(); btp) {
-                    btp->indexFrom = itm.first;
-                    btp->indexTo = itm.second;
-                    qDebug() << "55555 btp->indexFrom:..." <<  btp->indexFrom << " " <<btp->indexTo;
-                    if (channels.size() >= 2) {
-                        qDebug() << "channels.size() >= 2.....";
-                        QMetaObject::invokeMethod(dataProcessorPtr_, "bottomTrackProcessing", Qt::QueuedConnection,
-                                    Q_ARG(DatasetChannel, channels[0]), Q_ARG(DatasetChannel, channels[1]),
-                                    Q_ARG(BottomTrackParam, btP), Q_ARG(bool, true),/*manual*/
-                                    Q_ARG(bool, false)/*redraw all*/);
-                    }
-                    else if (channels.size() == 1) {
-                        qDebug() << "channels.size() ==1....";
-                        QMetaObject::invokeMethod(dataProcessorPtr_, "bottomTrackProcessing", Qt::QueuedConnection,
-                                    Q_ARG(DatasetChannel, channels[0]), Q_ARG(DatasetChannel, DatasetChannel()),
-                                    Q_ARG(BottomTrackParam, btP), Q_ARG(bool, true),/*manual*/
-                                    Q_ARG(bool, false));
-                    }
-                }
-                else {
-                    break;
-                }
-            }
 
             updateRenderData(0, 0, false, true);
             emit datasetPtr_->dataUpdate();
@@ -167,15 +141,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     if (currDataType == DataProcessorType::bletoothTrack || currDataType == DataProcessorType::wifiTrack) {
         lEpoch = rEpoch > 1 ? (rEpoch-1) : 0;
     }
-
-    // auto datasetChannels = datasetPtr_->channelsList();
-    // if (!datasetChannels.isEmpty()) {
-    //     visibleChannel_ = datasetChannels.first();
-    // }
-    // else {
-    //     visibleChannel_ = DatasetChannel();
-    // }
-
 
     QVector<QVector3D> prepData;
     // qDebug() << "lEpoch....." << lEpoch << "   rEpoch...." << rEpoch;
