@@ -1,6 +1,6 @@
 #include "image_view.h"
 
-#include "scene3d_view.h"
+// #include "scene3d_view.h"
 
 
 ImageView::ImageView(QObject* parent) :

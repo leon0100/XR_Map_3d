@@ -131,7 +131,7 @@ double Plot2DEchogram::KalmanFilter(double ResrcData,double ProcessNiose_Q,doubl
     p_mid = p_last + ProcessNiose_Q;       //p_mid=p(k|k-1),p_last=p(k-1|k-1),Q=噪声
     kg = p_mid / (p_mid + MeasureNoise_R); //kg为kalman filter，R为噪声
     x_now = x_mid + kg * (  ResrcData - x_mid); //估计出的最优值
-    p_now = (1 - kg) * p_mid;                                 //最优值对应的covariance
+    p_now = (1 - kg) * p_mid;        //最优值对应的covariance
 
     p_last = p_now; //更新covariance值
     x_last = x_now; //更新系统状态值
@@ -800,9 +800,8 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     DiskSonarCache* diskSonarCache = dataset->getDiskSonarCache();
                     if (diskSonarCache) {
                         QByteArray frameBytes;
-                        if (diskSonarCache->readFrame(cursor.channel1, cursor.subChannel1, pool_index_safe, frameBytes)) {
-                            std::memcpy(rawDataVec.data(), frameBytes.constData(), PING_SIZE_MAX);
-                        }
+                        diskSonarCache->readFrame(pool_index_safe, frameBytes);
+                        std::memcpy(rawDataVec.data(), frameBytes.constData(), PING_SIZE_MAX);
                     }
                 }
 

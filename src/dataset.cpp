@@ -294,7 +294,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     if (!getLlaRef().isInit) {
         LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
                     (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
-        qDebug() << "llaState........" << (int)llaState << "  " << (int)state_;
+        // qDebug() << "llaState........" << (int)llaState << "  " << (int)state_;
         setLlaRef(LLARef(pos.lla), llaState);
     }
 
@@ -330,81 +330,18 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
         emit positionAdded(poolCnt-1);
     }
 
-
-
-    // Position pos;
-    // pos.lla = LLA(lat, lon);
-    // if (!pos.lla.isCoordinatesValid()) {
-    //     return;
-    // }
-
-    // if (!getLlaRef().isInit) {
-    //     LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
-    //                                (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
-    //     qDebug() << "llaState........" << (int)llaState << "  " << (int)state_;
-    //     setLlaRef(LLARef(pos.lla), llaState);
-    // }
-
-    // QWriteLocker wl(&poolMtx_);
-    // Epoch* lastEp = last();
-    // if (!lastEp) {
-    //     return;
-    // }
-
-    // if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-    //     lastEp = addNewEpoch();  //不断累加帧数的下标index
-    // }
-
-    // // qDebug() << "pool_size()............... " << pool_.size();
-    // uint64_t poolCnt = pool_.size();
-
-    // lastEp->setPositionLLA(pos);
-    // lastEp->setPositionRef(&_llaRef); //将LLA坐标转化成本地NED坐标
-    // lastEp->setPositionDataType(DataType::kRaw);
-
-    // North_East_Down curNed = lastEp->getPositionGNSS().ned;
-    // QVector3D new3DData = QVector3D(curNed.n, curNed.e, 0);
-    // minX_ = std::min(minX_, new3DData.x());
-    // maxX_ = std::max(maxX_, new3DData.x());
-    // minY_ = std::min(minY_, new3DData.y());
-    // maxY_ = std::max(maxY_, new3DData.y());
-
-    // bool regionStart = false;
-    // if (poolCnt >= 2) {
-    //     Epoch* prevEp = fromIndex(poolCnt - 2);
-    //     if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
-    //         North_East_Down prevNed = prevEp->getPositionGNSS().ned;
-    //         double dn    = curNed.n - prevNed.n;
-    //         double de    = curNed.e - prevNed.e;
-    //         double dist  = dn * dn + de * de;
-    //         if (dist > 1000.0) {
-    //             lastEp->isRegionStart_ = true;
-    //             regionStart = true;
-    //         }
-    //     }
-    // }
-
-    // if (!regionStart) {
-    //     boatLatitute_  = pos.lla.latitude;
-    //     boatLongitude_ = pos.lla.longitude;
-    // }
-    // wl.unlock();
-
-    // if(enableRender && !regionStart) {
-    //     emit positionAdded(poolCnt-1);
-    // }
-
-
 }
 
 void Dataset::positionAddedDone()
 {
     uint64_t poolCnt = pool_.size();
     if(poolCnt > 2) {
+        qDebug() << "222222222222";
         emit positionAdded(poolCnt-1);
     }
 
     emit dataUpdate();
+    qDebug() << "111111111111";
 }
 
 void Dataset::location(double lat, double lon)

@@ -50,52 +50,33 @@ void DiskSonarCache::close()
         file_.close();
     }
 }
-
-qint64 DiskSonarCache::writeFrame(const ChannelId& channelId, uint8_t subChannelId, const QByteArray& rawFrame)
+void DiskSonarCache::clearFile()
 {
     QMutexLocker lk(&mtx_);
-    if (!file_.isOpen() || !file_.isWritable()) {
-        return -1;
-    }
 
-    QByteArray frame = rawFrame;
-    if (frame.size() < PING_SIZE_MAX) {
-        frame.append(QByteArray(PING_SIZE_MAX - frame.size(), '\0'));
-    } else if (frame.size() > PING_SIZE_MAX) {
-        frame = frame.left(PING_SIZE_MAX);
+    QFile file(filePath_);
+    if (file.exists()) {
+        if (!file.remove()) {
+            return;
+        }
     }
-    const qint64 epochIdx = totalFramesWritten_;
-    file_.write(frame.constData(), PING_SIZE_MAX);
-    file_.flush();
-
-    totalFramesWritten_++;
-    return epochIdx;
+    totalFramesWritten_ = 0;
+    channelOffsets_.clear();
 }
 
-bool DiskSonarCache::readFrame(const ChannelId& channelId, uint8_t subChannelId, qint64 epochIdx, QByteArray& outFrame)
+void DiskSonarCache::writeFrame(const QByteArray& rawFrame)
 {
-    QMutexLocker lk(&mtx_);
-    if (!file_.isOpen() || !file_.isReadable()) {
-        return false;
-    }
-    if (epochIdx < 0) {
-        return false;
-    }
+    file_.write(rawFrame.constData(), PING_SIZE_MAX);
+    totalFramesWritten_++;
+}
+
+void DiskSonarCache::readFrame(qint64 epochIdx, QByteArray& outFrame)
+{
     const qint64 offset = epochIdx * PING_SIZE_MAX;
-    if (offset + PING_SIZE_MAX > file_.size()) {
-        return false;
-    }
     if (!file_.seek(offset)) {
-        return false;
+        return ;
     }
     outFrame = file_.read(PING_SIZE_MAX);
-    return outFrame.size() == PING_SIZE_MAX;
-}
-
-void DiskSonarCache::registerChannelOffset(const ChannelId& channelId, uint8_t subChannelId, qint64 startEpochIdx)
-{
-    QMutexLocker lk(&mtx_);
-    channelOffsets_.insert({channelId.uuid, subChannelId}, startEpochIdx);
 }
 
 
@@ -138,7 +119,6 @@ void DeviceManager::resetFileAndChannel(int fileCnt)
         delete diskSonarCache_;
         diskSonarCache_ = nullptr;
     }
-    totalSonarFramesWritten_ = 0;
     QDir dir;
     QString dirPath = QString(qApp->applicationDirPath().append("/pixL/"));
     if (!dir.mkpath(dirPath)) {
@@ -150,6 +130,7 @@ void DeviceManager::resetFileAndChannel(int fileCnt)
     QFile::remove(filePath);
     diskSonarCache_ = new DiskSonarCache(filePath);
     diskSonarCache_->openForWrite();
+    diskSonarCache_->clearFile();
     datasetPtr_->setDiskSonarCache(diskSonarCache_);
 }
 
@@ -442,7 +423,7 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
         chartParams.time        = tslSingleStru.boat.time;
         chartParams.longitude   = lla.longitude;
         chartParams.latitude    = lla.latitude;
-        // emit chartComplete(batchChannelId_, chartParams, dataVec, true);
+        emit chartComplete(batchChannelId_, chartParams, dataVec, true);
 
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
         bool enableRender = (cnt + 1) == tslWCnt ? true : false;
@@ -777,7 +758,6 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
     // file.open(QIODevice::Append|QIODevice::ReadWrite);
     // QDataStream out(&file);
 
-    // QList<tsl_3> list_tsl3_temp;
 
     /*-单个结构体不影响，可直接用，仅为进行位置校验-*/
     tsl_3 tslSingleStruct;
@@ -787,15 +767,9 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
     if(((last_lon < 0.000001f) && (last_lat < 0.000001f))) {
         if(flag_haveReportAbnormalGPS == false) {
             flag_haveReportAbnormalGPS = true;
-
-            GIF->dialogYesNo(tr("Delete abnormal GPS coordinates?"),[this](bool confirmed) {
-                if(confirmed) {
-                    flag_deleteAbnormalGPS = true;
-                }
-                else {
-                    flag_deleteAbnormalGPS = false;
-                }
-            });
+            // GIF->dialogYesNo(tr("Delete abnormal GPS coordinates?"),[this](bool confirmed) {
+            //     flag_deleteAbnormalGPS = confirmed ? true : false;
+            // });
         }
     }
 
@@ -811,10 +785,9 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
         if((tslSingleStruct.boat.longitude < 0.000001f) && (tslSingleStruct.boat.latitude < 0.000001f)) {
             if(flag_haveReportAbnormalGPS == false) {
                 flag_haveReportAbnormalGPS = true;
-                GIF->dialogYesNo(tr("Delete abnormal GPS coordinates?"),[this](bool confirmed) {
-                    flag_deleteAbnormalGPS = confirmed ? true : false;
-
-                });
+                // GIF->dialogYesNo(tr("Delete abnormal GPS coordinates?"),[this](bool confirmed) {
+                //     flag_deleteAbnormalGPS = confirmed ? true : false;
+                // });
             }
             if(flag_deleteAbnormalGPS == true) {
                 count_abnormalGPS++;
@@ -851,7 +824,7 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
             rawDat.append('\0');
         }
         // out.writeRawData(rawDat.data(),PING_SIZE_MAX);
-        diskSonarCache_->writeFrame(batchChannelId_, 0, rawDat);
+        diskSonarCache_->writeFrame(rawDat);
         int pingSize = tslSingleStruct.ping.size;
         float upRng  = tslSingleStruct.ping.upRng;
         float loRng  = tslSingleStruct.ping.loRng;
@@ -879,6 +852,7 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
         chartParams.speed       = tslSingleStruct.boat.speed;
         chartParams.time        = tslSingleStruct.boat.time;
         chartParams.latitude    = lla.latitude;
+        chartParams.longitude   = lla.longitude;
         // int pingCnt = tslSingleStruct.ping.size;
         // QVector<QVector<uint8_t>> dataVec;
         // QVector<uint8_t> channelData;
@@ -892,7 +866,7 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
         // datasetPtr_->addChart(batchChannelId_, chartParams, dataVec, false);
 
         datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
-        // datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
+        datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
 
         depthVec_.append(lla.altitude);
         minZ_ = std::min(minZ_, lla.altitude);

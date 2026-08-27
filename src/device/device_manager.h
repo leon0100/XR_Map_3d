@@ -63,11 +63,11 @@ public:
     bool openForRead();
     void flush();
     void close();
+    void clearFile();
 
-    qint64 writeFrame(const ChannelId& channelId, uint8_t subChannelId, const QByteArray& rawFrame);
-    bool readFrame(const ChannelId& channelId, uint8_t subChannelId, qint64 epochIdx, QByteArray& outFrame);
+    void writeFrame(const QByteArray& rawFrame);
+    void readFrame(qint64 epochIdx, QByteArray& outFrame);
 
-    void registerChannelOffset(const ChannelId& channelId, uint8_t subChannelId, qint64 startEpochIdx);
     qint64 frameCount() const { return totalFramesWritten_; }
 
 private:
@@ -145,7 +145,5 @@ private:
     QString sonarFreqString = "",sonarFreqString_2 = "";
     QString constructionTime = "";
 
-
     DiskSonarCache* diskSonarCache_ = nullptr;
-    qint64 totalSonarFramesWritten_ = 0;
 };

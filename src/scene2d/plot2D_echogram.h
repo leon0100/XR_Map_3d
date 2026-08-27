@@ -151,7 +151,6 @@ private:
 
 private:
     ThemeId themeId_;
-
     ZyColorScheme *zyColorScheme_;
 
     int currentUpRng_ = 0, currentLoRng_ = 3200;
