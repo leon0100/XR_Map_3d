@@ -1,19 +1,107 @@
 #include "device_manager.h"
+#include "qglobal.h"
 
 #include <QTimeZone>
 #include <QDateTime>
 #include <QUrl>
 #include <QCoreApplication>
 #include <QTimer>
+#include <QDataStream>
+#include <QMutexLocker>
+#include "console.h"
 
 
-DeviceManager::DeviceManager():
-    lastAddress_(-1),
-    progress_(0),
-    isConsoled_(false),
-    break_(false),
-    upgradeUuid_(QUuid()),
-    upgradeAddr_(0)
+
+
+
+DiskSonarCache::DiskSonarCache(const QString& filePath)
+    : filePath_(filePath)
+{
+    qDebug() << "filePath....." << filePath;
+}
+
+DiskSonarCache::~DiskSonarCache()
+{
+    close();
+}
+
+bool DiskSonarCache::openForWrite()
+{
+    QMutexLocker lk(&mtx_);
+    file_.setFileName(filePath_);
+    return file_.open(QIODevice::ReadWrite | QIODevice::Append);
+}
+
+bool DiskSonarCache::openForRead()
+{
+    QMutexLocker lk(&mtx_);
+    if (file_.isOpen()) {
+        file_.close();
+    }
+    file_.setFileName(filePath_);
+    return file_.open(QIODevice::ReadOnly);
+}
+
+void DiskSonarCache::close()
+{
+    QMutexLocker lk(&mtx_);
+    if (file_.isOpen()) {
+        file_.flush();
+        file_.close();
+    }
+}
+
+qint64 DiskSonarCache::writeFrame(const ChannelId& channelId, uint8_t subChannelId, const QByteArray& rawFrame)
+{
+    QMutexLocker lk(&mtx_);
+    if (!file_.isOpen() || !file_.isWritable()) {
+        return -1;
+    }
+
+    QByteArray frame = rawFrame;
+    if (frame.size() < PING_SIZE_MAX) {
+        frame.append(QByteArray(PING_SIZE_MAX - frame.size(), '\0'));
+    } else if (frame.size() > PING_SIZE_MAX) {
+        frame = frame.left(PING_SIZE_MAX);
+    }
+    const qint64 epochIdx = totalFramesWritten_;
+    file_.write(frame.constData(), PING_SIZE_MAX);
+    file_.flush();
+
+    totalFramesWritten_++;
+    return epochIdx;
+}
+
+bool DiskSonarCache::readFrame(const ChannelId& channelId, uint8_t subChannelId, qint64 epochIdx, QByteArray& outFrame)
+{
+    QMutexLocker lk(&mtx_);
+    if (!file_.isOpen() || !file_.isReadable()) {
+        return false;
+    }
+    if (epochIdx < 0) {
+        return false;
+    }
+    const qint64 offset = epochIdx * PING_SIZE_MAX;
+    if (offset + PING_SIZE_MAX > file_.size()) {
+        return false;
+    }
+    if (!file_.seek(offset)) {
+        return false;
+    }
+    outFrame = file_.read(PING_SIZE_MAX);
+    return outFrame.size() == PING_SIZE_MAX;
+}
+
+void DiskSonarCache::registerChannelOffset(const ChannelId& channelId, uint8_t subChannelId, qint64 startEpochIdx)
+{
+    QMutexLocker lk(&mtx_);
+    channelOffsets_.insert({channelId.uuid, subChannelId}, startEpochIdx);
+}
+
+
+
+/**------------------------------------DeviceManager-------------------------------------------**/
+DeviceManager::DeviceManager(Dataset* datasetPtr): datasetPtr_(datasetPtr)
 {
     qRegisterMetaType<int16_t>("int16_t");
     qRegisterMetaType<QVector<uint8_t>>("QVector<uint8_t>");
@@ -21,6 +109,10 @@ DeviceManager::DeviceManager():
     qRegisterMetaType<uint16_t>("uint16_t");
     qRegisterMetaType<uint32_t>("uint32_t");
     qRegisterMetaType<EnumFileType>("EnumFileType");
+
+    QDateTime dateTime = QDateTime::currentDateTime();
+    constructionTime = QString::number(dateTime.toTime_t());
+
 }
 
 DeviceManager::~DeviceManager()
@@ -40,6 +132,25 @@ void DeviceManager::resetFileAndChannel(int fileCnt)
     minZ_ = 0.0;
     maxZ_ = 0.0;
     depthVec_.clear();
+
+    if (diskSonarCache_) {
+        diskSonarCache_->close();
+        delete diskSonarCache_;
+        diskSonarCache_ = nullptr;
+    }
+    totalSonarFramesWritten_ = 0;
+    QDir dir;
+    QString dirPath = QString(qApp->applicationDirPath().append("/pixL/"));
+    if (!dir.mkpath(dirPath)) {
+        qDebug() << "mkpath failed:" << dirPath;
+        return;
+    }
+
+    QString filePath = QDir(dirPath).filePath("pixL.txt");
+    QFile::remove(filePath);
+    diskSonarCache_ = new DiskSonarCache(filePath);
+    diskSonarCache_->openForWrite();
+    datasetPtr_->setDiskSonarCache(diskSonarCache_);
 }
 
 void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
@@ -62,8 +173,6 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
 
     constexpr auto kFileUuidStr = "12345678-1234-1234-1234-1234567890ab";
     const QUuid someUuid(kFileUuidStr);
-
-    delAllDev();
 
     QVector<float> vec_CSV;
     QList<Position> track;
@@ -147,7 +256,7 @@ void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType,
         openFileData_tslw(tslByteArray, fileIndex, fileCnt);
     }
     else if(currentFileType == filetype_tsl3) {
-        openFileData_tsl3(tslByteArray, fileIndex, fileCnt);
+        openFileData_tsl3_2(tslByteArray, fileIndex, fileCnt);
     }
 
     isOpeningFile_ = false;
@@ -177,6 +286,51 @@ double DeviceManager::dm_to_dd(double ddmmmmmmm)
     int dd = (int)dm;
     double mm = (dm-dd) / 0.6f;
     return ((double)dd+mm);
+}
+
+void DeviceManager::GaussPC_calculation(double B, double L, double *x, double *y)
+{
+    double l, l2;
+    double N, w0, w1, w2, w3, w4, cosb, cosb2;
+    double dx, dy;
+
+    l = L - ((int)L / 6 * 6 + 3);
+
+    B = B * PI / 180.0;
+    l = l * PI / 180.0;
+    l2 = l * l;
+
+    cosb = cos(B);
+    cosb2 = cosb * cosb;
+
+    N =  z1 +  (z2  + (z3  + z4  * cosb2) * cosb2) * cosb2;
+    w0 = z5 +  (z6  + (z7  + z8  * cosb2) * cosb2) * cosb2;
+    w1 = z9 +  (z10 + (z11 + z12 * cosb2) * cosb2) * cosb2;
+    w2 = z13 + (z14 + z15 * cosb2) * cosb2;
+    w3 = z16 + (z17 + z18 * cosb2) * cosb2;
+    w4 = z19 + (z20 + (z21 + z22 * cosb2) * cosb2) * cosb2;
+
+    *y = z0 * B + (w0 + (0.5 + (w1 + w2 * l2) * l2) * l2 * N) * cosb * sin(B);
+    dy = z0 * B + (w0 + (0.5 + (w1 + w2 * l2) * l2) * l2 * N) * cosb * sin(B);
+
+    *x = (1.0 + (w3 + w4 * l2) * l2) * l * N * cosb;
+    dx = (1.0 + (w3 + w4 * l2) * l2) * l * N * cosb;
+
+    *x += 500000.0;
+}
+
+float DeviceManager::GpsCal_GaussPC_DST(double PointA_lon, double PointA_lat, double PointB_lon, double PointB_lat)
+{
+    double xA, yA, xB, yB, DST;
+
+    GaussPC_calculation(PointA_lat, PointA_lon, &xA, &yA);
+    GaussPC_calculation(PointB_lat, PointB_lon, &xB, &yB);
+
+    xB -= xA;
+    yB -= yA;
+    DST = sqrt(xB * xB + yB * yB);
+
+    return DST;
 }
 
 void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, int fileCnt)
@@ -322,6 +476,10 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
     if(fileIndex == (fileCnt-1)) {
        emit fileStopsOpening2(depthVec_, minZ_, maxZ_);
     }
+}
+
+void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, int fileCnt)
+{
 
 }
 
@@ -389,10 +547,19 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
         LLA lla;
         lla.latitude  = dm_to_dd(tslSingleStru.boat.latitude);
         lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
+        float depth = tslSingleStru.auxInfo.depth;
+        if(tslSingleStru.ping.frequency == snrFrq455) {
+            if(depth > 10000) {
+                depth = 0;
+            }
+            else if(depth > 30000) {
+                depth = 0;
+            }
+        }
+        lla.altitude = depth / 100.f;
         if(lla.latitude < 0.000001f && lla.longitude < 0.000001f) {
             continue;
         }
-        lla.altitude  = tslSingleStru.auxInfo.depth / 100.f;
 
         buffer.append(lla);
         int bufSize = buffer.size();
@@ -452,15 +619,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
 
         float upRng = tslSingleStru.ping.upRng;
         float loRng = tslSingleStru.ping.loRng;
-        float depth = tslSingleStru.auxInfo.depth;
-        if(tslSingleStru.ping.frequency == snrFrq455) {
-            if(depth > 10000) {
-                depth = 0;
-            }
-            else if(depth > 30000) {
-                depth = 0;
-            }
-        }
+
 
         ChartParameters chartParams;
         chartParams.depth       = depth;
@@ -493,12 +652,12 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
 
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
-        QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
-        if(fileIndex == fileCnt - 1) {
+        if(fileIndex == (fileCnt - 1)) {
+            QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
             QTimer::singleShot(2500, progressDialog_, [this]() {
                 if(progressDialog_) {
                     QMetaObject::invokeMethod(progressDialog_, "close");
-                }});
+            }});
         }
     }
 
@@ -508,37 +667,271 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
 }
 
 
-void DeviceManager::closeFile()
+void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex, int fileCnt)
 {
-    delAllDev();
-    // vru_.cleanVru();
-    emit vruChanged();
-}
+    /*- 获取文件头 -*/
+    if(tslHeadByteArray.isEmpty()) {
+        for(int i = 0; i < 512; i++) {
+            tslHeadByteArray.append(tslByteArray[i]); /*-取出文件头-*/
+        }
+    }
 
-void DeviceManager::setProtoBinConsoled(bool isConsoled)
-{
-    isConsoled_ = isConsoled;
-}
+    if(tslHead.time == "- -") {
+        /*-最新的才有<>字符-*/
+        if(tslHeadByteArray.contains('<')) {
+            /*-按<区分，后面应该有>在-*/
+            QList<QByteArray> list_head = tslHeadByteArray.split('<');
+            for(int i = 0;i < list_head.count()-1; i++) {
+                QByteArray head = list_head.at(i).trimmed();
+                if(head.startsWith('t')) {
+                    /*-time-*/
+                    if(head.count() > 10) {
+                        tslHead.time = head.mid(5);
+                        tslHead.time.remove(6,1);
+                        tslHead.time.insert(2,'/');
+                        tslHead.time.insert(5,'/');
+                        tslHead.time.insert(8,' ');
+                        tslHead.time.insert(11,':');
+                        tslHead.time.insert(14,':');
+                    }
+                    /*-tsl-*/
+                    else {
+                        tslHead.tslVer = head.mid(4).toFloat();
+                    }
+                }
+                /*-app-*/
+                if(head.startsWith('a')) {
+                    tslHead.appVer = head.mid(8);
+                }
 
-void DeviceManager::beaconActivationReceive(uint8_t id) {
-    Q_UNUSED(id)
-}
+                /*-sn-*/
+                if(head.startsWith('s')) {
+                    tslHead.sn = head.mid(4);
+                }
 
-void DeviceManager::onStartUpgradingFirmware(QUuid linkUuid, uint8_t address, const QByteArray& firmware)
-{
-    upgradeUuid_ = linkUuid;
-    upgradeAddr_ = address;
-    upgradeData_ = firmware;
-}
+                /*-logParm-*/
+                if(head.startsWith('l')) {
+                    QByteArray logParm = head.mid(8);
+                    memcpy(&fileInfo_loggerCfg, logParm, sizeof(loggerCfg_t)-2);
 
-void DeviceManager::onUpgradingFirmwareDone()
-{
-    upgradeUuid_ = QUuid();
-    upgradeAddr_ = 0;
-    upgradeData_.clear();
-}
+                    logParm.remove(0,sizeof(loggerCfg_t)-2);
+                    memcpy(&fileInfo_snrCtrl, logParm, sizeof(typSnrCtrl)-2);
+                }
+            }
+        }
+    }
 
-void DeviceManager::delAllDev()
-{
-    QList<QUuid> keysToDelete;
+
+    tslByteArray.remove(0, 512);
+
+    QList<QByteArray> tslByteList;
+    int nowIndex = 0;
+    int byteCount = 0;
+    int maxCount = tslByteArray.count();
+    int idx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
+    while((nowIndex) < (maxCount-100)) {
+        if('#' == tslByteArray.at(nowIndex)) {
+            byteCount = idx + U8_TO_16(tslByteArray.at(nowIndex+22),tslByteArray.at(nowIndex+23))+1;
+            if((byteCount >= 100) && (byteCount <= 2048)) {
+                /*-检查一下当前序号再加上获取的像素个数是不是超过整体长度了，超过的话进入下个循环-*/
+                if((nowIndex + byteCount) > maxCount) {
+                    nowIndex++;
+                    continue;
+                }
+                else {
+                    QByteArray tslByteArray_xor = tslByteArray.mid(nowIndex,byteCount);
+                    quint8 chk = 0;
+                    for(int i = 3;i < tslByteArray_xor.count()-1;i++) {
+                        chk ^= tslByteArray_xor.at(i);
+                    }
+
+                    if(chk == (quint8)tslByteArray_xor.at(tslByteArray_xor.count()-1)) {
+                        tslByteList.append(tslByteArray.mid(nowIndex,byteCount));
+                        nowIndex += byteCount;
+                    }
+                    else {
+                        nowIndex++;
+                        continue;
+                    }
+                }
+            }
+            else {
+                nowIndex++;
+                continue;
+            }
+        }
+        else {
+            nowIndex++;
+            continue;
+        }
+    }
+
+    if(tslByteList.isEmpty() || !progressDialog_) {
+        return;
+    }
+
+    /*-按照Tsl结构体的格式放入结构体容器中-*/  /*-先把旧的清空掉-*/
+    // QFile file(PATH_PIX.append(".txt")); //这个file用来写入像素数据
+    // qDebug() << "Path..." << PATH_PIX;
+    // file.remove();
+    // file.open(QIODevice::Append|QIODevice::ReadWrite);
+    // QDataStream out(&file);
+
+    // QList<tsl_3> list_tsl3_temp;
+
+    /*-单个结构体不影响，可直接用，仅为进行位置校验-*/
+    tsl_3 tslSingleStruct;
+    memcpy(&tslSingleStruct, tslByteList.first(), idx);
+    double last_lon = dm_to_dd(tslSingleStruct.boat.longitude);
+    double last_lat = dm_to_dd(tslSingleStruct.boat.latitude);
+    if(((last_lon < 0.000001f) && (last_lat < 0.000001f))) {
+        if(flag_haveReportAbnormalGPS == false) {
+            flag_haveReportAbnormalGPS = true;
+
+            GIF->dialogYesNo(tr("Delete abnormal GPS coordinates?"),[this](bool confirmed) {
+                if(confirmed) {
+                    flag_deleteAbnormalGPS = true;
+                }
+                else {
+                    flag_deleteAbnormalGPS = false;
+                }
+            });
+        }
+    }
+
+    int tslCount = tslByteList.count();
+    for(int i = 0; i < tslCount; i++)
+    {
+        QByteArray tslDataTemp = tslByteList.at(i);
+        tsl_3 tslSingleStruct;
+        memcpy(&tslSingleStruct, tslDataTemp, idx);
+        tslSingleStruct.boat.longitude = dm_to_dd(tslSingleStruct.boat.longitude);
+        tslSingleStruct.boat.latitude  = dm_to_dd(tslSingleStruct.boat.latitude);
+        double distance = GpsCal_GaussPC_DST(tslSingleStruct.boat.longitude, tslSingleStruct.boat.latitude, last_lon, last_lat);
+        if((tslSingleStruct.boat.longitude < 0.000001f) && (tslSingleStruct.boat.latitude < 0.000001f)) {
+            if(flag_haveReportAbnormalGPS == false) {
+                flag_haveReportAbnormalGPS = true;
+                GIF->dialogYesNo(tr("Delete abnormal GPS coordinates?"),[this](bool confirmed) {
+                    flag_deleteAbnormalGPS = confirmed ? true : false;
+
+                });
+            }
+            if(flag_deleteAbnormalGPS == true) {
+                count_abnormalGPS++;
+                continue;
+            }
+        }
+        else if(distance > GPS_ERROR_DISTANCE) {
+            if(last_lon < 0.000001f && last_lat < 0.000001f) {
+                last_lon = tslSingleStruct.boat.longitude;
+                last_lat = tslSingleStruct.boat.latitude;
+            } else {
+                if(flag_haveReportAbnormalGPS == false) {
+                    flag_haveReportAbnormalGPS = true;
+                    // GIF->dialogYesNo(tr("Delete abnormal GPS coordinates?"),[this](bool confirmed) {
+                    //     flag_deleteAbnormalGPS = confirmed ? true : false;
+                    // });
+                }
+
+                if(flag_deleteAbnormalGPS == true) {
+                    count_abnormalGPS++;
+                    last_lon = tslSingleStruct.boat.longitude;
+                    last_lat = tslSingleStruct.boat.latitude;
+                    continue;
+                }
+            }
+        }
+
+        QByteArray rawDat;
+
+        for(int i=0; i<tslSingleStruct.ping.size; i++) {
+            rawDat.append(tslDataTemp[idx +i]);
+        }
+        for(int i = tslSingleStruct.ping.size; i < PING_SIZE_MAX; i++) {
+            rawDat.append('\0');
+        }
+        // out.writeRawData(rawDat.data(),PING_SIZE_MAX);
+        diskSonarCache_->writeFrame(batchChannelId_, 0, rawDat);
+        int pingSize = tslSingleStruct.ping.size;
+        float upRng  = tslSingleStruct.ping.upRng;
+        float loRng  = tslSingleStruct.ping.loRng;
+        LLA lla;
+        lla.latitude  = tslSingleStruct.boat.latitude;
+        lla.longitude = tslSingleStruct.boat.longitude;
+        float depth = tslSingleStruct.auxInfo.depth;
+        if(tslSingleStruct.ping.frequency == snrFrq455) {
+            if(depth > 10000) {
+                depth = 0;
+            }
+            else if(depth > 30000) {
+                depth = 0;
+            }
+        }
+        lla.altitude = depth / 100.f;
+
+        ChartParameters chartParams;
+        chartParams.depth       = depth;
+        chartParams.pingSize    = pingSize;
+        chartParams.upRng       = upRng;
+        chartParams.loRng       = loRng;
+        chartParams.temperature = tslSingleStruct.auxInfo.temperature;
+        chartParams.heading     = tslSingleStruct.boat.heading;
+        chartParams.speed       = tslSingleStruct.boat.speed;
+        chartParams.time        = tslSingleStruct.boat.time;
+        chartParams.latitude    = lla.latitude;
+        // int pingCnt = tslSingleStruct.ping.size;
+        // QVector<QVector<uint8_t>> dataVec;
+        // QVector<uint8_t> channelData;
+        // for(int i = 0; i < pingCnt; i++) {
+        //     channelData.append((uint8_t)tslDataTemp[idx + i]);
+        // }
+        // for(int i = pingCnt; i < PING_SIZE_MAX; i++) {
+        //     channelData.append((uint8_t)'\0');
+        // }
+        // dataVec.append(channelData);
+        // datasetPtr_->addChart(batchChannelId_, chartParams, dataVec, false);
+
+        datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
+        // datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
+
+        depthVec_.append(lla.altitude);
+        minZ_ = std::min(minZ_, lla.altitude);
+        maxZ_ = std::max(maxZ_, lla.altitude);
+
+        if (i % 200 == 0) {
+            double progress = static_cast<double>(i + 1) / tslCount;
+            QString statusText = tr("Openging files %1 of %2 (%3%)")
+                        .arg(fileIndex+1).arg(fileCnt).arg(static_cast<int>(progress * 100.0 + 0.5));
+            QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
+            QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
+            QCoreApplication::processEvents();
+        }
+
+    }
+
+    // QFile file_offline(PATH_OFFLINE_TEMP.append(constructionTime).append(".txt"));
+    // file_offline.open(QIODevice::Append|QIODevice::WriteOnly);
+    // file_offline.write(file.readAll());
+    // file_offline.close();
+    // file.close();
+
+    if (fileIndex == (fileCnt - 1)) {
+        diskSonarCache_->close();
+        diskSonarCache_->openForRead();
+        if (datasetPtr_) {
+            datasetPtr_->triggerRenderUpdate();
+        }
+    }
+
+    QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
+    if(fileIndex == (fileCnt - 1)) {
+        datasetPtr_->positionAddedDone();
+        emit fileStopsOpening2(depthVec_, minZ_, maxZ_);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
+        QTimer::singleShot(2000, progressDialog_, [this]() {
+            if(progressDialog_) {
+                QMetaObject::invokeMethod(progressDialog_, "close");
+        }});
+    }
+
 }

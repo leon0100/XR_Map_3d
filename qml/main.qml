@@ -388,7 +388,6 @@ ApplicationWindow  {
         //添加键盘快捷键映射
         property var hotkeysMapScan: ({
             "57":  { "functionName":  "toggleFullScreen",  "parameter": undefined },   // F11
-            "44":  { "functionName":  "closeFile",         "parameter": undefined },   // W
             "33":  { "functionName":  "updateBottomTrack", "parameter": undefined },   // R
             "34":  { "functionName":  "updateMosaic",      "parameter": undefined },   // T
             "35":  { "functionName":  "closeSettings",     "parameter": undefined },   // Esc

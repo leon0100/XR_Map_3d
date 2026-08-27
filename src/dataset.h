@@ -11,7 +11,6 @@
 #include "epoch.h"
 #include "data_processor_defs.h"
 
-
 class GraphicsScene3dView;
 class Dataset : public QObject
 {
@@ -33,13 +32,7 @@ public:
 
     Q_PROPERTY(float boatLatitude             READ getBoatLatitude          NOTIFY lastPositionChanged)
     Q_PROPERTY(float boatLongitude            READ getBoatLongitude         NOTIFY lastPositionChanged)
-    Q_PROPERTY(bool  isBoatCoordinateValid    READ isValidBoatCoordinate    NOTIFY lastPositionChanged)
-    Q_PROPERTY(float isLastDepthValid         READ isValidLastDepth         NOTIFY lastDepthChanged)
-    Q_PROPERTY(float depth                    READ getLastDepth             NOTIFY lastDepthChanged)
-    Q_PROPERTY(float isSpeedValid             READ isValidSpeed             NOTIFY speedChanged)
-    Q_PROPERTY(float speed                    READ getSpeed                 NOTIFY speedChanged)
 
-    /*methods*/
     Dataset();
     ~Dataset();
 
@@ -242,23 +235,19 @@ public:
         return autoBoundary_;
     }
 
+    void positionAddedDone();
+
+
+
 
 public slots:
     friend class DataProcessor;
     void  onSonarPosCanCalc(uint64_t indx);
-    bool  isValidBoatCoordinate()    const  { return !qFuzzyIsNull(boatLatitute_) || !qFuzzyIsNull(boatLongitude_); };
-    bool  isValidLastDepth()         const  { return !qFuzzyIsNull(lastDepth_); };
-    bool  isValidSpeed()             const  { return qFuzzyIsNull(speed_);      };
     float getBoatLatitude()          const  { return boatLatitute_;             };
     float getBoatLongitude()         const  { return boatLongitude_;            };
-    float getLastDepth()             const  { return lastDepth_;                };
-    float getSpeed()                 const  { return speed_;                    };
-    void  addEvent(int timestamp, int id, int unixt = 0);
-    void  setChartSetup (const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset);
-    void  setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost);
-    void  setSoundSpeed (const ChannelId& channelId, uint32_t soundSpeed);
     void  setSonarOffset(float x, float y, float z);
     void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
+    void  addChartMeta(const ChannelId& channelId, const ChartParameters& chartParams, bool enableRender);
     void  addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
     void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
     void  addPosition_file(double lat, double lon, int depth, bool enableRender);
@@ -267,6 +256,12 @@ public slots:
     void resetRenderBuffers();
     void resetPolygonOutline();
     void clearBoundary();
+
+
+    void triggerRenderUpdate();
+    void preallocatePool(int capacity);
+    void setDiskSonarCache(class DiskSonarCache* cache) { diskSonarCache_ = cache; }
+    DiskSonarCache* getDiskSonarCache() const { return diskSonarCache_; }
 
     void setChannelOffset(const ChannelId& channelId, float x, float y, float z);
     void spatialProcessing();
@@ -342,15 +337,11 @@ public:
     void location(double lat, double lon);
 
 private:
-    // friend class DataInterpolator;
-
-    /*methods*/
     LlaRefState getCurrentLlaRefState() const;
     bool shouldAddNewEpoch(const ChannelId& channelId, uint8_t numSubChannels) const;
     void updateEpochWithChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset);
     void setLastDepth(float val);
 
-    /*data*/
     mutable QReadWriteLock lock_;
     mutable QReadWriteLock poolMtx_;
     mutable QReadWriteLock polygonOutlineMtx_;
@@ -358,7 +349,6 @@ private:
     LLARef _llaRef;
     LlaRefState llaRefState_ = LlaRefState::kUndefined;
     DatasetState state_ = DatasetState::kUndefined;
-    // DataInterpolator interpolator_;
     int lastBottomTrackEpoch_;
     BottomTrackParam bottomTrackParam_;
     QMap<ChannelId, RecordParameters> usingRecordParameters_;
@@ -396,4 +386,6 @@ public:
     float maxX_ = std::numeric_limits<float>::lowest();
     float minY_ = std::numeric_limits<float>::max();
     float maxY_ = std::numeric_limits<float>::lowest();
+
+    DiskSonarCache* diskSonarCache_ = nullptr;
 };

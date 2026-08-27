@@ -44,6 +44,15 @@ typedef enum
     filetype_kmlkmz
 }EnumFileType;
 
+typedef struct
+{
+    QString time;
+    QString appVer;
+    QString sn;
+    float tslVer;
+}StructTslHead;
+
+
 
 struct BoatPoint {
     double latitude;

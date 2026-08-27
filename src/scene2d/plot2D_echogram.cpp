@@ -5,7 +5,7 @@
 #include <QSettings>
 #include <QtGlobal>
 
-
+#include "device_manager.h"
 
 Plot2DEchogram::Plot2DEchogram()
 {
@@ -796,7 +796,14 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 QVector<uint8_t> rawDataVec;
                 rawDataVec.resize(PING_SIZE_MAX);
                 if (cursor.channel2 == CHANNEL_NONE) {
-                    epochData->getSonarFramePixel(cursor.channel1, cursor.subChannel1, rawDataVec);
+                    // epochData->getSonarFramePixel(cursor.channel1, cursor.subChannel1, rawDataVec);
+                    DiskSonarCache* diskSonarCache = dataset->getDiskSonarCache();
+                    if (diskSonarCache) {
+                        QByteArray frameBytes;
+                        if (diskSonarCache->readFrame(cursor.channel1, cursor.subChannel1, pool_index_safe, frameBytes)) {
+                            std::memcpy(rawDataVec.data(), frameBytes.constData(), PING_SIZE_MAX);
+                        }
+                    }
                 }
 
                 /*- 灵敏度滤波 -*/
@@ -946,7 +953,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 _cash[column].longitude = params.longitude;
                 _cash[column].latitude  = params.latitude;
                 _cash[column].startIdx  = startIdx;
-
 
                 // uint32_t* img_data = (uint32_t*)_image.bits();
                 // int bytesPerLine   = _image.bytesPerLine() / 4;

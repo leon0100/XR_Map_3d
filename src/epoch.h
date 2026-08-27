@@ -94,31 +94,6 @@ public:
 
         QVector<uint8_t> compensated;
 
-        // void updateCompesated() {
-        //     int raw_size = amplitude.size();
-        //     if(compensated.size() != raw_size) {
-        //         compensated.resize(raw_size);
-        //     }
-
-        //     const uint8_t* src = amplitude.constData();
-        //     uint8_t* procData = compensated.data();
-
-        //     const float resol = resolution;
-
-        //     float avrg = 255;
-        //     for(int i = 0; i < raw_size; i ++) {
-        //         float val = src[i];
-
-        //         avrg += (val - avrg)*(0.05f + avrg*0.0006);
-        //         val = (val - avrg*0.55f)*(0.85f +float(i*resol)*0.006f)*2.f;
-
-        //         if(val < 0) { val = 0; }
-        //         else if(val > 255) { val = 255; }
-
-        //         procData[i] = val;
-        //     }
-        // }
-
         DistProcessing bottomProcessing;
         Position sensorPosition;
         RecordParameters recordParameters_;
@@ -161,7 +136,7 @@ public:
 
     void setRecParameters(const ChannelId& channelId, const RecordParameters& recParams);
     void setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams);
-    void setDist(const ChannelId& channelId, int dist);
+    void setChartParameters2(const ChannelId& channelId, const ChartParameters& chartParams);
     void setPositionLLA(double lat, double lon, LLARef* ref = NULL, uint32_t unix_time = 0, int32_t nanosec = 0);
     void setPositionLLA(Position position);
     void setSonarPosition(Position val);
@@ -276,7 +251,6 @@ public:
     void setFrequency       (const ChannelId& channelId, uint16_t frequency);
     void setPulse           (const ChannelId& channelId, uint8_t pulse);
     void setBoost           (const ChannelId& channelId, uint8_t boost);
-    void setSoundSpeed      (const ChannelId& channelId, uint32_t soundSpeed);
     uint16_t getResolution  (const ChannelId& channelId) const;
     uint16_t getChartCount  (const ChannelId& channelId) const;
     uint16_t getOffset      (const ChannelId& channelId) const;

@@ -113,43 +113,9 @@ Dataset::LlaRefState Dataset::getCurrentLlaRefState() const
     return retVal;
 }
 
-void Dataset::addEvent(int timestamp, int id, int unixt) {
-    qDebug() << "Dataset::addEvent................";
-    lastEventTimestamp = timestamp;
-    lastEventId = id;
-
-    {
-        QWriteLocker wl(&poolMtx_);
-        pool_[endIndex()].setEvent(timestamp, id, unixt);
-    }
-
-    emit dataUpdate();
-}
-
-void Dataset::setTranscSetup(const ChannelId& channelId, uint16_t freq, uint8_t pulse, uint8_t boost)
-{
-    usingRecordParameters_[channelId].freq  = freq;
-    usingRecordParameters_[channelId].pulse = pulse;
-    usingRecordParameters_[channelId].boost = boost;
-}
-
-void Dataset::setSoundSpeed(const ChannelId& channelId, uint32_t soundSpeed)
-{
-    usingRecordParameters_[channelId].soundSpeed  = soundSpeed;
-}
-
 void Dataset::setSonarOffset(float x, float y, float z)
 {
     sonarOffset_ = QVector3D(x, y, z);
-}
-
-void Dataset::setChartSetup(const ChannelId& channelId, uint16_t resol, uint16_t count, uint16_t offset)
-{
-    usingRecordParameters_[channelId].resol  = resol;
-    usingRecordParameters_[channelId].count = count;
-    usingRecordParameters_[channelId].offset = offset;
-
-    channelsToResizeEthData_.insert(channelId);
 }
 
 void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartParams,
@@ -173,6 +139,28 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
         validateChannelList(channelId, i);
     }
 
+    if(enableRender) {
+        emit dataUpdate();
+    }
+}
+
+void Dataset::addChartMeta(const ChannelId& channelId, const ChartParameters& chartParams, bool enableRender)
+{
+    uint8_t numSubChannels = 1;
+    if (shouldAddNewEpoch(channelId, numSubChannels)) {
+        addNewEpoch();
+    }
+
+    Epoch* lastEp = last();
+    if (!lastEp) {
+        return;
+    }
+
+    lastEp->setChartParameters2(channelId, chartParams);
+
+    const int endIndx = endIndex();
+    lastAddChartEpochIndx_[channelId] = endIndx;
+    validateChannelList(channelId, 0);
     if(enableRender) {
         emit dataUpdate();
     }
@@ -342,6 +330,81 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
         emit positionAdded(poolCnt-1);
     }
 
+
+
+    // Position pos;
+    // pos.lla = LLA(lat, lon);
+    // if (!pos.lla.isCoordinatesValid()) {
+    //     return;
+    // }
+
+    // if (!getLlaRef().isInit) {
+    //     LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
+    //                                (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
+    //     qDebug() << "llaState........" << (int)llaState << "  " << (int)state_;
+    //     setLlaRef(LLARef(pos.lla), llaState);
+    // }
+
+    // QWriteLocker wl(&poolMtx_);
+    // Epoch* lastEp = last();
+    // if (!lastEp) {
+    //     return;
+    // }
+
+    // if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
+    //     lastEp = addNewEpoch();  //不断累加帧数的下标index
+    // }
+
+    // // qDebug() << "pool_size()............... " << pool_.size();
+    // uint64_t poolCnt = pool_.size();
+
+    // lastEp->setPositionLLA(pos);
+    // lastEp->setPositionRef(&_llaRef); //将LLA坐标转化成本地NED坐标
+    // lastEp->setPositionDataType(DataType::kRaw);
+
+    // North_East_Down curNed = lastEp->getPositionGNSS().ned;
+    // QVector3D new3DData = QVector3D(curNed.n, curNed.e, 0);
+    // minX_ = std::min(minX_, new3DData.x());
+    // maxX_ = std::max(maxX_, new3DData.x());
+    // minY_ = std::min(minY_, new3DData.y());
+    // maxY_ = std::max(maxY_, new3DData.y());
+
+    // bool regionStart = false;
+    // if (poolCnt >= 2) {
+    //     Epoch* prevEp = fromIndex(poolCnt - 2);
+    //     if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
+    //         North_East_Down prevNed = prevEp->getPositionGNSS().ned;
+    //         double dn    = curNed.n - prevNed.n;
+    //         double de    = curNed.e - prevNed.e;
+    //         double dist  = dn * dn + de * de;
+    //         if (dist > 1000.0) {
+    //             lastEp->isRegionStart_ = true;
+    //             regionStart = true;
+    //         }
+    //     }
+    // }
+
+    // if (!regionStart) {
+    //     boatLatitute_  = pos.lla.latitude;
+    //     boatLongitude_ = pos.lla.longitude;
+    // }
+    // wl.unlock();
+
+    // if(enableRender && !regionStart) {
+    //     emit positionAdded(poolCnt-1);
+    // }
+
+
+}
+
+void Dataset::positionAddedDone()
+{
+    uint64_t poolCnt = pool_.size();
+    if(poolCnt > 2) {
+        emit positionAdded(poolCnt-1);
+    }
+
+    emit dataUpdate();
 }
 
 void Dataset::location(double lat, double lon)
@@ -416,6 +479,24 @@ void Dataset::clearBoundary()
 {
     autoBoundary_.clear();
 }
+
+
+void Dataset::triggerRenderUpdate()
+{
+    emit dataUpdate();
+    const int endIndx = endIndex();
+    if (endIndx >= 0) {
+        emit positionAdded(endIndx);
+    }
+}
+
+void Dataset::preallocatePool(int capacity)
+{
+    if (capacity <= 0) return;
+    QWriteLocker wl(&poolMtx_);
+    pool_.reserve(capacity);
+}
+
 
 void Dataset::removeFrames(int startIndex, int endIndex)
 {

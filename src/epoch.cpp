@@ -69,7 +69,7 @@ void Epoch::setRecParameters(const ChannelId& channelId, const RecordParameters&
 void Epoch::setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams)
 {
     if (charts_.contains(channelId)) {
-        auto& echograms =  charts_[channelId];
+        auto& echograms = charts_[channelId];
 
         for (auto& iEchogram : echograms) {
             iEchogram.chartParameters_ = chartParams;
@@ -77,10 +77,23 @@ void Epoch::setChartParameters(const ChannelId& channelId, const ChartParameters
     }
 }
 
-void Epoch::setDist(const ChannelId& channelId, int dist)
+void Epoch::setChartParameters2(const ChannelId& channelId, const ChartParameters& chartParams)
 {
-    rangefinders_[channelId] = dist * 0.001;
-    flags.distAvail = true;
+    if (!charts_.contains(channelId)) {
+        QVector<Echogram> echograms;
+        echograms.resize(1);
+        charts_.insert(channelId, echograms);
+    }
+
+    auto& echograms = charts_[channelId];
+    if (echograms.isEmpty()) {
+        echograms.resize(1);
+    }
+
+    for (auto& iEchogram : echograms) {
+        iEchogram.chartParameters_ = chartParams;
+    }
+
 }
 
 
@@ -489,7 +502,6 @@ bool Epoch::chartTo(const ChannelId& channelId, uint8_t subChannelId, float star
 
 void Epoch::getSonarFramePixel(const ChannelId& channelId, uint8_t subChannelId, QVector<uint8_t>& pixelVec)
 {
-    // Echogram& chart = charts_[channelId][subChannelId];
     auto it = charts_.find(channelId);
     if(it == charts_.end() || subChannelId >= it.value().size()) {
         return;
@@ -563,16 +575,6 @@ void Epoch::setBoost(const ChannelId& channelId, uint8_t boost)
         auto& echograms = charts_[channelId];
         for (auto& iEchogram : echograms) {
             iEchogram.recordParameters_.boost = boost;
-        }
-    }
-}
-
-void Epoch::setSoundSpeed(const ChannelId& channelId, uint32_t soundSpeed)
-{
-    if (charts_.contains(channelId)) {
-        auto& echograms = charts_[channelId];
-        for (auto& iEchogram : echograms) {
-            iEchogram.recordParameters_.soundSpeed = soundSpeed;
         }
     }
 }

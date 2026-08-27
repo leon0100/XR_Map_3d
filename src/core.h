@@ -9,7 +9,6 @@
 #include "dataset.h"
 #include "data_processor.h"
 #include "qPlot2D.h"
-// #include "logger.h"
 #include "scene3d_view.h"
 #include "boat_track_control_menu_controller.h"
 #include "bottom_track_control_menu_controller.h"

@@ -812,7 +812,7 @@ void Core::createControllers()
     mosaicViewControlMenuController_      = std::make_shared<MosaicViewControlMenuController>();
     imageViewControlMenuController_       = std::make_shared<ImageViewControlMenuController>();
 
-    deviceManager_                        = std::make_shared<DeviceManager>();
+    deviceManager_                        = std::make_shared<DeviceManager>(datasetPtr_);
     bleManager_                           = std::make_shared<BLEManager>();
     udpManager_                           = std::make_shared<UdpManager>();
     serialPortManager_                    = std::make_shared<SerialPortManager>();
@@ -822,11 +822,7 @@ void Core::createControllers()
 void Core::createDeviceManagerConnections()
 {
     Qt::ConnectionType directionConnection = Qt::ConnectionType::DirectConnection;
-    QObject::connect(deviceManager_.get(), &DeviceManager::sendChartSetup, datasetPtr_,  &Dataset::setChartSetup,         directionConnection);
-    QObject::connect(deviceManager_.get(), &DeviceManager::sendTranscSetup, datasetPtr_, &Dataset::setTranscSetup,        directionConnection);
-    QObject::connect(deviceManager_.get(), &DeviceManager::sendSoundSpeeed, datasetPtr_, &Dataset::setSoundSpeed,         directionConnection);
     QObject::connect(deviceManager_.get(), &DeviceManager::chartComplete, datasetPtr_,   &Dataset::addChart,              directionConnection);
-    QObject::connect(deviceManager_.get(), &DeviceManager::eventComplete, datasetPtr_,   &Dataset::addEvent,              directionConnection);
     QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete, datasetPtr_,&Dataset::addPosition,           directionConnection);
     QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,               directionConnection);
     QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,               directionConnection);
