@@ -101,8 +101,7 @@ private:
 
 
 private slots:
-    void onFileStopsOpening();
-    void onFileStopsOpening2(QVector<float>& depthVec, double minZ, double maxZ);
+    void onFileStopsOpening(QVector<float>& depthVec, double minZ, double maxZ);
     void onSendMapTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId); // TODO: maybe store map texture id in mapView
 
     void onZoomLevelChanged(int level);

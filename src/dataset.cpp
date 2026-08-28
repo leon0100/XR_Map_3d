@@ -5,7 +5,6 @@ extern Core* corePtr;
 
 
 Dataset::Dataset() :
-    // interpolator_(this),
     lastBottomTrackEpoch_(0),
     sonarPosIndx_(0)
 {
@@ -166,77 +165,9 @@ void Dataset::addChartMeta(const ChannelId& channelId, const ChartParameters& ch
     }
 }
 
-void Dataset::addPosition(double lat, double lon, uint32_t unix_time, int32_t nanosec)
-{
-    Epoch* lastEp = last();
-    if (!lastEp) {
-        return;
-    }
-
-    Position pos;
-    pos.lla = LLA(lat, lon);
-    pos.time = DateTime(unix_time, nanosec);
-    const bool oneHzNoTimestamp = (unix_time == 0 && nanosec == 0);
-
-    if (pos.lla.isCoordinatesValid()) {
-        if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-            lastEp = addNewEpoch();
-        }
-        uint64_t lastIndx = pool_.size() - 1;
-        if (!getLlaRef().isInit) {
-            LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
-                        (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
-            setLlaRef(LLARef(pos.lla), llaState);
-        }
-        lastEp->setPositionLLA(pos);
-        lastEp->setPositionRef(&_llaRef);
-
-        lastEp->setPositionDataType(DataType::kRaw);
-
-        if (Epoch* prevEp = lastlast(); prevEp) {
-            const auto& prev = prevEp->getPositionGNSS();
-            if (prev.lla.isCoordinatesValid()) {
-                const double dist = distanceMetersLLA(prev.lla.latitude, prev.lla.longitude, pos.lla.latitude,  pos.lla.longitude);
-
-                if (oneHzNoTimestamp) {
-                    speed_ = (dist / 0.1) * 3.6; // TODO: kostyl
-                }
-                else {
-                    const auto& c = pos.time;
-                    const auto& p = prev.time;
-
-                    int64_t dsec  = int64_t(c.sec)     - int64_t(p.sec);
-                    int64_t dnano = int64_t(c.nanoSec) - int64_t(p.nanoSec);
-                    if (dnano < 0) {
-                        dsec -= 1;
-                        dnano += 1000000000;
-                    }
-
-                    double dt = double(dsec) + double(dnano) * 1e-9;
-                    if (dt <= 0.0) {
-                        dt = 1.0;
-                    }
-
-                    speed_ = (dist / dt) * 3.6;
-                }
-
-                emit speedChanged();
-            }
-        }
-
-        //qDebug() << "add pos for" << lastIndx;
-
-        boatLatitute_  = pos.lla.latitude;
-        boatLongitude_ = pos.lla.longitude;
-
-        emit positionAdded(lastIndx);
-        emit dataUpdate();
-        emit lastPositionChanged();
-    }
-}
-
 void Dataset::addPosition_realTime(double lat, double lon, double depth, bool isRead)
 {
+    QWriteLocker wl(&poolMtx_);
     Epoch* lastEp = last();
     if (!lastEp) {
         return;
@@ -257,14 +188,8 @@ void Dataset::addPosition_realTime(double lat, double lon, double depth, bool is
         }
         lastEp->setPositionLLA(pos);
         lastEp->setPositionRef(&_llaRef);
-        // qDebug() << "_llaRef: longitude:" << _llaRef.refLla.longitude << "  latitude:" <<
-        //     _llaRef.refLla.latitude << "  " << _llaRef.refLla.altitude;
         lastEp->setPositionDataType(DataType::kRaw);
-        // interpolator_.interpolatePos(false);
 
-        //qDebug() << "add pos for" << lastIndx;
-        boatLatitute_  = pos.lla.latitude;
-        boatLongitude_ = pos.lla.longitude;
         if(isRead) {
             emit positionAdded(lastIndx);
         }
@@ -274,14 +199,9 @@ void Dataset::addPosition_realTime(double lat, double lon, double depth, bool is
 
 void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRender)
 {
+    QWriteLocker wl(&poolMtx_);
     Epoch* lastEp = last();
     if (!lastEp) {
-        return;
-    }
-
-    Position pos;
-    pos.lla = LLA(lat, lon);
-    if (!pos.lla.isCoordinatesValid()) {
         return;
     }
 
@@ -289,12 +209,16 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
         lastEp = addNewEpoch();  //不断累加帧数的下标index
     }
 
-    // qDebug() << "pool_size()............... " << pool_.size();
+    Position pos;
+    pos.lla = LLA(lat, lon);
+    // if (!pos.lla.isCoordinatesValid()) {
+    //     return;
+    // }
+
     uint64_t poolCnt = pool_.size();
     if (!getLlaRef().isInit) {
         LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
-                    (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
-        // qDebug() << "llaState........" << (int)llaState << "  " << (int)state_;
+            (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
         setLlaRef(LLARef(pos.lla), llaState);
     }
 
@@ -323,25 +247,10 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
         }
     }
 
-    boatLatitute_  = pos.lla.latitude;
-    boatLongitude_ = pos.lla.longitude;
-
     if(enableRender) {
         emit positionAdded(poolCnt-1);
     }
 
-}
-
-void Dataset::positionAddedDone()
-{
-    uint64_t poolCnt = pool_.size();
-    if(poolCnt > 2) {
-        qDebug() << "222222222222";
-        emit positionAdded(poolCnt-1);
-    }
-
-    emit dataUpdate();
-    qDebug() << "111111111111";
 }
 
 void Dataset::location(double lat, double lon)
@@ -371,8 +280,6 @@ void Dataset::resetDataset()
     channelsToResizeEthData_.clear();
     polygonOutlineNED_.clear();
 
-    boatLatitute_         = 0.0f;
-    boatLongitude_        = 0.0f;
     lastDepth_            = 0.0f;
     speed_                = 0.0f;
     sonarPosIndx_         = 0;
@@ -381,7 +288,6 @@ void Dataset::resetDataset()
     emit lastDepthChanged();
     emit channelsUpdated();
     emit dataUpdate();
-    emit lastPositionChanged();
 }
 
 void Dataset::resetRenderBuffers()
@@ -401,7 +307,6 @@ void Dataset::resetRenderBuffers()
     _lastYaw   = 0;
     _lastPitch = 0;
     _lastRoll  = 0;
-    // interpolator_.clear();
     _llaRef = LLARef();
     lastBottomTrackEpoch_ = 0;
 }
@@ -512,16 +417,16 @@ void Dataset::spatialProcessing()
 void Dataset::setRefPosition(int epoch_index)
 {
     qDebug() << "Dataset::setRefPosition000000.................";
-    Epoch*  ref_epoch = fromIndex(epoch_index);
+    Epoch* ref_epoch = fromIndex(epoch_index);
     setRefPosition(ref_epoch);
 }
 
 void Dataset::setRefPosition(Epoch* epoch)
 {
     qDebug() << "Dataset::setRefPosition1111111..............";
-    if(epoch == NULL) { return; }
-
-    setRefPosition(epoch->getPositionGNSS());
+    if(epoch) {
+        setRefPosition(epoch->getPositionGNSS());
+    }
 }
 
 void Dataset::setRefPosition(Position ref_pos)
@@ -531,7 +436,9 @@ void Dataset::setRefPosition(Position ref_pos)
         setLlaRef(LLARef(ref_pos.lla), getCurrentLlaRefState());
         for(int iepoch = 0; iepoch < size(); iepoch++) {
             Epoch* epoch = fromIndex(iepoch);
-            if(epoch == NULL) { continue; }
+            if(epoch == NULL) {
+                continue;
+            }
             epoch->setPositionRef(&_llaRef);
             // qDebug() << "Dataset::setRefPosition _llaRef " << _llaRef.refLla.longitude << " " << _llaRef.refLla.latitude
             //          <<"   " << _llaRef.refLla.altitude;

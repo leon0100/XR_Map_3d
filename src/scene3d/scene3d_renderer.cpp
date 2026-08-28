@@ -158,11 +158,6 @@ void GraphicsScene3dRenderer::drawObjects()
         projection.perspective(perspFixFov, m_viewSize.width() / m_viewSize.height(), nearPlanePersp, farPlanePersp);
     }
     else {
-        // float orth_v = m_camera.getHeightAboveGround();
-        // float aspectRatio = m_viewSize.width() / m_viewSize.height();
-        // projection.ortho(-orth_v*aspectRatio, orth_v*aspectRatio, -orth_v, orth_v, orth_v * nearPlaneOrthoCoeff,
-        //                 orth_v * farPlaneOrthoCoeff);
-
         // 检查是否使用自定义正交投影边界
         if (useCustomOrtho_) {
             float orth_v = std::max(std::abs(orthoTop_ - orthoBottom_), std::abs(orthoRight_ - orthoLeft_)) / 2.0f;
@@ -184,6 +179,14 @@ void GraphicsScene3dRenderer::drawObjects()
     model.scale(1.0f, 1.0f, m_verticalScale);
     m_model = std::move(model);
     m_projection = std::move(projection);
+
+    QMatrix4x4 trackModel = m_model;
+    if (m_camera.viewLlaRef_.isInit && m_camera.datasetLlaRef_.isInit) {
+        LLA datasetLla(m_camera.datasetLlaRef_.refLla.latitude,
+                       m_camera.datasetLlaRef_.refLla.longitude, 0.0);
+        North_East_Down datasetNed(&datasetLla, &m_camera.viewLlaRef_, m_camera.getIsPerspective());
+        trackModel.translate(QVector3D(datasetNed.n, datasetNed.e, 0.0f));
+    }
 
     float anchorZ = surfaceViewRenderImpl_.getMinZ();
     if (!qIsFinite(anchorZ) || anchorZ > 1e6f) anchorZ = 0.0f;
@@ -207,8 +210,8 @@ void GraphicsScene3dRenderer::drawObjects()
         // 渲染高度场
         // surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
         // isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
-        surfaceViewRenderImpl_.render(this,  m_projection * view * surfaceModel, m_shaderProgramMap);  //高度场
-        isobathsViewRenderImpl_.render(this, surfaceModel, view, m_projection, m_shaderProgramMap);    //等值线
+        surfaceViewRenderImpl_.render(this,  m_projection * view * trackModel, m_shaderProgramMap);  //高度场
+        isobathsViewRenderImpl_.render(this, trackModel, view, m_projection, m_shaderProgramMap);    //等值线
 
         // 恢复深度测试状态
         if (depthTestEnabled) {
@@ -221,17 +224,16 @@ void GraphicsScene3dRenderer::drawObjects()
     glEnable(GL_DEPTH_TEST);
     if (!isOut) {
         imageViewRenderImpl_.render(this, m_projection * view * m_model, m_shaderProgramMap);
-        // m_pointGroupRenderImpl.render(this, m_projection * view * m_model, m_shaderProgramMap);
         m_polygonGroupRenderImpl.render(this, m_projection * view * m_model, m_shaderProgramMap);
         usblViewRenderImpl_.render(this, m_projection * view * m_model, m_shaderProgramMap);
     }
-    // else {
-    //     return;
-    // }
+
     glDisable(GL_DEPTH_TEST);
 
-    m_boatTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap); //船轨迹
-    m_polygonOutlineRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);
+    // m_boatTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap); //船轨迹
+    // m_polygonOutlineRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);
+    m_boatTrackRenderImpl.render(this, trackModel, view, m_projection, m_shaderProgramMap); //船轨迹
+    m_polygonOutlineRenderImpl.render(this, trackModel, view, m_projection, m_shaderProgramMap);
 
     glEnable(GL_DEPTH_TEST);
     // float zOffset = surfaceViewRenderImpl_.getMaxZ() + 0.01f;
@@ -239,30 +241,10 @@ void GraphicsScene3dRenderer::drawObjects()
     // QMatrix4x4 upModel = m_model;
     // upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
 
-    // surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
-    // isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
-    surfaceViewRenderImpl_.render(this,  m_projection * view * surfaceModel, m_shaderProgramMap);  //高度场
-    isobathsViewRenderImpl_.render(this, surfaceModel, view, m_projection, m_shaderProgramMap);    //等值线
-    // m_bottomTrackRenderImpl.render(this, m_model, view, m_projection, m_shaderProgramMap);    //原始底迹点
 
-    // // navigation arrow - 应用相同的 zOffset, 保持与等值线同一高度
-    // // {
-    //     // 在 position 的 Z 坐标上添加 zOffset, 使导航箭头提升到与等值线相同高度
-    //     QMatrix4x4 nModel;
-    //     nModel.setToIdentity();
-    //     // QVector3D elevatedPos = navigationArrowRenderImpl_.getPosition();
-    //     // elevatedPos.setZ(elevatedPos.z() - zOffset);
-    //     // nModel.translate(elevatedPos);
-    //     nModel.translate(navigationArrowRenderImpl_.getPosition());
-    //     nModel.rotate(navigationArrowRenderImpl_.getAngle(), 0.f, 0.f, 1.f);
-    //     float distance = m_camera.distToFocusPoint();
-    //     float perspFixFovRad = qDegreesToRadians(perspFixFov);
-    //     float factor = 2.0f * distance * std::tan(perspFixFovRad * 0.5f) / m_viewSize.height();
-    //     float worldScale = factor * 7.f * scaleFactor_ * 2.5;
-    //     nModel.scale(worldScale);
-    //     navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
-    // // }
-    // glDisable(GL_DEPTH_TEST);
+    surfaceViewRenderImpl_.render(this,  m_projection * view * trackModel, m_shaderProgramMap);  //高度场
+    isobathsViewRenderImpl_.render(this, trackModel, view, m_projection, m_shaderProgramMap);    //等值线
+
     {
         glEnable(GL_DEPTH_TEST);
 
@@ -285,11 +267,6 @@ void GraphicsScene3dRenderer::drawObjects()
     }
 
 
-    //----------------Contacts-----------------
-    // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // contactsRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);
-    // glDisable(GL_BLEND);
 
     //-----------Draw axes-------------
     GLint viewport[4];
@@ -307,135 +284,6 @@ void GraphicsScene3dRenderer::drawObjects()
     m_coordAxesRenderImpl.render(this, axesModel, axesView, axesProjection, m_shaderProgramMap);
 
     glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-
-
- /*
-    //-----------Draw selection rect-------------
-    if(!m_shaderProgramMap.contains("static_sec")) return;
-
-    auto shaderProgram = m_shaderProgramMap["static_sec"];
-    if (!shaderProgram->bind()) {
-        qCritical() << "Error binding shader program.";
-        return;
-    }
-
-    const int colorLoc  = shaderProgram->uniformLocation("color");
-    shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(0.0f, 104.0f, 145.0f, 0.0f)));
-    shaderProgram->enableAttributeArray(0);
-
-    const float halfWidth = viewport[2] / 2.0f;
-    const float halfHeight = viewport[3] / 2.0f;
-    QVector<QVector2D> rectVert = { { (m_comboSelectionRect.topLeft().x() / halfWidth)  - 1.0f,
-                                      (m_comboSelectionRect.topLeft().y() / halfHeight) - 1.0f },
-                                    { (m_comboSelectionRect.topRight().x() / halfWidth)  - 1.0f,
-                                      (m_comboSelectionRect.topRight().y() / halfHeight) - 1.0f },
-                                    { (m_comboSelectionRect.bottomRight().x() / halfWidth)  - 1.0f,
-                                      (m_comboSelectionRect.bottomRight().y() / halfHeight) - 1.0f },
-                                    { (m_comboSelectionRect.bottomLeft().x() / halfWidth)  - 1.0f,
-                                      (m_comboSelectionRect.bottomLeft().y() / halfHeight) - 1.0f } };
-
-    shaderProgram->setAttributeArray(0, rectVert.constData());
-    glDrawArrays(GL_LINE_LOOP, 0, rectVert.size());
-    shaderProgram->release();
-
-    //-----------Draw scene bounding box-------------
-    if (gridVisibility_) {
-        if(!m_shaderProgramMap.contains("static")) return;
-
-        auto shaderProgram = m_shaderProgramMap["static"];
-        if (!shaderProgram->bind()){
-            qCritical() << "Error binding shader program.";
-            return;
-        }
-
-        QVector<QVector3D> boundingBox{
-            // Bottom horizontal edges
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-
-            //Top horizontal edges
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-
-            // Vertical Edges
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX()+m_boundingBox.length(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()},
-            {m_boundingBox.minimumX(),m_boundingBox.minimumY()+m_boundingBox.width(),m_boundingBox.minimumZ()+m_boundingBox.height()}
-        };
-
-        int posLoc    = shaderProgram->attributeLocation("position");
-        int matrixLoc = shaderProgram->uniformLocation("matrix");
-        int colorLoc  = shaderProgram->uniformLocation("color");
-
-        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(0.0f, 104.0f, 145.0f, 0.0f)));
-        shaderProgram->setUniformValue(matrixLoc, m_projection*view*m_model);
-        shaderProgram->enableAttributeArray(posLoc);
-        shaderProgram->setAttributeArray(posLoc, boundingBox.constData());
-
-        glEnable(GL_DEPTH_TEST);
-        glLineWidth(2.0f);
-        glDrawArrays(GL_LINES, 0, boundingBox.size());
-        glLineWidth(1.0f);
-        glDisable(GL_DEPTH_TEST);
-
-        shaderProgram->disableAttributeArray(posLoc);
-        shaderProgram->release();
-    }
-
-    //绘制框选区域
-    if (m_isBoxSelecting) {
-        if(!m_shaderProgramMap.contains("static")) return;
-
-        auto shaderProgram = m_shaderProgramMap["static"];
-        if (!shaderProgram->bind()) {
-            return;
-        }
-
-        glDisable(GL_DEPTH_TEST);
-
-        int viewport[4];
-        glGetIntegerv(GL_VIEWPORT, viewport);
-
-        const int colorLoc  = shaderProgram->uniformLocation("color");
-        shaderProgram->setUniformValue(colorLoc, DrawUtils::colorToVector4d(QColor(255.0f, 255.0f, 0.0f, 1.0f))); //黄色框选
-        shaderProgram->enableAttributeArray(0);
-
-        const float halfWidth = viewport[2] / 2.0f;
-        const float halfHeight = viewport[3] / 2.0f;
-
-        // 计算框选矩形的四个顶点
-        QVector<QVector2D> rectVert = {
-            { (m_boxSelectStart.x() / halfWidth) - 1.0f, (m_boxSelectStart.y() / halfHeight) - 1.0f },
-            { (m_boxSelectEnd.x() / halfWidth) - 1.0f,   (m_boxSelectStart.y() / halfHeight) - 1.0f },
-            { (m_boxSelectEnd.x() / halfWidth) - 1.0f,   (m_boxSelectEnd.y() / halfHeight) - 1.0f },
-            { (m_boxSelectStart.x() / halfWidth) - 1.0f, (m_boxSelectEnd.y() / halfHeight) - 1.0f }
-        };
-
-        shaderProgram->setAttributeArray(0, rectVert.constData());
-        glDrawArrays(GL_LINE_LOOP, 0, rectVert.size());
-        shaderProgram->release();
-
-        glEnable(GL_DEPTH_TEST);
-    }
-*/
-
 }
 
 

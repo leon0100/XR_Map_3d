@@ -61,14 +61,11 @@ public:
 
     bool openForWrite();
     bool openForRead();
-    void flush();
     void close();
     void clearFile();
 
     void writeFrame(const QByteArray& rawFrame);
     void readFrame(qint64 epochIdx, QByteArray& outFrame);
-
-    qint64 frameCount() const { return totalFramesWritten_; }
 
 private:
     QString filePath_;
@@ -102,8 +99,7 @@ signals:
     void rawDataRecieved(const ChannelId& channelId, RawData rawData);
     void positionComplete(double lat, double lon, uint32_t date, uint32_t time);
     void positionComplete_file(double lat, double lon,int depth, bool enableRender);
-    void fileStopsOpening();
-    void fileStopsOpening2(QVector<float>& depth, double minZ, double maxZ);
+    void fileStopsOpening(QVector<float>& depth, double minZ, double maxZ);
 
 
 private:
@@ -113,9 +109,9 @@ private:
     void openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex, int fileCnt);
 
     double dm_to_dd(double ddmmmmmmm);
-    void GaussPC_calculation(double B, double L, double *x, double *y);
+    void  GaussPC_calculation(double B, double L, double *x, double *y);
     float GpsCal_GaussPC_DST(double PointA_lon, double PointA_lat, double PointB_lon, double PointB_lat);
-    void processNextPendingFile();
+    void  processNextPendingFile();
 
 
 

@@ -47,7 +47,7 @@ struct ImageInfo
 
 
 
-/*---------------------------------------GetInterface单例------------------------------------------------*/
+/*-----------------------------------GetInterface单例---------------------------------------------*/
 #define GIF  GetInterface::getInterface()
 class GetInterface : public QObject
 {
@@ -58,45 +58,36 @@ public:
     GetInterface(const GetInterface&) = delete;
     GetInterface& operator=(const GetInterface&) = delete;
 
-    static GetInterface* getInterface();
-
-    void setCurrentMap(QString currTileUrl) {
-        currTileUrl_ = currTileUrl;
-    }
-    QString getCurrentMap() {
-        return currTileUrl_;
+    static GetInterface* getInterface() {
+        static GetInterface instance;
+        return &instance;
     }
 
 
-private:
-    explicit GetInterface(QObject* parent = nullptr);
-
 
 private:
-    QString currTileUrl_;
+    explicit GetInterface(QObject* parent = nullptr) : QObject(parent)
+    {
+    }
 
 
-signals:
-    void update(ImageInfo info);             // 传出下载的瓦片图信息
-    void updateTitle(int x, int y, int z);   // 传出下载的瓦片编号
-
-    void showRect(QRect rect);   // 设置显示像素范围
-    void setLevel(int level);    // 设置瓦片层级
-    void setLevelDirection(int level);
 
 public:
-    Q_INVOKABLE void dialogInfo(int type, const QString &msg) {
+    Q_INVOKABLE void dialogInfo(int type, const QString &msg)
+    {
         emit showDialogInfo(type, msg);
     }
 
-    Q_INVOKABLE void dialogYesNoBtn(bool flag) {
+    Q_INVOKABLE void dialogYesNoBtn(bool flag)
+    {
         if(yesNoCallback_) {
             yesNoCallback_(flag);
             yesNoCallback_ = nullptr;
         }
     }
 
-    Q_INVOKABLE void checkDialogBtn(bool flag, bool isCheck) {
+    Q_INVOKABLE void checkDialogBtn(bool flag, bool isCheck)
+    {
         if(checkDialogCallback_) {
             checkDialogCallback_(flag, isCheck);
             checkDialogCallback_ = nullptr;
@@ -104,18 +95,50 @@ public:
     }
 
     std::function<void(bool)> yesNoCallback_;
-    void dialogYesNo(const QString &msg, std::function<void(bool)> cb) {
+    void dialogYesNo(const QString &msg, std::function<void(bool)> cb)
+    {
         yesNoCallback_ = cb;
         emit showDialogInfo(Dialog_YesNo, msg);
     }
 
+    /*
+        // 主循环(永远运行)
+        QApplication::exec()  ◄─────────────┐
+            └─ 处理事件队列                  │
+                                             │
+        // 嵌套子循环(临时运行)              │
+        loop.exec()  ◄──┐                   │
+            └─ 处理事件队列(子级)            │
+                └─ loop.quit() → 返回 ───────┘  退出后回到主循环
+    */
+    bool dialogYesNoSync(const QString &msg)
+    {
+        bool result = false;
+
+        QEventLoop loop; // 创建嵌套事件循环对象
+        yesNoCallback_ = [&result, &loop](bool confirmed) { //注册回调
+            result = confirmed;
+            loop.quit();
+        };
+        emit showDialogInfo(Dialog_YesNo, msg);
+        loop.exec();//当前线程在此阻塞,但Qt事件分发机制仍在工作,可以处理: QML按钮点击事件、其他排队的信号
+
+        yesNoCallback_ = nullptr;
+        return result;
+    }
+
+
     std::function<void(bool, bool)> checkDialogCallback_;
-    void dialogCheck(const QString &msg, std::function<void(bool, bool)> cb, const QString &checkBoxText = QString()) {
+    void dialogCheck(const QString &msg, std::function<void(bool, bool)> cb,
+                     const QString &checkBoxText = QString())
+    {
         checkDialogCallback_ = cb;
         emit showDialogInfo(Dialog_Check, msg);
         emit setCheckBoxText(checkBoxText);
     }
-    void dialogCheck2(const QString &msg, std::function<void(bool, bool)> cb, const QString &checkBoxText = QString()) {
+    void dialogCheck2(const QString &msg, std::function<void(bool, bool)> cb,
+                      const QString &checkBoxText = QString())
+    {
         checkDialogCallback_ = cb;
         emit showDialogInfo(Dialog_Check2, msg);
         emit setCheckBoxText(checkBoxText);
@@ -130,24 +153,5 @@ signals:
 
 };
 
-
-
-
-/*----------------------------------------Console----------------------------------------------*/
-// class Console : public QObject
-// {
-//     Q_OBJECT
-// public:
-//     Console();
-//     ConsoleListModel* listModel() const;
-
-//     void put(QtMsgType type, const QString &msg);
-
-// public slots:
-
-
-// private:
-//     ConsoleListModel *m_list;
-// };
 
 #endif // CONSOLE_H

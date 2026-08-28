@@ -118,8 +118,6 @@ protected:
     QImage _image;
     QPixmap _pixmap;
 
-    int _compensation_id = 0;
-
     struct {
         bool resetCash = true;
     } _cashFlags;

@@ -43,7 +43,6 @@ HEADERS += \
 
 
 SOURCES += \
-    src/console.cpp \
     src/core.cpp \
     src/dataset.cpp \
     src/data_horizon.cpp \

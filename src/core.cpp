@@ -460,14 +460,17 @@ void Core::openFileFromMenu()
     else
     {
         int size_sum = 0;
+        qint64 totalFileSize = 0;
         for(int i = 0; i < fileCnt; i++) {
             QFile file(fileNames.at(i));
 
-            size_sum += file.size() / 1024 / 1024;
+            qint64 fileSize = file.size();
+            size_sum += fileSize / 1024 / 1024;
             if(size_sum > 1024) {
                 GIF->dialogInfo(Dialog_OK, tr("File size is too large!"));
                 return;
             }
+            totalFileSize += fileSize;
 
             if (progress_) {
                 QString statusText = tr("Opening file %1 / %2").arg(i+1).arg(fileCnt);
@@ -493,6 +496,9 @@ void Core::openFileFromMenu()
             return;
         }
 
+        // datasetPtr_->preallocatePool(static_cast<int>(totalFileSize));
+        const int estimatedEpochs = fileCnt * 5000;
+        datasetPtr_->preallocatePool(estimatedEpochs);
         deviceManager_->resetFileAndChannel(fileCnt);
 
         //读取内容并调用相应的处理函数
@@ -757,15 +763,7 @@ void Core::location(uint8_t type)
     }
 }
 
-void Core::onFileStopsOpening()
-{
-    qDebug() << "Core::onFileStopsOpening.................";
-    isFileOpening_ = false;
-    emit sendIsFileOpening();
-    dataHorizon_->setIsFileOpening(isFileOpening_);
-}
-
-void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double maxZ)
+void Core::onFileStopsOpening(QVector<float>& depthVec, double minZ, double maxZ)
 {
     if(isAutoRenderSpan_) {
         int vecSize = depthVec.size();
@@ -782,7 +780,7 @@ void Core::onFileStopsOpening2(QVector<float>& depthVec, double minZ, double max
             isobathsViewControlMenuController_->setEdgeLimitChanged(40);
         }
     }
-    // qDebug() << "onFileStopsOpening2.............." << minZ << "    " << maxZ;
+    // qDebug() << "onFileStopsOpening.............." << minZ << "    " << maxZ;
     datasetPtr_->vec_CSV_ += depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
@@ -806,24 +804,24 @@ void Core::onSendMapTextureIdByTileIndx(const map::TileIndex &tileIndx, GLuint t
 
 void Core::createControllers()
 {
-    boatTrackControlMenuController_       = std::make_shared<BoatTrackControlMenuController>();
-    bottomTrackControlMenuController_     = std::make_shared<BottomTrackControlMenuController>();
-    isobathsViewControlMenuController_    = std::make_shared<IsobathsViewControlMenuController>();
-    mosaicViewControlMenuController_      = std::make_shared<MosaicViewControlMenuController>();
-    imageViewControlMenuController_       = std::make_shared<ImageViewControlMenuController>();
+    boatTrackControlMenuController_     = std::make_shared<BoatTrackControlMenuController>();
+    bottomTrackControlMenuController_   = std::make_shared<BottomTrackControlMenuController>();
+    isobathsViewControlMenuController_  = std::make_shared<IsobathsViewControlMenuController>();
+    mosaicViewControlMenuController_    = std::make_shared<MosaicViewControlMenuController>();
+    imageViewControlMenuController_     = std::make_shared<ImageViewControlMenuController>();
 
-    deviceManager_                        = std::make_shared<DeviceManager>(datasetPtr_);
-    bleManager_                           = std::make_shared<BLEManager>();
-    udpManager_                           = std::make_shared<UdpManager>();
-    serialPortManager_                    = std::make_shared<SerialPortManager>();
-    locations_                            = std::make_shared<Locations>();
+    deviceManager_                      = std::make_shared<DeviceManager>(datasetPtr_);
+    bleManager_                         = std::make_shared<BLEManager>();
+    udpManager_                         = std::make_shared<UdpManager>();
+    serialPortManager_                  = std::make_shared<SerialPortManager>();
+    locations_                          = std::make_shared<Locations>();
 }
 
 void Core::createDeviceManagerConnections()
 {
     Qt::ConnectionType directionConnection = Qt::ConnectionType::DirectConnection;
     QObject::connect(deviceManager_.get(), &DeviceManager::chartComplete, datasetPtr_,   &Dataset::addChart,              directionConnection);
-    QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete, datasetPtr_,&Dataset::addPosition,           directionConnection);
+    // QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete, datasetPtr_,&Dataset::addPosition,           directionConnection);
     QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,               directionConnection);
     QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,               directionConnection);
     QObject::connect(serialPortManager_.get(), &SerialPortManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime, directionConnection);
@@ -831,8 +829,7 @@ void Core::createDeviceManagerConnections()
 
     QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file, directionConnection);
 
-    QObject::connect(deviceManager_.get(), &DeviceManager::fileStopsOpening, this,  &Core::onFileStopsOpening,             directionConnection);
-    QObject::connect(deviceManager_.get(), &DeviceManager::fileStopsOpening2, this, &Core::onFileStopsOpening2,            directionConnection);
+    QObject::connect(deviceManager_.get(), &DeviceManager::fileStopsOpening, this, &Core::onFileStopsOpening,            directionConnection);
 
     QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourBle,  directionConnection);
     QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi, directionConnection);

@@ -17,7 +17,6 @@ class Dataset : public QObject
     Q_OBJECT
 
 public:
-    /*structures*/
     enum class DatasetState {
         kUndefined = 0,
         kFile,
@@ -30,8 +29,6 @@ public:
         kConnection
     };
 
-    Q_PROPERTY(float boatLatitude             READ getBoatLatitude          NOTIFY lastPositionChanged)
-    Q_PROPERTY(float boatLongitude            READ getBoatLongitude         NOTIFY lastPositionChanged)
 
     Dataset();
     ~Dataset();
@@ -235,20 +232,13 @@ public:
         return autoBoundary_;
     }
 
-    void positionAddedDone();
-
-
-
 
 public slots:
     friend class DataProcessor;
     void  onSonarPosCanCalc(uint64_t indx);
-    float getBoatLatitude()          const  { return boatLatitute_;             };
-    float getBoatLongitude()         const  { return boatLongitude_;            };
     void  setSonarOffset(float x, float y, float z);
     void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void  addChartMeta(const ChannelId& channelId, const ChartParameters& chartParams, bool enableRender);
-    void  addPosition(double lat, double lon, uint32_t unix_time = 0, int32_t nanosec = 0);
     void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
     void  addPosition_file(double lat, double lon, int depth, bool enableRender);
 
@@ -256,7 +246,6 @@ public slots:
     void resetRenderBuffers();
     void resetPolygonOutline();
     void clearBoundary();
-
 
     void triggerRenderUpdate();
     void preallocatePool(int capacity);
@@ -296,7 +285,6 @@ signals:
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
     void channelsUpdated();
-    void lastPositionChanged();
     void lastDepthChanged();
     void speedChanged();
 
@@ -343,7 +331,7 @@ private:
     void setLastDepth(float val);
 
     mutable QReadWriteLock lock_;
-    mutable QReadWriteLock poolMtx_;
+    mutable QReadWriteLock poolMtx_ = QReadWriteLock(QReadWriteLock::Recursive);
     mutable QReadWriteLock polygonOutlineMtx_;
 
     LLARef _llaRef;
@@ -356,12 +344,9 @@ private:
     QSet<ChannelId> channelsToResizeEthData_;
     int currentRegionGroup_ = 0;
 
-    // for GUI
     QList<QString> channelsNames_;
     QList<ChannelId> channelsIds_;
     QList<uint8_t> subChannelIds_;
-    float boatLatitute_         = 0.0f;
-    float boatLongitude_        = 0.0f;
     float lastDepth_            = 0.0f;
     float speed_                = 0.0f;
     QVector3D sonarOffset_;

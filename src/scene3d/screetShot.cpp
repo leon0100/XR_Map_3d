@@ -597,7 +597,6 @@ void ScreetShot::saveScreetShot()
             if(reminder) {
                 isReminderChecked_ = reminder;
             }
-
             if(ok) {
                 doSaveMapLevelProcess();
             }
@@ -894,7 +893,7 @@ void ScreetShot::judgeCurrentLevelExist(double longitude,double latitude,int lev
             info.count++;
             break;
         }
-    };
+    }; 
 
     QFuture<void> m_future = QtConcurrent::map(jude_infos,f);
     watcher->setFuture(m_future);
