@@ -12,7 +12,7 @@ SurfaceProcessor::SurfaceProcessor(DataProcessor* parent) :
     minZ_(std::numeric_limits<float>::max()),
     maxZ_(std::numeric_limits<float>::lowest()),
     edgeLimit_(20.0f),
-    surfaceStepSize_(1.0f),
+    surfaceLevelCnt_(1),
     tileSidePixelSize_(defaultTileSidePixelSize),
     tileHeightMatrixRatio_(defaultTileHeightMatrixRatio),
     themeId_(0),
@@ -238,29 +238,29 @@ void SurfaceProcessor::setEdgeLimit(float val)
 
 void SurfaceProcessor::rebuildColorIntervals()
 {
-    int levelCount = static_cast<int>(((maxZ_ - minZ_) / surfaceStepSize_) + 1);
-    if (levelCount <= 0) {
+    float surfaceStepSize = static_cast<float>(maxZ_ - minZ_) / surfaceLevelCnt_;
+    if (surfaceLevelCnt_ <= 0) {
         return;
     }
 
     colorIntervals_.clear();
-    QVector<QVector3D> palette = generateExpandedPalette(levelCount);
+    QVector<QVector3D> palette = generateExpandedPalette(surfaceLevelCnt_);
     std::reverse(palette.begin(), palette.end());
-    colorIntervals_.reserve(levelCount);
+    colorIntervals_.reserve(surfaceLevelCnt_);
 
-    for (int i = 0; i < levelCount; ++i) {
-        colorIntervals_.append({ minZ_ + i * surfaceStepSize_, palette[i] });
+    for (int i = 0; i < surfaceLevelCnt_; ++i) {
+        colorIntervals_.append({ minZ_ + i * surfaceStepSize, palette[i] });
     }
 
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceColorIntervalsSize", Qt::QueuedConnection, Q_ARG(int, static_cast<int>(colorIntervals_.size())));
-    QMetaObject::invokeMethod(dataProcessor_, "postSurfaceStepSize", Qt::QueuedConnection, Q_ARG(float, surfaceStepSize_));
+    QMetaObject::invokeMethod(dataProcessor_, "postSurfaceStepSize", Qt::QueuedConnection, Q_ARG(float, surfaceStepSize));
 
     updateTexture();
 }
 
-void SurfaceProcessor::setSurfaceStepSize(float val)
+void SurfaceProcessor::setSurfaceLevelCnt(int cnt)
 {
-    surfaceStepSize_ = val;
+    surfaceLevelCnt_ = cnt;
 }
 
 void SurfaceProcessor::setThemeId(int val)
@@ -276,11 +276,6 @@ void SurfaceProcessor::setExtraWidth(int val)
 float SurfaceProcessor::getEdgeLimit() const
 {
     return edgeLimit_;
-}
-
-float SurfaceProcessor::getSurfaceStepSize() const
-{
-    return surfaceStepSize_;
 }
 
 int SurfaceProcessor::getExtraWidth() const

@@ -41,9 +41,7 @@ public:
 
 public slots:
     void clear();
-    // from dataprocessor
     void setLabels(const QVector<IsobathUtils::LabelParameters>& labels);
     void setLineSegments(const QVector<QVector3D>& lineSegments);
-    void setLineStepSize(float lineStepSize);
     void setColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg>& coloredLineSegments);
 };

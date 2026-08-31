@@ -10,7 +10,6 @@
 #include <QThread>
 #include <QUuid>
 #include "dataset_defs.h"
-// #include "bottom_track_processor.h"
 #include "isobaths_processor.h"
 #include "mosaic_processor.h"
 #include "surface_processor.h"
@@ -35,7 +34,6 @@ public:
     DataProcessorType getDataProcessType();
 
 public slots:
-    // this
     void setBottomTrackPtr(BottomTrack* bottomTrackPtr);
     void clearProcessing(DataProcessorType = DataProcessorType::kUndefined);
     void clearProcessing2(bool isClearTrack);
@@ -54,12 +52,7 @@ public slots:
     void setSurfaceColorTableThemeById(int id);
     void setSurfaceEdgeLimit(int val);
     void setExtraWidth(int val);
-
-    // IsobathsProcessor
-    void setIsobathsLabelStepSize(float val);
-
-    // Surface/IsobathsProcessor
-    void setSurfaceIsobathsStepSize(float val);
+    void setSurfaceIsobathsLevelCnt(int cnt);
 
 
     // ------------------- 多边形裁剪（QML 调用） --------------------
@@ -107,7 +100,6 @@ signals:
     void sendIsobathsColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg>& coloredLineSegments);
     void sendIsobathsPts(const QVector<QVector3D>& pts);
     void sendIsobathsEdgePts(const QVector<QVector3D>& edgePts);
-    void sendIsobathsLineStepSize(float lineStepSize);
 
 
     // MosaicProcessor

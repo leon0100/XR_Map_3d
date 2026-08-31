@@ -247,14 +247,9 @@ void DataProcessor::setExtraWidth(int val)
     QMetaObject::invokeMethod(worker_, "setSurfaceExtraWidth", Qt::QueuedConnection, Q_ARG(int, val));
 }
 
-void DataProcessor::setIsobathsLabelStepSize(float val)
+void DataProcessor::setSurfaceIsobathsLevelCnt(int cnt)
 {
-    QMetaObject::invokeMethod(worker_, "setIsobathsLabelStepSize", Qt::QueuedConnection, Q_ARG(float, val));
-}
-
-void DataProcessor::setSurfaceIsobathsStepSize(float val)
-{
-    QMetaObject::invokeMethod(worker_, "setSurfaceIsobathsStepSize", Qt::QueuedConnection, Q_ARG(float, val));
+    QMetaObject::invokeMethod(worker_, "setSurfaceIsobathsLevelCnt", Qt::QueuedConnection, Q_ARG(int, cnt));
 
     pendingIsobathsWork_ = true;
 
@@ -265,7 +260,7 @@ void DataProcessor::setSurfaceIsobathsStepSize(float val)
     scheduleLatest(WorkSet(WF_All), /*replace*/true);
 }
 
-// data_processor.cpp 中，约 Line 100 处（找一个合适的位置插入）
+
 void DataProcessor::setSurfaceIsobathsPolygon(const QVariantList& points)
 {
     // 转发给跨线程的 ComputeWorker
@@ -486,7 +481,6 @@ DataProcessorType DataProcessor::getDataProcessType()
 
 void DataProcessor::postDistCompletedByProcessing(int epIndx, const ChannelId &channelId, float dist)
 {
-    // qDebug() << "DataProcessor::postDistCompletedByProcessing...............";
     emit distCompletedByProcessing(epIndx, channelId, dist);
 }
 
@@ -502,13 +496,11 @@ void DataProcessor::postMosaicColorTable(const std::vector<uint8_t>& t)
 
 void DataProcessor::postIsobathsLineSegments(const QVector<QVector3D>& lineSegments)
 {
-    // qDebug() << "DataProcessor::postIsobathsLineSegments lineSegments.size():" << lineSegments.size();
     emit sendIsobathsLineSegments(lineSegments);
 }
 
 void DataProcessor::postIsobathsColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg>& coloredLineSegments)
 {
-    // qDebug() << "DataProcessor::postIsobathsColoredLineSegments coloredLineSegments.size():" << coloredLineSegments.size();
     emit sendIsobathsColoredLineSegments(coloredLineSegments);
 }
 
@@ -668,5 +660,3 @@ void DataProcessor::requestCancel() noexcept
     nextRunPending_.store(true);
     cancelRequested_.store(true);
 }
-
-

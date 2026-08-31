@@ -50,11 +50,10 @@ public:
     void setTileResolution(float tileResolution);
     void setEdgeLimit(float val);
     void rebuildColorIntervals();
-    void setSurfaceStepSize(float val);
+    void setSurfaceLevelCnt(int cnt);
     void setThemeId(int val);
     void setExtraWidth(int val);
     float getEdgeLimit() const;
-    float getSurfaceStepSize() const;
     int getExtraWidth() const;
     QVector<IsobathUtils::ColorInterval> getColorIntervals();
 
@@ -96,7 +95,8 @@ private:
     float minZ_;
     float maxZ_;
     float edgeLimit_;
-    float surfaceStepSize_;
+    // float surfaceStepSize_;
+    int surfaceLevelCnt_;
     int tileSidePixelSize_;
     int tileHeightMatrixRatio_;
     int themeId_;

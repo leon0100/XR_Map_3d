@@ -33,32 +33,6 @@ void DataHorizon::clear()
     sonarIndx_ = 0;
 }
 
-void DataHorizon::setEmitChanges(bool state)
-{
-    emitChanges_ = state;
-}
-
-void DataHorizon::setIsFileOpening(bool state)
-{
-    // qDebug() << "DataHorizon::setIsFileOpening" << state << "positionIndx_................ " << positionIndx_;
-    isFileOpening_ = state;
-
-    if (!state && !isSeparateReading_ && emitChanges_) {
-        emit epochAdded(epochIndx_);
-        emit positionAdded(positionIndx_);
-        emit chartAdded(chartIndx_);
-        emit attitudeAdded(attitudeIndx_);
-        tryCalcAndEmitSonarPosIndx();
-        tryCalcAndEmitMosaicIndx();
-    }
-}
-
-void DataHorizon::setIsAttitudeExpected(bool state)
-{
-    //qDebug() << "DataHorizon::setIsAttitudeExpected" << state;
-    isAttitudeExpected_ = state;
-}
-
 void DataHorizon::onAddedEpoch(uint64_t indx)
 {
     //qDebug() << "DataHorizon::onAddedEpoch" << indx;
@@ -101,8 +75,6 @@ void DataHorizon::onAddedChart(uint64_t indx)
 
 void DataHorizon::onAddedAttitude(uint64_t indx)
 {
-    //qDebug() << "DataHorizon::onAddedAttitude" << indx;
-
     bool beenChanged = attitudeIndx_ != indx;
 
     attitudeIndx_ = indx;

@@ -87,16 +87,10 @@ void ComputeWorker::setSurfaceExtraWidth(int v)
     surface_.setExtraWidth(v);
 }
 
-void ComputeWorker::setSurfaceIsobathsStepSize(float v)
+void ComputeWorker::setSurfaceIsobathsLevelCnt(int cnt)
 {
-    surface_.setSurfaceStepSize(v);
-    isobaths_.setLineStepSize(v);
-}
-
-void ComputeWorker::setIsobathsLabelStepSize(float v)
-{
-    // qDebug() << "ComputeWorker::setIsobathsLabelStepSize " << v;
-    isobaths_.setLabelStepSize(v);
+    surface_.setSurfaceLevelCnt(cnt);
+    isobaths_.setIsobathsLevelCnt(cnt);
 }
 
 void ComputeWorker::setMosaicChannels(const ChannelId& ch1, uint8_t sub1, const ChannelId& ch2, uint8_t sub2)

@@ -10,8 +10,7 @@
 #include "mosaic_processor.h"
 
 
-struct WorkBundle
-{
+struct WorkBundle {
     QVector<QPair<char,int>> surfaceVec;
     QVector<int>             mosaicVec;
     bool                     doIsobaths{false};
@@ -43,8 +42,7 @@ public slots:
     void setSurfaceThemeId(int id);
     void setSurfaceEdgeLimit(float v);
     void setSurfaceExtraWidth(int v);
-    void setSurfaceIsobathsStepSize(float v);
-    void setIsobathsLabelStepSize(float v);
+    void setSurfaceIsobathsLevelCnt(int cnt);
     void setMosaicChannels(const ChannelId& ch1, uint8_t sub1, const ChannelId& ch2, uint8_t sub2);
     void setMosaicTheme(int id);
     void setMosaicLAngleOffset(float val);

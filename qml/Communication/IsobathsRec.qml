@@ -283,7 +283,7 @@ XRRectangle {
                         }
 
                         Text {
-                            text: qsTr("Track Boundary")
+                            text: qsTr("Boundary")
                             font.pixelSize: iconSize
                             color: "black"
                             anchors.verticalCenter: parent.verticalCenter
@@ -808,7 +808,7 @@ XRRectangle {
         // ------------------- Contour Interval -------------------
         RowLayout {
             Text {
-                text: qsTr("Contour Interval")
+                text: qsTr("Contour Count")
                 font.pixelSize: iconSize
                 Layout.fillWidth: true
             }
@@ -816,23 +816,22 @@ XRRectangle {
             SpinBoxCustom {
                 id: contourStep
                 implicitWidth: isobathSize * 0.4
-                from: 1
-                to: 200
+                from: 4
+                to: 16
                 stepSize: 1
-                value: 10
+                value: 8
                 editable: false
+                unitText: ""
                 Layout.rightMargin: 10
-
-                property real realValue: value / 10
 
                 onFocusChanged: isobathsSet.focus = true
 
                 Component.onCompleted: {
-                    IsobathsViewControlMenuController.onSetSurfaceLineStepSize(contourStep.realValue)
+                    IsobathsViewControlMenuController.onSetSurfaceLevelCnt(contourStep.value)
                 }
 
-                onRealValueChanged: {
-                    IsobathsViewControlMenuController.onSetSurfaceLineStepSize(contourStep.realValue)
+                onValueChanged: {
+                    IsobathsViewControlMenuController.onSetSurfaceLevelCnt(contourStep.value)
                 }
 
                 // Settings {

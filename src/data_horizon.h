@@ -12,10 +12,6 @@ public:
 
     void clear();
 
-    void setEmitChanges(bool state);
-    void setIsFileOpening(bool state);
-    void setIsAttitudeExpected(bool state);
-
 signals:
     void epochAdded(uint64_t indx);
     void positionAdded(uint64_t indx);

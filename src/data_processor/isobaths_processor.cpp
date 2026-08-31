@@ -10,7 +10,7 @@ static int findOrAddVertex(const QVector3D& vertice, HeightType heightType, std:
                            std::vector<QVector3D>& vertPool, std::vector<HeightType>& vertMark)
 {
     const double SCALE = 100.0;
-    VKey key{ int64_t(std::llround(vertice.x()*SCALE)), int64_t(std::llround(vertice.y()*SCALE)) };
+    VKey key{int64_t(std::llround(vertice.x()*SCALE)), int64_t(std::llround(vertice.y()*SCALE))};
 
     if (auto it = dict.find(key); it != dict.end()) {
         return it->second;
@@ -25,8 +25,7 @@ static int findOrAddVertex(const QVector3D& vertice, HeightType heightType, std:
 
 IsobathsProcessor::IsobathsProcessor(DataProcessor* dataProcessorPtr):
     dataProcessor_(dataProcessorPtr),surfaceMeshPtr_(nullptr),
-    minZ_(std::numeric_limits<float>::max()), maxZ_(std::numeric_limits<float>::lowest()),
-    lineStepSize_(3.0f),labelStepSize_(100.f)
+    minZ_(std::numeric_limits<float>::max()), maxZ_(std::numeric_limits<float>::lowest())
 {
     qRegisterMetaType<QVector<IsobathUtils::LabelParameters>>("QVector<IsobathUtils::LabelParameters>");
     qRegisterMetaType<QVector<IsobathUtils::ColoredIsobathsSeg>>("QVector<IsobathUtils::ColoredIsobathsSeg>");
@@ -87,26 +86,10 @@ void IsobathsProcessor::setMaxZ(float v)
     maxZ_ = v;
 }
 
-void IsobathsProcessor::setLineStepSize(float v)
+void IsobathsProcessor::setIsobathsLevelCnt(int cnt)
 {
-    lineStepSize_ = v;
+    isobathsLevelCnt_ = cnt;
 }
-
-void IsobathsProcessor::setLabelStepSize(float v)
-{
-    labelStepSize_ = v;
-}
-
-float IsobathsProcessor::getLineStepSize() const
-{
-    return lineStepSize_;
-}
-
-float IsobathsProcessor::getLabelStepSize() const
-{
-    return labelStepSize_;
-}
-
 
 //等值线边-平面求交函数
 void IsobathsProcessor::edgeIntersection(const QVector3D& a,const QVector3D& b, float L, QVector<QVector3D>& out) const
@@ -198,17 +181,17 @@ void IsobathsProcessor::fullRebuildLinesLabels()
         return;
     }
 
-    const int levelCnt = static_cast<int>((maxZ_ - minZ_) / lineStepSize_) + 1; //等深线层数
+    const float levelStep = static_cast<float>(maxZ_ - minZ_) / isobathsLevelCnt_;
 
     QHash<int, IsobathsSegVec> segsByLvl;
 
-    for (const TrIndxs& t : tris_) { // 三角形的交点
-        const QVector3D  A   = vertPool_[t.a];
-        const QVector3D  B   = vertPool_[t.b];
-        const QVector3D  C   = vertPool_[t.c];
-        const HeightType mA  = vertMark_[t.a];
-        const HeightType mB  = vertMark_[t.b];
-        const HeightType mC  = vertMark_[t.c];
+    for (const TrIndxs& t : tris_) {  // 三角形的交点
+        const QVector3D  A  = vertPool_[t.a];
+        const QVector3D  B  = vertPool_[t.b];
+        const QVector3D  C  = vertPool_[t.c];
+        const HeightType mA = vertMark_[t.a];
+        const HeightType mB = vertMark_[t.b];
+        const HeightType mC = vertMark_[t.c];
 
         if (canceled()) {
             return;
@@ -218,8 +201,8 @@ void IsobathsProcessor::fullRebuildLinesLabels()
             continue;
         }
 
-        for (int lvl = 0; lvl < levelCnt; ++lvl) {
-            const float L = minZ_ + lvl * lineStepSize_;
+        for (int lvl = 0; lvl < isobathsLevelCnt_; ++lvl) {
+            const float L = minZ_ + lvl * levelStep;
             QVector<QVector3D> ip;
             edgeIntersection(A, B, L, ip);
             edgeIntersection(B, C, L, ip);
@@ -251,7 +234,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
 
     for (auto it = polysByLvl.begin(); it != polysByLvl.end(); ++it) {
         const int lvl = it.key();
-        const float depth = minZ_ + lvl * lineStepSize_;
+        const float depth = minZ_ + lvl * levelStep;
         const auto& polys = it.value();
 
         QVector3D color = getColorForDepth(depth);

@@ -21,10 +21,7 @@ public:
 
     void  setMinZ(float v);
     void  setMaxZ(float v);
-    void  setLineStepSize(float v);
-    void  setLabelStepSize(float v);
-    float getLineStepSize()  const;
-    float getLabelStepSize() const;
+    void  setIsobathsLevelCnt(int cnt);
     void  setColorsFromSurfaceProcessor(const QVector<IsobathUtils::ColorInterval>& colorIntervals);
     QVector3D getColorForDepth(float depth) const;
 
@@ -35,9 +32,7 @@ private:
     void buildPolylines(const IsobathsSegVec& segs, IsobathsPolylines& p) const;
     void edgeIntersection(const QVector3D& u,const QVector3D& v,float L, QVector<QVector3D>& out) const;
     void filterNearbyLabels(const QVector<LabelParameters>& in, QVector<LabelParameters>& out) const;
-
     void smoothPolyline(QList<QVector3D>& poly) const;
-
     bool canceled() const noexcept;
 
 private:
@@ -52,7 +47,6 @@ private:
     QVector<IsobathUtils::ColorInterval> colorIntervals_;
     float minZ_;
     float maxZ_;
-    float lineStepSize_; //相邻两条等高线之间的高度差
-    float labelStepSize_;
-
+    int isobathsLevelCnt_ = 8; //等高线层数
+    float labelStepSize_ = 100.0; //间隔100米标签
 };

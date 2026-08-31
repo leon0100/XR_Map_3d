@@ -21,7 +21,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     surfaceView_(std::make_shared<SurfaceView>()),
     imageView_(std::make_shared<ImageView>()),
     mapView_(std::make_shared<MapView>(this)),
-    // contacts_(std::make_shared<Contacts>(this)),
     boatTrack_(std::make_shared<BoatTrack>(this, this)),
     polygonOutline_(std::make_shared<PolygonOutline>(this, this)),
     m_bottomTrack(std::make_shared<BottomTrack>(this, this)),
@@ -30,17 +29,13 @@ GraphicsScene3dView::GraphicsScene3dView() :
     m_coordAxes(std::make_shared<CoordinateAxes>()),
     m_planeGrid(std::make_shared<PlaneGrid>()),
     navigationArrow_(std::make_shared<NavigationArrow>()),
-    // usblView_(std::make_shared<UsblView>()),
     wasMoved_(false),
     wasMovedMouseButton_(Qt::MouseButton::NoButton),
     qmlRootObject_(nullptr),
     switchedToBottomTrackVertexComboSelectionMode_(false),
     needToResetStartPos_(false),
     lastCameraDist_(m_camera->distForMapView()),
-    // trackLastData_(false),
     gridVisibility_(true),
-    // useAngleLocation_(false),
-    // navigatorViewLocation_(false),
     isNorth_(false),
     testingTimer_(nullptr)
 {
@@ -56,7 +51,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(surfaceView_.get(),  &SurfaceView::changed,  this, &QQuickFramebufferObject::update);
     QObject::connect(imageView_.get(),    &ImageView::changed,    this, &QQuickFramebufferObject::update);
     QObject::connect(mapView_.get(),      &MapView::changed,      this, &QQuickFramebufferObject::update);
-    // QObject::connect(contacts_.get(),     &Contacts::changed,     this, &QQuickFramebufferObject::update);
     QObject::connect(boatTrack_.get(),    &BoatTrack::changed,    this, &QQuickFramebufferObject::update);
     QObject::connect(polygonOutline_.get(), &PolygonOutline::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(m_bottomTrack.get(), &BottomTrack::changed,  this, &QQuickFramebufferObject::update);
@@ -64,21 +58,18 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(m_coordAxes.get(),   &CoordinateAxes::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(m_planeGrid.get(),   &PlaneGrid::changed,    this, &QQuickFramebufferObject::update);
     QObject::connect(navigationArrow_.get(), &NavigationArrow::changed, this, &QQuickFramebufferObject::update);
-    // QObject::connect(usblView_.get(),     &UsblView::changed,     this, &QQuickFramebufferObject::update);
 
 
     QObject::connect(isobathsView_.get(), &IsobathsView::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(surfaceView_.get(),  &SurfaceView::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
     QObject::connect(imageView_.get(),    &ImageView::boundsChanged,    this, &GraphicsScene3dView::updateBounds);
     QObject::connect(mapView_.get(),      &MapView::boundsChanged,      this, &GraphicsScene3dView::updateBounds);
-    // QObject::connect(contacts_.get(),     &Contacts::boundsChanged,     this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_bottomTrack.get(), &BottomTrack::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
     QObject::connect(polygonOutline_.get(), &PolygonOutline::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_polygonGroup.get(), &PolygonGroup::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(m_coordAxes.get(),   &CoordinateAxes::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(boatTrack_.get(),    &PlaneGrid::boundsChanged,    this, &GraphicsScene3dView::updateBounds);
     QObject::connect(navigationArrow_.get(), &NavigationArrow::boundsChanged, this, &GraphicsScene3dView::updateBounds);
-    // QObject::connect(usblView_.get(),     &UsblView::boundsChanged,     this, &GraphicsScene3dView::updateBounds);
 
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateMapView, Qt::DirectConnection);
     QObject::connect(this, &GraphicsScene3dView::cameraIsMoved, this, &GraphicsScene3dView::updateViews, Qt::DirectConnection);
@@ -129,11 +120,6 @@ std::shared_ptr<MapView> GraphicsScene3dView::getMapViewPtr() const
 {
     return mapView_;
 }
-
-// std::shared_ptr<Contacts> GraphicsScene3dView::getContactsPtr() const
-// {
-//     return contacts_;
-// }
 
 std::shared_ptr<PointGroup> GraphicsScene3dView::pointGroup() const
 {
@@ -198,18 +184,13 @@ void GraphicsScene3dView::clear(bool isClearTrack, bool cleanMap)
 
     isobathsView_->clear();
     surfaceView_->clear();
-    // contacts_->clear();
     imageView_->clear();
     if (cleanMap) {
         mapView_->clear();
     }
     m_polygonGroup->clearData();
     polygonOutline_->clearData();
-    // m_pointGroup->clearData();
-    // usblView_->clearTracks();
     m_bounds = Cube();
-
-    // setMapView();
     updateBounds();
 
     QQuickFramebufferObject::update();
@@ -327,10 +308,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
         }
     }
 
-    // if (mouseButton == Qt::MouseButton::RightButton) {
-    //     switchToBottomTrackVertexComboSelectionMode(x, y);
-    // }
-
     m_camera->m_lookAtSave = m_camera->m_lookAt;
 
     m_startMousePos = { x, y };
@@ -435,8 +412,6 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
         polygonOutline_->draggingPtIndex_ = polygonOutline_->getNearestVertexIndex(lla);
     }
 
-    // contacts_->mouseMoveEvent(mouseButton, x, y);
-
     // movement threshold for sync
     if (!wasMoved_) {
         double dist{ std::sqrt(std::pow(x - m_startMousePos.x(), 2) + std::pow(y - m_startMousePos.y(), 2)) };
@@ -516,7 +491,6 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
 
         screetShot_.setScreetToolBar(true);
 
-        // showShotOptionBox();
         qDebug() << "Screen capture completed";
         return;
     }
@@ -570,7 +544,6 @@ void GraphicsScene3dView::mouseWheelTrigger(Qt::MouseButtons mouseButton, qreal 
         cameraWasMoved = true;
     }
 
-    // updatePlaneGrid();
     QQuickFramebufferObject::update();
 
     if (cameraWasMoved) {
@@ -593,7 +566,6 @@ void GraphicsScene3dView::pinchTrigger(const QPointF& prevCenter, const QPointF&
         m_axesThumbnailCamera->rotate(prevCenter, currCenter, angleDelta , height());
     }
 
-    // updatePlaneGrid();
     QQuickFramebufferObject::update();
 
     emit cameraIsMoved();
@@ -681,7 +653,6 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
     } else {
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
         screetShot_.setSelectionRectVisible(false);
-        // clearScreenShot();
     }
 
 }
@@ -704,12 +675,6 @@ void GraphicsScene3dView::setDistMeasureMode(bool isDist)
 
     if(isDist) {
         QGuiApplication::setOverrideCursor(Qt::PointingHandCursor);
-        // int x = screetShot_.getLandMarkPtX();
-        // int y = screetShot_.getLandMarkPtY();
-        // double lati, lon;
-        // calculateLatLong(x, y, lati, lon);
-        // LLARef llaRef = LLARef(LLA(lati, lon, 0));
-        // screetShot_.setLLARef(llaRef);
         screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
     }
     else {
@@ -735,11 +700,6 @@ void GraphicsScene3dView::setLandMarkMode(bool mark)
 
 }
 
-// void GraphicsScene3dView::setTrackLastData(bool state)
-// {
-    // trackLastData_ = state;
-// }
-
 void GraphicsScene3dView::setTextureIdByTileIndx(const map::TileIndex &tileIndx, GLuint textureId)
 {
     emit sendMapTextureIdByTileIndx(tileIndx, textureId);
@@ -751,16 +711,6 @@ void GraphicsScene3dView::setGridVisibility(bool state)
 
     QQuickFramebufferObject::update();
 }
-
-// void GraphicsScene3dView::setUseAngleLocation(bool state)
-// {
-//     useAngleLocation_ = state;
-// }
-
-// void GraphicsScene3dView::setNavigatorViewLocation(bool state)
-// {
-//     navigatorViewLocation_ = state;
-// }
 
 void GraphicsScene3dView::updateProjection()
 {
@@ -900,8 +850,6 @@ void GraphicsScene3dView::fitAllInView()
 
     m_camera->focusOnPosition(m_bounds.center());
 
-    // updatePlaneGrid();
-
     QQuickFramebufferObject::update();
 
     emit cameraIsMoved();
@@ -936,64 +884,11 @@ void GraphicsScene3dView::setMapView()
     m_axesThumbnailCamera->setMapView();
 
     fitAllInView();
-    // updatePlaneGrid();
 
     QQuickFramebufferObject::update();
 
     emit cameraIsMoved();
 }
-
-// void GraphicsScene3dView::setLastEpochFocusView(bool useAngle, bool useNavigatorView)
-// {
-//     if (!m_camera->isPerspective_ || !datasetPtr_) {
-//         return;
-//     }
-
-//     auto* epoch = datasetPtr_->last();
-//     if (!epoch) {
-//         return;
-//     }
-
-//     North_East_Down boatPosNed = epoch->getPositionGNSS().ned;
-//     QVector3D currPos(boatPosNed.n, boatPosNed.e, 1);
-//     if (currPos == QVector3D()) {
-//         return;
-//     }
-
-
-//     if (useNavigatorView) {
-//         // смещение
-//         const float yawRadForDir = -m_camera->m_rotAngle.x();
-//         QVector3D forwardXY(std::cos(yawRadForDir), std::sin(yawRadForDir), 0.0f);
-//         if (!forwardXY.isNull()) {
-//             forwardXY.normalize();
-//         }
-//         const float dist = std::max(1.0f, static_cast<float>(m_camera->distForMapView())) * 0.7f;
-//         const float kMin      = 10.0f;
-//         const float kFrac     = 0.30f;
-//         const float kMaxFrac  = 0.85f;
-//         float offset = std::max(kMin, dist * kFrac);
-//         offset = std::min(offset, dist * kMaxFrac);
-//         currPos += forwardXY * offset;
-
-//         // тангаж
-//         const float targetPitchRad = isNorth_ ? 0.0f : qDegreesToRadians(30.0f);
-//         const float alpha = 0.3f;
-//         const float curr = m_camera->m_rotAngle.y();
-//         float next = curr + (targetPitchRad - curr) * alpha;
-//         if (next < 0.0f) {
-//             next = 0.0f;
-//         }
-//         if (next > float(M_PI_2)) {
-//             next = float(M_PI_2);
-//         }
-//         m_camera->m_rotAngle.setY(next);
-//     }
-
-//     m_camera->focusOnPosition(currPos);
-//     QQuickFramebufferObject::update();
-//     emit cameraIsMoved();
-// }
 
 void GraphicsScene3dView::setIdleMode()
 {
@@ -1396,10 +1291,6 @@ void GraphicsScene3dView::onPositionAdded(uint64_t indx)
         navigationArrow_->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e,
                     !isfinite(boatPos.ned.d) ? 0.f : boatPos.ned.d), lastYaw - 90.f);
     }
-
-    // if (trackLastData_) {
-    //     setLastEpochFocusView(useAngleLocation_, navigatorViewLocation_);
-    // }
 }
 
 void GraphicsScene3dView::setIsNorth(bool state)
@@ -1581,8 +1472,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
         return false;
     }
 
-    // QMetaObject::invokeMethod(graphicsView_->screetShot_.loadingQuickView_, [this](){
-    //     graphicsView_->screetShot_.loadingQuickView_->hide(); }, Qt::QueuedConnection);
     GIF->dialogInfo(Dialog_Loading, "hide");
 
 #ifdef Q_OS_WIN
@@ -1810,11 +1699,8 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fb
     m_renderer->isobathsViewRenderImpl_     = *(dynamic_cast<IsobathsView::IsobathsViewRenderImplementation*>(view->isobathsView_->m_renderImpl));
     m_renderer->surfaceViewRenderImpl_      = *(dynamic_cast<SurfaceView::SurfaceViewRenderImplementation*>(view->surfaceView_->m_renderImpl));
     m_renderer->imageViewRenderImpl_        = *(dynamic_cast<ImageView::ImageViewRenderImplementation*>(view->imageView_->m_renderImpl));
-    // m_renderer->contactsRenderImpl_         = *(dynamic_cast<Contacts::ContactsRenderImplementation*>(view->contacts_->m_renderImpl));
     m_renderer->m_polygonGroupRenderImpl    = *(dynamic_cast<PolygonGroup::PolygonGroupRenderImplementation*>(view->m_polygonGroup->m_renderImpl));
-    // m_renderer->m_pointGroupRenderImpl      = *(dynamic_cast<PointGroup::PointGroupRenderImplementation*>(view->m_pointGroup->m_renderImpl));
     m_renderer->navigationArrowRenderImpl_  = *(dynamic_cast<NavigationArrow::NavigationArrowRenderImplementation*>(view->navigationArrow_->m_renderImpl));
-    // m_renderer->usblViewRenderImpl_         = *(dynamic_cast<UsblView::UsblViewRenderImplementation*>(view->usblView_->m_renderImpl));
     m_renderer->m_viewSize                  = view->size();
     m_renderer->m_camera                    = *view->m_camera;
     m_renderer->m_axesThumbnailCamera       = *view->m_axesThumbnailCamera;
@@ -2065,10 +1951,6 @@ void GraphicsScene3dView::InFboRenderer::processSurfaceTexture(GraphicsScene3dVi
 GraphicsScene3dView::Camera::Camera(GraphicsScene3dView* viewPtr) : viewPtr_(viewPtr)
 {
     setMapView();
-
-    // if (viewPtr) { // for main cam
-    //     navYawTmr_.start();
-    // }
 }
 
 GraphicsScene3dView::Camera::Camera(qreal pitch, qreal yaw, qreal distToFocusPoint, qreal fov, qreal sensivity)
@@ -2111,36 +1993,6 @@ void GraphicsScene3dView::Camera::setCameraListener(Camera* cameraListener)
 {
     cameraListener_ = cameraListener;
 }
-
-//void GraphicsScene3dView::Camera::rotate(qreal yaw, qreal pitch)
-//{
-//    QVector3D viewDir = (m_eye-m_lookAt).normalized();
-//    QVector3D right = QVector3D::crossProduct(viewDir,m_up).normalized();
-//
-//    float cosAngle = QVector3D::dotProduct(viewDir,m_up);
-//
-//    auto sgn = [](float val){
-//        return (float(0) < val) - (val < float(0));
-//    };
-//
-//    if(cosAngle * sgn(pitch) > 0.99f)
-//        pitch = 0.0f;
-//
-//    yaw *= m_sensivity * 65.0f;
-//    pitch *= m_sensivity * 65.0f;
-//
-//    QMatrix4x4 rotationMatrixX;
-//    rotationMatrixX.setToIdentity();
-//    rotationMatrixX.rotate(yaw,m_up);
-//    m_relativeOrbitPos = (rotationMatrixX * QVector4D(m_relativeOrbitPos, 1.0f)).toVector3D();
-//
-//    QMatrix4x4 rotationMatrixY;
-//    rotationMatrixY.setToIdentity();
-//    rotationMatrixY.rotate(pitch, right);
-//    m_relativeOrbitPos = (rotationMatrixY * QVector4D(m_relativeOrbitPos, 1.0f)).toVector3D();
-//
-//    updateViewMatrix();
-//}
 
 void GraphicsScene3dView::Camera::rotate(const QVector2D& lastMouse, const QVector2D& mousePos)
 {

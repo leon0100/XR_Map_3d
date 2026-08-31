@@ -906,7 +906,7 @@ void Core::createMapTileManagerConnections()
 {
     tileManager_ = std::make_unique<map::TileManager>(this);
     QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendRectRequest, tileManager_.get(), &map::TileManager::getRectRequest, Qt::DirectConnection);
-    QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendLlaRef, tileManager_.get(), &map::TileManager::getLlaRef, Qt::DirectConnection);
+    QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendLlaRef, tileManager_.get(),      &map::TileManager::getLlaRef,      Qt::DirectConnection);
     QObject::connect(tileManager_.get(), &map::TileManager::targetTilesLoaded, scene3dViewPtr_, &GraphicsScene3dView::onTargetTilesLoaded, Qt::DirectConnection);
 
     auto connType = Qt::DirectConnection;
@@ -919,7 +919,7 @@ void Core::createMapTileManagerConnections()
 
     QObject::connect(scene3dViewPtr_, &GraphicsScene3dView::sendMapTextureIdByTileIndx, this, &Core::onSendMapTextureIdByTileIndx, connType);
     QObject::connect(tileManager_.get(), &map::TileManager::zoomLevelChanged, this, &Core::onZoomLevelChanged);
-    QObject::connect(tileManager_.get(), &map::TileManager::tileSetChanged, this, &Core::onTileSetChanged, connType);
+    QObject::connect(tileManager_.get(), &map::TileManager::tileSetChanged,   this, &Core::onTileSetChanged, connType);
     QObject::connect(datasetPtr_,  &Dataset::signalDrawOutline, scene3dViewPtr_, &GraphicsScene3dView::setPolygonOutlineMode, connType);
 
 }
@@ -1030,7 +1030,7 @@ void Core::slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double m
 
 void Core::createDatasetConnections()
 {
-    QObject::connect(datasetPtr_, &Dataset::channelsUpdated, this,               &Core::onChannelsUpdated);
+    QObject::connect(datasetPtr_, &Dataset::channelsUpdated,  this,               &Core::onChannelsUpdated);
 
     QObject::connect(datasetPtr_, &Dataset::epochAdded,       dataHorizon_.get(), &DataHorizon::onAddedEpoch);
     QObject::connect(datasetPtr_, &Dataset::positionAdded,    dataHorizon_.get(), &DataHorizon::onAddedPosition);
@@ -1114,7 +1114,6 @@ void Core::createScene3dConnections()
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLabels,            scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLabels,                     connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineSegments,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineSegments,               connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsColoredLineSegments, scene3dViewPtr_->getIsobathsViewPtr().get(),   &IsobathsView::setColoredLineSegments,        connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineStepSize,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineStepSize,               connType);
     // Mosaic
     QObject::connect(dataProcessor_, &DataProcessor::sendMosaicColorTable,          scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMosaicColorTableTextureTask, connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTiles,              scene3dViewPtr_->getSurfaceViewPtr().get(),    &SurfaceView::setTiles,                       connType);

@@ -27,8 +27,7 @@ public:
     Q_INVOKABLE void onUpdateIsobathsButtonClicked();
     Q_INVOKABLE void onTrianglesVisible(bool state);
     Q_INVOKABLE void onEdgesVisible(bool state);
-    Q_INVOKABLE void onSetSurfaceLineStepSize(float val);
-    Q_INVOKABLE void onSetLabelStepSize(int val);
+    Q_INVOKABLE void onSetSurfaceLevelCnt(int cnt);
     Q_INVOKABLE void onThemeChanged(int val);
     Q_INVOKABLE void onDebugModeView(bool state);
     Q_INVOKABLE void onProcessStateChanged(bool state);
@@ -57,9 +56,8 @@ private:
     DataProcessor* dataProcessorPtr_;
     std::function<void()> pendingLambda_;
     QThread thread_;
-    float surfaceLineStepSize_;
     int themeId_;
-    int labelStepSize_;
+    int levelCnt_ = 8;
     int edgeLimit_;
     int extraWidth_;
     bool visibility_;

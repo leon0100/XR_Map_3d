@@ -47,15 +47,6 @@ void IsobathsView::setLineSegments(const QVector<QVector3D> &lineSegments)
     }
 }
 
-void IsobathsView::setLineStepSize(float lineStepSize)
-{
-    qDebug() << "IsobathsView::setLineStepSize" << lineStepSize;
-    if (auto* r = RENDER_IMPL(IsobathsView); r) {
-        r->lineStepSize_ = lineStepSize;
-        Q_EMIT changed();
-    }
-}
-
 void IsobathsView::setColoredLineSegments(const QVector<IsobathUtils::ColoredIsobathsSeg> &coloredLineSegments)
 {
     // qDebug() << "IsobathsView::setColoredLineSegments" << coloredLineSegments.size();

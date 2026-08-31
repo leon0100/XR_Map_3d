@@ -11,6 +11,7 @@ T.SpinBox {
     property bool isValid: true
     property int  devValue: -2147483648
     property bool isDriverChanged: true
+    property string unitText: "(m)"
 
     value: 50
     from: 20
@@ -35,7 +36,7 @@ T.SpinBox {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
-        text: control.textFromValue(control.value, control.locale) + "(m)"
+        text: control.textFromValue(control.value, control.locale) + control.unitText
         font.pixelSize: theme.iconSize * 0.85
         color: "black"
         selectedTextColor: theme.textColor

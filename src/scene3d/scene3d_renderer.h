@@ -7,8 +7,6 @@
 #include "surface_view.h"
 #include "image_view.h"
 #include "map_view.h"
-// #include "contacts.h"
-// #include "point_group.h"
 #include "polygon_group.h"
 #include "scene3d_view.h"
 #include "navigation_arrow.h"
