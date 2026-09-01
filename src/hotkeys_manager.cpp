@@ -8,7 +8,8 @@
 #include <QXmlStreamWriter>
 
 
-// default hotkeys template
+
+
 #if defined(Q_OS_LINUX)
 const char* HotkeysManager::s_defaultHotkeysXml = R"(<?xml version="1.0" encoding="UTF-8"?>
 <Hotkeys>

@@ -239,7 +239,7 @@ public:
     void ensureInView(const QVector3D& worldPos);
     void focusTrackBounds();
 
-    Q_INVOKABLE void switchToBottomTrackVertexComboSelectionMode(qreal x, qreal y);
+    // Q_INVOKABLE void switchToBottomTrackVertexComboSelectionMode(qreal x, qreal y);
     Q_INVOKABLE void mousePressTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);
     Q_INVOKABLE void mouseDoubleClickTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);
     Q_INVOKABLE void mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);
@@ -360,13 +360,10 @@ private:
     bool wasMoved_;
     Qt::MouseButtons wasMovedMouseButton_;
     QObject* qmlRootObject_;
-    bool switchedToBottomTrackVertexComboSelectionMode_;
+    // bool switchedToBottomTrackVertexComboSelectionMode_;
     bool needToResetStartPos_;
     float lastCameraDist_;
-    // bool trackLastData_;
     bool gridVisibility_;
-    // bool useAngleLocation_;
-    // bool navigatorViewLocation_;
     bool isNorth_;
     QTimer* testingTimer_;
 

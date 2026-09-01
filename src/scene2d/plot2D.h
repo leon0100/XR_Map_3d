@@ -10,19 +10,9 @@
 
 
 #include "plot2D_aim.h"
-// #include "plot2D_attitude.h"
-// #include "plot2D_bottom_processing.h"
-// #include "plot2D_contact.h"
 #include "plot2D_defs.h"
-// #include "plot2D_dvl_beam_velocity.h"
 #include "plot2D_echogram.h"
-// #include "plot2D_encoder.h"
-// #include "plot2D_gnss.h"
 #include "plot2D_grid.h"
-// #include "plot2D_quadrature.h"
-// #include "plot2D_rangefinder.h"
-// #include "plot2D_depth.h"
-// #include "plot2D_usbl_solution.h"
 #include "dataset.h"
 #include "data_processor.h"
 
@@ -59,19 +49,6 @@ public:
 
     void setDataChannel(bool fromGui, const ChannelId& channel, uint8_t subChannel1, const QString& portName1, const ChannelId& channel2 = CHANNEL_NONE, uint8_t subChannel2 = 0, const QString& portName2 = QString());
 
-    // bool getIsContactChanged();
-
-    // QString getContactInfo();
-    // void    setContactInfo(const QString& str);
-    // bool    getContactVisible();
-    // void    setContactVisible(bool state);
-    // int     getContactPositionX();
-    // int     getContactPositionY();
-    // int     getContactIndx();
-    // double  getContactLat();
-    // double  getContactLon();
-    // double  getContactDepth();
-
     bool getImage(int width, int height, QPainter* painter, bool is_horizontal);
     void draw(QPainter* painterPtr);
 
@@ -83,41 +60,16 @@ public:
     void setEchogramLowLevel(float low);
     void setEchogramHightLevel(float high);
     void setEchogramVisible(bool visible);
-    // float getEchogramScaleYFactor() const;
 
     void setBottomTrackVisible(bool visible);
     void setBottomTrackTheme(int theme_id);
 
-    void setRangefinderVisible(bool visible);
-    void setRangefinderTheme(int theme_id);
-    void setAttitudeVisible(bool visible);
-    void setTemperatureVisible(bool visible);
-    void setDopplerBeamVisible(bool visible, int beam_filter);
-    void setDopplerInstrumentVisible(bool visible);
-
-    void setGNSSVisible(bool visible, int flags);
-
-    void setAcousticAngleVisible(bool visible);
-
-    void setGridInvert(bool state);
-    void setAngleVisibility(bool state);
-    void setAngleRange(int angleRange);
-
-    void setVelocityRange(float velocity);
-    void setDistanceAutoRange(int auto_range_type);
-
     void setDistance(float from, float to);
-    // void zoomDistance(float ratio);
     void scrollDistance(float ratio);
 
     void setMousePosition(int x, int y, bool isSync = false);
     void simpleSetMousePosition(int x, int y);
     void setMouseTool(MouseTool tool);
-    // bool setContact(int indx, const QString& text);
-    // bool setActiveContact(int indx);
-    // bool deleteContact(int indx);
-    // void updateContact();
-    // void onCursorMoved(int x, int y);
 
     Canvas& canvas();
     DatasetCursor& cursor();
@@ -141,22 +93,10 @@ protected:
     DatasetCursor cursor_;
 
     Plot2DAim               aim_;
-    // Plot2DAttitude          attitude_;
-    // Plot2DBottomProcessing  bottomProcessing_;
-    // Plot2DContact           contacts_;
-    // Plot2DDVLBeamVelocity   dvlBeamVelocity_;
-    // Plot2DDVLSolution       dvlSolution_;
     Plot2DEchogram          echogram_;
-    // Plot2DEncoder           encoder_;
-    // Plot2DGNSS              gnss_;
     Plot2DGrid              grid_;
-    // Plot2DQuadrature        quadrature_;
-    // Plot2DRangefinder       rangefinder_;
-    // Plot2DDepth             depth_;
-    // Plot2DUSBLSolution      usblSolution_;
     Dataset*                datasetPtr_ = nullptr;
     DataProcessor*          dataProcessorPtr_ = nullptr;
-    // std::function<void()>   pendingBtpLambda_;
     bool isHorizontal_;
 
 private:

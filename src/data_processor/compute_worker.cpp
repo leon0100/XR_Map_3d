@@ -141,11 +141,6 @@ void ComputeWorker::setMosaicTileResolution(float res)
     mosaic_.setTileResolution(res);
 }
 
-void ComputeWorker::askColorTableForMosaic()
-{
-    mosaic_.askColorTableForMosaic();
-}
-
 void ComputeWorker::setMinZ(float v)
 {
     isobaths_.setMinZ(v);

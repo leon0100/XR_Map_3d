@@ -1,7 +1,7 @@
 #include "plot2D_grid.h"
 #include "plot2D.h"
 
-Plot2DGrid::Plot2DGrid() : angleVisibility_(false)
+Plot2DGrid::Plot2DGrid()
 {}
 
 bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
@@ -98,10 +98,10 @@ bool Plot2DGrid::draw(Plot2D* parent, Dataset* dataset)
     return true;
 }
 
-void Plot2DGrid::setAngleVisibility(bool state)
-{
-    angleVisibility_ = state;
-}
+// void Plot2DGrid::setAngleVisibility(bool state)
+// {
+//     angleVisibility_ = state;
+// }
 
 void Plot2DGrid::setLoRngRange(int minLoRng, int maxLoRng)
 {

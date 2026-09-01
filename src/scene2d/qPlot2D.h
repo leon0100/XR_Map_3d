@@ -141,23 +141,22 @@ public slots:
     void plotBottomTrackVisible(bool visible) { setBottomTrackVisible(visible); }
     void plotBottomTrackTheme(int theme_id) { setBottomTrackTheme(theme_id); }
 
-    void plotRangefinderVisible(bool visible) { setRangefinderVisible(visible); }
-    void plotRangefinderTheme(int theme_id) { setRangefinderTheme(theme_id); }
-    void plotAttitudeVisible(bool visible) { setAttitudeVisible(visible); }
-    void plotTemperatureVisible(bool visible) { setTemperatureVisible(visible); }
-    void plotDopplerBeamVisible(bool visible, int beam_filter) { setDopplerBeamVisible(visible, beam_filter); }
-    void plotDopplerInstrumentVisible(bool visible) { setDopplerInstrumentVisible(visible); }
+    // void plotRangefinderVisible(bool visible) { setRangefinderVisible(visible); }
+    // void plotRangefinderTheme(int theme_id) { setRangefinderTheme(theme_id); }
+    // void plotAttitudeVisible(bool visible) { setAttitudeVisible(visible); }
+    // void plotTemperatureVisible(bool visible) { setTemperatureVisible(visible); }
+    // void plotDopplerInstrumentVisible(bool visible) { setDopplerInstrumentVisible(visible); }
 
-    void plotGNSSVisible(bool visible, int flags) { setGNSSVisible(visible, flags);}
+    // void plotGNSSVisible(bool visible, int flags) { setGNSSVisible(visible, flags);}
 
-    void plotAcousticAngleVisible(bool visible) { setAcousticAngleVisible(visible); }
+    // void plotAcousticAngleVisible(bool visible) { setAcousticAngleVisible(visible); }
 
-    void plotGridInvert(bool state) { setGridInvert(state); };
-    void plotAngleVisibility(bool state)   { setAngleVisibility(state); }
-    void plotAngleRange(int angleRange) { setAngleRange(angleRange); }
-    void plotVelocityRange(float velocity) { setVelocityRange(velocity); }
+    // void plotGridInvert(bool state) { setGridInvert(state); };
+    // void plotAngleVisibility(bool state)   { setAngleVisibility(state); }
+    // void plotAngleRange(int angleRange) { setAngleRange(angleRange); }
+    // void plotVelocityRange(float velocity) { setVelocityRange(velocity); }
 
-    void plotDistanceAutoRange(int auto_range_type) { setDistanceAutoRange(auto_range_type); }
+    // void plotDistanceAutoRange(int auto_range_type) { setDistanceAutoRange(auto_range_type); }
 
     void plotEchogramSetLevels(float low, float hight) {
         setEchogramLowLevel(low);

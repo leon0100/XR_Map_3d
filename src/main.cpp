@@ -20,12 +20,6 @@
 Core* corePtr = nullptr;  // 改为指针，延迟初始化
 Themes theme;
 
-void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
-{
-    Q_UNUSED(type);
-    Q_UNUSED(context);
-}
-
 void setApplicationDisplayName(QGuiApplication& app)
 {
     QResource resource(":/version.txt");
@@ -96,7 +90,6 @@ int main(int argc, char *argv[])
 
     SceneObject::qmlDeclare();
 
-    // qInstallMessageHandler(messageHandler); // TODO: comment this
     theme.setTheme();
 
     registerQmlMetaTypes();

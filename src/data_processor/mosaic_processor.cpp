@@ -156,7 +156,6 @@ void MosaicProcessor::setColorTableThemeById(int id)
 
     colorTable_.setTheme(id);
 
-    QMetaObject::invokeMethod(dataProcessor_, "postMosaicColorTable", Qt::QueuedConnection, Q_ARG(std::vector<uint8_t>, colorTable_.getRgbaColors()));
 }
 
 void MosaicProcessor::setColorTableLevels(float lowVal, float highVal)
@@ -169,7 +168,6 @@ void MosaicProcessor::setColorTableLevels(float lowVal, float highVal)
 
     colorTable_.setLevels(lowVal, highVal);
 
-    QMetaObject::invokeMethod(dataProcessor_, "postMosaicColorTable", Qt::QueuedConnection, Q_ARG(std::vector<uint8_t>, colorTable_.getRgbaColors()));
 }
 
 void MosaicProcessor::setColorTableLowLevel(float val)
@@ -180,7 +178,6 @@ void MosaicProcessor::setColorTableLowLevel(float val)
 
     colorTable_.setLowLevel(val);
 
-    QMetaObject::invokeMethod(dataProcessor_, "postMosaicColorTable", Qt::QueuedConnection, Q_ARG(std::vector<uint8_t>, colorTable_.getRgbaColors()));
 }
 
 void MosaicProcessor::setColorTableHighLevel(float val)
@@ -191,7 +188,6 @@ void MosaicProcessor::setColorTableHighLevel(float val)
 
     colorTable_.setHighLevel(val);
 
-    QMetaObject::invokeMethod(dataProcessor_, "postMosaicColorTable", Qt::QueuedConnection, Q_ARG(std::vector<uint8_t>, colorTable_.getRgbaColors()));
 }
 
 void MosaicProcessor::setLAngleOffset(float val)
@@ -220,11 +216,6 @@ void MosaicProcessor::setTileResolution(float tileResolution)
 void MosaicProcessor::setGenerageGridContour(bool state)
 {
     generateGridContour_ = state;
-}
-
-void MosaicProcessor::askColorTableForMosaic()
-{
-    QMetaObject::invokeMethod(dataProcessor_, "postMosaicColorTable", Qt::QueuedConnection, Q_ARG(std::vector<uint8_t>, colorTable_.getRgbaColors()));
 }
 
 void MosaicProcessor::postUpdate(QSet<SurfaceTile*>& changedTiles)

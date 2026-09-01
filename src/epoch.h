@@ -14,36 +14,35 @@
 class Epoch
 {
 public:
-    struct Contact {
-        bool isValid() const {
-            return !info.isEmpty() &&
-                   cursorX != -1 &&
-                   cursorY != -1;
-        }
-        void clear() {
-            info.clear();
-            lat      = 0.0f;
-            lon      = 0.0f;
-            echogramDistance = 0.0f;
-            depth    = 0.0f;
-            nedX     = 0.0f;
-            nedY     = 0.0f;
-            cursorX  = -1;
-            cursorY  = -1;
-            rectEcho = QRectF();
-        }        
+    // struct Contact {
+    //     bool isValid() const {
+    //         return !info.isEmpty() && cursorX != -1 && cursorY != -1;
+    //     }
 
-        QString info;
-        float   lat = 0.0f;
-        float   lon = 0.0f;
-        float   echogramDistance = 0.0f;
-        float   depth = 0.0f;
-        float   nedX = 0.0f;
-        float   nedY = 0.0f;
-        int     cursorX = -1;
-        int     cursorY = -1;
-        QRectF  rectEcho;
-    };
+    //     void clear() {
+    //         info.clear();
+    //         lat      = 0.0f;
+    //         lon      = 0.0f;
+    //         echogramDistance = 0.0f;
+    //         depth    = 0.0f;
+    //         nedX     = 0.0f;
+    //         nedY     = 0.0f;
+    //         cursorX  = -1;
+    //         cursorY  = -1;
+    //         rectEcho = QRectF();
+    //     }
+
+    //     QString info;
+    //     float   lat = 0.0f;
+    //     float   lon = 0.0f;
+    //     float   echogramDistance = 0.0f;
+    //     float   depth = 0.0f;
+    //     float   nedX = 0.0f;
+    //     float   nedY = 0.0f;
+    //     int     cursorX = -1;
+    //     int     cursorY = -1;
+    //     QRectF  rectEcho;
+    // };
 
     struct DistProcessing {
         enum class DistanceSource {
@@ -202,13 +201,6 @@ public:
 
     double distProccesing(const ChannelId& channelId = CHANNEL_NONE);
 
-    // float rangeFinder() const {
-    //     if(rangefinders_.size() > 0) {
-    //         return rangefinders_.first();
-    //     }
-    //     return NAN;
-    // }
-
     float temperature() { return m_temp_c; }
     bool temperatureAvail() { return flags.tempAvail; }
 
@@ -259,7 +251,6 @@ public:
     uint8_t getBoost        (const ChannelId& channelId) const;
     uint32_t getSoundSpeed  (const ChannelId& channelId) const;
     ChartParameters getChartParameters(const ChannelId& channelId) const;
-    Contact contact_;
 
     uint8_t getChartsSizeByChannelId(const ChannelId& channelId) const;
 

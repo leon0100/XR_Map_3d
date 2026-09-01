@@ -132,7 +132,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
         return;
     }
 
-    // updateRenderData(lEpoch, rEpoch, redrawAll, manual);
     auto* r = RENDER_IMPL(BottomTrack);
     r->selectedVertexIndices_.clear();
     int rSize = r->cdata().size();
@@ -143,7 +142,7 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     }
 
     QVector<QVector3D> prepData;
-    // qDebug() << "lEpoch....." << lEpoch << "   rEpoch...." << rEpoch;
+    qDebug() << "lEpoch....." << lEpoch << "   rEpoch...." << rEpoch;
     for (int epIndx = lEpoch; epIndx < rEpoch; ++epIndx) {
         auto vIt = epoch2Vertex_.find(epIndx);
         if (vIt != epoch2Vertex_.end()) {
@@ -151,7 +150,8 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
             if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
                 if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
                     auto vIndx = *vIt;
-                    const float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
+                    // const float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
+                    float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
                     r->m_data[vIndx].setZ(dist);
 
                     epIndxUpdated_.push_back(epIndx);
@@ -176,7 +176,7 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
         }
     }
 
-    // qDebug() << "epIndxUpdated_.size():" << epIndxUpdated_.size() << "  " << vertIndxUpdated_.size();
+    qDebug() << "epIndxUpdated_.size():" << epIndxUpdated_.size() << "  " << vertIndxUpdated_.size();
     emit updatedPoints(epIndxUpdated_, vertIndxUpdated_, manual);  //这句绘制等高线
 
     SceneObject::appendData(prepData);

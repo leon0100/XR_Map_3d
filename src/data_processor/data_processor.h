@@ -69,7 +69,6 @@ public slots:
     void setMosaicLevels(float lowLevel, float highLevel);
     void setMosaicLowLevel(float val);
     void setMosaicHighLevel(float val);
-    void askColorTableForMosaic();
 
     void onIsobathsUpdated();
     void onMosaicUpdated();
@@ -92,7 +91,6 @@ signals:
     void sendSurfaceColorIntervalsSize(int size);
     void sendSurfaceStepSize(float lineStepSize);
     void sendPolygonOulineAuto(bool generate);
-    void surfaceBoundaryVerticesUpdated(const QVector<QVector3D>& vertices);
 
     // IsobathsProcessor
     void sendIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);
@@ -101,9 +99,6 @@ signals:
     void sendIsobathsPts(const QVector<QVector3D>& pts);
     void sendIsobathsEdgePts(const QVector<QVector3D>& edgePts);
 
-
-    // MosaicProcessor
-    void sendMosaicColorTable(const std::vector<uint8_t>& colorTable);
     void sendSurfaceTiles(const TileMap& tiles, bool useTextures);
 
 private slots:
@@ -124,10 +119,6 @@ private slots:
     void postSurfaceColorTable(const std::vector<uint8_t>& t);
     void postSurfaceColorIntervalsSize(int size);
     void postSurfaceStepSize(float lineStepSize);
-    void postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices);
-
-    // Mosaic
-    void postMosaicColorTable(const std::vector<uint8_t>& t);
 
     // Isobaths
     void postIsobathsLabels(const QVector<IsobathUtils::LabelParameters>& labels);

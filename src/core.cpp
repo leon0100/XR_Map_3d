@@ -37,26 +37,20 @@ void Core::setEngine(QQmlApplicationEngine *engine)
     qmlAppEnginePtr_ = engine;
     QObject::connect(qmlAppEnginePtr_, &QQmlApplicationEngine::objectCreated, this, &Core::UILoad, Qt::QueuedConnection);
 
-    qmlAppEnginePtr_->rootContext()->setContextProperty("BoatTrackControlMenuController",       boatTrackControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("BottomTrackControlMenuController",     bottomTrackControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("IsobathsViewControlMenuController",    isobathsViewControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("MosaicViewControlMenuController",      mosaicViewControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("ImageViewControlMenuController",       imageViewControlMenuController_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("BoatTrackControlMenuController",    boatTrackControlMenuController_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("BottomTrackControlMenuController",  bottomTrackControlMenuController_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("IsobathsViewControlMenuController", isobathsViewControlMenuController_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("ImageViewControlMenuController",    imageViewControlMenuController_.get());
 
-    qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",      bleManager_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",      udpManager_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("SerialPort",      serialPortManager_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("Locations",       locations_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",   bleManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",   udpManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("SerialPort",   serialPortManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("Locations",    locations_.get());
 
-    // ── 注册 dataProcessor ──
     qmlAppEnginePtr_->rootContext()->setContextProperty("dataProcessor", dataProcessor_);
 
-    bool flasherState = false;
-#ifdef FLASHER
-    flasherState = true;
-#endif
-
-    qmlAppEnginePtr_->rootContext()->setContextProperty("FLASHER_STATE", flasherState);
+    // bool flasherState = false;
+    // qmlAppEnginePtr_->rootContext()->setContextProperty("FLASHER_STATE", flasherState);
 }
 
 Dataset* Core::getDatasetPtr()
@@ -187,10 +181,6 @@ void Core::UILoad(QObject* object, const QUrl& url)
     isobathsViewControlMenuController_->setQmlEngine(object);
     isobathsViewControlMenuController_->setDataProcessorPtr(dataProcessor_);
     isobathsViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
-
-    mosaicViewControlMenuController_->setQmlEngine(object);
-    mosaicViewControlMenuController_->setDataProcessorPtr(dataProcessor_);
-    mosaicViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
     imageViewControlMenuController_->setQmlEngine(object);
     imageViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
@@ -460,7 +450,7 @@ void Core::openFileFromMenu()
     else
     {
         int size_sum = 0;
-        qint64 totalFileSize = 0;
+        int totalFileSize = 0;
         for(int i = 0; i < fileCnt; i++) {
             QFile file(fileNames.at(i));
 
@@ -470,7 +460,7 @@ void Core::openFileFromMenu()
                 GIF->dialogInfo(Dialog_OK, tr("File size is too large!"));
                 return;
             }
-            totalFileSize += fileSize;
+            totalFileSize += fileSize / 1024;
 
             if (progress_) {
                 QString statusText = tr("Opening file %1 / %2").arg(i+1).arg(fileCnt);
@@ -496,9 +486,7 @@ void Core::openFileFromMenu()
             return;
         }
 
-        // datasetPtr_->preallocatePool(static_cast<int>(totalFileSize));
-        const int estimatedEpochs = fileCnt * 5000;
-        datasetPtr_->preallocatePool(estimatedEpochs);
+        datasetPtr_->preallocatePool(totalFileSize);
         deviceManager_->resetFileAndChannel(fileCnt);
 
         //读取内容并调用相应的处理函数
@@ -807,7 +795,6 @@ void Core::createControllers()
     boatTrackControlMenuController_     = std::make_shared<BoatTrackControlMenuController>();
     bottomTrackControlMenuController_   = std::make_shared<BottomTrackControlMenuController>();
     isobathsViewControlMenuController_  = std::make_shared<IsobathsViewControlMenuController>();
-    mosaicViewControlMenuController_    = std::make_shared<MosaicViewControlMenuController>();
     imageViewControlMenuController_     = std::make_shared<ImageViewControlMenuController>();
 
     deviceManager_                      = std::make_shared<DeviceManager>(datasetPtr_);
@@ -820,16 +807,15 @@ void Core::createControllers()
 void Core::createDeviceManagerConnections()
 {
     Qt::ConnectionType directionConnection = Qt::ConnectionType::DirectConnection;
-    QObject::connect(deviceManager_.get(), &DeviceManager::chartComplete, datasetPtr_,   &Dataset::addChart,              directionConnection);
-    // QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete, datasetPtr_,&Dataset::addPosition,           directionConnection);
-    QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,               directionConnection);
-    QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,               directionConnection);
+    QObject::connect(deviceManager_.get(), &DeviceManager::chartComplete, datasetPtr_,   &Dataset::addChart,         directionConnection);
+    QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,  directionConnection);
+    QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,  directionConnection);
     QObject::connect(serialPortManager_.get(), &SerialPortManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime, directionConnection);
-    QObject::connect(serialPortManager_.get(), &SerialPortManager::chartComplete,    datasetPtr_, &Dataset::addChart,             directionConnection);
+    QObject::connect(serialPortManager_.get(), &SerialPortManager::chartComplete,    datasetPtr_, &Dataset::addChart,  directionConnection);
 
     QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file, directionConnection);
 
-    QObject::connect(deviceManager_.get(), &DeviceManager::fileStopsOpening, this, &Core::onFileStopsOpening,            directionConnection);
+    QObject::connect(deviceManager_.get(), &DeviceManager::fileStopsOpening, this, &Core::onFileStopsOpening,     directionConnection);
 
     QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourBle,  directionConnection);
     QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi, directionConnection);
@@ -889,9 +875,7 @@ void Core::loadLLARefFromSettings()
         ref.refLla.longitude = settings.value("refLlaLongitude", NAN).toDouble();
         ref.isInit = settings.value("isInit", false).toBool();
         settings.endGroup();
-
         datasetPtr_->setLlaRef(ref, Dataset::LlaRefState::kUndefined);
-        //qDebug() << "loaded: " << ref.refLla.latitude << ref.refLla.longitude;
     }
     catch (const std::exception& e) {
         qCritical() << "Core::loadLLARefFromSettings throw exception:" << e.what();
@@ -1103,27 +1087,22 @@ void Core::createScene3dConnections()
     // res work proc
     auto connType = Qt::QueuedConnection;
     // Surface
-    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTextureTask,        scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setTextureTask,                 connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceMinZ,               scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMinZ,                        connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceMaxZ,               scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMaxZ,                        connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceStepSize,           scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setSurfaceStep,                 connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceColorIntervalsSize, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setColorIntervalsSize,          connType);
-    QObject::connect(dataProcessor_, &DataProcessor::surfaceBoundaryVerticesUpdated, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setBoundaryVertices,          connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTextureTask,        scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setTextureTask,           connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceMinZ,               scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMinZ,                  connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceMaxZ,               scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMaxZ,                  connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceStepSize,           scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setSurfaceStep,           connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceColorIntervalsSize, scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setColorIntervalsSize,    connType);
     QObject::connect(dataProcessor_, &DataProcessor::sendPolygonOulineAuto,         scene3dViewPtr_->polygonOutline().get(),        &PolygonOutline::autoGenerateBoundary,  connType);
     // IsobathsView
-    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLabels,            scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLabels,                     connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineSegments,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineSegments,               connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsColoredLineSegments, scene3dViewPtr_->getIsobathsViewPtr().get(),   &IsobathsView::setColoredLineSegments,        connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLabels,            scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLabels,               connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsLineSegments,      scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::setLineSegments,         connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendIsobathsColoredLineSegments, scene3dViewPtr_->getIsobathsViewPtr().get(),  &IsobathsView::setColoredLineSegments,  connType);
     // Mosaic
-    QObject::connect(dataProcessor_, &DataProcessor::sendMosaicColorTable,          scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setMosaicColorTableTextureTask, connType);
-    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTiles,              scene3dViewPtr_->getSurfaceViewPtr().get(),    &SurfaceView::setTiles,                       connType);
+    QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTiles,              scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setTiles,                 connType);
     // clear render
-    QObject::connect(dataProcessor_, &DataProcessor::bottomTrackProcessingCleared,  scene3dViewPtr_->bottomTrack().get(),           &BottomTrack::clearData,                      connType);
-    QObject::connect(dataProcessor_, &DataProcessor::isobathsProcessingCleared,     scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::clear,                         connType);
-    QObject::connect(dataProcessor_, &DataProcessor::mosaicProcessingCleared,       this, [](){},                               connType);
-    QObject::connect(dataProcessor_, &DataProcessor::surfaceProcessingCleared,      scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::clear,                          connType);
-
-    QMetaObject::invokeMethod(dataProcessor_, "askColorTableForMosaic", Qt::QueuedConnection);
+    QObject::connect(dataProcessor_, &DataProcessor::bottomTrackProcessingCleared,  scene3dViewPtr_->bottomTrack().get(),           &BottomTrack::clearData,                connType);
+    QObject::connect(dataProcessor_, &DataProcessor::isobathsProcessingCleared,     scene3dViewPtr_->getIsobathsViewPtr().get(),    &IsobathsView::clear,                   connType);
+    QObject::connect(dataProcessor_, &DataProcessor::surfaceProcessingCleared,      scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::clear,                    connType);
 }
 
 void Core::setDataProcessorConnections()

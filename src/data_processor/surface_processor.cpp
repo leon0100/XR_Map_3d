@@ -49,13 +49,123 @@ void SurfaceProcessor::setSurfaceMeshPtr(SurfaceMesh *surfaceMeshPtr)
     surfaceMeshPtr_ = surfaceMeshPtr;
 }
 
+QVector<QPair<char, int>> SurfaceProcessor::filterDensePoints(const QVector<QVector3D>& pts,
+                                        const QVector<QPair<char, int>>& indxs, int maxPoints) const
+{
+    if (indxs.size() <= maxPoints || pts.isEmpty()) {
+        return indxs;
+    }
+
+    QVector<int> srcPos;
+    QVector<double> xs, ys;
+    srcPos.reserve(indxs.size());
+    xs.reserve(indxs.size());
+    ys.reserve(indxs.size());
+    for (int i = 0; i < indxs.size(); ++i) {
+        const int vi = indxs[i].second;
+        if (vi < 0 || vi >= pts.size()) {
+            continue;
+        }
+        if (!qIsFinite(pts[vi].x()) || !qIsFinite(pts[vi].y())) {
+            continue;
+        }
+        srcPos.push_back(i);
+        xs.push_back(pts[vi].x());
+        ys.push_back(pts[vi].y());
+    }
+
+    const int total = srcPos.size();
+    if (total <= maxPoints || total <= 1) {
+        return indxs;
+    }
+
+    double minX = xs[0], maxX = xs[0], minY = ys[0], maxY = ys[0];
+    for (int i = 1; i < total; ++i) {
+        minX = qMin(minX, xs[i]); maxX = qMax(maxX, xs[i]);
+        minY = qMin(minY, ys[i]); maxY = qMax(maxY, ys[i]);
+    }
+    // const double diag = qSqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY));
+    const double diag = std::sqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY));
+    if (!(diag > 0.0)) {
+        QVector<QPair<char, int>> out;
+        out.reserve(maxPoints);
+        for (int i = 0; i < maxPoints && i < total; ++i) {
+            out.push_back(indxs[srcPos[i]]);
+        }
+        return out;
+    }
+
+    auto keptCount = [&](double dist) -> int {
+        int kept = 1;
+        double lastX = xs[0], lastY = ys[0];
+        const double d2 = dist * dist;
+        for (int i = 1; i < total; ++i) {
+            const double dx = xs[i] - lastX;
+            const double dy = ys[i] - lastY;
+            if (dx * dx + dy * dy >= d2) {
+                lastX = xs[i];
+                lastY = ys[i];
+                ++kept;
+            }
+        }
+        return kept;
+    };
+
+    double lo = 0.0;
+    double hi = diag;
+    if (keptCount(hi) > maxPoints) {
+        QVector<QPair<char, int>> out;
+        out.reserve(maxPoints);
+        for (int i = 0; i < maxPoints && i < total; ++i) {
+            out.push_back(indxs[srcPos[i]]);
+        }
+        return out;
+    }
+
+    for (int it = 0; it < 50; ++it) {
+        const double mid = 0.5 * (lo + hi);
+        if (mid <= lo || mid >= hi) {
+            break;
+        }
+        if (keptCount(mid) <= maxPoints) {
+            hi = mid;
+        }
+        else {
+            lo = mid;
+        }
+    }
+
+    QVector<QPair<char, int>> out;
+    out.reserve(maxPoints + 1);
+    out.push_back(indxs[srcPos[0]]);
+    double lastX = xs[0], lastY = ys[0];
+    const double d2 = hi * hi;
+    for (int i = 1; i < total; ++i) {
+        const double dx = xs[i] - lastX;
+        const double dy = ys[i] - lastY;
+        if (dx * dx + dy * dy >= d2) {
+            out.push_back(indxs[srcPos[i]]);
+            lastX = xs[i];
+            lastY = ys[i];
+        }
+    }
+    const QPair<char, int> lastItem = indxs[srcPos[total - 1]];
+    if (out.last() != lastItem) {
+        if (out.size() > maxPoints) {
+            out.pop_back();
+        }
+        out.push_back(lastItem);
+    }
+    return out;
+}
+
+
 void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> &indxs)
 {
     if (indxs.empty()) {
         return;
     }
 
-    // Delaunay processing
     QVector<QVector3D> bTrData;
     {
         QReadLocker rl(&lock_);
@@ -65,10 +175,14 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         return;
     }
 
+    const QVector<QPair<char, int>> filteredIndxs = filterDensePoints(bTrData, indxs, 10000);
+    qDebug() << "indxs..." << indxs.size() << "     filteredIndxs....." << filteredIndxs.size();
+    qDebug() << "bTrData.size()...." << bTrData.size();
+
     //头一次都是初始化时的数据
     auto& tr = delaunayProc_.getTriangles();
     auto& pt = delaunayProc_.getPoints();
-    // qDebug() << "tr.size()... " << tr.size() << "    pt.size()...." << pt.size();
+    qDebug() << "tr.size()... " << tr.size() << "    pt.size()...." << pt.size();
 
     const auto registerTriangle = [&](int triIdx) {
         const auto& t = tr[triIdx];
@@ -93,7 +207,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         const int ix = qRound((pnt.x() - origin_.x()) / cellPx_);
         const int iy = qRound((pnt.y() - origin_.y()) / cellPx_);
         const QPair<int,int> cid(ix, iy);
-
         if (auto it = cellPointsInTri_.find(cid); it != cellPointsInTri_.end()) {  // 更新中心点的 Z坐标
             const int pIdx = it.value();
             auto& dp = delaunayProc_.getPointsRef()[pIdx];
@@ -116,7 +229,8 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         }
     };
 
-    for (const auto& itm : indxs) { // 添加至三角剖分
+    // for (const auto& itm : indxs) { // 添加至三角剖分
+    for (const auto& itm : filteredIndxs) {  //添加至三角剖分
         if (canceled()) {
             return;
         }
@@ -136,7 +250,8 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     const int triCount = static_cast<int>(tr.size());
-    if (!triCount) {
+    qDebug() << "triCount......." << triCount;
+    if (triCount == 0) {
         return;
     }
 
@@ -173,10 +288,10 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
 
         writeTriangleToMesh(pts[0], pts[1], pts[2], changedTiles);
 
-        minZ_ = std::min(static_cast<double>(minZ_), std::min({ pt[t.a].z, pt[t.b].z, pt[t.c].z}));
-        maxZ_ = std::max(static_cast<double>(maxZ_), std::max({ pt[t.a].z, pt[t.b].z, pt[t.c].z}));
+        minZ_ = std::min(static_cast<double>(minZ_), std::min({pt[t.a].z, pt[t.b].z, pt[t.c].z}));
+        maxZ_ = std::max(static_cast<double>(maxZ_), std::max({pt[t.a].z, pt[t.b].z, pt[t.c].z}));
     }
-
+    qDebug() << "12121324345678";
     propagateBorderHeights(changedTiles);
     for (SurfaceTile* tile : std::as_const(changedTiles)) {
         smoothTileHeights(tile);  // 对高度场进行平滑处理，减少噪声
@@ -186,8 +301,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         tile->updateHeightIndices();
         tile->setIsUpdated(false);
     }
-    // QMetaObject::invokeMethod(dataProcessor_, "postSurfaceBoundaryVertices", Qt::QueuedConnection,
-    //                                                 Q_ARG(QVector<QVector3D>, stepVertices));
+    qDebug() << "000000000000000000";
 
     if (beenManualChanged) {
         float currMin = std::numeric_limits<float>::max();
@@ -207,18 +321,19 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
             maxZ_ = currMax;
         }
     }
-
+    qDebug() << "111111111111111111111";
     const bool zChanged = !qFuzzyCompare(1.0+minZ_, 1.0+lastMinZ) || !qFuzzyCompare(1.0+maxZ_, 1.0+lastMaxZ);
     if (zChanged) {
         QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ_));
         QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ_));
     }
-
+    qDebug() << "22222222222222222";
     TileMap res;
     res.reserve(changedTiles.size());
     for (auto it = changedTiles.cbegin(); it != changedTiles.cend(); ++it) {
-        res.insert((*it)->getUuid(), (*(*it)));
+        res.insert((*it)->getUuid(), *(*it));
     }
+        qDebug() << "444444444444444444";
     // QVector<QVector3D> boundary = extractAlphaShapeBoundary();
     QMetaObject::invokeMethod(dataProcessor_, "postSurfaceTiles", Qt::QueuedConnection, Q_ARG(TileMap, res), Q_ARG(bool, false));
 }
@@ -407,7 +522,7 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
     const int hvSide = tileHeightMatrixRatio_ + 1;
     const int tilesY = surfaceMeshPtr_->getNumHeightTiles();
     const int tilesX = surfaceMeshPtr_->getNumWidthTiles();
-
+    qDebug() << "aaaaaaaaaaaaaa";
     auto& matrix = surfaceMeshPtr_->getTileMatrixRef();
 
     auto copyRow = [&](SurfaceTile* src, SurfaceTile* dst, int rowFrom, int rowTo) {
@@ -449,13 +564,15 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
             }
         }
     };
-
+    qDebug() << "bbbbbbbbbbbbbbb";
     for (int ty = 0; ty < tilesY; ++ty) {
         for (int tx = 0; tx < tilesX; ++tx) {
             SurfaceTile* t = matrix[ty][tx];
             if (!t->getIsUpdated()) {
                 continue;
             }
+
+            // qDebug() << "tx:.......  " << tx << "  " << ty;
 
             if (ty + 1 < tilesY) { // 向上，将第 0 行移动到顶部瓦片的最后一行
                 SurfaceTile* top = matrix[ty + 1][tx];
@@ -497,7 +614,7 @@ void SurfaceProcessor::propagateBorderHeights(QSet<SurfaceTile*>& changedTiles)
             }
         }
     }
-
+    qDebug() << "ccccccccccccccccc";
 }
 
 
@@ -604,7 +721,6 @@ bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
     return inside;
 }
 
-
 void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile)
 {
     int hvSide = tileHeightMatrixRatio_ + 1;
@@ -697,7 +813,6 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
         auto& vertices = tile->getHeightVerticesRef();
         auto& marks = tile->getHeightMarkVerticesRef();
 
-
         // 遍历瓦片内的所有顶点
         for (int y = 0; y < hvSide; ++y) {
             for (int x = 0; x < hvSide; ++x) {
@@ -718,7 +833,6 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
         }
 
         tile->setIsUpdated(true);
-
     }
 
 }
@@ -822,7 +936,7 @@ double SurfaceProcessor::cross(const Point3D<double>& o, const Point3D<double>& 
 // 凸包算法：Andrew 单调链算法
 std::vector<Point3D<double>> SurfaceProcessor::convexHull(std::vector<Point3D<double>> points)
 {
-    // 1. 按 x 坐标排序，x 相同按 y 坐标排序
+    // 1. 按x坐标排序，x相同按y坐标排序
     std::sort(points.begin(), points.end(), [](const Point3D<double>& a, const Point3D<double>& b) {
         if (a.x() != b.x()) return a.x() < b.x();
         return a.y() < b.y();

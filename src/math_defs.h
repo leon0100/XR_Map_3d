@@ -69,7 +69,7 @@ inline void concatenateMatrixParameters(MatrixParams &srcDst, const MatrixParams
     srcDst.originX = std::min(srcDst.originX, src.originX);
     srcDst.originY = std::min(srcDst.originY, src.originY);
 
-    srcDst.width = static_cast<int>(std::ceil(maxX - srcDst.originX));
+    srcDst.width  = static_cast<int>(std::ceil(maxX - srcDst.originX));
     srcDst.height = static_cast<int>(std::ceil(maxY - srcDst.originY));
 }
 

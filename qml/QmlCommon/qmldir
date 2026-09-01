@@ -1,11 +1,11 @@
 module QmlCommon
 
-KProgress         1.0   KProgress.qml
 KDialogCheck      1.0   KDialogCheck.qml
 KDialogCheck2     1.0   KDialogCheck2.qml
 KDialogLoading    1.0   KDialogLoading.qml
 KDialogOK         1.0   KDialogOK.qml
 KDialogYesNo      1.0   KDialogYesNo.qml
+KProgress         1.0   KProgress.qml
 KRButton 	  1.0   KRButton.qml
 KSlider 	  1.0   KSlider.qml
 KText 		  1.0   KText.qml

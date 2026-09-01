@@ -556,12 +556,11 @@ XRRectangle {
                         onClicked: {
                             flashAnim4.restart()
                             isShowBoat = !isShowBoat
-                            // NavigationArrowControlMenuController.onVisibilityCheckBoxCheckedChanged(isShowBoat)
                             core.onNavigationArrowVisibleChanged(isShowBoat)
                         }
 
                         onEntered: parent.color = "#d6e6ff"
-                        onExited: parent.color = "#f9f9fb"
+                        onExited:  parent.color = "#f9f9fb"
                     }
                 }
 
@@ -816,14 +815,13 @@ XRRectangle {
             SpinBoxCustom {
                 id: contourStep
                 implicitWidth: isobathSize * 0.4
-                from: 4
-                to: 16
+                from: 3
+                to: 20
                 stepSize: 1
                 value: 8
                 editable: false
                 unitText: ""
                 Layout.rightMargin: 10
-
                 onFocusChanged: isobathsSet.focus = true
 
                 Component.onCompleted: {

@@ -6,7 +6,6 @@ HEADERS += \
     $$PWD/bottom_track_control_menu_controller.h \
     $$PWD/image_view_control_menu_controller.h \
     $$PWD/qml_component_controller.h \
-    $$PWD/mosaic_view_control_menu_controller.h \
     $$PWD/isobaths_view_control_menu_controller.h
 
 SOURCES += \
@@ -14,5 +13,4 @@ SOURCES += \
     $$PWD/bottom_track_control_menu_controller.cpp \
     $$PWD/image_view_control_menu_controller.cpp \
     $$PWD/qml_component_controller.cpp \
-    $$PWD/mosaic_view_control_menu_controller.cpp \
     $$PWD/isobaths_view_control_menu_controller.cpp

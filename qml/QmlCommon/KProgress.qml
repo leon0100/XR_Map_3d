@@ -6,15 +6,10 @@ import QtQuick.Layouts 1.15
 Rectangle {
     id: progressDialog
 
-    width:  dialogWidth
-    height: dialogHeight
-    x: theme.screenWidth*0.5  - dialogWidth*0.5
-    y: theme.screenHeight*0.4 - dialogHeight*0.5
+    anchors.fill: parent
     z: 9999
     visible: false
-    radius: 8
-    color: "#E6F2FA"
-
+    color: "#80000000"
 
     property  string  title:            qsTr("Open File")
     property  string  statusText:       qsTr("Openging")
@@ -26,6 +21,14 @@ Rectangle {
     property  int     dialogHeight:     theme.screenSize * 0.14
     property  int     iconSize:         theme.iconSize * 0.9
 
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+        hoverEnabled: true
+        preventStealing: true
+        onWheel: wheel.accepted = true
+    }
 
     function open() {
         visible = true
@@ -51,9 +54,19 @@ Rectangle {
         title = text
     }
 
+    Rectangle {
+        id: dialogBox
+        x: theme.screenWidth*0.5  - dialogWidth*0.5
+        y: theme.screenHeight*0.4 - dialogHeight*0.5
+        width:  dialogWidth
+        height: dialogHeight
+        radius: 8
+        color: "#E6F2FA"
+    }
+
 
     ColumnLayout {
-        anchors.fill: parent
+        anchors.fill: dialogBox
         anchors.margins: 8
         spacing: 8
 
@@ -124,5 +137,4 @@ Rectangle {
     }
 
 }
-
 

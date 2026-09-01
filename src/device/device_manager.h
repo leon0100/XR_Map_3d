@@ -41,11 +41,6 @@
 #define z22 (4.04369805395214e-003)
 
 
-// #define TEMP_PATH (qApp->applicationDirPath().append("/temp/").append(QString::number(qApp->applicationPid())))
-// #define PATH_OFFLINE_TEMP (TEMP_PATH.append("/tempoff"))
-// #define PATH_OFFLINE_TEMP_HFREQ (TEMP_PATH.append("/tempoffhfreq"))
-// #define PATH_PIX (TEMP_PATH.append("/pixL"))
-// #define PATH_PIX_HFREQ (TEMP_PATH.append("/pixH"))
 #define PING_SIZE_MAX 1024
 #define GPS_ERROR_DISTANCE 5000
 

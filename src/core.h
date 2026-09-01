@@ -13,7 +13,6 @@
 #include "boat_track_control_menu_controller.h"
 #include "bottom_track_control_menu_controller.h"
 #include "isobaths_view_control_menu_controller.h"
-#include "mosaic_view_control_menu_controller.h"
 #include "image_view_control_menu_controller.h"
 #include "tile_manager.h"
 #include "data_horizon.h"
@@ -31,14 +30,13 @@ public:
     Core();
     ~Core();
 
-    Q_PROPERTY(QString   filePath                     READ getFilePath                NOTIFY filePathChanged)
-    Q_PROPERTY(bool      isFileOpening                READ getIsFileOpening           NOTIFY sendIsFileOpening)
-    Q_PROPERTY(bool      isSeparateReading            READ getIsSeparateReading       CONSTANT)
-    Q_PROPERTY(QString   ch1Name                      READ getChannel1Name            NOTIFY channelListUpdated FINAL)
-    Q_PROPERTY(QString   ch2Name                      READ getChannel2Name            NOTIFY channelListUpdated FINAL)
-    Q_PROPERTY(int       currMapLevel                 READ getCurrMapLevel            NOTIFY currentMapLevelChanged)
-    Q_PROPERTY(QObject*  progress   READ progress     WRITE setProgress               NOTIFY progressChanged)
-
+    Q_PROPERTY(QString   filePath            READ getFilePath                NOTIFY filePathChanged)
+    Q_PROPERTY(bool      isFileOpening       READ getIsFileOpening           NOTIFY sendIsFileOpening)
+    Q_PROPERTY(bool      isSeparateReading   READ getIsSeparateReading       CONSTANT)
+    Q_PROPERTY(QString   ch1Name             READ getChannel1Name            NOTIFY channelListUpdated  FINAL)
+    Q_PROPERTY(QString   ch2Name             READ getChannel2Name            NOTIFY channelListUpdated  FINAL)
+    Q_PROPERTY(int       currMapLevel        READ getCurrMapLevel            NOTIFY currentMapLevelChanged)
+    Q_PROPERTY(QObject*  progress            READ progress    WRITE setProgress   NOTIFY progressChanged)
 
     void setEngine(QQmlApplicationEngine *engine);
     Dataset* getDatasetPtr();
@@ -95,10 +93,6 @@ signals:
 
     void drawRealtimeContour(bool isRead);
 
-private:
-    QObject* progress_ = nullptr;
-    QMetaObject::Connection oldTileSetConnection_;
-
 
 private slots:
     void onFileStopsOpening(QVector<float>& depthVec, double minZ, double maxZ);
@@ -128,18 +122,18 @@ private:
     void fixFilePathString(QString& filePath) const;
     void loadLLARefFromSettings();
 
-    std::shared_ptr<BoatTrackControlMenuController>       boatTrackControlMenuController_;
-    std::shared_ptr<BottomTrackControlMenuController>     bottomTrackControlMenuController_;
-    std::shared_ptr<IsobathsViewControlMenuController>    isobathsViewControlMenuController_;
-    std::shared_ptr<MosaicViewControlMenuController>      mosaicViewControlMenuController_;
-    std::shared_ptr<ImageViewControlMenuController>       imageViewControlMenuController_;
-    std::unique_ptr<map::TileManager>                     tileManager_;
+private:
+    std::shared_ptr<BoatTrackControlMenuController>     boatTrackControlMenuController_;
+    std::shared_ptr<BottomTrackControlMenuController>   bottomTrackControlMenuController_;
+    std::shared_ptr<IsobathsViewControlMenuController>  isobathsViewControlMenuController_;
+    std::shared_ptr<ImageViewControlMenuController>     imageViewControlMenuController_;
+    std::unique_ptr<map::TileManager>                   tileManager_;
 
     std::shared_ptr<DeviceManager> deviceManager_;
-    std::shared_ptr<BLEManager>  bleManager_;
-    std::shared_ptr<UdpManager>  udpManager_;
+    std::shared_ptr<BLEManager>    bleManager_;
+    std::shared_ptr<UdpManager>    udpManager_;
     std::shared_ptr<SerialPortManager> serialPortManager_;
-    std::shared_ptr<Locations>   locations_;
+    std::shared_ptr<Locations>     locations_;
 
     DataProcessor* dataProcessor_;
     QThread* dataProcThread_;
@@ -155,11 +149,12 @@ private:
     QString fChName_;
     QString sChName_;
     bool isFileOpening_;
+    QObject* progress_ = nullptr;
+    QMetaObject::Connection oldTileSetConnection_;
 
     int  currMapLevel_ = 0;
     bool isAutoRenderSpan_ = true;
 
     QVector<QMetaObject::Connection> dataProcessorConnections_;
     DataProcessorType dataProcessorState_ = DataProcessorType::kUndefined;
-
 };

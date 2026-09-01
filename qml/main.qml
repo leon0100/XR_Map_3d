@@ -183,7 +183,6 @@ ApplicationWindow  {
         showCancelButton: true
     }
 
-
     function setFullScreenMode(enabled) {
         appSettings.isFullScreen = enabled
         if (enabled) {
@@ -387,14 +386,14 @@ ApplicationWindow  {
 
         //添加键盘快捷键映射
         property var hotkeysMapScan: ({
-            "57":  { "functionName":  "toggleFullScreen",  "parameter": undefined },   // F11
-            "33":  { "functionName":  "updateBottomTrack", "parameter": undefined },   // R
-            "34":  { "functionName":  "updateMosaic",      "parameter": undefined },   // T
-            "35":  { "functionName":  "closeSettings",     "parameter": undefined },   // Esc
-            "100": { "functionName":  "horScrollLeft",     "parameter": 5 },           // Left Arrow
-            "102": { "functionName":  "horScrollRight",    "parameter": 5 },           // Right Arrow
-            "101": { "functionName":  "verScrollUp",       "parameter": 5 },           // Up Arrow
-            "103": { "functionName":  "verScrollDown",     "parameter": 5 },           // Down Arrow
+            "57":  { "functionName":  "toggleFullScreen",  "parameter": undefined },  // F11
+            "33":  { "functionName":  "updateBottomTrack", "parameter": undefined },  // R
+            "34":  { "functionName":  "updateMosaic",      "parameter": undefined },  // T
+            "35":  { "functionName":  "closeSettings",     "parameter": undefined },  // Esc
+            "100": { "functionName":  "horScrollLeft",     "parameter": 5 },          // Left Arrow
+            "102": { "functionName":  "horScrollRight",    "parameter": 5 },          // Right Arrow
+            "101": { "functionName":  "verScrollUp",       "parameter": 5 },          // Up Arrow
+            "103": { "functionName":  "verScrollDown",     "parameter": 5 },          // Down Arrow
         })
 
         Keys.onReleased: function(event) {
@@ -598,7 +597,7 @@ ApplicationWindow  {
                        return visualisationLayout.cornerWindowWidth
                    }
                    // 正常分窗或地图全屏模式
-                    return visualisationLayout.landscapeMode ? visualisationLayout.handlePaneLength : visualisationLayout.width
+                   return visualisationLayout.landscapeMode ? visualisationLayout.handlePaneLength : visualisationLayout.width
                 }
                 height: {
                    if (visualisationLayout.splitMode === 1) {
@@ -632,7 +631,6 @@ ApplicationWindow  {
                     mousearea3D.lastMouseKeyPressed = Qt.NoButton
                     longPressTimer.stop()
                     renderer.longPressTriggered     = false
-                    // renderer.cancelPointerInteraction()
                 }
 
                 // onSendDataZoom: function(zoom) {

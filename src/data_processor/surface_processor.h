@@ -54,10 +54,12 @@ public:
     void setThemeId(int val);
     void setExtraWidth(int val);
     float getEdgeLimit() const;
-    int getExtraWidth() const;
+    int  getExtraWidth() const;
     QVector<IsobathUtils::ColorInterval> getColorIntervals();
 
 private:
+    QVector<QPair<char, int>> filterDensePoints(const QVector<QVector3D>& pts,
+                                const QVector<QPair<char, int>>& indxs, int maxPoints) const;
     void writeTriangleToMesh(const QVector3D& A, const QVector3D& B, const QVector3D& C, QSet<SurfaceTile*>& updatedTiles);
     QVector<QVector3D> generateExpandedPalette(int totalColors) const;
     void updateTexture() const;
@@ -67,8 +69,6 @@ private:
     bool isPointInPolygon(const QVector3D& point) const;
     void smoothTileHeights(SurfaceTile* tile);
     void clipHeightFieldToPolygon();
-
-
 
 
     //从三角网提取边界轮廓
@@ -94,8 +94,7 @@ private:
     float tileResolution_;
     float minZ_;
     float maxZ_;
-    float edgeLimit_;
-    // float surfaceStepSize_;
+    float edgeLimit_ = 40.0f;
     int surfaceLevelCnt_;
     int tileSidePixelSize_;
     int tileHeightMatrixRatio_;

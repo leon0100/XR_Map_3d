@@ -33,26 +33,26 @@ public:
 
         QRectF getSurfaceBounds() const;
 
-        void renderBoundaryVertices(QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
-                const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const;
+        // void renderBoundaryVertices(QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
+        //         const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const;
 
     private:
         friend class SurfaceView;
 
-        QHash<QUuid, SurfaceTile> tiles_; // from dataProcessor
+        QHash<QUuid, SurfaceTile> tiles_;
         GLuint surfaceColorTableTextureId_;
         GLuint mosaicColorTableTextureId_;
         GLenum mosaicColorTableTextureType_;
-        float minZ_;  // from dataprocessor
-        float maxZ_;  // from dataprocessor
-        float surfaceStep_; // from dataprocessor
-        int   colorIntervalsSize_; // from dataprocessor
+        float minZ_;
+        float maxZ_;
+        float surfaceStep_;
+        int   colorIntervalsSize_;
         bool  iVis_;
         bool  mVis_;
 
         // =====边界顶点 =====
-        QVector<QVector<QVector3D>> boundaryGroups_;  // 存储边界顶点
-        QVector<QVector3D> boundaryVertices_;  // 存储边界顶点
+        // QVector<QVector<QVector3D>> boundaryGroups_;  // 存储边界顶点
+        // QVector<QVector3D> boundaryVertices_;  // 存储边界顶点
         bool boundaryVerticesVisible_;  // 是否显示边界顶点
 
         float verticalScale_ = -1.0f;  // 与 renderer 一致的负值 vs，用于补偿水平陆地 Z
@@ -84,7 +84,6 @@ public:
     void saveVerticesToFile(const QString& path);
 
     // ===== 边界顶点相关方法 =====
-    void setBoundaryVertices(const QVector<QVector3D>& vertices);
     void setBoundaryVerticesVisible(bool visible);
     void setVerticalScale(float scale);
     void setGroundVisible(bool visible);
@@ -92,7 +91,6 @@ public:
 public slots: // from dataprocessor
     void clear();
     void setTiles(const QHash<QUuid, SurfaceTile>& tiles, bool useTextures); // TODO: separate (now from mosaic)
-    void setMosaicColorTableTextureTask(const std::vector<uint8_t>& colorTableTextureTask);
     void setMinZ(float minZ);
     void setMaxZ(float maxZ);
     void setSurfaceStep(float surfaceStep);
@@ -106,11 +104,10 @@ private:
 private:
     QMutex mosaicTexTasksMutex_;
 
-    std::vector<uint8_t>                            mosaicColorTableToAppend_;
-    GLuint                                          mosaicColorTableToDelete_;
-    QHash<QUuid, std::vector<uint8_t>>              mosaicTileTextureToAppend_; // по ключу хранится последнее изображение
-    QVector<GLuint>                                 mosaicTileTextureToDelete_;
-    std::vector<uint8_t>                            surfaceColorTableToAppend_;
-    GLuint                                          surfaceColorTableToDelete_;
+    GLuint                                    mosaicColorTableToDelete_;
+    QHash<QUuid, std::vector<uint8_t>>        mosaicTileTextureToAppend_;
+    QVector<GLuint>                           mosaicTileTextureToDelete_;
+    std::vector<uint8_t>                      surfaceColorTableToAppend_;
+    GLuint                                    surfaceColorTableToDelete_;
     LLARef llaRef_;
 };

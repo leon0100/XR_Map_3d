@@ -5,14 +5,12 @@
         <file>CButton.qml</file>
         <file>CSlider.qml</file>
         <file>CProgressButton.qml</file>
-        <file>CProgress.qml</file>
         <file>CCheck.qml</file>
         <file>SpinBoxCustom.qml</file>
         <file>CText.qml</file>
         <file>CTextField.qml</file>
         <file>Scene3DToolbar.qml</file>
         <file>QmlCommon/qmldir</file>
-        <file>QmlCommon/KProgress.qml</file>
         <file>QmlCommon/KRButton.qml</file>
         <file>QmlCommon/KSlider.qml</file>
         <file>QmlCommon/KText.qml</file>
@@ -25,7 +23,6 @@
         <file>MenuFrame.qml</file>
         <file>CheckButton.qml</file>
         <file>MouseOpacityArea.qml</file>
-        <file>MosaicExtraSettings.qml</file>
         <file>ScreetRect.qml</file>
         <file>CMouseArea.qml</file>
         <file>CollapseRectangle.qml</file>
@@ -68,5 +65,6 @@
         <file>QmlCommon/KToolTip.qml</file>
         <file>QmlCommon/AppPalette.qml</file>
         <file>QmlCommon/Tokens.qml</file>
+        <file>QmlCommon/KProgress.qml</file>
     </qresource>
 </RCC>

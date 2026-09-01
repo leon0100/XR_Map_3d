@@ -88,7 +88,7 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
       case DataProcessorType::kUndefined:    clearAllProcessings();                                             break;
       case DataProcessorType::kBottomTrack:  clearBottomTrackProcessing(); emit bottomTrackProcessingCleared(); break;
       case DataProcessorType::kIsobaths:     clearIsobathsProcessing();    emit isobathsProcessingCleared();    break;
-      case DataProcessorType::kMosaic:       clearMosaicProcessing();      emit mosaicProcessingCleared();      break;
+      case DataProcessorType::kMosaic:       clearMosaicProcessing();                                           break;
       case DataProcessorType::kSurface:      clearSurfaceProcessing();     emit surfaceProcessingCleared();     break;
       case DataProcessorType::bletoothTrack: clearAllProcessings();                                             break;
       case DataProcessorType::wifiTrack:     clearAllProcessings();                                             break;
@@ -279,7 +279,6 @@ void DataProcessor::setMosaicChannels(const ChannelId &ch1, uint8_t sub1, const 
 
     emit isobathsProcessingCleared();
     emit surfaceProcessingCleared();
-    emit mosaicProcessingCleared();
 
     QMetaObject::invokeMethod(worker_, "setMosaicChannels", Qt::QueuedConnection,
             Q_ARG(ChannelId, ch1), Q_ARG(uint8_t, sub1), Q_ARG(ChannelId, ch2), Q_ARG(uint8_t, sub2));
@@ -327,7 +326,6 @@ void DataProcessor::setMosaicTileResolution(float val)
 
     emit isobathsProcessingCleared();
     emit surfaceProcessingCleared();
-    emit mosaicProcessingCleared();
 
     for (auto it = epIndxsFromBottomTrack_.cbegin(); it != epIndxsFromBottomTrack_.cend(); ++it) {
         pendingMosaicIndxs_.insert(*it);
@@ -355,11 +353,6 @@ void DataProcessor::setMosaicLowLevel(float val)
 void DataProcessor::setMosaicHighLevel(float val)
 {
     QMetaObject::invokeMethod(worker_, "setMosaicHighLevel", Qt::QueuedConnection, Q_ARG(float, val));
-}
-
-void DataProcessor::askColorTableForMosaic()
-{
-    QMetaObject::invokeMethod(worker_, "askColorTableForMosaic", Qt::QueuedConnection);
 }
 
 void DataProcessor::onIsobathsUpdated()
@@ -489,11 +482,6 @@ void DataProcessor::postLastBottomTrackEpochChanged(const ChannelId &channelId, 
     emit lastBottomTrackEpochChanged(channelId, val, btP, manual, redrawAll);
 }
 
-void DataProcessor::postMosaicColorTable(const std::vector<uint8_t>& t)
-{
-    emit sendMosaicColorTable(t);
-}
-
 void DataProcessor::postIsobathsLineSegments(const QVector<QVector3D>& lineSegments)
 {
     emit sendIsobathsLineSegments(lineSegments);
@@ -521,7 +509,7 @@ void DataProcessor::postIsobathsLabels(const QVector<IsobathUtils::LabelParamete
 
 void DataProcessor::postSurfaceTiles(const TileMap& tiles, bool useTextures)
 {
-    //qDebug() << "   DataProcessor::postSurfaceTiles" << tiles.size();
+    qDebug() << "DataProcessor::postSurfaceTiles" << tiles.size();
     emit sendSurfaceTiles(tiles, useTextures);
     if(datasetPtr_->polygonNEDEmpty()) {
         emit sendPolygonOulineAuto(true);  //使用绘制自动多边形轮廓
@@ -566,10 +554,10 @@ void DataProcessor::postSurfaceStepSize(float lineStepSize)
     emit sendSurfaceStepSize(lineStepSize);
 }
 
-void DataProcessor::postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices)
-{
-    emit surfaceBoundaryVerticesUpdated(vertices);
-}
+// void DataProcessor::postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices)
+// {
+//     emit surfaceBoundaryVerticesUpdated(vertices);
+// }
 
 void DataProcessor::clearBottomTrackProcessing()
 {
@@ -615,7 +603,6 @@ void DataProcessor::clearAllProcessings()
     emit bottomTrackProcessingCleared();
     emit isobathsProcessingCleared();
     emit surfaceProcessingCleared();
-    emit mosaicProcessingCleared();
 }
 
 void DataProcessor::scheduleLatest(WorkSet mask, bool replace, bool clearUnrequestedPending) noexcept

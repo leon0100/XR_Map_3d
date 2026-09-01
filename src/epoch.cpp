@@ -344,7 +344,8 @@ double Epoch::distProccesing(const ChannelId& channelId)
                 }
             }
         }
-    } else if (charts_.contains(channelId)) {
+    }
+    else if (charts_.contains(channelId)) {
         const auto& chart = charts_[channelId];
         for (const auto& ech : chart) {
             double distance = ech.bottomProcessing.getDistance();

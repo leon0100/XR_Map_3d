@@ -10,13 +10,13 @@ SurfaceView::SurfaceView(QObject* parent)
 {}
 
 
-void SurfaceView::setBoundaryVertices(const QVector<QVector3D>& vertices)
-{
-    if (auto* r = RENDER_IMPL(SurfaceView); r) {
-        r->boundaryVertices_ = vertices;
-        Q_EMIT changed();
-    }
-}
+// void SurfaceView::setBoundaryVertices(const QVector<QVector3D>& vertices)
+// {
+//     if (auto* r = RENDER_IMPL(SurfaceView); r) {
+//         r->boundaryVertices_ = vertices;
+//         Q_EMIT changed();
+//     }
+// }
 
 void SurfaceView::setBoundaryVerticesVisible(bool visible)
 {
@@ -143,7 +143,8 @@ QVector<std::pair<QUuid, std::vector<uint8_t>>> SurfaceView::takeMosaicTileTextu
 
 std::vector<uint8_t> SurfaceView::takeMosaicColorTableToAppend()
 {
-    auto retVal = std::move(mosaicColorTableToAppend_);
+    // auto retVal = std::move(mosaicColorTableToAppend_);
+    auto retVal = std::vector<uint8_t>();
     return retVal;
 }
 
@@ -309,16 +310,14 @@ void SurfaceView::clear()
 
 void SurfaceView::setTiles(const QHash<QUuid, SurfaceTile> &tiles, bool useTextures)
 {
-    //qDebug() << "SurfaceView::setTiles" << tiles.size();
+    qDebug() << "SurfaceView::setTiles" << tiles.size();
 
     if (auto* r = RENDER_IMPL(SurfaceView); r) {
         auto& rTRef = r->tiles_;
-
         for (auto itT = tiles.cbegin(); itT != tiles.cend(); ++itT) {
             auto& iKey   = itT.key();
             auto& iValue = itT.value();
-
-            if (auto itRT = rTRef.find(iKey); itRT != rTRef.end()) { //refresh
+            if (auto itRT = rTRef.find(iKey); itRT != rTRef.end()) {
                 auto& itRTVRef = itRT.value();
                 const auto savedTexId = itRTVRef.textureId_;
                 itRTVRef = std::move(iValue);
@@ -335,13 +334,6 @@ void SurfaceView::setTiles(const QHash<QUuid, SurfaceTile> &tiles, bool useTextu
 
         Q_EMIT changed();
     }
-}
-
-void SurfaceView::setMosaicColorTableTextureTask(const std::vector<uint8_t> &colorTableTextureTask)
-{
-    //qDebug() << "SurfaceView::setColorTableTextureTask" << colorTableTextureTask.size();
-    mosaicColorTableToAppend_ = colorTableTextureTask;
-    Q_EMIT changed();
 }
 
 void SurfaceView::setMinZ(float minZ)
@@ -408,7 +400,6 @@ void SurfaceView::updateMosaicTileTextureTask(const QHash<QUuid, SurfaceTile>& n
         return;
     }
     auto* r = RENDER_IMPL(SurfaceView);
-
     if (!r) {
         return;
     }
@@ -490,6 +481,7 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
         sShP->bind();
         sShP->setUniformValue("matrix", mvp);
         int posLoc = sShP->attributeLocation("position");
+
         sShP->enableAttributeArray(posLoc);
         for (auto& itm : tiles_) {
             if (!itm.getIsInited()) {
@@ -544,8 +536,6 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
         ctx->glDisable(GL_STENCIL_TEST);
     }
 
-
-    // tiles TODO OPTIMIZE
     for (auto& itm : tiles_) {
         if (!itm.getIsInited()) {
             continue;
@@ -555,7 +545,6 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
 
         if (mVis_) {
             auto& shP = mShP;
-
             shP->bind();
             shP->setUniformValue("mvp", mvp);
 
@@ -612,72 +601,72 @@ void SurfaceView::SurfaceViewRenderImplementation::render(QOpenGLFunctions *ctx,
         }
     }
 
-    // ===== 渲染边界顶点 =====
+    // ======= 渲染边界顶点 =======
     // renderBoundaryVertices(ctx, mvp,shaderProgramMap);
 }
 
-void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(
-    QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
-    const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const
-{
-    if (boundaryVertices_.isEmpty()) {
-        qDebug() << "renderBoundaryVertices: no boundary vertices";
-        return;
-    }
+// void SurfaceView::SurfaceViewRenderImplementation::renderBoundaryVertices(
+//                             QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
+//                             const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>>& shaderProgramMap) const
+// {
+//     if (boundaryVertices_.isEmpty()) {
+//         qDebug() << "renderBoundaryVertices: no boundary vertices";
+//         return;
+//     }
 
-    qDebug() << "renderBoundaryVertices: vertex count =" << boundaryVertices_.size();
+//     qDebug() << "renderBoundaryVertices: vertex count =" << boundaryVertices_.size();
 
-    // 获取 shader 程序
-    auto shaderProgram = shaderProgramMap.value("static", nullptr);
-    if (!shaderProgram) {
-        qDebug() << "renderBoundaryVertices: shader program is null";
-        return;
-    }
+//     // 获取shader程序
+//     auto shaderProgram = shaderProgramMap.value("static", nullptr);
+//     if (!shaderProgram) {
+//         qDebug() << "renderBoundaryVertices: shader program is null";
+//         return;
+//     }
 
-    // 绑定 shader
-    if (!shaderProgram->bind()) {
-        qDebug() << "renderBoundaryVertices: failed to bind shader";
-        return;
-    }
+//     // 绑定shader
+//     if (!shaderProgram->bind()) {
+//         qDebug() << "renderBoundaryVertices: failed to bind shader";
+//         return;
+//     }
 
-    // 获取属性位置
-    int posLoc    = shaderProgram->attributeLocation("position");
-    int colorLoc  = shaderProgram->uniformLocation("color");
-    int matrixLoc = shaderProgram->uniformLocation("matrix");
+//     // 获取属性位置
+//     int posLoc    = shaderProgram->attributeLocation("position");
+//     int colorLoc  = shaderProgram->uniformLocation("color");
+//     int matrixLoc = shaderProgram->uniformLocation("matrix");
 
-    qDebug() << "renderBoundaryVertices: posLoc =" << posLoc
-             << ", colorLoc =" << colorLoc
-             << ", matrixLoc =" << matrixLoc;
+//     qDebug() << "renderBoundaryVertices: posLoc =" << posLoc
+//              << ", colorLoc =" << colorLoc
+//              << ", matrixLoc =" << matrixLoc;
 
-    shaderProgram->setUniformValue(matrixLoc, mvp);
+//     shaderProgram->setUniformValue(matrixLoc, mvp);
 
-    // 禁用深度测试，启用混合
-    ctx->glDisable(GL_DEPTH_TEST);
-    ctx->glEnable(GL_BLEND);
-    ctx->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//     // 禁用深度测试，启用混合
+//     ctx->glDisable(GL_DEPTH_TEST);
+//     ctx->glEnable(GL_BLEND);
+//     ctx->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // 使用 setAttributeArray 批量设置顶点
-    // glPointSize(15.0f);  // 增大点大小
+//     // 使用 setAttributeArray 批量设置顶点
+//     // glPointSize(15.0f);  // 增大点大小
 
-    // 设置点颜色（红色）
-    QVector4D pointColor(1.0f, 0.0f, 0.0f, 1.0f);
-    shaderProgram->setUniformValue(colorLoc, pointColor);
+//     // 设置点颜色（红色）
+//     QVector4D pointColor(1.0f, 0.0f, 0.0f, 1.0f);
+//     shaderProgram->setUniformValue(colorLoc, pointColor);
 
-    // 启用顶点属性数组并设置数据
-    shaderProgram->enableAttributeArray(posLoc);
-    shaderProgram->setAttributeArray(posLoc, boundaryVertices_.constData());
+//     // 启用顶点属性数组并设置数据
+//     shaderProgram->enableAttributeArray(posLoc);
+//     shaderProgram->setAttributeArray(posLoc, boundaryVertices_.constData());
 
-    // 一次性绘制所有点
-    ctx->glDrawArrays(GL_POINTS, 0, boundaryVertices_.size());
+//     // 一次性绘制所有点
+//     ctx->glDrawArrays(GL_POINTS, 0, boundaryVertices_.size());
 
-    shaderProgram->disableAttributeArray(posLoc);  // 禁用属性数组
+//     shaderProgram->disableAttributeArray(posLoc);  // 禁用属性数组
 
-    qDebug() << "renderBoundaryVertices: drawn" << boundaryVertices_.size() << "points";
+//     qDebug() << "renderBoundaryVertices: drawn" << boundaryVertices_.size() << "points";
 
-    shaderProgram->release();
-    ctx->glDisable(GL_BLEND);
-    ctx->glEnable(GL_DEPTH_TEST);
-}
+//     shaderProgram->release();
+//     ctx->glDisable(GL_BLEND);
+//     ctx->glEnable(GL_DEPTH_TEST);
+// }
 
 
 float SurfaceView::SurfaceViewRenderImplementation::getMaxZ()

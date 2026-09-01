@@ -8,14 +8,13 @@
 #include <QTimer>
 #include <QDataStream>
 #include <QMutexLocker>
+
+
 #include "console.h"
 
 
 
-
-
-DiskSonarCache::DiskSonarCache(const QString& filePath)
-    : filePath_(filePath)
+DiskSonarCache::DiskSonarCache(const QString& filePath) : filePath_(filePath)
 {
     // qDebug() << "filePath....." << filePath;
 }
@@ -176,9 +175,12 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
         QStringList columns = row.split(",");
 
         Position pos;
-        pos.lla.latitude  = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-        pos.lla.longitude = columns[3].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
-        pos.lla.altitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        // pos.lla.latitude  = columns[4].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        // pos.lla.longitude = columns[3].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        // pos.lla.altitude  = columns[5].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        pos.lla.latitude  = columns[1].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        pos.lla.longitude = columns[0].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
+        pos.lla.altitude  = columns[2].replace(QLatin1Char(','), QLatin1Char('.')).toDouble();
         track.append(pos);
 
         minZ_ = std::min(minZ_, pos.lla.altitude);
@@ -486,8 +488,8 @@ void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, 
     {
         QByteArray tslDataTemp = tslByteList.at(i);
 
-        quint8 chk=0;
-        for(int i=3;i<tslDataTemp.count()-1;i++) {
+        quint8 chk = 0;
+        for(int i = 3; i < tslDataTemp.count()-1; i++) {
             chk ^= tslDataTemp.at(i);
         }
 
@@ -498,13 +500,13 @@ void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, 
         tsl_w tslSingleStruct;
         memcpy((void*)&tslSingleStruct, tslDataTemp, idx);
         tslSingleStruct.boat.longitude = dm_to_dd((double)tslSingleStruct.boat.longitude/100000.0f)*100000;
-        tslSingleStruct.boat.latitude = dm_to_dd((double)tslSingleStruct.boat.latitude/100000.0f)*100000;
+        tslSingleStruct.boat.latitude  = dm_to_dd((double)tslSingleStruct.boat.latitude/100000.0f)*100000;
         LLA lla;
         lla.latitude  = tslSingleStruct.boat.latitude  / 100000.0f;
         lla.longitude = tslSingleStruct.boat.longitude / 100000.0f;
-        double distance = GpsCal_GaussPC_DST((double)tslSingleStruct.boat.longitude/100000.0f, (double)tslSingleStruct.boat.latitude/100000.0f, last_lon, last_lat);
-        if((lla.latitude < 0.000001f && lla.longitude < 0.000001f) || (distance > GPS_ERROR_DISTANCE))
-        {
+        double distance = GpsCal_GaussPC_DST((double)tslSingleStruct.boat.longitude/100000.0f,
+                                    (double)tslSingleStruct.boat.latitude/100000.0f, last_lon, last_lat);
+        if((lla.latitude < 0.000001f && lla.longitude < 0.000001f) || (distance > GPS_ERROR_DISTANCE)) {
             if(flag_haveReportAbnormalGPS == false) {
                 flag_haveReportAbnormalGPS = true;
                 flag_deleteAbnormalGPS = GIF->dialogYesNoSync(tr("Delete abnormal GPS coordinates?"));
@@ -572,7 +574,8 @@ void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, 
         QTimer::singleShot(2000, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
-            }});
+            }
+        });
     }
 
 }
@@ -978,9 +981,7 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
             QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
         }
-
     }
-
 
     QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
     if(fileIndex == (fileCnt - 1)) {
@@ -990,7 +991,8 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
         QTimer::singleShot(2000, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
-        }});
+            }
+        });
     }
 
 }

@@ -334,11 +334,12 @@ void Dataset::triggerRenderUpdate()
 
 void Dataset::preallocatePool(int capacity)
 {
-    if (capacity <= 0) return;
+    if(capacity <= 0) {
+        return;
+    }
     QWriteLocker wl(&poolMtx_);
     pool_.reserve(capacity);
 }
-
 
 void Dataset::removeFrames(int startIndex, int endIndex)
 {

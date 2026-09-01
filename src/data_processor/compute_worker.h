@@ -51,7 +51,6 @@ public slots:
     void setMosaicLowLevel(float v);
     void setMosaicHighLevel(float v);
     void setMosaicTileResolution(float res);
-    void askColorTableForMosaic();
     void setMinZ(float v);
     void setMaxZ(float v);
 

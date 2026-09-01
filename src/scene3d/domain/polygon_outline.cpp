@@ -199,6 +199,8 @@ void PolygonOutline::autoGenerateBoundary(bool generate)
     datasetPtr_->resetPolygonOutline();
     clearData();
 
+    qDebug() << "PolygonOutline::autoGenerateBoundary";
+
     if(generate) {
         QVector<QVector3D>& boundary = datasetPtr_->getAutoBounadry();
         for (const auto& pt : boundary) {

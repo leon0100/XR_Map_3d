@@ -8,7 +8,11 @@ SurfaceTile::SurfaceTile() :
     origin_(QVector3D(-1.0f, -1.0f, -1.0f)),
     textureId_(0),
     isUpdated_(false),
-    isInited_(false)
+    isInited_(false),
+    sidePixelSize_(0),
+    heightMatrixRatio_(0),
+    resolution_(0.0f),
+    headIndx_(-1)
 {}
 
 SurfaceTile::SurfaceTile(QVector3D origin) :
@@ -16,13 +20,19 @@ SurfaceTile::SurfaceTile(QVector3D origin) :
     origin_(origin),
     textureId_(0),
     isUpdated_(false),
-    isInited_(false)
+    isInited_(false),
+    sidePixelSize_(0),
+    heightMatrixRatio_(0),
+    resolution_(0.0f),
+    headIndx_(-1)
 {}
 
 void SurfaceTile::init(int sidePixelSize, int heightMatrixRatio, float resolution)
 {
-    // image data
-    imageData_.resize(sidePixelSize * sidePixelSize, 0);
+    // imageData_.resize(sidePixelSize * sidePixelSize, 0);
+    sidePixelSize_     = sidePixelSize;
+    heightMatrixRatio_ = heightMatrixRatio;
+    resolution_        = resolution;
 
     // height vertices
     int heightMatSideSize = heightMatrixRatio + 1;
@@ -41,6 +51,8 @@ void SurfaceTile::init(int sidePixelSize, int heightMatrixRatio, float resolutio
     }
 
     // texture vertices
+    textureVertices_.clear();
+    textureVertices_.reserve(heightMatSideSize * heightMatSideSize);
     for (int i = 0; i < heightMatSideSize; ++i) {
         for (int j = 0; j < heightMatSideSize; ++j) {
             textureVertices_.append(QVector2D(float(j) / (heightMatSideSize - 1), float(i) / (heightMatSideSize - 1)));
@@ -175,6 +187,9 @@ int SurfaceTile::getIsUpdated() const
 
 std::vector<uint8_t>& SurfaceTile::getMosaicImageDataRef()
 {
+    if (imageData_.empty() && sidePixelSize_ > 0) {
+        imageData_.resize(sidePixelSize_ * sidePixelSize_, 0);
+    }
     return imageData_;
 }
 
