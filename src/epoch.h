@@ -120,9 +120,8 @@ public:
     }
 
     bool operator==(const Epoch& other) const {
-        return _eventId == other._eventId &&
-               _eventTimestamp_us == other._eventTimestamp_us &&
-               _eventUnix == other._eventUnix;
+        return _eventId == other._eventId && _eventTimestamp_us == other._eventTimestamp_us
+                            && _eventUnix == other._eventUnix;
     }
 
     bool operator!=(const Epoch& other) const {
@@ -133,7 +132,7 @@ public:
     void setChart(const ChannelId& channelId, const QVector<QVector<uint8_t>>& chartData, float resolution, float offset);
     void setChartBySubChannelId(const ChannelId& channelId, uint8_t subChannelId, const QVector<uint8_t>& chartData, float resolution, float offset);
 
-    void setRecParameters(const ChannelId& channelId, const RecordParameters& recParams);
+    // void setRecParameters(const ChannelId& channelId, const RecordParameters& recParams);
     void setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams);
     void setChartParameters2(const ChannelId& channelId, const ChartParameters& chartParams);
     void setPositionLLA(double lat, double lon, LLARef* ref = NULL, uint32_t unix_time = 0, int32_t nanosec = 0);

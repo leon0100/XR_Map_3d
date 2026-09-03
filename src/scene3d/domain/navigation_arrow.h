@@ -33,7 +33,6 @@ public:
 
 
 private:
-    /*methods*/
     QVector<QVector3D> makeArrowVertices() const;
     QVector<QVector3D> makeArrowRibs() const;
 

@@ -12,25 +12,7 @@
 #include "bottom_track.h"
 #include "point_3d.h"
 
-enum class EdgeDirection { Top, Bottom, Left, Right };
-
-// 边界链（一组相邻的边界顶点）
-struct BoundaryChain {
-    QVector<QVector3D> vertices;  // 有序的边界顶点
-    bool isClosed = false;        // 是否是封闭的环
-
-    void addVertex(const QVector3D& v) {
-        vertices.append(v);
-    }
-
-    int size() const {
-        return vertices.size();
-    }
-
-    bool isEmpty() const {
-        return vertices.isEmpty();
-    }
-};
+// enum class EdgeDirection { Top, Bottom, Left, Right };
 
 class BottomTrack;
 class DataProcessor;
@@ -52,9 +34,7 @@ public:
     void rebuildColorIntervals();
     void setSurfaceLevelCnt(int cnt);
     void setThemeId(int val);
-    void setExtraWidth(int val);
     float getEdgeLimit() const;
-    int  getExtraWidth() const;
     QVector<IsobathUtils::ColorInterval> getColorIntervals();
 
 private:
@@ -100,7 +80,7 @@ private:
     int tileHeightMatrixRatio_;
     int themeId_;
     int cellPx_;
-    int extraWidth_;
+    // int extraWidth_;
     bool originSet_;
     QSet<TileKey> visibleTileKeys_;
 

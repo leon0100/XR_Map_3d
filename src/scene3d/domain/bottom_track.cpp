@@ -184,42 +184,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     Q_EMIT epochListChanged();
 }
 
-QVector3D BottomTrack::convertLLAToNED(const LLA& lla) {
-    // 这里需要实现 LLA（经纬度高度）到 NED（北东地）坐标系的转换
-    // 具体实现取决于项目的坐标系统设置
-    // 以下是一个简化的示例实现：
-
-    // 假设参考点（原点）
-    static const LLA originLLA(0.0, 0.0, 0.0);
-
-    // 计算距离和方位角
-    double distance = calculateDistance(originLLA, lla);
-    double azimuth = calculateAzimuth(originLLA, lla);
-
-    // 转换为 NED 坐标
-    double north = distance * cos(azimuth);
-    double east = distance * sin(azimuth);
-    double down = -lla.altitude; // 高度取负值作为深度
-
-    return QVector3D(north, east, down);
-}
-
-double BottomTrack::calculateDistance(const LLA& lla1, const LLA& lla2) {
-    // 实现两点之间的距离计算（如 Haversine 公式）
-    // 简化示例
-    return sqrt(pow(lla1.latitude - lla2.latitude, 2) + pow(lla1.longitude - lla2.longitude, 2)) * 111000; // 粗略估算
-}
-
-double BottomTrack::calculateAzimuth(const LLA& lla1, const LLA& lla2) {
-    // 实现方位角计算
-    // 简化示例
-    double dLon = lla2.longitude - lla1.longitude;
-    double dLat = lla2.latitude - lla1.latitude;
-    return atan2(dLon, dLat);
-}
-
-
-
 void BottomTrack::setData(const QVector<QVector3D> &data, int primitiveType)
 {
     qDebug() << "BottomTrack::setData................";
@@ -258,7 +222,6 @@ void BottomTrack::selectEpoch(int epochIndex, const ChannelId& channelId)
     if (m_view->m_mode != GraphicsScene3dView::BottomTrackVertexSelectionMode)
         return;
 
-
     if (!datasetPtr_->isContainsChannelInChannelSetup(channelId) || channelId != visibleChannel_.channelId_)
         return;
 
@@ -270,15 +233,12 @@ void BottomTrack::selectEpoch(int epochIndex, const ChannelId& channelId)
 
     auto indxFromMap = vertex2Epoch_.key(epochIndex);
 
-    if (!epoch ||
-        !nedPos.isCoordinatesValid() ||
-        (epochIndex && !indxFromMap)) {
+    if (!epoch || !nedPos.isCoordinatesValid() || (epochIndex && !indxFromMap)) {
         //qDebug() << "invalid pos on bottom track" << epochIndex << indxFromMap;
         return;
     }
 
     auto r = RENDER_IMPL(BottomTrack);
-
     r->selectedVertexIndices_.clear();
     r->selectedVertexIndices_.append(indxFromMap);
 
@@ -314,17 +274,17 @@ void BottomTrack::mouseMoveEvent(Qt::MouseButtons buttons, qreal x, qreal y)
         }
     }
 
-    if(m_view->m_mode == GraphicsScene3dView::BottomTrackVertexComboSelectionMode) {
-        RENDER_IMPL(BottomTrack)->selectedVertexIndices_.clear();
-        for (int i = 0; i < RENDER_IMPL(BottomTrack)->m_data.size(); i++) {
-            auto p = RENDER_IMPL(BottomTrack)->m_data.at(i);
-            auto p_screen = p.project(m_view->camera().lock()->viewMatrix()*m_view->m_model,
-                            m_view->m_projection, m_view->boundingRect().toRect());
+    // if(m_view->m_mode == GraphicsScene3dView::BottomTrackVertexComboSelectionMode) {
+    //     RENDER_IMPL(BottomTrack)->selectedVertexIndices_.clear();
+    //     for (int i = 0; i < RENDER_IMPL(BottomTrack)->m_data.size(); i++) {
+    //         auto p = RENDER_IMPL(BottomTrack)->m_data.at(i);
+    //         auto p_screen = p.project(m_view->camera().lock()->viewMatrix()*m_view->m_model,
+    //                         m_view->m_projection, m_view->boundingRect().toRect());
 
-            if (m_view->m_comboSelectionRect.contains(p_screen.x(), p_screen.y()))
-                RENDER_IMPL(BottomTrack)->selectedVertexIndices_.append(i);
-        }
-    }
+    //         // if (m_view->m_comboSelectionRect.contains(p_screen.x(), p_screen.y()))
+    //         //     RENDER_IMPL(BottomTrack)->selectedVertexIndices_.append(i);
+    //     }
+    // }
 }
 
 void BottomTrack::mousePressEvent(Qt::MouseButtons buttons, qreal x, qreal y)

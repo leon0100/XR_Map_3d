@@ -17,7 +17,7 @@ public:
 
     void clear();
     void setSurfaceMeshPtr(SurfaceMesh* surfaceMeshPtr);
-    void onUpdatedBottomTrackData();
+    void fullRebuildLinesLabels();
 
     void  setMinZ(float v);
     void  setMaxZ(float v);
@@ -27,8 +27,6 @@ public:
 
 
 private:
-    void fullRebuildLinesLabels();
-
     void buildPolylines(const IsobathsSegVec& segs, IsobathsPolylines& p) const;
     void edgeIntersection(const QVector3D& u,const QVector3D& v,float L, QVector<QVector3D>& out) const;
     void filterNearbyLabels(const QVector<LabelParameters>& in, QVector<LabelParameters>& out) const;

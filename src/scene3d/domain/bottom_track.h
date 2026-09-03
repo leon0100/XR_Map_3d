@@ -77,10 +77,6 @@ private:
     QVector<QPair<int, int>> getSubarrays(const QVector<int>& sequenceVector); // TODO: to utils
     void clearCache();
 
-    QVector3D convertLLAToNED(const LLA& lla);
-    double calculateDistance(const LLA& lla1, const LLA& lla2);
-    double calculateAzimuth(const LLA& lla1, const LLA& lla2);
-
     using EpochIndex = int;
     using VerticeIndex = int;
 

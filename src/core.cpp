@@ -112,16 +112,10 @@ void Core::setTimelinePosition(double position)
             if(Epoch* ep = datasetPtr_->fromIndex(epochIndex); ep) {
                 const Position boatPos = ep->getPositionGNSS();
                 if(boatPos.ned.isCoordinatesValid()) {
-                    float yawDeg = ep->yaw();
-                    if(!std::isfinite(yawDeg)) {
-                        yawDeg = datasetPtr_->getLastYaw();
-                    }
-                    if(std::isfinite(yawDeg)) {
-                        navArrow->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e,
-                                   !std::isfinite(boatPos.ned.d) ? 0.0f : boatPos.ned.d), yawDeg - 90.0f);
-                        if(navArrow->isVisible()) {
-                            scene3dViewPtr_->ensureInView(QVector3D(boatPos.ned.n, boatPos.ned.e, 0.0f));
-                        }
+                    navArrow->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e,
+                               !std::isfinite(boatPos.ned.d) ? 0.0f : boatPos.ned.d), -90.0f);
+                    if(navArrow->isVisible()) {
+                        scene3dViewPtr_->ensureInView(QVector3D(boatPos.ned.n, boatPos.ned.e, 0.0f));
                     }
                 }
             }
@@ -152,12 +146,11 @@ void Core::UILoad(QObject* object, const QUrl& url)
 #endif
 
     scene3dViewPtr_ = object->findChild<GraphicsScene3dView*>();
-    plot2dList_ = object->findChildren<qPlot2D*>();
     scene3dViewPtr_->setDataset(datasetPtr_);
-    locations_->setDataset(datasetPtr_);
     scene3dViewPtr_->setDataProcessorPtr(dataProcessor_);
-    datasetPtr_->setScene3D(scene3dViewPtr_);
     scene3dViewPtr_->setProgressDialog(progress_);
+    plot2dList_ = object->findChildren<qPlot2D*>();
+    locations_->setDataset(datasetPtr_);
 
     for (int i = 0; i < plot2dList_.size(); i++) {
         if (plot2dList_.at(i) != NULL) {
@@ -310,15 +303,14 @@ QVariant Core::getConvertedMousePos(int indx, int mouseX, int mouseY)
         return retVal;
     }
 
-    auto& firstPlot =  plot2dList_.at(currIndx);
+    auto& firstPlot  =  plot2dList_.at(currIndx);
     auto& secondPlot =  plot2dList_.at(secIndx);
 
     bool isCurrHor = firstPlot->isHorizontal();
     bool isSecHor  = secondPlot->isHorizontal();
 
-    const float currDepth = firstPlot->getDepthByMousePos(mouseX, mouseY, isCurrHor);
+    const float currDepth   = firstPlot->getDepthByMousePos(mouseX, mouseY, isCurrHor);
     const int currEpochIndx = firstPlot->getEpochIndxByMousePos(mouseX, mouseY, isCurrHor);
-
     if (currEpochIndx == -1) {
         retVal["x"] = mouseX;
         retVal["y"] = mouseY;
@@ -326,10 +318,8 @@ QVariant Core::getConvertedMousePos(int indx, int mouseX, int mouseY)
     }
 
     const auto mousePos = secondPlot->getMousePosByDepthAndEpochIndx(currDepth, currEpochIndx, isSecHor);
-
     retVal["x"] = mousePos.x();
     retVal["y"] = mousePos.y();
-
     return retVal;
 }
 
@@ -754,19 +744,24 @@ void Core::location(uint8_t type)
 void Core::onFileStopsOpening(QVector<float>& depthVec, double minZ, double maxZ)
 {
     if(isAutoRenderSpan_) {
-        int vecSize = depthVec.size();
-        if(vecSize > 200 && vecSize <= 400) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-        }
-        else if(vecSize > 400 && vecSize <= 600) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-        }
-        else if(vecSize > 600 && vecSize <= 800) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(50);
-        }
-        else if(vecSize > 800) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(40);
-        }
+        // int vecSize = depthVec.size();
+        // if(vecSize > 200 && vecSize <= 400) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(80);
+        // }
+        // else if(vecSize > 400 && vecSize <= 600) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(60);
+        // }
+        // else if(vecSize > 600 && vecSize <= 800) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(50);
+        // }
+        // else if(vecSize > 800) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(1200);
+        // }
+        float bboxW = datasetPtr_->maxX_ - datasetPtr_->minX_;
+        float bboxH = datasetPtr_->maxY_ - datasetPtr_->minY_;
+        int newLimit = sqrt(bboxW * bboxW + bboxH * bboxH) / 8;
+        qDebug() << "newLimit......" << newLimit;
+        isobathsViewControlMenuController_->setEdgeLimitChanged(newLimit);
     }
     // qDebug() << "onFileStopsOpening.............." << minZ << "    " << maxZ;
     datasetPtr_->vec_CSV_ += depthVec;
@@ -1084,7 +1079,6 @@ void Core::createScene3dConnections()
     QObject::connect(dataHorizon_.get(), &DataHorizon::positionAdded, scene3dViewPtr_, &GraphicsScene3dView::onPositionAdded);
     QObject::connect(scene3dViewPtr_->bottomTrack().get(), &BottomTrack::updatedPoints, dataHorizon_.get(), &DataHorizon::onAddedBottomTrack3D);
 
-    // res work proc
     auto connType = Qt::QueuedConnection;
     // Surface
     QObject::connect(dataProcessor_, &DataProcessor::sendSurfaceTextureTask,        scene3dViewPtr_->getSurfaceViewPtr().get(),     &SurfaceView::setTextureTask,           connType);

@@ -8,7 +8,6 @@
 
 class SurfaceMesh {
 public:
-    /*methods*/
     SurfaceMesh(int tileSidePixelSize, int tileHeightMatrixRatio, float tileResolution);
     ~SurfaceMesh();
 
@@ -27,6 +26,7 @@ public:
     int                                     getPixelWidth() const;
     int                                     getPixelHeight() const;
     int                                     getTileSidePixelSize() const;
+    float                                   getTileResolution() const;
     int                                     getNumWidthTiles() const;
     int                                     getNumHeightTiles() const;
     int                                     getStepSizeHeightMatrix() const;
@@ -35,7 +35,6 @@ public:
 
 
 private:
-    /*methods*/
     void initializeMatrix(int numWidthTiles, int numHeightTiles, const kmath::MatrixParams& matrixParams);
     void resizeColumnsRight(int columnsToAdd);
     void resizeRowsTop(int rowsToAdd);
@@ -44,7 +43,6 @@ private:
     float getWidthMeters() const;
     float getHeightMeters() const;
 
-    /*data*/
     std::vector<SurfaceTile*> tiles_;
     std::vector<std::vector<SurfaceTile*>> tileMatrix_;
     QVector3D origin_;

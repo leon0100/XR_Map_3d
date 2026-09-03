@@ -53,7 +53,7 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     pendingWorkTimer_.setInterval(10);
     connect(&pendingWorkTimer_, &QTimer::timeout, this, &DataProcessor::runCoalescedWork);
 
-    connect(worker_, &ComputeWorker::jobFinished,          this, &DataProcessor::onWorkerFinished,      Qt::QueuedConnection);
+    connect(worker_, &ComputeWorker::jobFinished, this, &DataProcessor::onWorkerFinished,  Qt::QueuedConnection);
 
     computeThread_.setObjectName("ComputeWorkerThread");
     computeThread_.start();
@@ -242,10 +242,10 @@ void DataProcessor::setSurfaceEdgeLimit(int val)
     scheduleLatest(WorkSet(WF_All), true);
 }
 
-void DataProcessor::setExtraWidth(int val)
-{
-    QMetaObject::invokeMethod(worker_, "setSurfaceExtraWidth", Qt::QueuedConnection, Q_ARG(int, val));
-}
+// void DataProcessor::setExtraWidth(int val)
+// {
+//     QMetaObject::invokeMethod(worker_, "setSurfaceExtraWidth", Qt::QueuedConnection, Q_ARG(int, val));
+// }
 
 void DataProcessor::setSurfaceIsobathsLevelCnt(int cnt)
 {
@@ -509,34 +509,25 @@ void DataProcessor::postIsobathsLabels(const QVector<IsobathUtils::LabelParamete
 
 void DataProcessor::postSurfaceTiles(const TileMap& tiles, bool useTextures)
 {
-    qDebug() << "DataProcessor::postSurfaceTiles" << tiles.size();
+    // qDebug() << "DataProcessor::postSurfaceTiles" << tiles.size();
     emit sendSurfaceTiles(tiles, useTextures);
     if(datasetPtr_->polygonNEDEmpty()) {
         emit sendPolygonOulineAuto(true);  //使用绘制自动多边形轮廓
     }
 }
 
-
 void DataProcessor::postMinZ(float val)
 {
     // qDebug() << "DataProcessor::postMinZ " << val;
     QMetaObject::invokeMethod(worker_, "setMinZ", Qt::QueuedConnection, Q_ARG(float, val));
-
-    emit sendSurfaceMinZ(val); // to surface view
-
-    // pendingIsobathsWork_ = true;
-    // scheduleLatest(WorkSet(WF_Isobaths));
+    emit sendSurfaceMinZ(val);
 }
 
 void DataProcessor::postMaxZ(float val)
 {
     // qDebug() << "DataProcessor::postMaxZ " << val;
     QMetaObject::invokeMethod(worker_, "setMaxZ", Qt::QueuedConnection, Q_ARG(float, val));
-
-    emit sendSurfaceMaxZ(val); // to surface view
-
-    // pendingIsobathsWork_ = true;
-    // scheduleLatest(WorkSet(WF_Isobaths));
+    emit sendSurfaceMaxZ(val);
 }
 
 void DataProcessor::postSurfaceColorTable(const std::vector<uint8_t> &t)
@@ -553,11 +544,6 @@ void DataProcessor::postSurfaceStepSize(float lineStepSize)
 {
     emit sendSurfaceStepSize(lineStepSize);
 }
-
-// void DataProcessor::postSurfaceBoundaryVertices(const QVector<QVector3D>& vertices)
-// {
-//     emit surfaceBoundaryVerticesUpdated(vertices);
-// }
 
 void DataProcessor::clearBottomTrackProcessing()
 {

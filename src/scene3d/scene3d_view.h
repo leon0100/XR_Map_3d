@@ -3,7 +3,6 @@
 
 #include <QQuickFramebufferObject>
 #include <QtMath>
-// #include <QQmlApplicationEngine>
 #include "coordinate_axes.h"
 #include "plane_grid.h"
 #include "ray_caster.h"
@@ -16,7 +15,6 @@
 #include "point_group.h"
 #include "ray.h"
 #include "navigation_arrow.h"
-// #include "usbl_view.h"
 #include "isobaths_view.h"
 #include "data_processor.h"
 #include "screetShot.h"
@@ -84,7 +82,7 @@ public:
         bool  getIsFarAwayFromOriginLla() const;
         map::CameraTilt getCameraTilt() const;
         QVector3D getEyePosition() const;
-        LLARef viewLlaRef_ = LLARef(yerevanLla);
+        LLARef viewLlaRef_ = LLARef(startupInitLla);
 
     private:
         void updateCameraParams();
@@ -117,27 +115,16 @@ public:
         qreal m_fov = 45.f;
         float m_distToFocusPoint = 50.f;
         float distForMapView_ = m_distToFocusPoint;
-        qreal m_sensivity = 4.f;
+        qreal m_sensivity = 4.0f;
         float distToGround_ = 0.0f;
         float angleToGround_ = 0.0f;
         bool  isPerspective_ = false;
         float highDistThreshold_ = 5000.0f;
         float lowDistThreshold_ = highDistThreshold_ * 0.9f;
         QVector2D m_rotAngle;
-        GraphicsScene3dView* viewPtr_;
+        GraphicsScene3dView* viewPtr_ = nullptr;
         LLARef datasetLlaRef_;
-        LLA yerevanLla = LLA(32.262781f, 118.702785f, 0.0f);
-
-
-        // // 偏航滤波器
-        // float navYawFilteredRad_        = 0.f;
-        // bool  navYawInited_             = false;
-        // QElapsedTimer navYawTmr_;
-        // float navYawTauSec_             = 1.2;
-        // float navYawDeadbandRad_        = qDegreesToRadians(2.0f);
-        // float navYawMaxRateRadPerSec_   = qDegreesToRadians(90.0f);
-        // float navYawSnapRad_            = qDegreesToRadians(120.0f);
-
+        LLA startupInitLla = LLA(32.262781f, 118.702785f, 0.0f);
     };
 
     //Renderer
@@ -195,17 +182,17 @@ public:
         MeasuringRouteCreationMode          = 8
     };
 
-    /**
+    /*
      * @brief Constructor
      */
     GraphicsScene3dView();
 
-    /**
+    /*
      * @brief Destructor
      */
     virtual ~GraphicsScene3dView();
 
-    /**
+    /*
      * @brief Creates renderer
      * @return renderer
      */
@@ -219,7 +206,6 @@ public:
     std::shared_ptr<MapView>         getMapViewPtr() const;
     std::shared_ptr<PointGroup>      pointGroup() const;
     std::shared_ptr<PolygonGroup>    polygonGroup() const;
-    // std::shared_ptr<UsblView>        getUsblViewPtr() const;
     std::shared_ptr<NavigationArrow> getNavigationArrowPtr() const;
     std::weak_ptr<Camera>            camera() const;
     float verticalScale() const;
@@ -239,7 +225,6 @@ public:
     void ensureInView(const QVector3D& worldPos);
     void focusTrackBounds();
 
-    // Q_INVOKABLE void switchToBottomTrackVertexComboSelectionMode(qreal x, qreal y);
     Q_INVOKABLE void mousePressTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);
     Q_INVOKABLE void mouseDoubleClickTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);
     Q_INVOKABLE void mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey = Qt::Key::Key_unknown);
@@ -250,12 +235,12 @@ public:
     Q_INVOKABLE void bottomTrackActionEvent(BottomTrack::ActionEvent actionEvent);
     Q_INVOKABLE void zoomInOut(bool zoomIn);
     Q_INVOKABLE void completeDrawOutline();
+    Q_INVOKABLE void setDistMeasureMode(bool isDist);
+    Q_INVOKABLE void setLandMarkMode(bool mark);
 
-    // void setTrackLastData(bool state);
+
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
     void setGridVisibility(bool state);
-    // void setUseAngleLocation(bool state);
-    // void setNavigatorViewLocation(bool state);
 
 
 protected:
@@ -267,8 +252,7 @@ public Q_SLOTS:
     void fitAllInView();
     void setIsometricView();
     void setCancelZoomView();
-    void setMapView();//将3D视图切换到地图视图模式，也就是正交投影、俯视角度
-    // void setLastEpochFocusView(bool useAngle, bool useNavigatorView);
+    void setMapView(); //将3D视图切换到地图视图模式，也就是正交投影、俯视角度
     void setIdleMode();
     void setVerticalScale(float scale);
     void shiftCameraZAxis(float shift);
@@ -305,7 +289,7 @@ signals:
 private:
     void updateBounds();
     void updatePlaneGrid();
-    void clearComboSelectionRect();
+    // void clearComboSelectionRect();
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
     QVector3D calculateToWorldCoor(qreal x, qreal y);
     void updateDistance();
@@ -332,14 +316,13 @@ private:
     std::shared_ptr<PlaneGrid>    m_planeGrid; //辅助网格
     std::shared_ptr<SceneObject>  m_vertexSynchroCursour;
     std::shared_ptr<NavigationArrow> navigationArrow_;
-    // std::shared_ptr<UsblView>     usblView_;
 
     QMatrix4x4 m_model;
     QMatrix4x4 m_projection;
     Cube m_bounds;
     ActiveMode m_mode    = ActiveMode::BottomTrackVertexSelectionMode;
     ActiveMode lastMode_ = ActiveMode::BottomTrackVertexSelectionMode;
-    QRect m_comboSelectionRect = { 0, 0, 0, 0 };
+    // QRect m_comboSelectionRect = { 0, 0, 0, 0 };
     Ray m_ray;
     float m_verticalScale = -1.0f;
     bool m_isSceneBoundingBoxVisible = true;
@@ -360,12 +343,10 @@ private:
     bool wasMoved_;
     Qt::MouseButtons wasMovedMouseButton_;
     QObject* qmlRootObject_;
-    // bool switchedToBottomTrackVertexComboSelectionMode_;
     bool needToResetStartPos_;
     float lastCameraDist_;
     bool gridVisibility_;
     bool isNorth_;
-    QTimer* testingTimer_;
 
     double currentLat_ = 0.0;
     double currentLon_ = 0.0;
@@ -393,13 +374,6 @@ public:  //截图模块
     QObject* progressDialog_ = nullptr;
     float originCameraDist_;
     QVector3D originCameralookAt_;
-
-
-public: //测距模块
-    Q_INVOKABLE void setDistMeasureMode(bool isDist);
-    Q_INVOKABLE void setLandMarkMode(bool mark);
-
-
 };
 
 #endif // GRAPHICSSCENE3DVIEW_H

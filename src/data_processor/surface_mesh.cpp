@@ -20,9 +20,9 @@ void SurfaceMesh::reinit(int tileSidePixelSize, int tileHeightMatrixRatio, float
 {
     clear();
 
-    tileSidePixelSize_ = tileSidePixelSize;
+    tileSidePixelSize_     = tileSidePixelSize;
     tileHeightMatrixRatio_ = tileHeightMatrixRatio;
-    tileResolution_ = tileResolution;
+    tileResolution_        = tileResolution;
 
     tileSideMeterSize_ = tileSidePixelSize_ * tileResolution_;
 }
@@ -189,6 +189,11 @@ int SurfaceMesh::getTileSidePixelSize() const
     return tileSidePixelSize_;
 }
 
+float SurfaceMesh::getTileResolution() const
+{
+    return tileResolution_;
+}
+
 int SurfaceMesh::getNumWidthTiles() const
 {
     return numWidthTiles_;
@@ -213,7 +218,6 @@ bool SurfaceMesh::getIsInited() const
 {
     return !tiles_.empty();
 }
-
 
 void SurfaceMesh::initializeMatrix(int numWidthTiles, int numHeightTiles, const kmath::MatrixParams &matrixParams)
 {

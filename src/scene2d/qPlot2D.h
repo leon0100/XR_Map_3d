@@ -15,13 +15,6 @@ public:
     Q_PROPERTY(bool horizontal          READ isHorizontal        WRITE setHorizontal)
     Q_PROPERTY(float timelinePosition   READ timelinePosition    WRITE setTimelinePosition NOTIFY timelinePositionChanged)
     Q_PROPERTY(bool isEnabled           READ getPlotEnabled      WRITE setPlotEnabled)
-    // Q_PROPERTY(QString contactInfo      READ getContactInfo      WRITE setContactInfo      NOTIFY contactChanged)
-    // Q_PROPERTY(bool    contactVisible   READ getContactVisible   WRITE setContactVisible   NOTIFY contactChanged)
-    // Q_PROPERTY(int     contactPositionX READ getContactPositionX                           NOTIFY contactChanged)
-    // Q_PROPERTY(int     contactPositionY READ getContactPositionY                           NOTIFY contactChanged)
-    // Q_PROPERTY(int     contactIndx      READ getContactIndx                                NOTIFY contactChanged)
-    // Q_PROPERTY(double  contactLat       READ getContactLat                                 NOTIFY contactChanged)
-    // Q_PROPERTY(double  contactDepth     READ getContactDepth                               NOTIFY contactChanged)
     Q_PROPERTY(bool batchCorrect   READ batchCorrect    WRITE setBatchCorrect    NOTIFY drawBatchCorrectChanged)
     Q_PROPERTY(bool depthCorrect   READ depthCorrect    WRITE setDepthCorrect    NOTIFY drawDepthCorrectChanged)
 
@@ -82,7 +75,7 @@ public:
     Q_INVOKABLE void clearBatchCorrect();
     Q_INVOKABLE void updateBatchCorrect();
     Q_INVOKABLE void setMarkDistTimeVisible(bool visible, int dist0time1, int distInterval, int timeInterval,
-                                    bool isFrame, bool isTime, bool isDepth, bool isCoordinate); //dist:0, time:1
+                                    bool isFrame, bool isTime, bool isDepth, bool isCoordinate);
 
     Q_INVOKABLE void setColorScheme(int index);
 
@@ -115,7 +108,6 @@ public slots:
     Q_INVOKABLE void scaleYZoomEvent(int delta);
     Q_INVOKABLE void plotMousePosition(int x, int y, bool isSync = false);
     Q_INVOKABLE void simplePlotMousePosition(int x, int y);
-    // Q_INVOKABLE void onCursorMoved(int x, int y);
     Q_INVOKABLE void plotMouseTool(int mode);
 
     void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)
@@ -140,23 +132,6 @@ public slots:
     void plotEchogramVisible(bool visible) { setEchogramVisible(visible); }
     void plotBottomTrackVisible(bool visible) { setBottomTrackVisible(visible); }
     void plotBottomTrackTheme(int theme_id) { setBottomTrackTheme(theme_id); }
-
-    // void plotRangefinderVisible(bool visible) { setRangefinderVisible(visible); }
-    // void plotRangefinderTheme(int theme_id) { setRangefinderTheme(theme_id); }
-    // void plotAttitudeVisible(bool visible) { setAttitudeVisible(visible); }
-    // void plotTemperatureVisible(bool visible) { setTemperatureVisible(visible); }
-    // void plotDopplerInstrumentVisible(bool visible) { setDopplerInstrumentVisible(visible); }
-
-    // void plotGNSSVisible(bool visible, int flags) { setGNSSVisible(visible, flags);}
-
-    // void plotAcousticAngleVisible(bool visible) { setAcousticAngleVisible(visible); }
-
-    // void plotGridInvert(bool state) { setGridInvert(state); };
-    // void plotAngleVisibility(bool state)   { setAngleVisibility(state); }
-    // void plotAngleRange(int angleRange) { setAngleRange(angleRange); }
-    // void plotVelocityRange(float velocity) { setVelocityRange(velocity); }
-
-    // void plotDistanceAutoRange(int auto_range_type) { setDistanceAutoRange(auto_range_type); }
 
     void plotEchogramSetLevels(float low, float hight) {
         setEchogramLowLevel(low);

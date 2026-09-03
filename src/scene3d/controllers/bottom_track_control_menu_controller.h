@@ -25,8 +25,8 @@ private:
     BottomTrack* bottomTrack() const;
     void tryInitPendingLambda();
 
-Q_SIGNALS:
-    void channelListUpdated();
+// Q_SIGNALS:
+//     void channelListUpdated();
 
 private:
     GraphicsScene3dView* graphicsSceneViewPtr_ = nullptr;

@@ -20,7 +20,6 @@ Q_DECLARE_METATYPE(WorkBundle)
 class Dataset;
 class DataProcessor;
 class SurfaceMesh;
-
 class ComputeWorker : public QObject
 {
     Q_OBJECT
@@ -30,18 +29,15 @@ public:
     ~ComputeWorker();
 
 public slots:
-    // service
     void clearAll();
     void clearSurface();
     void clearMosaic();
     void clearIsobaths();
 
-    // settings
     void setDatasetPtr(Dataset* ds);
     void setBottomTrackPtr(BottomTrack* bt);
     void setSurfaceThemeId(int id);
     void setSurfaceEdgeLimit(float v);
-    void setSurfaceExtraWidth(int v);
     void setSurfaceIsobathsLevelCnt(int cnt);
     void setMosaicChannels(const ChannelId& ch1, uint8_t sub1, const ChannelId& ch2, uint8_t sub2);
     void setMosaicTheme(int id);
@@ -54,7 +50,7 @@ public slots:
     void setMinZ(float v);
     void setMaxZ(float v);
 
-    void processBundle(const WorkBundle& wb); // 依次执行一批任务
+    void processBundle(const WorkBundle& wb);
 
 signals:
     void jobFinished(); //用于 dataProcessor（正常，取消）
@@ -62,9 +58,10 @@ signals:
 
 private:
     inline bool isCanceled() const noexcept;
+    void adaptSurfaceResolution();
 
 private:
-    DataProcessor*       dp_;
+    DataProcessor*       dataProcessor_;
     Dataset*             dataset_;
     SurfaceMesh          surfaceMesh_;
 

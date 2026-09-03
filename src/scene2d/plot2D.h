@@ -92,11 +92,11 @@ protected:
     Canvas        canvas_;
     DatasetCursor cursor_;
 
-    Plot2DAim               aim_;
-    Plot2DEchogram          echogram_;
-    Plot2DGrid              grid_;
-    Dataset*                datasetPtr_ = nullptr;
-    DataProcessor*          dataProcessorPtr_ = nullptr;
+    Plot2DAim            aim_;
+    Plot2DEchogram       echogram_;
+    Plot2DGrid           grid_;
+    Dataset*             datasetPtr_ = nullptr;
+    DataProcessor*       dataProcessorPtr_ = nullptr;
     bool isHorizontal_;
 
 private:

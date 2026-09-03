@@ -122,7 +122,6 @@ typedef struct
 #define M_RAD_TO_DEG 57.29577951308232087679f
 #define M_DEG_TO_RAD 0.01745329251994329576f
 
-
 #pragma pack(push, 1)  // 1字节对齐
 struct BoundaryData {
     qint32 north;
@@ -283,7 +282,7 @@ typedef struct  LLARef {
 
     LLARef(LLA lla) {
         refLatRad = lla.latitude * M_DEG_TO_RAD;
-        refLonRad= lla.longitude * M_DEG_TO_RAD;
+        refLonRad = lla.longitude * M_DEG_TO_RAD;
         refLatSin = sin(refLatRad);
         refLatCos = cos(refLatRad);
         refLla = lla;

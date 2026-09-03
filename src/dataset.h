@@ -29,7 +29,6 @@ public:
         kConnection
     };
 
-
     Dataset();
     ~Dataset();
 
@@ -39,7 +38,7 @@ public:
 
     DatasetState getState() const;
     LLARef getLlaRef() const;
-    void setLlaRef(const LLARef& val, LlaRefState state);
+    void   setLlaRef(const LLARef& val, LlaRefState state);
 
     QVector<Epoch>& getPool() {
         return pool_;
@@ -97,26 +96,6 @@ public:
         return copy;
     }
 
-    Epoch::Echogram fromIndexCopyEchogram(int index_offset, const ChannelId& channelId) {
-        QReadLocker rl(&poolMtx_);
-
-        const int currSize = pool_.size();
-        if (channelsSetup_.empty() || currSize == 0)
-            return {};
-
-        int indx = validIndex(index_offset);
-        if (indx == -1) {
-            return {};
-        }
-
-        const Epoch &ep = pool_.at(indx);
-
-        if (!ep.chartAvail(channelId, 0))
-            return {};
-
-        return ep.chartCopy(channelId, 0);
-    }
-
     Epoch* last() {
         if(size() > 0) {
             return fromIndex(endIndex());
@@ -169,27 +148,24 @@ public:
 
     QVector<DatasetChannel> channelsList() const {
         QReadLocker locker(&lock_);
-
         return channelsSetup_;
     }
 
     bool isContainsChannelInChannelSetup(const ChannelId& channelId) const {
         QReadLocker locker(&lock_);
-
         for (int16_t i = 0; i < channelsSetup_.size(); ++i) {
             if (channelsSetup_.at(i).channelId_ == channelId) {
                 return true;
             }
         }
-
         return false;
     }
 
     int getLastBottomTrackEpoch() const;
 
-    float getLastYaw() {
-        return _lastYaw;
-    }
+    // float getLastYaw() {
+    //     return _lastYaw;
+    // }
 
     BottomTrackParam getBottomTrackParam() {
         QReadLocker rl(&lock_);
@@ -232,7 +208,6 @@ public:
         return autoBoundary_;
     }
 
-
 public slots:
     friend class DataProcessor;
     void  onSonarPosCanCalc(uint64_t indx);
@@ -243,7 +218,6 @@ public slots:
     void  addPosition_file(double lat, double lon, int depth, bool enableRender);
 
     void resetDataset();
-    void resetRenderBuffers();
     void resetPolygonOutline();
     void clearBoundary();
 
@@ -252,24 +226,9 @@ public slots:
     void setDiskSonarCache(class DiskSonarCache* cache) { diskSonarCache_ = cache; }
     DiskSonarCache* getDiskSonarCache() const { return diskSonarCache_; }
 
-    void setChannelOffset(const ChannelId& channelId, float x, float y, float z);
-    void spatialProcessing();
-
-    QVector<QVector3D> beaconTrack() {
-        return _beaconTrack;
-    }
-
-    QVector<QVector3D> beaconTrack1() {
-        return _beaconTrack1;
-    }
-
-    void setScene3D(GraphicsScene3dView* scene3dViewPtr) { scene3dViewPtr_ = scene3dViewPtr; };
-
     void setRefPosition(int epoch_index);
     void setRefPosition(Epoch* ref_epoch);
     void setRefPosition(Position position);
-    void setRefPositionByFirstValid();
-    Epoch* getFirstEpochByValidPosition();
 
     QStringList channelsNameList();
 
@@ -285,10 +244,6 @@ signals:
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
     void channelsUpdated();
-    void lastDepthChanged();
-    void speedChanged();
-
-    void channelListUpdated();
 
     void signalDrawOutline(bool drawOutlineMode);
 
@@ -298,19 +253,16 @@ protected:
     int lastEventId = 0;
     float _lastEncoder = 0;
 
-    DatasetChannel firstChannelId_ = DatasetChannel(); // TODO: temp solution
+    DatasetChannel firstChannelId_ = DatasetChannel();
     QVector<DatasetChannel> channelsSetup_;
 
     void validateChannelList(const ChannelId& channelId, uint8_t subChannelId);
-
-    QVector<QVector3D> _beaconTrack;
-    QVector<QVector3D> _beaconTrack1;
 
     QVector<Epoch> pool_;
     QVector<Epoch> polygonOutline_;
     QVector<North_East_Down> polygonOutlineNED_;
 
-    float _lastYaw = 0, _lastPitch = 0, _lastRoll = 0;
+    // float _lastYaw = 0.0f, _lastPitch = 0.0f, _lastRoll = 0.0f;
 
 public:
     Epoch* addNewEpoch();
@@ -320,15 +272,13 @@ public:
         return polygonOutline_.isEmpty();
     }
 
-    GraphicsScene3dView* scene3dViewPtr_ = nullptr;
-
     void location(double lat, double lon);
 
 private:
     LlaRefState getCurrentLlaRefState() const;
     bool shouldAddNewEpoch(const ChannelId& channelId, uint8_t numSubChannels) const;
-    void updateEpochWithChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, float resolution, float offset);
-    void setLastDepth(float val);
+    void updateEpochWithChart(const ChannelId& channelId, const ChartParameters& chartParams,
+                            const QVector<QVector<uint8_t>>& data, float resolution, float offset);
 
     mutable QReadWriteLock lock_;
     mutable QReadWriteLock poolMtx_ = QReadWriteLock(QReadWriteLock::Recursive);
@@ -339,25 +289,20 @@ private:
     DatasetState state_ = DatasetState::kUndefined;
     int lastBottomTrackEpoch_;
     BottomTrackParam bottomTrackParam_;
-    QMap<ChannelId, RecordParameters> usingRecordParameters_;
     QMap<ChannelId, int> lastAddChartEpochIndx_;
-    QSet<ChannelId> channelsToResizeEthData_;
-    int currentRegionGroup_ = 0;
 
     QList<QString> channelsNames_;
     QList<ChannelId> channelsIds_;
     QList<uint8_t> subChannelIds_;
-    float lastDepth_            = 0.0f;
-    float speed_                = 0.0f;
     QVector3D sonarOffset_;
     uint64_t sonarPosIndx_;
 
 public:
     QVector<float> vec_CSV_;
-    void setDistProcesing_CSV(float depth){
+    void setDistProcesing_CSV(float depth) {
         vec_CSV_.append(-depth);
     }
-    double getDistProccesing_CSV(int index){
+    double getDistProccesing_CSV(int index) {
         if(index >= vec_CSV_.size()) {
             return 0.0;
         }

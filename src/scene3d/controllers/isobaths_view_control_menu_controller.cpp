@@ -9,7 +9,7 @@ IsobathsViewControlMenuController::IsobathsViewControlMenuController(QObject* pa
     pendingLambda_(nullptr),
     themeId_(0),
     edgeLimit_(100),
-    extraWidth_(0),
+    // extraWidth_(0),
     visibility_(false),
     edgesVisible_(false),
     trianglesVisible_(false),
@@ -52,7 +52,6 @@ void IsobathsViewControlMenuController::tryInitPendingLambda()
                     QMetaObject::invokeMethod(dataProcessorPtr_, "setSurfaceIsobathsLevelCnt",      Qt::QueuedConnection, Q_ARG(int, levelCnt_));
                     QMetaObject::invokeMethod(dataProcessorPtr_, "setSurfaceColorTableThemeById",   Qt::QueuedConnection, Q_ARG(int,   themeId_));
                     QMetaObject::invokeMethod(dataProcessorPtr_, "setSurfaceEdgeLimit",             Qt::QueuedConnection, Q_ARG(int,   edgeLimit_));
-                    QMetaObject::invokeMethod(dataProcessorPtr_, "setExtraWidth",                   Qt::QueuedConnection, Q_ARG(int,   extraWidth_));
                 }
 
                 if (auto surfacePtr = graphicsSceneViewPtr_->getSurfaceViewPtr(); surfacePtr) {
@@ -216,27 +215,14 @@ void IsobathsViewControlMenuController::onProcessStateChanged(bool state)
     }
 }
 
-void IsobathsViewControlMenuController::onResetIsobathsButtonClicked()
-{
-    if (graphicsSceneViewPtr_) {
-        if (dataProcessorPtr_) {
-            QMetaObject::invokeMethod(dataProcessorPtr_, "clearProcessing", Qt::QueuedConnection, Q_ARG(DataProcessorType , DataProcessorType::kIsobaths));
-        }
-
-        graphicsSceneViewPtr_->getIsobathsViewPtr()->clear();
-    }
-}
-
 void IsobathsViewControlMenuController::setEdgeLimitChanged(int val)
 {
-    if(edgeLimit_ > val) {
-        emit edgeLimitChanged(val);
-    }
+    emit edgeLimitChanged(val);
 }
 
 void IsobathsViewControlMenuController::onEdgeLimitChanged(int val)
 {
-    // qDebug() << "IsobathsViewControlMenuController::onEdgeLimitChanged............";
+    // qDebug() << "IsobathsViewControlMenuController::onEdgeLimitChanged............" << val;
     edgeLimit_ = val;
 
     if (graphicsSceneViewPtr_) {
@@ -249,22 +235,6 @@ void IsobathsViewControlMenuController::onEdgeLimitChanged(int val)
     }
 }
 
-void IsobathsViewControlMenuController::onSetExtraWidth(int val)
-{
-    extraWidth_ = val;
-
-    if (graphicsSceneViewPtr_)  {
-        if (dataProcessorPtr_) {
-            QMetaObject::invokeMethod(dataProcessorPtr_, "setExtraWidth", Qt::QueuedConnection, Q_ARG(int, val));
-        }
-    }
-    else {
-        tryInitPendingLambda();
-    }
-}
-
-
-// 在 onSetExtraWidth 实现之后添加
 void IsobathsViewControlMenuController::onVerticalScaleSliderValueChanged(float value)
 {
     if (!graphicsSceneViewPtr_) {
@@ -281,13 +251,9 @@ float IsobathsViewControlMenuController::verticalScale() const
     return graphicsSceneViewPtr_->verticalScale();
 }
 
-
 void IsobathsViewControlMenuController::autoDrawTrackBoundary()
 {
-    if (!graphicsSceneViewPtr_) {
-        return;
+    if (graphicsSceneViewPtr_) {
+        auto polygon = graphicsSceneViewPtr_->polygonOutline();
     }
-    qDebug() << "IsobathsViewControlMenuController::autoDrawTrackBoundary().....";
-    auto polygon = graphicsSceneViewPtr_->polygonOutline();
-    // polygon->autoGenerateFromAlphaShape();
 }

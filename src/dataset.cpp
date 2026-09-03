@@ -4,13 +4,10 @@
 extern Core* corePtr;
 
 
-Dataset::Dataset() :
-    lastBottomTrackEpoch_(0),
-    sonarPosIndx_(0)
+Dataset::Dataset() : lastBottomTrackEpoch_(0), sonarPosIndx_(0)
 {
     qRegisterMetaType<ChannelId>("ChannelId");
     resetDataset();
-    pool_.clear();
 }
 
 Dataset::~Dataset()
@@ -93,11 +90,9 @@ LLARef Dataset::getLlaRef() const
 void Dataset::setLlaRef(const LLARef &val, LlaRefState state)
 {
     _llaRef = val;
-
     llaRefState_ = state;
     emit updatedLlaRef();
 }
-
 
 Dataset::LlaRefState Dataset::getCurrentLlaRefState() const
 {
@@ -131,7 +126,6 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
 
     updateEpochWithChart(channelId, chartParams, data, 0.2, 0.1);
     const int endIndx = endIndex();
-
     lastAddChartEpochIndx_[channelId] = endIndx;
 
     for (int i = 0; i < numSubChannels; ++i) {
@@ -216,14 +210,14 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     // }
 
     uint64_t poolCnt = pool_.size();
-    if (!getLlaRef().isInit) {
+    if (!_llaRef.isInit) {
         LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
             (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
         setLlaRef(LLARef(pos.lla), llaState);
     }
 
     lastEp->setPositionLLA(pos);
-    lastEp->setPositionRef(&_llaRef); //将LLA坐标转化成本地NED坐标
+    lastEp->setPositionRef(&_llaRef); // 将LLA坐标转化成本地NED坐标
     lastEp->setPositionDataType(DataType::kRaw);
 
     North_East_Down curNed = lastEp->getPositionGNSS().ned;
@@ -273,25 +267,6 @@ void Dataset::resetDataset()
        firstChannelId_ = DatasetChannel();
     }
 
-    resetRenderBuffers();
-
-    usingRecordParameters_.clear();
-    lastAddChartEpochIndx_.clear();
-    channelsToResizeEthData_.clear();
-    polygonOutlineNED_.clear();
-
-    lastDepth_            = 0.0f;
-    speed_                = 0.0f;
-    sonarPosIndx_         = 0;
-    _llaRef.isInit        = false;
-
-    emit lastDepthChanged();
-    emit channelsUpdated();
-    emit dataUpdate();
-}
-
-void Dataset::resetRenderBuffers()
-{
     vec_CSV_.clear();
     {
         //加poolMtx_写锁，等待ComputeWorker读完再清空
@@ -304,11 +279,14 @@ void Dataset::resetRenderBuffers()
     maxX_ = std::numeric_limits<float>::lowest();
     minY_ = std::numeric_limits<float>::max();
     maxY_ = std::numeric_limits<float>::lowest();
-    _lastYaw   = 0;
-    _lastPitch = 0;
-    _lastRoll  = 0;
+    lastAddChartEpochIndx_.clear();
+    polygonOutlineNED_.clear();
+
     _llaRef = LLARef();
+    sonarPosIndx_   = 0;
     lastBottomTrackEpoch_ = 0;
+    emit channelsUpdated();
+    emit dataUpdate();
 }
 
 void Dataset::resetPolygonOutline()
@@ -321,7 +299,6 @@ void Dataset::clearBoundary()
 {
     autoBoundary_.clear();
 }
-
 
 void Dataset::triggerRenderUpdate()
 {
@@ -360,71 +337,14 @@ void Dataset::removeFrames(int startIndex, int endIndex)
     pool_.remove(startIndex, endIndex-startIndex+1);
 }
 
-void Dataset::setChannelOffset(const ChannelId& channelId, float x, float y, float z)
-{
-    QWriteLocker locker(&lock_);
-
-    // write to all on ChannelId
-    for (int16_t i = 0; i < channelsSetup_.size(); ++i) {
-        if (channelsSetup_.at(i).channelId_ == channelId) {
-            channelsSetup_[i].localPosition_.x = x;
-            channelsSetup_[i].localPosition_.y = y;
-            channelsSetup_[i].localPosition_.z = z;
-        }
-    }
-}
-
-void Dataset::spatialProcessing()
-{
-    auto ch_list = channelsList();
-    for (auto it = ch_list.cbegin(); it != ch_list.cend(); ++it) {
-        ChannelId ich = it->channelId_;
-
-        for(int iepoch = 0; iepoch < size(); iepoch++) {
-            Epoch* epoch = fromIndex(iepoch);
-            if(epoch == NULL) { continue; }
-
-            Position ext_pos = epoch->getExternalPosition();
-
-            if(epoch->chartAvail(ich)) {
-                Epoch::Echogram* data = epoch->chart(ich);
-
-                if(data == NULL) { continue; }
-
-                if(ext_pos.ned.isValid()) {
-                    ext_pos.ned.d += it->localPosition_.z;
-                }
-
-                if(ext_pos.lla.isValid()) {
-                    ext_pos.lla.altitude -= it->localPosition_.z;
-                }
-
-                data->sensorPosition = ext_pos;
-
-                if(ext_pos.ned.isValid()) {
-                    ext_pos.ned.d += data->bottomProcessing.getDistance();
-                }
-
-                if(ext_pos.lla.isValid()) {
-                    ext_pos.lla.altitude -= data->bottomProcessing.getDistance();
-                }
-
-                data->bottomProcessing.bottomPoint = ext_pos;
-            }
-        }
-    }
-}
-
 void Dataset::setRefPosition(int epoch_index)
 {
-    qDebug() << "Dataset::setRefPosition000000.................";
     Epoch* ref_epoch = fromIndex(epoch_index);
     setRefPosition(ref_epoch);
 }
 
 void Dataset::setRefPosition(Epoch* epoch)
 {
-    qDebug() << "Dataset::setRefPosition1111111..............";
     if(epoch) {
         setRefPosition(epoch->getPositionGNSS());
     }
@@ -432,7 +352,6 @@ void Dataset::setRefPosition(Epoch* epoch)
 
 void Dataset::setRefPosition(Position ref_pos)
 {
-    // qDebug() << "Dataset::setRefPosition2222222222222222...............";
     if(ref_pos.lla.isCoordinatesValid()) {
         setLlaRef(LLARef(ref_pos.lla), getCurrentLlaRefState());
         for(int iepoch = 0; iepoch < size(); iepoch++) {
@@ -445,28 +364,6 @@ void Dataset::setRefPosition(Position ref_pos)
             //          <<"   " << _llaRef.refLla.altitude;
         }
     }
-}
-
-void Dataset::setRefPositionByFirstValid()
-{
-    // qDebug() << "Dataset::setRefPositionByFirstValid..................";
-    Epoch* epoch = getFirstEpochByValidPosition();
-    if(epoch == NULL) { return; }
-
-    setRefPosition(epoch);
-}
-
-Epoch *Dataset::getFirstEpochByValidPosition()
-{
-    for(int iepoch = 0; iepoch < size(); iepoch++) {
-        Epoch* epoch = fromIndex(iepoch);
-        if(epoch == NULL) { continue; }
-        if(epoch->getPositionGNSS().lla.isCoordinatesValid()) {
-            return epoch;
-        }
-    }
-
-    return NULL;
 }
 
 QStringList Dataset::channelsNameList()
@@ -638,21 +535,14 @@ void Dataset::updateEpochWithChart(const ChannelId &channelId, const ChartParame
     const int indx = endIndex();
     auto& epoch = pool_[indx];
 
-    RecordParameters recParam;
-    if (usingRecordParameters_.contains(channelId)) {
-        recParam = usingRecordParameters_[channelId];
-    }
+    // RecordParameters recParam;
+    // if (usingRecordParameters_.contains(channelId)) {
+    //     recParam = usingRecordParameters_[channelId];
+    // }
 
     epoch.setChart(channelId, data, resolution, offset);
-    epoch.setRecParameters(channelId, recParam);
+    // epoch.setRecParameters(channelId, recParam);
     epoch.setChartParameters(channelId, chartParams);
-}
-
-void Dataset::setLastDepth(float val)
-{
-    lastDepth_ = val;
-
-    emit lastDepthChanged();
 }
 
 std::tuple<ChannelId, uint8_t, QString>  Dataset::channelIdFromName(const QString& name) const
@@ -687,7 +577,7 @@ void Dataset::onSonarPosCanCalc(uint64_t indx)
                 North_East_Down sonarNed(boatPos.ned.n + d.n, boatPos.ned.e + d.e, /*always zero*/0.0);
                 LLA sonarLla(&sonarNed, &_llaRef, /*spherical=*/true);
                 boatPos.lla      = sonarLla;
-                boatPos.LLA2NED(&_llaRef); // ned
+                boatPos.LLA2NED(&_llaRef);
                 ep->setSonarPosition(boatPos);
             }
 

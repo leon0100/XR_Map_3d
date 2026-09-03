@@ -17,18 +17,15 @@ signals:
     void positionAdded(uint64_t indx);
     void chartAdded(uint64_t indx);
     void attitudeAdded(uint64_t indx);
-    // void bottomTrackAdded(uint64_t indx);
     void bottomTrack3DAdded(const QVector<int>& epIndxs, const QVector<int>& vertIndxs, bool isManual);
     void mosaicCanCalc(uint64_t indx);
     void sonarPosCanCalc(uint64_t indx);
 
 public slots:
-    // Dataset
     void onAddedEpoch(uint64_t indx);
     void onAddedPosition(uint64_t indx);
     void onAddedChart(uint64_t indx);
     void onAddedAttitude(uint64_t indx);
-    // void onAddedBottomTrack(uint64_t indx); // from bottom track algorithm
     void onAddedBottomTrack3D(const QVector<int>& epIndxs, const QVector<int>& vertIndxs, bool isManual); // from 2D (editing), 3D
 
 private:

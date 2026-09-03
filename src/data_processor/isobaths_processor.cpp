@@ -47,12 +47,6 @@ void IsobathsProcessor::setSurfaceMeshPtr(SurfaceMesh* surfaceMeshPtr)
     surfaceMeshPtr_ = surfaceMeshPtr;
 }
 
-void IsobathsProcessor::onUpdatedBottomTrackData()
-{
-    // qDebug() << "IsobathsProcessor::onUpdatedBottomTrackData...";
-    fullRebuildLinesLabels();
-}
-
 void IsobathsProcessor::setColorsFromSurfaceProcessor(const QVector<IsobathUtils::ColorInterval>& colorIntervals)
 {
     colorIntervals_ = colorIntervals;

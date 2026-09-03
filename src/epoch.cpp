@@ -55,16 +55,16 @@ void Epoch::setChartBySubChannelId(const ChannelId &channelId, uint8_t subChanne
     charts.type = 1;
 }
 
-void Epoch::setRecParameters(const ChannelId& channelId, const RecordParameters& recParams)
-{
-    if (charts_.contains(channelId)) {
-        auto& echograms =  charts_[channelId];
+// void Epoch::setRecParameters(const ChannelId& channelId, const RecordParameters& recParams)
+// {
+//     if (charts_.contains(channelId)) {
+//         auto& echograms =  charts_[channelId];
 
-        for (auto& iEchogram : echograms) {
-            iEchogram.recordParameters_ = recParams;
-        }
-    }
-}
+//         for (auto& iEchogram : echograms) {
+//             iEchogram.recordParameters_ = recParams;
+//         }
+//     }
+// }
 
 void Epoch::setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams)
 {
@@ -130,11 +130,13 @@ void Epoch::setPositionNED(const North_East_Down &ned)
     _positionGNSS.ned = ned;
 }
 
-void Epoch::setExternalPosition(Position position) {
+void Epoch::setExternalPosition(Position position)
+{
     _positionExternal = position;
 }
 
-void Epoch::setPositionRef(LLARef* ref) {
+void Epoch::setPositionRef(LLARef* ref)
+{
     if(ref != NULL && ref->isInit) {
         _positionGNSS.LLA2NED(ref);
     }

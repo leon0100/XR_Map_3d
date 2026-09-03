@@ -32,12 +32,10 @@ GraphicsScene3dView::GraphicsScene3dView() :
     wasMoved_(false),
     wasMovedMouseButton_(Qt::MouseButton::NoButton),
     qmlRootObject_(nullptr),
-    // switchedToBottomTrackVertexComboSelectionMode_(false),
     needToResetStartPos_(false),
     lastCameraDist_(m_camera->distForMapView()),
     gridVisibility_(true),
-    isNorth_(false),
-    testingTimer_(nullptr)
+    isNorth_(false)
 {
     setObjectName("GraphicsScene3dView");
     setMirrorVertically(true);
@@ -213,18 +211,6 @@ QVector3D GraphicsScene3dView::calculateIntersectionPoint(const QVector3D &rayOr
     return retVal;
 }
 
-// void GraphicsScene3dView::switchToBottomTrackVertexComboSelectionMode(qreal x, qreal y)
-// {
-//     switchedToBottomTrackVertexComboSelectionMode_ = true;
-
-//     m_bottomTrack->resetVertexSelection();
-//     boatTrack_->clearSelectedEpoch();
-//     lastMode_ = m_mode;
-//     m_mode = ActiveMode::BottomTrackVertexComboSelectionMode;
-//     m_comboSelectionRect.setTopLeft({ static_cast<int>(x), static_cast<int>(height() - y) });
-//     m_comboSelectionRect.setBottomRight({ static_cast<int>(x), static_cast<int>(height() - y) });
-// }
-
 void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
     Q_UNUSED(keyboardKey)
@@ -299,7 +285,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
     }
 
     wasMoved_ = false;
-    // clearComboSelectionRect();
 
     if (qmlRootObject_) { // maybe this will be removed
         if (auto selectionToolButton = qmlRootObject_->findChild<QObject*>("selectionToolButton"); selectionToolButton) {
@@ -473,7 +458,7 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
 {
     Q_UNUSED(keyboardKey);
 
-    clearComboSelectionRect();
+    // clearComboSelectionRect();
 
     QPoint pos = QPoint(x, y);
 
@@ -598,7 +583,6 @@ void GraphicsScene3dView::completeDrawOutline()
         else {
             GIF->dialogInfo(Dialog_OK, tr("Boundary Curve is Incomplete!"));
         }
-
     }
 }
 
@@ -645,8 +629,8 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
         screetShot_.firstScreenDown_ = false;
         screetCurrentMapLevel_ = currentMapLevel_;
         screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
-
-    } else {
+    }
+    else {
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
         screetShot_.setSelectionRectVisible(false);
     }
@@ -693,7 +677,6 @@ void GraphicsScene3dView::setLandMarkMode(bool mark)
         screetShot_.setSpotLatitude(QString::number(landMarkLat) + "°");
         screetShot_.setSpotLongitude(QString::number(landMarkLon) + "°");
     }
-
 }
 
 void GraphicsScene3dView::setTextureIdByTileIndx(const map::TileIndex &tileIndx, GLuint textureId)
@@ -730,7 +713,6 @@ void GraphicsScene3dView::updateProjection()
     }
 }
 
-
 void GraphicsScene3dView::setNeedToResetStartPos(bool state)
 {
     needToResetStartPos_ = state;
@@ -740,7 +722,7 @@ void GraphicsScene3dView::forceUpdateDatasetLlaRef()
 {
     if (datasetPtr_) {
         auto ref = datasetPtr_->getLlaRef();
-        m_camera->datasetLlaRef_ = ref.isInit ? ref : LLARef(m_camera->yerevanLla);
+        m_camera->datasetLlaRef_ = ref.isInit ? ref : LLARef(m_camera->startupInitLla);
     }
 
     m_camera->viewLlaRef_ = m_camera->datasetLlaRef_;
@@ -765,7 +747,8 @@ void GraphicsScene3dView::ensureInView(const QVector3D& worldPos)
     if (m_camera->getIsPerspective()) {
         const float halfFovRad = m_camera->fov() * 0.5f * M_PI / 180.0f;
         viewRadius = m_camera->distToFocusPoint() * std::tan(halfFovRad);
-    } else {
+    }
+    else {
         viewRadius = m_camera->distToFocusPoint() * 0.5f;
     }
 
@@ -839,9 +822,7 @@ void GraphicsScene3dView::setSceneBoundingBoxVisible(bool visible)
 void GraphicsScene3dView::fitAllInView()
 {
     auto maxSize = std::max(m_bounds.width(), std::max(m_bounds.height(), m_bounds.length()));
-
     auto d = (maxSize/2.0f)/(std::tan(m_camera->fov() * 0.5f)) * 2.0f;
-
     if(d>0) m_camera->setDistance(d);
 
     m_camera->focusOnPosition(m_bounds.center());
@@ -873,7 +854,7 @@ void GraphicsScene3dView::setCancelZoomView()
 void GraphicsScene3dView::setMapView()
 {
     LLARef llaRef = datasetPtr_->getLlaRef();
-    m_camera->viewLlaRef_ = llaRef.isInit ? llaRef : LLARef(m_camera->yerevanLla);
+    m_camera->viewLlaRef_ = llaRef.isInit ? llaRef : LLARef(m_camera->startupInitLla);
     mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     m_camera->setMapView();
@@ -890,7 +871,7 @@ void GraphicsScene3dView::setIdleMode()
 {
     m_mode = Idle;
 
-    clearComboSelectionRect();
+    // clearComboSelectionRect();
     m_bottomTrack->resetVertexSelection();
     boatTrack_->clearSelectedEpoch();
 
@@ -926,27 +907,21 @@ void GraphicsScene3dView::shiftCameraZAxis(float shift)
 void GraphicsScene3dView::setBottomTrackVertexSelectionMode()
 {
     setIdleMode();
-
     m_mode = BottomTrackVertexSelectionMode;
-
     QQuickFramebufferObject::update();
 }
 
 void GraphicsScene3dView::setPolygonCreationMode()
 {
     setIdleMode();
-
     m_mode = PolygonCreationMode;
-
     QQuickFramebufferObject::update();
 }
 
 void GraphicsScene3dView::setPolygonEditingMode()
 {
     setIdleMode();
-
     m_mode = PolygonEditingMode;
-
     QQuickFramebufferObject::update();
 }
 
@@ -1003,7 +978,7 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
             m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
     }, Qt::DirectConnection);
 
-    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef, this,      [this]() -> void {
+    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef, this,   [this]() -> void {
             surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
             forceUpdateDatasetLlaRef();
             fitAllInView();
@@ -1067,10 +1042,10 @@ void GraphicsScene3dView::updatePlaneGrid()
     m_planeGrid->setCellSize(10);
 }
 
-void GraphicsScene3dView::clearComboSelectionRect()
-{
-    m_comboSelectionRect = { 0, 0, 0, 0 };
-}
+// void GraphicsScene3dView::clearComboSelectionRect()
+// {
+    // m_comboSelectionRect = { 0, 0, 0, 0 };
+// }
 
 void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, double& longitude)
 {
@@ -1268,7 +1243,7 @@ void GraphicsScene3dView::updateViews()
 
 void GraphicsScene3dView::onPositionAdded(uint64_t indx)
 {
-    // qDebug() << "GraphicsScene3dView::onPositionAdded........";
+    qDebug() << "GraphicsScene3dView::onPositionAdded........";
     if (!datasetPtr_) {
         return;
     }
@@ -1283,10 +1258,8 @@ void GraphicsScene3dView::onPositionAdded(uint64_t indx)
     }
     boatTrack_->onPositionAdded(indx);
 
-    if (float lastYaw = datasetPtr_->getLastYaw(); std::isfinite(lastYaw)) {
-        navigationArrow_->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e,
-                    !isfinite(boatPos.ned.d) ? 0.f : boatPos.ned.d), lastYaw - 90.f);
-    }
+    navigationArrow_->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e,
+                            !isfinite(boatPos.ned.d) ? 0.f : boatPos.ned.d), -90.f);
 }
 
 void GraphicsScene3dView::setIsNorth(bool state)
@@ -1667,48 +1640,46 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
 void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fbo)
 {
     //仅在 synchronize()中，将 Item 的属性复制到 Renderer 的成员变量中
-    GraphicsScene3dView* view = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
-    if (!view) {
+    GraphicsScene3dView* graphicsView = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
+    if (!graphicsView) {
         return;
     }
 
-    graphicsView_ = view;
+    graphicsView_ = graphicsView;
 
     // process textures
-    processMapTextures(view);
-    processMosaicColorTableTexture(view);
-    processMosaicTileTexture(view);
-    processImageTexture(view);
-    processSurfaceTexture(view);
+    processMapTextures(graphicsView);
+    processMosaicColorTableTexture(graphicsView);
+    processMosaicTileTexture(graphicsView);
+    processImageTexture(graphicsView);
+    processSurfaceTexture(graphicsView);
 
-    //read from renderer
-    view->m_model = m_renderer->m_model;
-    view->m_projection = m_renderer->m_projection;
+    // read from renderer
+    graphicsView->m_model      = m_renderer->m_model;
+    graphicsView->m_projection = m_renderer->m_projection;
 
     // write to renderer
-    m_renderer->m_coordAxesRenderImpl       = *(dynamic_cast<CoordinateAxes::CoordinateAxesRenderImplementation*>(view->m_coordAxes->m_renderImpl));
-    m_renderer->m_planeGridRenderImpl       = *(dynamic_cast<PlaneGrid::PlaneGridRenderImplementation*>(view->m_planeGrid->m_renderImpl));
-    m_renderer->m_boatTrackRenderImpl       = *(dynamic_cast<BoatTrack::BoatTrackRenderImplementation*>(view->boatTrack_->m_renderImpl));
-    m_renderer->m_bottomTrackRenderImpl     = *(dynamic_cast<BottomTrack::BottomTrackRenderImplementation*>(view->m_bottomTrack->m_renderImpl));
-    m_renderer->m_polygonOutlineRenderImpl    = *(dynamic_cast<PolygonOutline::PolygonOutlineRenderImplementation*>(view->polygonOutline_->m_renderImpl));
-
-    m_renderer->isobathsViewRenderImpl_     = *(dynamic_cast<IsobathsView::IsobathsViewRenderImplementation*>(view->isobathsView_->m_renderImpl));
-    m_renderer->surfaceViewRenderImpl_      = *(dynamic_cast<SurfaceView::SurfaceViewRenderImplementation*>(view->surfaceView_->m_renderImpl));
-    m_renderer->imageViewRenderImpl_        = *(dynamic_cast<ImageView::ImageViewRenderImplementation*>(view->imageView_->m_renderImpl));
-    m_renderer->m_polygonGroupRenderImpl    = *(dynamic_cast<PolygonGroup::PolygonGroupRenderImplementation*>(view->m_polygonGroup->m_renderImpl));
-    m_renderer->navigationArrowRenderImpl_  = *(dynamic_cast<NavigationArrow::NavigationArrowRenderImplementation*>(view->navigationArrow_->m_renderImpl));
-    m_renderer->m_viewSize                  = view->size();
-    m_renderer->m_camera                    = *view->m_camera;
-    m_renderer->m_axesThumbnailCamera       = *view->m_axesThumbnailCamera;
-    m_renderer->m_comboSelectionRect        = view->m_comboSelectionRect;
-    m_renderer->m_verticalScale             = view->m_verticalScale;
-    m_renderer->m_boundingBox               = view->m_bounds;
-    m_renderer->m_isSceneBoundingBoxVisible = view->m_isSceneBoundingBoxVisible;
-    m_renderer->gridVisibility_             = view->gridVisibility_;
+    m_renderer->m_coordAxesRenderImpl       = *(dynamic_cast<CoordinateAxes::CoordinateAxesRenderImplementation*>(graphicsView->m_coordAxes->m_renderImpl));
+    m_renderer->m_planeGridRenderImpl       = *(dynamic_cast<PlaneGrid::PlaneGridRenderImplementation*>(graphicsView->m_planeGrid->m_renderImpl));
+    m_renderer->m_boatTrackRenderImpl       = *(dynamic_cast<BoatTrack::BoatTrackRenderImplementation*>(graphicsView->boatTrack_->m_renderImpl));
+    m_renderer->m_bottomTrackRenderImpl     = *(dynamic_cast<BottomTrack::BottomTrackRenderImplementation*>(graphicsView->m_bottomTrack->m_renderImpl));
+    m_renderer->m_polygonOutlineRenderImpl  = *(dynamic_cast<PolygonOutline::PolygonOutlineRenderImplementation*>(graphicsView->polygonOutline_->m_renderImpl));
+    m_renderer->isobathsViewRenderImpl_     = *(dynamic_cast<IsobathsView::IsobathsViewRenderImplementation*>(graphicsView->isobathsView_->m_renderImpl));
+    m_renderer->surfaceViewRenderImpl_      = *(dynamic_cast<SurfaceView::SurfaceViewRenderImplementation*>(graphicsView->surfaceView_->m_renderImpl));
+    m_renderer->imageViewRenderImpl_        = *(dynamic_cast<ImageView::ImageViewRenderImplementation*>(graphicsView->imageView_->m_renderImpl));
+    m_renderer->m_polygonGroupRenderImpl    = *(dynamic_cast<PolygonGroup::PolygonGroupRenderImplementation*>(graphicsView->m_polygonGroup->m_renderImpl));
+    m_renderer->navigationArrowRenderImpl_  = *(dynamic_cast<NavigationArrow::NavigationArrowRenderImplementation*>(graphicsView->navigationArrow_->m_renderImpl));
+    m_renderer->m_viewSize                  = graphicsView->size();
+    m_renderer->m_camera                    = *graphicsView->m_camera;
+    m_renderer->m_axesThumbnailCamera       = *graphicsView->m_axesThumbnailCamera;
+    // m_renderer->m_comboSelectionRect        = graphicsView->m_comboSelectionRect;
+    m_renderer->m_verticalScale             = graphicsView->m_verticalScale;
+    m_renderer->m_boundingBox               = graphicsView->m_bounds;
+    m_renderer->m_isSceneBoundingBoxVisible = graphicsView->m_isSceneBoundingBoxVisible;
+    m_renderer->gridVisibility_             = graphicsView->gridVisibility_;
 
     //随后触发void GraphicsScene3dView::InFboRenderer::render()................
 }
-
 
 void GraphicsScene3dView::InFboRenderer::render()
 {
@@ -2098,17 +2069,15 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
     LLARef lookAtLlaRef(lookAtLla);
 
     float datasetDist = map::calculateDistance(lookAtLlaRef, datasetLlaRef_);
-
-    if (isPerspective_ && !projectionChanged) {
+/*    if (isPerspective_ && !projectionChanged && datasetDist < lowDistThreshold_ && getIsFarAwayFromOriginLla()) {
+       viewPtr_->setNeedToResetStartPos(true);
+       LLA datasetLla(datasetLlaRef_.refLla.latitude, datasetLlaRef_.refLla.longitude, 0.0);
+       North_East_Down datasetNed(&datasetLla, &viewLlaRef_, isPerspective_);
+       m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
+       viewLlaRef_ = datasetLlaRef_;
     }
-    //else if (isPerspective_ && !projectionChanged && datasetDist < lowDistThreshold_ && getIsFarAwayFromOriginLla()) {
-    //    viewPtr_->setNeedToResetStartPos(true);
-    //    LLA datasetLla(datasetLlaRef_.refLla.latitude, datasetLlaRef_.refLla.longitude, 0.0);
-    //    North_East_Down datasetNed(&datasetLla, &viewLlaRef_, isPerspective_);
-    //    m_lookAt -= QVector3D(datasetNed.n, datasetNed.e, 0.0f);
-    //    viewLlaRef_ = datasetLlaRef_;
-    //}
-    else if ((!isPerspective_ && projectionChanged && (datasetDist < lowDistThreshold_) && getIsFarAwayFromOriginLla())) { // catching when ortho->persp trans and near place
+    else*/
+    if ((!isPerspective_ && projectionChanged && (datasetDist < lowDistThreshold_) && getIsFarAwayFromOriginLla())) { // catching when ortho->persp trans and near place
         if (cameraListener_) {
             cameraListener_->resetRotationAngle();
         }
@@ -2271,8 +2240,8 @@ void GraphicsScene3dView::Camera::resetRotationAngle()
 
 void GraphicsScene3dView::Camera::setYerevanLla(LLA yerevan)
 {
-    yerevanLla = yerevan;
-    viewLlaRef_ = LLARef(yerevanLla);
+    startupInitLla  = yerevan;
+    viewLlaRef_ = LLARef(startupInitLla);
 }
 
 void GraphicsScene3dView::Camera::updateCameraParams()

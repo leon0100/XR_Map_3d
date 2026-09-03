@@ -78,10 +78,8 @@ private:
     SurfaceView::SurfaceViewRenderImplementation         surfaceViewRenderImpl_;
     ImageView::ImageViewRenderImplementation             imageViewRenderImpl_;
     MapView::MapViewRenderImplementation                 mapViewRenderImpl_;
-    // Contacts::ContactsRenderImplementation               contactsRenderImpl_;
     BottomTrack::BottomTrackRenderImplementation         m_bottomTrackRenderImpl;
     PolygonGroup::PolygonGroupRenderImplementation       m_polygonGroupRenderImpl;
-    // PointGroup::PointGroupRenderImplementation           m_pointGroupRenderImpl;
     BoatTrack::BoatTrackRenderImplementation             m_boatTrackRenderImpl;
     NavigationArrow::NavigationArrowRenderImplementation navigationArrowRenderImpl_;
     UsblView::UsblViewRenderImplementation               usblViewRenderImpl_;
@@ -89,7 +87,7 @@ private:
 
     QMatrix4x4 m_model;
     QMatrix4x4 m_projection;
-    QRect m_comboSelectionRect;
+    // QRect m_comboSelectionRect;
     Cube m_boundingBox;
     float m_verticalScale = 1.0f;
     bool m_isSceneBoundingBoxVisible = true;

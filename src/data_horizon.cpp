@@ -62,7 +62,6 @@ void DataHorizon::onAddedPosition(uint64_t indx)
 void DataHorizon::onAddedChart(uint64_t indx)
 {
     //qDebug() << "DataHorizon::onAddedChart" << indx;
-
     bool beenChanged = indx != chartIndx_; // TODO: delete this (fix on processing)
 
     chartIndx_ = indx;

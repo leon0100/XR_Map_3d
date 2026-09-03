@@ -310,8 +310,7 @@ void SurfaceView::clear()
 
 void SurfaceView::setTiles(const QHash<QUuid, SurfaceTile> &tiles, bool useTextures)
 {
-    qDebug() << "SurfaceView::setTiles" << tiles.size();
-
+    // qDebug() << "SurfaceView::setTiles" << tiles.size();
     if (auto* r = RENDER_IMPL(SurfaceView); r) {
         auto& rTRef = r->tiles_;
         for (auto itT = tiles.cbegin(); itT != tiles.cend(); ++itT) {

@@ -184,8 +184,9 @@ void RealTimeParser::processQueue()
             continue;
         }
 
-        if (qAbs(pt.latitude) < 0.001 || qAbs(pt.longitude) < 0.001)
+        if (qAbs(pt.latitude) < 0.001 || qAbs(pt.longitude) < 0.001) {
             continue;
+        }
 
         if (hasLast_) {
             double dlat = qAbs(pt.latitude - lastBoatPt_.latitude);
@@ -197,7 +198,7 @@ void RealTimeParser::processQueue()
         }
 
         lastBoatPt_ = pt;
-        hasLast_ = true;
+        hasLast_    = true;
 
         // qDebug() << "  pt.depth:" << pt.depth << "   pt.speed:" << pt.speed
         //          << "  " << pt.latitude << "  " << pt.longitude;

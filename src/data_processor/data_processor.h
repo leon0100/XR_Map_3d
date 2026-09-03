@@ -51,7 +51,6 @@ public slots:
     // SurfaceProcessor
     void setSurfaceColorTableThemeById(int id);
     void setSurfaceEdgeLimit(int val);
-    void setExtraWidth(int val);
     void setSurfaceIsobathsLevelCnt(int cnt);
 
 
@@ -145,7 +144,6 @@ private:
     friend class IsobathsProcessor;
     friend class MosaicProcessor;
 
-    // this
     Dataset* datasetPtr_;
     
     //工作线程与工作者（线程 / 对象）

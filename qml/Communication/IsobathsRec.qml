@@ -774,16 +774,14 @@ XRRectangle {
                 id: edgeLimitSpinBox
                 implicitWidth: isobathSize * 0.4
                 from: 10
-                to: 1000
+                to: 3000
                 stepSize: 5
-                value: 100
+                value: 40
                 editable: false
                 Layout.rightMargin: 10
                 enabled: !renderSpanControl.isOn
 
                 property int decimals: 1
-
-                onFocusChanged: isobathsSet.focus = true
 
                 Component.onCompleted: {
                     IsobathsViewControlMenuController.onEdgeLimitChanged(edgeLimitSpinBox.value)
@@ -822,7 +820,7 @@ XRRectangle {
                 editable: false
                 unitText: ""
                 Layout.rightMargin: 10
-                onFocusChanged: isobathsSet.focus = true
+                // onFocusChanged: isobathsSet.focus = true
 
                 Component.onCompleted: {
                     IsobathsViewControlMenuController.onSetSurfaceLevelCnt(contourStep.value)

@@ -31,9 +31,7 @@ public:
     Q_INVOKABLE void onThemeChanged(int val);
     Q_INVOKABLE void onDebugModeView(bool state);
     Q_INVOKABLE void onProcessStateChanged(bool state);
-    Q_INVOKABLE void onResetIsobathsButtonClicked();
     Q_INVOKABLE void onEdgeLimitChanged(int val);
-    Q_INVOKABLE void onSetExtraWidth(int val);
 
     Q_INVOKABLE void onVerticalScaleSliderValueChanged(float value);
     Q_INVOKABLE float verticalScale() const;
@@ -59,7 +57,7 @@ private:
     int themeId_;
     int levelCnt_ = 8;
     int edgeLimit_;
-    int extraWidth_;
+    // int extraWidth_;
     bool visibility_;
     bool edgesVisible_;
     bool trianglesVisible_;

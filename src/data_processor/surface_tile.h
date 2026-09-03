@@ -28,7 +28,6 @@ static constexpr float defaultTileResolution        = 1.0f / 10.f;
 
 class SurfaceTile {
 public:
-    /*methods*/
     SurfaceTile();
     SurfaceTile(QVector3D origin);
     void init(int sidePixelSize, int heightMatrixRatio, float resolution);
@@ -71,10 +70,8 @@ public:
 private:
     friend class SurfaceView;
 
-    /*methods*/
     inline bool checkVerticesDepth(int topLeft, int topRight, int bottomLeft, int bottomRight) const;
 
-    /*data*/
     TileKey   key_;
     QUuid id_;
     QVector3D origin_;
@@ -87,7 +84,7 @@ private:
     GLuint textureId_;
     bool isUpdated_;
     bool isInited_;
-    // tile size
+
     int   sidePixelSize_;
     int   heightMatrixRatio_;
     float resolution_;

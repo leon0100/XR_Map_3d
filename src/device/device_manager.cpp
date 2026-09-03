@@ -9,9 +9,7 @@
 #include <QDataStream>
 #include <QMutexLocker>
 
-
 #include "console.h"
-
 
 
 DiskSonarCache::DiskSonarCache(const QString& filePath) : filePath_(filePath)
@@ -106,8 +104,8 @@ void DeviceManager::setProgressDialog(QObject* dialog)
 void DeviceManager::resetFileAndChannel(int fileCnt)
 {
     batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
-    minZ_ = 0.0;
-    maxZ_ = 0.0;
+    minZ_ = std::numeric_limits<float>::max();
+    maxZ_ = std::numeric_limits<float>::lowest();
     depthVec_.clear();
     flag_haveReportAbnormalGPS = false;
     count_abnormalGPS = 0;
@@ -200,17 +198,21 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
         bool enableRender = currentLine == validTotal ? true : false;
         emit positionComplete_file(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude,enableRender);
     }
-
-    qDebug() << "vec_CSV.size()........." << vec_CSV.size();
+    qDebug() << "minZ_...." << minZ_ << "   " << maxZ_ << "   vec_CSV.size():" << vec_CSV.size();
 
     file.close();
 
-    if (progressDialog_) {
-        QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
-        QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, tr("Processing completed!")));
+    QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
+    if(fileIndex == (fileCnt - 1)) {
+        datasetPtr_->triggerRenderUpdate();
+        emit fileStopsOpening(depthVec_, minZ_, maxZ_);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
+        QTimer::singleShot(2000, progressDialog_, [this]() {
+            if(progressDialog_) {
+                QMetaObject::invokeMethod(progressDialog_, "close");
+            }
+        });
     }
-
-    emit fileStopsOpening(vec_CSV, minZ_, maxZ_);
 
     isOpeningFile_ = false;
     processNextPendingFile();

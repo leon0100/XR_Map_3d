@@ -1,12 +1,8 @@
 #include "plot2D.h"
 #include "epoch_event.h"
-#include "qmath.h"
 
 
-Plot2D::Plot2D()
-    : datasetPtr_(nullptr)
-    , isHorizontal_(true)
-    , isEnabled_(true)
+Plot2D::Plot2D() : datasetPtr_(nullptr), isHorizontal_(true), isEnabled_(true)
 {
     qRegisterMetaType<ChannelId>("ChannelId");
 
@@ -142,8 +138,8 @@ bool Plot2D::getImage(int width, int height, QPainter* painter, bool is_horizont
 
 void Plot2D::draw(QPainter *painterPtr)
 {
-    // qDebug() << "Plot2D::draw(QPainter *painterPtr)..............";
-    //    painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
+    // qDebug() << "Plot2D::draw(QPainter *painterPtr).......";
+    // painter->setCompositionMode(QPainter::RasterOp_SourceXorDestination);
     echogram_.draw(this, datasetPtr_);
 
     painterPtr->setCompositionMode(QPainter::CompositionMode_Exclusion);

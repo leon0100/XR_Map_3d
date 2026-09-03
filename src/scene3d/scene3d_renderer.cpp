@@ -154,7 +154,8 @@ void GraphicsScene3dRenderer::drawObjects()
     float perspCoeff = m_camera.getHeightAboveGround() / perspectiveEdge;
     qreal perspFixFov = m_camera.fov() + m_camera.fov() * perspCoeff;
 
-    if (m_camera.getIsPerspective()) {
+    bool isPerspective = m_camera.getIsPerspective();
+    if (isPerspective) {
         projection.perspective(perspFixFov, m_viewSize.width() / m_viewSize.height(), nearPlanePersp, farPlanePersp);
     }
     else {
@@ -174,7 +175,7 @@ void GraphicsScene3dRenderer::drawObjects()
     }
 
     view = m_camera.m_view;
-    QMatrix4x4 surfaceModel = model;//nie:test，新建一个锚点缩放surfaceModel矩阵
+    QMatrix4x4 surfaceModel = model; //nie:test，新建一个锚点缩放surfaceModel矩阵
 
     model.scale(1.0f, 1.0f, m_verticalScale);
     m_model = std::move(model);
@@ -182,10 +183,13 @@ void GraphicsScene3dRenderer::drawObjects()
 
     QMatrix4x4 trackModel = m_model;
     if (m_camera.viewLlaRef_.isInit && m_camera.datasetLlaRef_.isInit) {
-        LLA datasetLla(m_camera.datasetLlaRef_.refLla.latitude,
-                       m_camera.datasetLlaRef_.refLla.longitude, 0.0);
-        North_East_Down datasetNed(&datasetLla, &m_camera.viewLlaRef_, m_camera.getIsPerspective());
+        LLA datasetLla(m_camera.datasetLlaRef_.refLla.latitude, m_camera.datasetLlaRef_.refLla.longitude, 0.0);
+        North_East_Down datasetNed(&datasetLla, &m_camera.viewLlaRef_, isPerspective);
         trackModel.translate(QVector3D(datasetNed.n, datasetNed.e, 0.0f));
+        if (!isPerspective) {
+            float mercScale = 1.0f / std::cos(qDegreesToRadians(m_camera.datasetLlaRef_.refLla.latitude));
+            trackModel.scale(mercScale, mercScale, 1.0f);
+        }
     }
 
     float anchorZ = surfaceViewRenderImpl_.getMinZ();
@@ -250,7 +254,18 @@ void GraphicsScene3dRenderer::drawObjects()
 
         QMatrix4x4 nModel;
         nModel.setToIdentity();
-        nModel.translate(navigationArrowRenderImpl_.getPosition());
+        // nModel.translate(navigationArrowRenderImpl_.getPosition());
+        QVector3D arrowPos = navigationArrowRenderImpl_.getPosition();
+        if (m_camera.viewLlaRef_.isInit && m_camera.datasetLlaRef_.isInit) {
+            if (!isPerspective) {
+                const float mercScale = 1.0f / std::cos(qDegreesToRadians(m_camera.datasetLlaRef_.refLla.latitude));
+                arrowPos = QVector3D(arrowPos.x() * mercScale, arrowPos.y() * mercScale, arrowPos.z());
+            }
+            LLA datasetLla(m_camera.datasetLlaRef_.refLla.latitude, m_camera.datasetLlaRef_.refLla.longitude, 0.0);
+            North_East_Down datasetNed(&datasetLla, &m_camera.viewLlaRef_, isPerspective);
+            arrowPos += QVector3D(datasetNed.n, datasetNed.e, 0.0f);
+        }
+        nModel.translate(arrowPos);
         nModel.rotate(navigationArrowRenderImpl_.getAngle(), 0.f, 0.f, 1.f);
         // float distance =  m_camera.distToFocusPoint();
         float distance = m_camera.getHeightAboveGround();
@@ -265,8 +280,6 @@ void GraphicsScene3dRenderer::drawObjects()
         navigationArrowRenderImpl_.render(this, projection * view * nModel, m_shaderProgramMap);
         glDisable(GL_DEPTH_TEST);
     }
-
-
 
     //-----------Draw axes-------------
     GLint viewport[4];

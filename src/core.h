@@ -43,7 +43,6 @@ public:
     DataProcessor* getDataProcessorPtr() const;
     void refreshMap(LLA lla);
     void saveCurrentMapState(std::function<void(double lat, double lon)>writer);
-
     QHash<QUuid, QString> getLinkNames() const;
 
 

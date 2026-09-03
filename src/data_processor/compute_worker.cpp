@@ -8,13 +8,12 @@
 
 ComputeWorker::ComputeWorker(DataProcessor* ownerDp, Dataset* dataset, QObject* parent)
     : QObject(parent),
-      dp_(ownerDp),
+      dataProcessor_(ownerDp),
       dataset_(dataset),
       surfaceMesh_(defaultTileSidePixelSize, defaultTileHeightMatrixRatio, defaultTileResolution),
       surface_(ownerDp),
       isobaths_(ownerDp),
       mosaic_(ownerDp)
-      // bottom_(ownerDp)
 {
     qRegisterMetaType<WorkBundle>("WorkBundle");
 
@@ -22,7 +21,6 @@ ComputeWorker::ComputeWorker(DataProcessor* ownerDp, Dataset* dataset, QObject* 
     isobaths_.setSurfaceMeshPtr(&surfaceMesh_);
     mosaic_  .setSurfaceMeshPtr(&surfaceMesh_);
 
-    // bottom_.setDatasetPtr(dataset_);
     mosaic_.setDatasetPtr(dataset_);
 }
 
@@ -54,7 +52,7 @@ void ComputeWorker::clearIsobaths()
 
 inline bool ComputeWorker::isCanceled() const noexcept
 {
-    return dp_ && dp_->isCancelRequested();
+    return dataProcessor_ && dataProcessor_->isCancelRequested();
 }
 
 void ComputeWorker::setDatasetPtr(Dataset* ds)
@@ -73,18 +71,12 @@ void ComputeWorker::setBottomTrackPtr(BottomTrack* bt)
 void ComputeWorker::setSurfaceThemeId(int id)
 {
     surface_.setThemeId(id);
-
-    surface_.rebuildColorIntervals(); //  颜色区间重构
+    surface_.rebuildColorIntervals(); //颜色区间重构
 }
 
 void ComputeWorker::setSurfaceEdgeLimit(float v)
 {
     surface_.setEdgeLimit(v);
-}
-
-void ComputeWorker::setSurfaceExtraWidth(int v)
-{
-    surface_.setExtraWidth(v);
 }
 
 void ComputeWorker::setSurfaceIsobathsLevelCnt(int cnt)
@@ -152,12 +144,49 @@ void ComputeWorker::setMaxZ(float v)
     isobaths_.setMaxZ(v);
 }
 
+void ComputeWorker::adaptSurfaceResolution()
+{
+    if (surfaceMesh_.getIsInited() || !dataset_) {
+        return;
+    }
+
+    const float minX = dataset_->minX_;
+    const float maxX = dataset_->maxX_;
+    const float minY = dataset_->minY_;
+    const float maxY = dataset_->maxY_;
+    const float width  = (maxX - minX) + 200.f;
+    const float height = (maxY - minY) + 200.f;
+    if (width  < 0.0f || height < 0.0f) {
+        return;
+    }
+
+    const int   kMaxSurfaceTiles = 4096;
+    const float kMaxResolution   = 3.2f;
+
+    const float curRes = surfaceMesh_.getTileResolution();
+    float res = curRes;
+    const int tileSidePixelSize = surfaceMesh_.getTileSidePixelSize();
+    while (res < kMaxResolution) {
+        const float tileSide = tileSidePixelSize * res;
+        const double tiles = (width / tileSide) * (height / tileSide);
+        if (tiles <= static_cast<double>(kMaxSurfaceTiles)) {
+            break;
+        }
+        res *= 2.0f;
+    }
+
+    if (res != curRes) {
+        qDebug() << "adaptSurfaceResolution:" << curRes << "->" << res;
+        setMosaicTileResolution(res);
+    }
+}
+
 void ComputeWorker::processBundle(const WorkBundle& wb)
 {
     // qDebug() << "ComputeWorker::processBundle";
     // wb.surfaceVec:在底部轨迹数据数组中的索引
-    // 依次地，传感器自行向外发送信号
     if (!wb.surfaceVec.isEmpty() && !isCanceled()) {
+        adaptSurfaceResolution();
         surface_.onUpdatedBottomTrackData(wb.surfaceVec); //生成高度场，不负责等值线的绘制，但是却为等值线提供高度场网格
         surface_.rebuildColorIntervals();
         auto colorIntervals = surface_.getColorIntervals();
@@ -169,7 +198,7 @@ void ComputeWorker::processBundle(const WorkBundle& wb)
     // }
 
     if (wb.doIsobaths && !isCanceled()) {
-        isobaths_.onUpdatedBottomTrackData(); //只计算等值线....... 但它完全依赖于SurfaceProcessor生成的高度场网格。
+        isobaths_.fullRebuildLinesLabels(); //只计算等值线....... 但它完全依赖于SurfaceProcessor生成的高度场网格。
     }
 
     // emit jobFinished();

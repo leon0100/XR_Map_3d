@@ -1173,7 +1173,6 @@ ApplicationWindow  {
                         stepSize: 0.0001
                         from: 0
                         to: 1
-                        // barWidth: 50 * theme.resCoeff
                         width: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
                         onMoved: core.resetAim();
@@ -1232,16 +1231,6 @@ ApplicationWindow  {
             waterViewFirst.resetAim()
         }
     }
-
-    function handleMosaicLOffsetChanged(val) {
-        waterViewFirst.mosaicLOffsetChanged(val)
-        waterViewSecond.mosaicLOffsetChanged(val)
-    }
-    function handleMosaicROffsetChanged(val) {
-        waterViewFirst.mosaicROffsetChanged(val)
-        waterViewSecond.mosaicROffsetChanged(val)
-    }
-
 
 }
 
