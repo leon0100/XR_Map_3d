@@ -312,7 +312,8 @@ void SceneObject::RenderImplementation::setVisible(bool isVisible)
 
 void SceneObject::RenderImplementation::clearData()
 {
-    m_data.clear();
+    // m_data.clear();
+    QVector<QVector3D>().swap(m_data);
 
     updateBounds();
 }

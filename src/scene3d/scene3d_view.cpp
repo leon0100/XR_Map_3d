@@ -31,7 +31,7 @@ GraphicsScene3dView::GraphicsScene3dView() :
     navigationArrow_(std::make_shared<NavigationArrow>()),
     wasMoved_(false),
     wasMovedMouseButton_(Qt::MouseButton::NoButton),
-    qmlRootObject_(nullptr),
+    // qmlRootObject_(nullptr),
     needToResetStartPos_(false),
     lastCameraDist_(m_camera->distForMapView()),
     gridVisibility_(true),
@@ -56,7 +56,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     QObject::connect(m_coordAxes.get(),   &CoordinateAxes::changed, this, &QQuickFramebufferObject::update);
     QObject::connect(m_planeGrid.get(),   &PlaneGrid::changed,    this, &QQuickFramebufferObject::update);
     QObject::connect(navigationArrow_.get(), &NavigationArrow::changed, this, &QQuickFramebufferObject::update);
-
 
     QObject::connect(isobathsView_.get(), &IsobathsView::boundsChanged, this, &GraphicsScene3dView::updateBounds);
     QObject::connect(surfaceView_.get(),  &SurfaceView::boundsChanged,  this, &GraphicsScene3dView::updateBounds);
@@ -286,12 +285,12 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 
     wasMoved_ = false;
 
-    if (qmlRootObject_) { // maybe this will be removed
-        if (auto selectionToolButton = qmlRootObject_->findChild<QObject*>("selectionToolButton"); selectionToolButton) {
-            selectionToolButton->property("checked").toBool() ?
-                m_mode = ActiveMode::BottomTrackVertexSelectionMode : m_mode = ActiveMode::Idle;
-        }
-    }
+    // if (qmlRootObject_) {
+    //     if (auto selectionToolButton = qmlRootObject_->findChild<QObject*>("selectionToolButton"); selectionToolButton) {
+    //         selectionToolButton->property("checked").toBool() ?
+    //             m_mode = ActiveMode::BottomTrackVertexSelectionMode : m_mode = ActiveMode::Idle;
+    //     }
+    // }
 
     m_camera->m_lookAtSave = m_camera->m_lookAt;
 
@@ -968,12 +967,11 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
             // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
             //     return;
             // }
-            // clearComboSelectionRect();
-            if(datasetPtr_->polygonNEDEmpty() && qmlRootObject_) {
-                if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSet")) {
-                    isobathsSet->setProperty("outlineMode", true);
-                }
-            }
+            // if(datasetPtr_->polygonNEDEmpty() && qmlRootObject_) {
+            //     if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSet")) {
+            //         isobathsSet->setProperty("outlineMode", true);
+            //     }
+            // }
 
             m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
     }, Qt::DirectConnection);
@@ -1018,7 +1016,7 @@ void GraphicsScene3dView::addPoints(QVector<QVector3D> positions, QColor color, 
 
 void GraphicsScene3dView::setQmlRootObject(QObject* object)
 {
-    qmlRootObject_ = object;
+    // qmlRootObject_ = object;
     polygonOutline_->setQmlRootObject(object);
 }
 
@@ -1243,7 +1241,7 @@ void GraphicsScene3dView::updateViews()
 
 void GraphicsScene3dView::onPositionAdded(uint64_t indx)
 {
-    qDebug() << "GraphicsScene3dView::onPositionAdded........";
+    // qDebug() << "GraphicsScene3dView::onPositionAdded........";
     if (!datasetPtr_) {
         return;
     }
@@ -1257,7 +1255,6 @@ void GraphicsScene3dView::onPositionAdded(uint64_t indx)
         return;
     }
     boatTrack_->onPositionAdded(indx);
-
     navigationArrow_->setPositionAndAngle(QVector3D(boatPos.ned.n, boatPos.ned.e,
                             !isfinite(boatPos.ned.d) ? 0.f : boatPos.ned.d), -90.f);
 }
@@ -1342,6 +1339,8 @@ void GraphicsScene3dView::onTargetTilesLoaded()
 {
     qDebug() << "onTargetTilesLoaded............";
     screenshotPending_ = true;
+    QQuickFramebufferObject::update();
+
     QQuickFramebufferObject::update();
 }
 
@@ -1440,7 +1439,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
         GIF->dialogInfo(Dialog_OK, tr("Loading failed, please try again."));
         return false;
     }
-
     GIF->dialogInfo(Dialog_Loading, "hide");
 
 #ifdef Q_OS_WIN
@@ -1636,7 +1634,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     return true;
 }
 
-
 void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fbo)
 {
     //仅在 synchronize()中，将 Item 的属性复制到 Renderer 的成员变量中
@@ -1672,7 +1669,6 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fb
     m_renderer->m_viewSize                  = graphicsView->size();
     m_renderer->m_camera                    = *graphicsView->m_camera;
     m_renderer->m_axesThumbnailCamera       = *graphicsView->m_axesThumbnailCamera;
-    // m_renderer->m_comboSelectionRect        = graphicsView->m_comboSelectionRect;
     m_renderer->m_verticalScale             = graphicsView->m_verticalScale;
     m_renderer->m_boundingBox               = graphicsView->m_bounds;
     m_renderer->m_isSceneBoundingBoxVisible = graphicsView->m_isSceneBoundingBoxVisible;
@@ -1690,7 +1686,6 @@ void GraphicsScene3dView::InFboRenderer::render()
         renderToOffscreen(graphicsView_->screenshotTask_);
     }
 }
-
 
 QOpenGLFramebufferObject *GraphicsScene3dView::InFboRenderer::createFramebufferObject(const QSize &size)
 {

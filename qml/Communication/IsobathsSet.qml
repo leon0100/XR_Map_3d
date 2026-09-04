@@ -22,7 +22,7 @@ Item {
     property var  targetPlot:   null
     property int  iconSize:     isobathSize * 0.05
 
-    property int currentCommPage: 0
+    property int  currentCommPage: 0
 
     Connections {
         target: UdpManager

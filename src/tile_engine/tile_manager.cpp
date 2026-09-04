@@ -100,10 +100,8 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
 
     // dimensions
     for (auto& itm : request) {
-        // LLARect -> tileIndx
         LLA lla(itm.latitude, itm.longitude, 0.0f);
         auto tileIndx = tileProvider_.get()->llaToTileIndex(lla, tileProvider_.get()->heightToTileZ(itm.altitude));
-        // qDebug() << "tileIndx........" << tileIndx.x_ << "   " << tileIndx.y_ << "    " << tileIndx.z_;
 
         minX = std::min(minX, tileIndx.x_);
         maxX = std::max(maxX, tileIndx.x_);
@@ -142,7 +140,6 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
         return;
     }
 
-
     // 对于高德地图，扩大请求范围，补偿火星坐标偏移
     if (currentMap_ == amapMapSource) {
         double expandFactor = 0.02; // 大约2公里左右的缓冲区
@@ -151,7 +148,6 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
         minLat -= expandFactor;
         maxLat += expandFactor;
     }
-
 
     auto [lonStartTile, lonEndTile, boundaryTile] = tileProvider_.get()->lonToTileXWithWrapAndBoundary(minLon, maxLon, zoomLevel);
 

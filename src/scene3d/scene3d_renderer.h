@@ -10,7 +10,6 @@
 #include "polygon_group.h"
 #include "scene3d_view.h"
 #include "navigation_arrow.h"
-#include "usbl_view.h"
 #include <QMatrix4x4>
 #include "qsystemdetection.h"
 #if !defined(Q_OS_ANDROID) && !defined(LINUX_ES)
@@ -39,11 +38,11 @@
  * 2、自动加载函数指针，代替GLAD/Glew
  * 3、跨平台抽象，屏蔽 WGL/GLX/CGL 差异
  * 4、集成Qt上下文，与 QOpenGLContext 自动绑定
- * 提供现代OpenGL支持，包含 VAO、UBO、Instancing、纹理等关键特性
+ * 提供现代OpenGL支持，包含 VAO、VBO、Instancing、纹理等关键特性
 一句话：QOpenGLExtraFunctions = Qt 版的 GLAD + 跨平台抽象 + 与 Qt GUI 无缝集成
 */
 
-class QOpenGLShaderProgram;//用于处理OpenGL着色器程序的类
+class QOpenGLShaderProgram; //用于处理OpenGL着色器程序的类
 class GraphicsScene3dRenderer : protected QOpenGLExtraFunctions
 {
 public:
@@ -63,7 +62,7 @@ private:
 
 protected:
     QMap <QString, std::shared_ptr<QOpenGLShaderProgram>> m_shaderProgramMap;
-    bool m_isInitialized = false;
+
 
 private:
     friend class GraphicsScene3dView;
@@ -82,12 +81,11 @@ private:
     PolygonGroup::PolygonGroupRenderImplementation       m_polygonGroupRenderImpl;
     BoatTrack::BoatTrackRenderImplementation             m_boatTrackRenderImpl;
     NavigationArrow::NavigationArrowRenderImplementation navigationArrowRenderImpl_;
-    UsblView::UsblViewRenderImplementation               usblViewRenderImpl_;
+    // UsblView::UsblViewRenderImplementation               usblViewRenderImpl_;
     PolygonOutline::PolygonOutlineRenderImplementation   m_polygonOutlineRenderImpl;
 
     QMatrix4x4 m_model;
     QMatrix4x4 m_projection;
-    // QRect m_comboSelectionRect;
     Cube m_boundingBox;
     float m_verticalScale = 1.0f;
     bool m_isSceneBoundingBoxVisible = true;
@@ -95,17 +93,6 @@ private:
     float scaleFactor_;
     float gridVisibility_ = true;
 
-    MapView* mapViewForRenderImpl_ = nullptr;
-
-    bool hasDepthRange_ = false;
-    float minZ_, maxZ_;
-
-    
-    // 框选相关
-    bool m_isBoxSelecting = false;
-    QPoint m_boxSelectStart;
-    QPoint m_boxSelectEnd;
-    //截图功能的投影矩阵
     bool useCustomOrtho_ = false;
     float orthoLeft_ = 0.0f, orthoRight_ = 0.0f, orthoBottom_ = 0.0f, orthoTop_ = 0.0f;
 };

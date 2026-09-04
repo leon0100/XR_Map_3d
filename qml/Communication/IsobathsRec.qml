@@ -820,7 +820,6 @@ XRRectangle {
                 editable: false
                 unitText: ""
                 Layout.rightMargin: 10
-                // onFocusChanged: isobathsSet.focus = true
 
                 Component.onCompleted: {
                     IsobathsViewControlMenuController.onSetSurfaceLevelCnt(contourStep.value)

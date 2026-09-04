@@ -143,6 +143,14 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
 
     QVector<QVector3D> prepData;
     qDebug() << "lEpoch....." << lEpoch << "   rEpoch...." << rEpoch;
+    epIndxUpdated_.clear();
+    vertIndxUpdated_.clear();
+    const int cnt = rEpoch - lEpoch;
+    if(cnt > 0) {
+        prepData.reserve(cnt);
+        epIndxUpdated_.reserve(cnt);
+        vertIndxUpdated_.reserve(cnt);
+    }
     for (int epIndx = lEpoch; epIndx < rEpoch; ++epIndx) {
         auto vIt = epoch2Vertex_.find(epIndx);
         if (vIt != epoch2Vertex_.end()) {
@@ -152,10 +160,11 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
                     auto vIndx = *vIt;
                     // const float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
                     float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
-                    r->m_data[vIndx].setZ(dist);
-
-                    epIndxUpdated_.push_back(epIndx);
-                    vertIndxUpdated_.push_back(vIndx);
+                    if (vIndx >= 0 && vIndx < r->m_data.size()) {
+                        r->m_data[vIndx].setZ(dist);
+                        epIndxUpdated_.push_back(epIndx);
+                        vertIndxUpdated_.push_back(vIndx);
+                    }
                 }
             }
         }
@@ -167,7 +176,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
                     prepData.push_back(QVector3D(pos.n, pos.e, dist));
                     epIndxUpdated_.push_back(epIndx);
                     vertIndxUpdated_.push_back(rSize);
-
                     vertex2Epoch_.insert(rSize, epIndx);
                     epoch2Vertex_.insert(epIndx, rSize);
                     rSize++;
@@ -181,14 +189,16 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
 
     SceneObject::appendData(prepData);
 
-    Q_EMIT epochListChanged();
+    // Q_EMIT epochListChanged();
 }
 
 void BottomTrack::setData(const QVector<QVector3D> &data, int primitiveType)
 {
     qDebug() << "BottomTrack::setData................";
+    vertex2Epoch_.clear();
+    epoch2Vertex_.clear();
     if (m_filter) {
-        QVector <QVector3D> filteredData;
+        QVector<QVector3D> filteredData;
         m_filter->apply(data, filteredData);
         SceneObject::setData(filteredData, primitiveType);
         return;

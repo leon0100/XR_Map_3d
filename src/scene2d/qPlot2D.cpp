@@ -10,12 +10,12 @@
 
 
 
-qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent), m_updateTimer(new QTimer(this))
+qPlot2D::qPlot2D(QQuickItem* parent) : QQuickPaintedItem(parent)
 {
     qRegisterMetaType<ChannelId>("ChannelId");
     qRegisterMetaType<DatasetChannel>("DatasetChannel");
 
-    m_updateTimer->start(30);
+    // m_updateTimer->start(30);
     setFlag(ItemHasContents);
     setAcceptedMouseButtons(Qt::AllButtons);
 
@@ -116,12 +116,12 @@ bool qPlot2D::eventFilter(QObject *watched, QEvent *event)
 {
     Q_UNUSED(watched);
 
-    if (event->type() == EpochSelected3d) {
-        auto epochEvent = static_cast<EpochEvent*>(event);
-        //qDebug() << QString("[Plot 2d]: catched event from 3d view (epoch index is %1)").arg(epochEvent->epochIndex());
-        setAimEpochEventState(true);
-        setTimelinePositionByEpoch(epochEvent->epochIndex());
-    }
+    // if (event->type() == EpochSelected3d) {
+    //     auto epochEvent = static_cast<EpochEvent*>(event);
+    //     // qDebug() << QString("[Plot 2d]: catched event from 3d view (epoch index is %1)").arg(epochEvent->epochIndex());
+    //     setAimEpochEventState(true);
+    //     setTimelinePositionByEpoch(epochEvent->epochIndex());
+    // }
     return false;
 }
 
@@ -336,7 +336,6 @@ void qPlot2D::updateBatchCorrect()
 
 void qPlot2D::drawDepthCorrect(int x, int y)
 {
-    qDebug() << "x........" << x << "  y:" << y;
     if (dataset_ == nullptr) return;
     int totalWidth = static_cast<int>(width());
     int waveWidth = totalWidth / WAVE_WIDTH_RATIO_DENOM;
@@ -564,26 +563,21 @@ void qPlot2D::plotMousePosition(int x, int y, bool isSync)
     }
 }
 
-void qPlot2D::simplePlotMousePosition(int x, int y)
-{
-    Plot2D::setAimEpochEventState(false);
-
-    if(_isHorizontal) {
-        Plot2D::simpleSetMousePosition(x, y);
-    }
-    else {
-        if(x >=0 && y >= 0) {
-            Plot2D::simpleSetMousePosition(height() - y, x);
-        }
-        else {
-            Plot2D::simpleSetMousePosition(-1, -1);
-        }
-    }
-}
-
-// void qPlot2D::onCursorMoved(int x, int y)
+// void qPlot2D::simplePlotMousePosition(int x, int y)
 // {
-//     Plot2D::onCursorMoved(x, y);
+//     Plot2D::setAimEpochEventState(false);
+
+//     if(_isHorizontal) {
+//         Plot2D::simpleSetMousePosition(x, y);
+//     }
+//     else {
+//         if(x >=0 && y >= 0) {
+//             Plot2D::simpleSetMousePosition(height() - y, x);
+//         }
+//         else {
+//             Plot2D::simpleSetMousePosition(-1, -1);
+//         }
+//     }
 // }
 
 void qPlot2D::dataUpdate()

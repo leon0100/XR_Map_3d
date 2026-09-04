@@ -20,7 +20,6 @@ ComputeWorker::ComputeWorker(DataProcessor* ownerDp, Dataset* dataset, QObject* 
     surface_ .setSurfaceMeshPtr(&surfaceMesh_);
     isobaths_.setSurfaceMeshPtr(&surfaceMesh_);
     mosaic_  .setSurfaceMeshPtr(&surfaceMesh_);
-
     mosaic_.setDatasetPtr(dataset_);
 }
 
@@ -31,7 +30,6 @@ void ComputeWorker::clearAll()
     surface_.clear();
     mosaic_.clear();
     isobaths_.clear();
-
     surfaceMesh_.clear();
 }
 
@@ -164,7 +162,7 @@ void ComputeWorker::adaptSurfaceResolution()
     const float kMaxResolution   = 3.2f;
 
     const float curRes = surfaceMesh_.getTileResolution();
-    float res = curRes;
+    float res = defaultTileResolution;
     const int tileSidePixelSize = surfaceMesh_.getTileSidePixelSize();
     while (res < kMaxResolution) {
         const float tileSide = tileSidePixelSize * res;

@@ -186,7 +186,6 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
         vec_CSV.append(pos.lla.altitude);
         if (currentLine > 0 && (currentLine % progressInterval == 0 || currentLine == validTotal)) {
             double progress = static_cast<double>(currentLine) / validTotal;
-
             QString statusText = tr("Processing CSV %1 / %2 (%3%)").arg(currentLine)
                                      .arg(validTotal).arg(static_cast<int>(progress * 100));
             if (progressDialog_) {

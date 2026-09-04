@@ -1,8 +1,8 @@
 #include "scene3d_renderer.h"
-#include "draw_utils.h"
+// #include "draw_utils.h"
 
-#include "bottom_track.h"
-#include "point_group.h"
+// #include "bottom_track.h"
+// #include "point_group.h"
 #include "polygon_group.h"
 
 #include <QThread>
@@ -44,11 +44,8 @@ void GraphicsScene3dRenderer::initialize()
 {
     initializeOpenGLFunctions(); //加载所有OpenGL函数指针
 
-    m_isInitialized = true;
-
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.3f, 0.3f, 0.3f, 0.0f);
-
 
     // static
     if (!m_shaderProgramMap["static"]->addCacheableShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/base.vsh"))
@@ -140,7 +137,6 @@ void GraphicsScene3dRenderer::clearCustomOrtho()
     useCustomOrtho_ = false;
 }
 
-
 void GraphicsScene3dRenderer::drawObjects()
 {
     QMatrix4x4 model, view, projection;
@@ -151,7 +147,7 @@ void GraphicsScene3dRenderer::drawObjects()
     const float nearPlaneOrthoCoeff{ 0.05f };
     const float farPlaneOrthoCoeff{ 1.2f };
 
-    float perspCoeff = m_camera.getHeightAboveGround() / perspectiveEdge;
+    float perspCoeff  = m_camera.getHeightAboveGround() / perspectiveEdge;
     qreal perspFixFov = m_camera.fov() + m_camera.fov() * perspCoeff;
 
     bool isPerspective = m_camera.getIsPerspective();
@@ -162,8 +158,8 @@ void GraphicsScene3dRenderer::drawObjects()
         // 检查是否使用自定义正交投影边界
         if (useCustomOrtho_) {
             float orth_v = std::max(std::abs(orthoTop_ - orthoBottom_), std::abs(orthoRight_ - orthoLeft_)) / 2.0f;
-            projection.ortho(orthoLeft_, orthoRight_, orthoBottom_,
-                             orthoTop_, orth_v * nearPlaneOrthoCoeff, orth_v * farPlaneOrthoCoeff);
+            projection.ortho(orthoLeft_, orthoRight_, orthoBottom_, orthoTop_,
+                             orth_v * nearPlaneOrthoCoeff, orth_v * farPlaneOrthoCoeff);
         }
         else {
             // 使用默认的相机距离方式
@@ -198,7 +194,7 @@ void GraphicsScene3dRenderer::drawObjects()
     surfaceModel.scale(1.0f, 1.0f, m_verticalScale);
 
     bool isOut = m_camera.getIsFarAwayFromOriginLla();
-    // qDebug() << "........isOut...................." << isOut;
+    // qDebug() << "isOut...................." << isOut;
 
     // 先渲染瓦片地图作为背景层
     mapViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);
@@ -211,7 +207,6 @@ void GraphicsScene3dRenderer::drawObjects()
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
 
-        // 渲染高度场
         // surfaceViewRenderImpl_.render(this,  m_projection * view * m_model, m_shaderProgramMap);  //高度场
         // isobathsViewRenderImpl_.render(this, m_model, view, m_projection, m_shaderProgramMap);    //等值线
         surfaceViewRenderImpl_.render(this,  m_projection * view * trackModel, m_shaderProgramMap);  //高度场
@@ -223,13 +218,12 @@ void GraphicsScene3dRenderer::drawObjects()
         }
     }
 
-
     // 启用深度测试，渲染3D对象
     glEnable(GL_DEPTH_TEST);
     if (!isOut) {
         imageViewRenderImpl_.render(this, m_projection * view * m_model, m_shaderProgramMap);
         m_polygonGroupRenderImpl.render(this, m_projection * view * m_model, m_shaderProgramMap);
-        usblViewRenderImpl_.render(this, m_projection * view * m_model, m_shaderProgramMap);
+        // usblViewRenderImpl_.render(this, m_projection * view * m_model, m_shaderProgramMap);
     }
 
     glDisable(GL_DEPTH_TEST);
@@ -244,7 +238,6 @@ void GraphicsScene3dRenderer::drawObjects()
     // zOffset = qMax(0.01f, zOffset);
     // QMatrix4x4 upModel = m_model;
     // upModel.translate(0.0f, 0.0f, -zOffset);  //向上提升
-
 
     surfaceViewRenderImpl_.render(this,  m_projection * view * trackModel, m_shaderProgramMap);  //高度场
     isobathsViewRenderImpl_.render(this, trackModel, view, m_projection, m_shaderProgramMap);    //等值线

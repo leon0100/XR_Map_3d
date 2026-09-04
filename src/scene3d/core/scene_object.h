@@ -160,7 +160,7 @@ private:
 protected:
     QString m_name = QStringLiteral("Scene object");
     QUuid m_uuid   = QUuid::createUuid();
-    std::shared_ptr <AbstractEntityDataFilter> m_filter;
+    std::shared_ptr<AbstractEntityDataFilter> m_filter;
     RenderImplementation* m_renderImpl;
     GraphicsScene3dView* m_view = nullptr;
     RayCaster m_rayCaster;

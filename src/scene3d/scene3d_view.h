@@ -167,7 +167,6 @@ public:
 
         GraphicsScene3dView* graphicsView_ = nullptr;
         QOpenGLFramebufferObject* offScreenFbo_ = nullptr;
-
     };
 
     enum ActiveMode {
@@ -182,14 +181,8 @@ public:
         MeasuringRouteCreationMode          = 8
     };
 
-    /*
-     * @brief Constructor
-     */
     GraphicsScene3dView();
 
-    /*
-     * @brief Destructor
-     */
     virtual ~GraphicsScene3dView();
 
     /*
@@ -238,10 +231,8 @@ public:
     Q_INVOKABLE void setDistMeasureMode(bool isDist);
     Q_INVOKABLE void setLandMarkMode(bool mark);
 
-
     void setTextureIdByTileIndx(const map::TileIndex& tileIndx, GLuint textureId);
     void setGridVisibility(bool state);
-
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
@@ -342,7 +333,7 @@ private:
 
     bool wasMoved_;
     Qt::MouseButtons wasMovedMouseButton_;
-    QObject* qmlRootObject_;
+    // QObject* qmlRootObject_;
     bool needToResetStartPos_;
     float lastCameraDist_;
     bool gridVisibility_;

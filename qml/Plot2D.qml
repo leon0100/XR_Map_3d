@@ -19,10 +19,8 @@ WaterFall {
     property int  plotSize: theme.screenSize * 0.35
     property int  plotIconSize: theme.iconSize * 1.5
 
-    // horizontal: horisontalVertical.checked
     horizontal: menuToolBar.layoutHorizontal
     property bool currentFrameChecked: echogramRec.currentFrameChecked
-    // property bool bottomLineChecked: bottomLine.checked
     property bool deleteFrameMode: echogramRec.deleteFrameChecked
     property bool outlineCompleted: false
 
@@ -152,7 +150,6 @@ WaterFall {
             }
             else if (zoomY) {
                 let val = (pinch.previousScale - pinch.scale) * 500.0
-                // plot.verZoomEvent(val)
                 plotCursorChanged(indx, cursorFrom(), cursorTo())
             }
             else {

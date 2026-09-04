@@ -185,7 +185,6 @@ void Plot2D::resetAim()
 
 void Plot2D::setTimelinePositionSec(float position)
 {
-    // qDebug() << "Plot2D::setTimelinePositionSec.........";
     if (position > 1.0f) {
         position = 1.0f;
     }
@@ -443,9 +442,7 @@ void Plot2D::simpleSetMousePosition(int x, int y)
     }
 
     if (x == -1) {
-        //_cursor.selectEpochIndx = -1;
         cursor_.currentEpochIndx = -1;
-        //_cursor.lastEpochIndx = -1; // ?
         return;
     }
 

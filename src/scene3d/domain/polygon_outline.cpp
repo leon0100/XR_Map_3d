@@ -88,7 +88,6 @@ void PolygonOutline::polygonAddPoint(double latitude, double longitude)
 
     const int fromIndx = lastIndx_;
     if (fromIndx >= toIndx) {
-        qDebug() << "fromIndx >= toIndx......fromIndx:" << fromIndx << "  lastIndex_:" << lastIndx_;
         return;
     }
 

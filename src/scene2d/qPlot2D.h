@@ -82,7 +82,7 @@ public:
 
 protected:
     Dataset* dataset_ = nullptr;
-    QTimer* m_updateTimer;
+    // QTimer* m_updateTimer;
     bool _isHorizontal = true;
 
 
@@ -107,7 +107,7 @@ public slots:
     void verScrollEvent(int delta);
     Q_INVOKABLE void scaleYZoomEvent(int delta);
     Q_INVOKABLE void plotMousePosition(int x, int y, bool isSync = false);
-    Q_INVOKABLE void simplePlotMousePosition(int x, int y);
+    // Q_INVOKABLE void simplePlotMousePosition(int x, int y);
     Q_INVOKABLE void plotMouseTool(int mode);
 
     void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)

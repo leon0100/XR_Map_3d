@@ -70,7 +70,6 @@ DataProcessor::~DataProcessor()
 void DataProcessor::setDatasetPtr(Dataset *datasetPtr)
 {
     datasetPtr_ = datasetPtr;
-
     QMetaObject::invokeMethod(worker_, "setDatasetPtr", Qt::QueuedConnection, Q_ARG(Dataset*, datasetPtr_));
 }
 

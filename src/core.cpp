@@ -382,10 +382,16 @@ void Core::openFileFromMenu()
         datasetPtr_->resetDataset();
         dataHorizon_->clear();
         if (scene3dViewPtr_) {
-            scene3dViewPtr_->clear(true);
+            scene3dViewPtr_->clear(true, true);
             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
         }
-        QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool, true));
+        // QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool, true));
+        for (int i = 0; i < plot2dList_.size(); i++) {
+            if (plot2dList_.at(i) != NULL) {
+                plot2dList_.at(i)->clearPlotData();
+            }
+        }
+        QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::DirectConnection, Q_ARG(bool, true));
         setDataProcessorConnections();
     }
 
@@ -594,7 +600,7 @@ void Core::clearRouteData()
                         datasetPtr_->resetDataset();
                         dataHorizon_->clear();
                         if (scene3dViewPtr_) {
-                            scene3dViewPtr_->clear(true);
+                            scene3dViewPtr_->clear(true, true);
                             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
                         }
                     }
@@ -605,10 +611,8 @@ void Core::clearRouteData()
                             plot2d->clearPlotData();
                         }
                     }
-
-                    // emit isobathsViewControlMenuController_->edgeLimitChanged(100);
                 }
-                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool,clearTrack));
+                QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::DirectConnection, Q_ARG(bool,clearTrack));
             }
         }, tr("Clear Track Data"));
     }
@@ -760,7 +764,6 @@ void Core::onFileStopsOpening(QVector<float>& depthVec, double minZ, double maxZ
         float bboxW = datasetPtr_->maxX_ - datasetPtr_->minX_;
         float bboxH = datasetPtr_->maxY_ - datasetPtr_->minY_;
         int newLimit = sqrt(bboxW * bboxW + bboxH * bboxH) / 8;
-        qDebug() << "newLimit......" << newLimit;
         isobathsViewControlMenuController_->setEdgeLimitChanged(newLimit);
     }
     // qDebug() << "onFileStopsOpening.............." << minZ << "    " << maxZ;
@@ -1046,7 +1049,6 @@ void Core::createDataProcessor()
 {
     dataProcThread_ = new QThread(this);
     dataProcessor_  = new DataProcessor(nullptr, datasetPtr_);
-
     dataProcessor_->moveToThread(dataProcThread_);
 
     QObject::connect(dataProcThread_, &QThread::finished, dataProcessor_,  &QObject::deleteLater);
