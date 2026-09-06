@@ -81,8 +81,8 @@ Q_DECLARE_METATYPE(BoatPoint)
 //定义一个地图类型
 typedef enum
 {
-    googleMapSource = 0, //谷歌地图
-    amapMapSource,       //高德地图
+    googleMapSource = 0,  //谷歌地图
+    amapMapSource,        //高德地图
     openStreetMapSource,  //OpenStreetMap地图
     geovisEarthSource,    //星图地球地图
 }MapSourceType;

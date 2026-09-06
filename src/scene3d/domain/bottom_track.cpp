@@ -283,18 +283,6 @@ void BottomTrack::mouseMoveEvent(Qt::MouseButtons buttons, qreal x, qreal y)
             }
         }
     }
-
-    // if(m_view->m_mode == GraphicsScene3dView::BottomTrackVertexComboSelectionMode) {
-    //     RENDER_IMPL(BottomTrack)->selectedVertexIndices_.clear();
-    //     for (int i = 0; i < RENDER_IMPL(BottomTrack)->m_data.size(); i++) {
-    //         auto p = RENDER_IMPL(BottomTrack)->m_data.at(i);
-    //         auto p_screen = p.project(m_view->camera().lock()->viewMatrix()*m_view->m_model,
-    //                         m_view->m_projection, m_view->boundingRect().toRect());
-
-    //         // if (m_view->m_comboSelectionRect.contains(p_screen.x(), p_screen.y()))
-    //         //     RENDER_IMPL(BottomTrack)->selectedVertexIndices_.append(i);
-    //     }
-    // }
 }
 
 void BottomTrack::mousePressEvent(Qt::MouseButtons buttons, qreal x, qreal y)

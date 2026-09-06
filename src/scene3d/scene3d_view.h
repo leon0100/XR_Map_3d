@@ -52,13 +52,9 @@ public:
         float distForMapView() const;
         qreal distToFocusPoint() const;
         qreal fov() const;
-        qreal pitch() const;
-        qreal yaw() const;
-        QMatrix4x4 viewMatrix() const;
 
         void setCameraListener(Camera* cameraListener);
 
-        //void rotate(qreal yaw, qreal pitch); //TODO! Process this method later
         void rotate(const QVector2D& lastMouse, const QVector2D& mousePos);
         void rotate(const QPointF& prevCenter, const QPointF& currCenter, qreal angleDelta, qreal widgetHeight);
         void move(const QVector2D &lastMouse, const QVector2D &mousePos);
@@ -67,27 +63,24 @@ public:
         void zoom(qreal delta);
         void zoomAndroid(qreal delta);
         void commitMovement();
-        void focusOnObject(std::weak_ptr<SceneObject> object);
         void focusOnPosition(const QVector3D& pos);
         void setDistance(qreal distance);
         void setIsometricView();
         void setMapView();
         void reset();
         void resetRotationAngle();
-        void setYerevanLla(LLA yerevan);
+        void setStartupInitLla(LLA lla);
 
         float getHeightAboveGround() const;
         float getAngleToGround() const;
         bool  getIsPerspective() const;
         bool  getIsFarAwayFromOriginLla() const;
-        map::CameraTilt getCameraTilt() const;
-        QVector3D getEyePosition() const;
-        LLARef viewLlaRef_ = LLARef(startupInitLla);
+
 
     private:
         void updateCameraParams();
         void tryToChangeViewLlaRef();
-        void updateViewMatrix();//通过欧拉角和距离参数，计算相机在3D空间中的位置和方向
+        void updateViewMatrix(); //通过欧拉角和距离参数，计算相机在3D空间中的位置和方向
         void checkRotateAngle();
         void tryResetRotateAngle();
 
@@ -97,34 +90,33 @@ public:
 
         Camera* cameraListener_ = nullptr;
 
-        QVector3D m_eye = {0.0f, 0.0f, 0.0f};
-        QVector3D m_up  = {0.0f, 1.0f, 0.0f};
-        QVector3D m_lookAt = {0.0f, 0.0f, 0.0f};
+        QVector3D m_lookAt = {0.0f, 0.0f, 0.0f};//焦点 （注视目标点），轨道中心。平移操作移动的就是它
         QVector3D m_lookAtSave = {0.0f, 0.0f, 0.0f};
-        QVector3D m_relativeOrbitPos = {0.0f, 0.0f, 0.0f};
 
         QMatrix4x4 m_view;
 
-        std::weak_ptr<SceneObject> m_focusedObject;
         QVector3D m_offset;
         QVector3D m_deltaOffset;
-        QVector3D m_focusPoint;
 
-        qreal m_pitch = 0.f;
-        qreal m_yaw = 0.f;
         qreal m_fov = 45.f;
         float m_distToFocusPoint = 50.f;
         float distForMapView_ = m_distToFocusPoint;
-        qreal m_sensivity = 4.0f;
         float distToGround_ = 0.0f;
         float angleToGround_ = 0.0f;
         bool  isPerspective_ = false;
         float highDistThreshold_ = 5000.0f;
         float lowDistThreshold_ = highDistThreshold_ * 0.9f;
+        /*
+         * m_rotAngle.x():相机方位角，绕垂直轴。可多圈旋转，相机绕焦点水平转了多少度，决定“从哪个方向看”
+         * m_rotAngle.y():相机俯仰角，从天顶算起的偏角。[0, π/2]，0=正俯视（天顶往下看），π/2=水平贴地看
+        */
         QVector2D m_rotAngle;
         GraphicsScene3dView* viewPtr_ = nullptr;
         LLARef datasetLlaRef_;
         LLA startupInitLla = LLA(32.262781f, 118.702785f, 0.0f);
+
+    public:
+        LLARef viewLlaRef_ = LLARef(startupInitLla);
     };
 
     //Renderer
@@ -140,8 +132,8 @@ public:
 
         /*
          * 渲染将在专用线程上进行，因此需要避免在渲染线程和GUI线程之间共享变量，使用synchronize()进行通信。
-         *它是 QQuickFramebufferObject(在GUI线程)向 QQuickFramebufferObject::Renderer(在渲染线程)传递状态和数据的唯一安全场所
-         *QQuickFramebufferObject::update() -----> 触发synchronize() ------> 然后触发render()
+         * 它是 QQuickFramebufferObject(在GUI线程)向 QQuickFramebufferObject::Renderer(在渲染线程)传递状态和数据的唯一安全场所
+         * QQuickFramebufferObject::update() -----> 触发synchronize() ------> 然后触发render()
         */
         virtual void synchronize(QQuickFramebufferObject * fbo) override;
         virtual void render() override;
@@ -153,9 +145,6 @@ public:
         friend class GraphicsScene3dView;
 
         void processMapTextures(GraphicsScene3dView* viewPtr) const; // maps
-
-        void processMosaicColorTableTexture(GraphicsScene3dView* viewPtr) const; // mosaic on surface
-        void processMosaicTileTexture(GraphicsScene3dView* viewPtr) const;
 
         void processImageTexture(GraphicsScene3dView* viewPtr) const;  // image
 
@@ -280,7 +269,6 @@ signals:
 private:
     void updateBounds();
     void updatePlaneGrid();
-    // void clearComboSelectionRect();
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
     QVector3D calculateToWorldCoor(qreal x, qreal y);
     void updateDistance();
@@ -313,7 +301,6 @@ private:
     Cube m_bounds;
     ActiveMode m_mode    = ActiveMode::BottomTrackVertexSelectionMode;
     ActiveMode lastMode_ = ActiveMode::BottomTrackVertexSelectionMode;
-    // QRect m_comboSelectionRect = { 0, 0, 0, 0 };
     Ray m_ray;
     float m_verticalScale = -1.0f;
     bool m_isSceneBoundingBoxVisible = true;
@@ -325,7 +312,7 @@ private:
     static constexpr double mouseThreshold_{ 10.0 };
 #endif
 
-     float perspectiveEdge_{ 5000.0f };
+    float perspectiveEdge_{ 5000.0f };
     static constexpr float nearPlanePersp_{ 1.0f };
     static constexpr float farPlanePersp_{ 20000.0f };
     static constexpr float nearPlaneOrthoCoeff_{ 0.05f };

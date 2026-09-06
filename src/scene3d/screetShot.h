@@ -314,7 +314,6 @@ signals:
     void signalNameEdit();
     void signalLatitude();
     void signalLongitude();
-    // void closeLandMark();
     void signalLandMarkPtX();
     void signalLandMarkPtY();
 

@@ -81,7 +81,6 @@ private:
     PolygonGroup::PolygonGroupRenderImplementation       m_polygonGroupRenderImpl;
     BoatTrack::BoatTrackRenderImplementation             m_boatTrackRenderImpl;
     NavigationArrow::NavigationArrowRenderImplementation navigationArrowRenderImpl_;
-    // UsblView::UsblViewRenderImplementation               usblViewRenderImpl_;
     PolygonOutline::PolygonOutlineRenderImplementation   m_polygonOutlineRenderImpl;
 
     QMatrix4x4 m_model;

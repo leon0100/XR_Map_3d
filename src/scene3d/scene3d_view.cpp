@@ -31,7 +31,6 @@ GraphicsScene3dView::GraphicsScene3dView() :
     navigationArrow_(std::make_shared<NavigationArrow>()),
     wasMoved_(false),
     wasMovedMouseButton_(Qt::MouseButton::NoButton),
-    // qmlRootObject_(nullptr),
     needToResetStartPos_(false),
     lastCameraDist_(m_camera->distForMapView()),
     gridVisibility_(true),
@@ -201,7 +200,6 @@ QVector3D GraphicsScene3dView::calculateIntersectionPoint(const QVector3D &rayOr
         return retVal;
     }
     const float t = (planeZ - rayOrigin.z()) / rayDirection.z();
-
     if (t < 0) {
         return retVal;
     }
@@ -284,13 +282,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
     }
 
     wasMoved_ = false;
-
-    // if (qmlRootObject_) {
-    //     if (auto selectionToolButton = qmlRootObject_->findChild<QObject*>("selectionToolButton"); selectionToolButton) {
-    //         selectionToolButton->property("checked").toBool() ?
-    //             m_mode = ActiveMode::BottomTrackVertexSelectionMode : m_mode = ActiveMode::Idle;
-    //     }
-    // }
 
     m_camera->m_lookAtSave = m_camera->m_lookAt;
 
@@ -412,11 +403,6 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
     m_ray.setOrigin(toOrig);
     m_ray.setDirection(toDir);
 
-    // if (switchedToBottomTrackVertexComboSelectionMode_) {
-    //     m_comboSelectionRect.setBottomRight({static_cast<int>(x), static_cast<int>(height() - y)});
-    //     m_bottomTrack->mouseMoveEvent(mouseButton, x, y);
-    // }
-    // else {
 #if defined(Q_OS_ANDROID)
         Q_UNUSED(keyboardKey);
         auto fromOrig = QVector3D(m_startMousePos.x(), height() - m_startMousePos.y(), -1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
@@ -443,7 +429,6 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
             cameraWasMoved = true;
         }
 #endif
-    // }
 
     m_lastMousePos = { x, y };
     QQuickFramebufferObject::update();
@@ -456,8 +441,6 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
     Q_UNUSED(keyboardKey);
-
-    // clearComboSelectionRect();
 
     QPoint pos = QPoint(x, y);
 
@@ -476,11 +459,6 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
         return;
     }
 
-    // if (switchedToBottomTrackVertexComboSelectionMode_) {
-    //     m_mode = lastMode_;
-    //     m_bottomTrack->mouseReleaseEvent(mouseButton, x, y);
-    // }
-
     if (!wasMoved_ && wasMovedMouseButton_ == Qt::MouseButton::NoButton) {
         m_bottomTrack->resetVertexSelection();
         boatTrack_->clearSelectedEpoch();
@@ -488,7 +466,6 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
         boatTrack_->mousePressEvent(Qt::MouseButton::LeftButton, x, y);
     }
 
-    // switchedToBottomTrackVertexComboSelectionMode_ = false;
     wasMoved_ = false;
     wasMovedMouseButton_ = Qt::MouseButton::NoButton;
 
@@ -695,10 +672,10 @@ void GraphicsScene3dView::updateProjection()
     QMatrix4x4 currProj;
     if (m_camera) {
         //这里有个bug，14等级时，地图等级切换会出现抖动现象！！！
-        float aspectRatio = width()/height();
+        float aspectRatio = width() / height();
         if (m_camera->getIsPerspective()) { //当地图等级大于14的某个值时为perspective透视投影
             float coeff = m_camera->getHeightAboveGround() / perspectiveEdge_;
-            qreal fixFov = m_camera->fov() + m_camera->fov()*coeff;
+            qreal fixFov = m_camera->fov() + m_camera->fov() * coeff;
             // qDebug() << "coeff: " << coeff << "............  :fixFov:" <<fixFov;
             currProj.perspective(fixFov, aspectRatio, nearPlanePersp_, farPlanePersp_);
         }
@@ -870,7 +847,6 @@ void GraphicsScene3dView::setIdleMode()
 {
     m_mode = Idle;
 
-    // clearComboSelectionRect();
     m_bottomTrack->resetVertexSelection();
     boatTrack_->clearSelectedEpoch();
 
@@ -1040,11 +1016,6 @@ void GraphicsScene3dView::updatePlaneGrid()
     m_planeGrid->setCellSize(10);
 }
 
-// void GraphicsScene3dView::clearComboSelectionRect()
-// {
-    // m_comboSelectionRect = { 0, 0, 0, 0 };
-// }
-
 void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, double& longitude)
 {
     // 1. 用完整矩阵 unproject（必须乘 model）
@@ -1079,10 +1050,10 @@ void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, d
 
 QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
 {
-    QVector3D rayOrigin = QVector3D(x, height() - y, -1.0f) .unproject(m_camera->m_view * m_model,
-                                                                m_projection,boundingRect().toRect());
-    QVector3D rayEnd = QVector3D(x, height() - y, 1.0f) .unproject(m_camera->m_view * m_model,
-                                                                m_projection, boundingRect().toRect());
+    QVector3D rayOrigin = QVector3D(x, height() - y, -1.0f)
+                            .unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
+    QVector3D rayEnd = QVector3D(x, height() - y, 1.0f)
+                            .unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
     QVector3D rayDir = (rayEnd - rayOrigin).normalized();
 
     float groundZ = 0.0f;
@@ -1646,8 +1617,6 @@ void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fb
 
     // process textures
     processMapTextures(graphicsView);
-    processMosaicColorTableTexture(graphicsView);
-    processMosaicTileTexture(graphicsView);
     processImageTexture(graphicsView);
     processSurfaceTexture(graphicsView);
 
@@ -1727,119 +1696,6 @@ void GraphicsScene3dView::InFboRenderer::processMapTextures(GraphicsScene3dView 
     r.pendingDelete_ += del;
 }
 
-void GraphicsScene3dView::InFboRenderer::processMosaicColorTableTexture(GraphicsScene3dView* viewPtr) const
-{
-    auto surfacePtr = viewPtr->getSurfaceViewPtr();
-
-    if (auto cTTDId = surfacePtr->takeMosaicColorTableToDelete(); cTTDId) {
-        surfacePtr->setMosaicColorTableTextureId(0);
-        glDeleteTextures(1, &cTTDId);
-    }
-
-    auto task = surfacePtr->takeMosaicColorTableToAppend();
-    if (task.empty()) {
-        return;
-    }
-
-    GLuint colorTableTextureId = surfacePtr->getMosaicColorTableTextureId();
-
-#if defined(Q_OS_ANDROID) || defined(LINUX_ES)
-    if (colorTableTextureId) {
-        glBindTexture(GL_TEXTURE_2D, colorTableTextureId);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, task.size() / 4, 1, GL_RGBA, GL_UNSIGNED_BYTE, task.data());
-    }
-    else {
-        glGenTextures(1, &colorTableTextureId);
-        glBindTexture(GL_TEXTURE_2D, colorTableTextureId);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, task.size() / 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, task.data());
-
-        surfacePtr->setMosaicColorTableTextureId(colorTableTextureId);
-    }
-#else
-    if (colorTableTextureId) {
-        glBindTexture(GL_TEXTURE_1D, colorTableTextureId);
-        glTexSubImage1D(GL_TEXTURE_1D, 0, 0, task.size() / 4, GL_RGBA, GL_UNSIGNED_BYTE, task.data());
-    }
-    else {
-        glGenTextures(1, &colorTableTextureId);
-        glBindTexture(GL_TEXTURE_1D, colorTableTextureId);
-
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA8, task.size() / 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, task.data());
-
-        surfacePtr->setMosaicColorTableTextureId(colorTableTextureId);
-    }
-#endif
-}
-
-void GraphicsScene3dView::InFboRenderer::processMosaicTileTexture(GraphicsScene3dView* viewPtr) const // TODO CHECK
-{
-    auto surfacePtr = viewPtr->getSurfaceViewPtr();
-
-    // delete
-    {
-        auto tasks = surfacePtr->takeMosaicTileTextureToDelete();
-        for (auto it = tasks.begin(); it != tasks.end(); ++it) {
-            if (*it != 0) {
-                glDeleteTextures(1, &(*it));
-            }
-        }
-    }
-
-    // append or update
-    {
-        auto tasks = surfacePtr->takeMosaicTileTextureToAppend();
-
-        for (auto it = tasks.begin(); it != tasks.end(); ++it) {
-            const auto& tileId = it->first;
-            const auto& data   = it->second;
-
-            if (data.empty()) {
-                continue;
-            }
-
-            const GLuint existingId = surfacePtr->getMosaicTextureIdByTileId(tileId);
-
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-            if (existingId) { // update
-                glBindTexture(GL_TEXTURE_2D, existingId);
-
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, defaultTileSidePixelSize, defaultTileSidePixelSize, GL_RED, GL_UNSIGNED_BYTE, data.data());
-
-                QOpenGLFunctions* gl = QOpenGLContext::currentContext()->functions();
-                gl->glGenerateMipmap(GL_TEXTURE_2D);
-            }
-            else { // create
-                GLuint texId = 0;
-                glGenTextures(1, &texId);
-                glBindTexture(GL_TEXTURE_2D, texId);
-
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, defaultTileSidePixelSize, defaultTileSidePixelSize, 0, GL_RED, GL_UNSIGNED_BYTE, data.data());
-
-                QOpenGLFunctions* gl = QOpenGLContext::currentContext()->functions();
-                gl->glGenerateMipmap(GL_TEXTURE_2D);
-
-                surfacePtr->setMosaicTextureIdByTileId(tileId, texId);
-            }
-        }
-    }
-}
-
 void GraphicsScene3dView::InFboRenderer::processImageTexture(GraphicsScene3dView *viewPtr) const
 {
     auto imagePtr = viewPtr->getImageViewPtr();
@@ -1877,7 +1733,6 @@ void GraphicsScene3dView::InFboRenderer::processImageTexture(GraphicsScene3dView
 
 void GraphicsScene3dView::InFboRenderer::processSurfaceTexture(GraphicsScene3dView *viewPtr) const
 {
-    // init / reinit
     auto surfacePtr = viewPtr->getSurfaceViewPtr();
     auto task = surfacePtr->takeSurfaceColorTableToAppend();
 
@@ -1902,7 +1757,6 @@ void GraphicsScene3dView::InFboRenderer::processSurfaceTexture(GraphicsScene3dVi
 
     surfacePtr->setSurfaceColorTableTextureId(textureId);
 
-    // deleting
     auto textureIdtoDel = surfacePtr->takeSurfaceColorTableToDelete();
     if (textureIdtoDel) {
         glDeleteTextures(1, &textureIdtoDel);
@@ -1915,12 +1769,7 @@ GraphicsScene3dView::Camera::Camera(GraphicsScene3dView* viewPtr) : viewPtr_(vie
 }
 
 GraphicsScene3dView::Camera::Camera(qreal pitch, qreal yaw, qreal distToFocusPoint, qreal fov, qreal sensivity)
-    :m_pitch(std::move(pitch))
-    ,m_yaw(std::move(yaw))
-    ,m_fov(std::move(fov))
-    ,m_distToFocusPoint(std::move(distToFocusPoint))
-    ,distForMapView_(m_distToFocusPoint)
-    ,m_sensivity(std::move(sensivity))
+    :m_fov(std::move(fov)) ,m_distToFocusPoint(std::move(distToFocusPoint)) ,distForMapView_(m_distToFocusPoint)
 {
    setIsometricView();
 }
@@ -1935,21 +1784,6 @@ qreal GraphicsScene3dView::Camera::fov() const
     return m_fov;
 }
 
-qreal GraphicsScene3dView::Camera::pitch() const
-{
-    return m_pitch;
-}
-
-qreal GraphicsScene3dView::Camera::yaw() const
-{
-    return m_yaw;
-}
-
-QMatrix4x4 GraphicsScene3dView::Camera::viewMatrix() const
-{
-    return m_view;
-}
-
 void GraphicsScene3dView::Camera::setCameraListener(Camera* cameraListener)
 {
     cameraListener_ = cameraListener;
@@ -1957,11 +1791,11 @@ void GraphicsScene3dView::Camera::setCameraListener(Camera* cameraListener)
 
 void GraphicsScene3dView::Camera::rotate(const QVector2D& lastMouse, const QVector2D& mousePos)
 {
-    auto r = (lastMouse - mousePos)*0.2;
+    auto r = (lastMouse - mousePos) * 0.2;
     r.setX(qDegreesToRadians(r.x()));
     r.setY(qDegreesToRadians(r.y()));
-
     m_rotAngle += r;
+    qDebug() << "m_rotAngle ......." << m_rotAngle;
 
     tryResetRotateAngle();
     checkRotateAngle();
@@ -2158,11 +1992,6 @@ void GraphicsScene3dView::Camera::commitMovement()
     updateViewMatrix();
 }
 
-void GraphicsScene3dView::Camera::focusOnObject(std::weak_ptr<SceneObject> object)
-{
-    Q_UNUSED(object)
-}
-
 void GraphicsScene3dView::Camera::focusOnPosition(const QVector3D &point)
 {
     m_lookAt = point;
@@ -2203,16 +2032,10 @@ void GraphicsScene3dView::Camera::setMapView()
 
 void GraphicsScene3dView::Camera::reset()
 {
-    m_eye = {0.0f, 0.0f, 20.0f};
     m_lookAt = {0.0f, 0.0f, 0.0f};
-    m_relativeOrbitPos = m_eye;
 
-    m_focusedObject.lock() = nullptr;
     m_deltaOffset = {0.0f, 0.0f, 0.0f};
-    m_focusPoint = {0.0f, 0.0f, 0.0f};
 
-    m_pitch = 0.f;
-    m_yaw = 0.f;
     m_fov = 45.f;
     m_distToFocusPoint = 3050.f;
     distForMapView_ = m_distToFocusPoint;
@@ -2233,9 +2056,9 @@ void GraphicsScene3dView::Camera::resetRotationAngle()
     updateViewMatrix();
 }
 
-void GraphicsScene3dView::Camera::setYerevanLla(LLA yerevan)
+void GraphicsScene3dView::Camera::setStartupInitLla(LLA lla)
 {
-    startupInitLla  = yerevan;
+    startupInitLla  = lla;
     viewLlaRef_ = LLARef(startupInitLla);
 }
 
@@ -2278,7 +2101,7 @@ void GraphicsScene3dView::Camera::tryToChangeViewLlaRef()
 
 void GraphicsScene3dView::Camera::updateViewMatrix()
 {
-    QVector3D cf;
+    QVector3D cf; //从焦点指向相机的偏移向量
     cf[0] = -sinf(m_rotAngle.y())*cosf(-m_rotAngle.x())*m_distToFocusPoint;
     cf[1] = -sinf(m_rotAngle.y())*sinf(-m_rotAngle.x())*m_distToFocusPoint;
     cf[2] = -cosf(m_rotAngle.y())*m_distToFocusPoint;
@@ -2287,7 +2110,7 @@ void GraphicsScene3dView::Camera::updateViewMatrix()
         m_rotAngle = QVector2D();
     }
 
-    QVector3D cu;
+    QVector3D cu; //相机的up向量
     cu[0] = cosf(m_rotAngle.y())*cosf(-m_rotAngle.x());
     cu[1] = cosf(m_rotAngle.y())*sinf(-m_rotAngle.x());
     cu[2] = -sinf(m_rotAngle.y());
@@ -2295,7 +2118,7 @@ void GraphicsScene3dView::Camera::updateViewMatrix()
     angleToGround_ = 90.f * std::fabs(cu.z());
 
     QMatrix4x4 view;
-    //LookAt函数：创建一个看着(Look at)给定目标的观察矩阵。三个参数，相机位置pos、目标位置target、相机上向量up
+    //LookAt函数：创建一个看着给定目标的观察矩阵。三个参数，相机位置、相机看的点位(焦点）、相机上向量up
     view.lookAt(cf + m_lookAt, m_lookAt, cu.normalized());
     view.scale(1.0f,1.0f,-1.0f);
 
@@ -2341,42 +2164,10 @@ bool GraphicsScene3dView::Camera::getIsPerspective() const
 
 bool GraphicsScene3dView::Camera::getIsFarAwayFromOriginLla() const
 {
-    // qDebug() << "Camera:: isPerspective_:" << isPerspective_ << "   viewLlaRef_:" << viewLlaRef_.refLla.latitude << "  "
-    //          << viewLlaRef_.refLla.longitude << "    datasetLlaRef_:" << datasetLlaRef_.refLla.latitude << "  "
+    // qDebug() << "Camera:: isPerspective_:" << isPerspective_ << "   viewLlaRef_:" << viewLlaRef_.refLla.latitude << " "
+    //          << viewLlaRef_.refLla.longitude << "   datasetLlaRef_:" << datasetLlaRef_.refLla.latitude << " "
     //          << datasetLlaRef_.refLla.longitude;
     return !isPerspective_ || (viewLlaRef_ != datasetLlaRef_);
-}
-
-map::CameraTilt GraphicsScene3dView::Camera::getCameraTilt() const
-{
-    float xRot = m_rotAngle.x();
-
-    while (xRot >  M_PI) {
-        xRot -= 2.f * M_PI;
-    }
-    while (xRot <= -M_PI) {
-        xRot += 2.f * M_PI;
-    }
-
-    float deg = qRadiansToDegrees(xRot);
-
-    if (deg > -45.f && deg <= 45.f) {
-        return map::CameraTilt::Down;
-    }
-    else if (deg > 45.f && deg <= 135.f) {
-        return map::CameraTilt::Right;
-    }
-    else if (deg >= -135.f && deg <= -45.f) {
-        return map::CameraTilt::Left;
-    }
-    else {
-        return map::CameraTilt::Up;
-    }
-}
-
-QVector3D GraphicsScene3dView::Camera::getEyePosition() const
-{
-    return m_eye;
 }
 
 qreal GraphicsScene3dView::Camera::distToFocusPoint() const

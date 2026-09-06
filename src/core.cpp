@@ -66,12 +66,11 @@ DataProcessor* Core::getDataProcessorPtr() const
 void Core::refreshMap(LLA lla)
 {
     if(!scene3dViewPtr_) {
-        qDebug() << "refreshMap: scene3dViewPtr_ null";
         return;
     }
     std::weak_ptr<GraphicsScene3dView::Camera> camera = scene3dViewPtr_->camera();
     if (auto cameraShared = camera.lock();cameraShared) {
-        cameraShared->setYerevanLla(lla);
+        cameraShared->setStartupInitLla(lla);
     }
 
     scene3dViewPtr_->updateMapView();
@@ -382,7 +381,7 @@ void Core::openFileFromMenu()
         datasetPtr_->resetDataset();
         dataHorizon_->clear();
         if (scene3dViewPtr_) {
-            scene3dViewPtr_->clear(true, true);
+            scene3dViewPtr_->clear(true);
             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
         }
         // QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::QueuedConnection, Q_ARG(bool, true));
@@ -600,7 +599,7 @@ void Core::clearRouteData()
                         datasetPtr_->resetDataset();
                         dataHorizon_->clear();
                         if (scene3dViewPtr_) {
-                            scene3dViewPtr_->clear(true, true);
+                            scene3dViewPtr_->clear(true);
                             scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
                         }
                     }
