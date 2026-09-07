@@ -219,7 +219,7 @@ void DataProcessor::onAttitudeAdded(uint64_t indx)
 
 void DataProcessor::onMosaicCanCalc(uint64_t indx)
 {
-    mosaicCounter_   = indx;
+    mosaicCounter_ = indx;
 }
 
 void DataProcessor::setSurfaceColorTableThemeById(int id)

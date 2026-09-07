@@ -89,4 +89,6 @@ private:
 
     QVector<int>  epIndxUpdated_;
     QVector<int>  vertIndxUpdated_;
+
+    mutable QReadWriteLock dataMtx_ = QReadWriteLock(QReadWriteLock::Recursive);
 };

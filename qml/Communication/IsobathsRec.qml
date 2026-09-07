@@ -107,7 +107,7 @@ XRRectangle {
                 id: updateBottomTrackButton
                 buttonText: qsTr("Draw Isobaths")
                 checkable: false
-                implicitWidth:  isobathSize * 0.4
+                implicitWidth: isobathSize * 0.4
                 Layout.preferredHeight: iconSize * 1.5
 
                 clickAction: function() {

@@ -1795,7 +1795,6 @@ void GraphicsScene3dView::Camera::rotate(const QVector2D& lastMouse, const QVect
     r.setX(qDegreesToRadians(r.x()));
     r.setY(qDegreesToRadians(r.y()));
     m_rotAngle += r;
-    qDebug() << "m_rotAngle ......." << m_rotAngle;
 
     tryResetRotateAngle();
     checkRotateAngle();

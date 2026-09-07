@@ -44,6 +44,8 @@ public:
         return pool_;
     }
 
+    void logMemoryStatus(const QString& tag) const;
+
     void removeFrames(int startIndex, int endIndex);
 
     QVector<Epoch>& getPolygonOutline() {
@@ -61,7 +63,8 @@ public:
     Epoch* fromIndex(int index_offset = 0) {
         int index = validIndex(index_offset);
         if(index >= 0) {
-            return &pool_[index];
+            // return &pool_[index];
+            return const_cast<Epoch*>(&pool_.constData()[index]);
         }
 
         return NULL;

@@ -380,7 +380,7 @@ void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, 
     qDebug() << "开始绘制等高线 qPlot2D::doDistProcessing.........";
     if (datasetPtr_ != nullptr) {
         QVector<Epoch> pool = datasetPtr_->getPool();
-        if(pool.isEmpty()) {
+        if(datasetPtr_->size() <= 0) {
             GIF->dialogInfo(Dialog_OK, tr("No Track Data Found!"));
             return;
         }

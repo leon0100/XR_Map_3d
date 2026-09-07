@@ -33,13 +33,16 @@ IsobathsProcessor::IsobathsProcessor(DataProcessor* dataProcessorPtr):
 
 void IsobathsProcessor::clear()
 {
-    lineSegments_.clear();
-    coloredLineSegments_.clear();
-    labels_.clear();
-    colorIntervals_.clear();
-    vertPool_.clear();
-    vertMark_.clear();
-    tris_.clear();
+    QVector<QVector3D>().swap(lineSegments_);
+    QVector<IsobathUtils::ColoredIsobathsSeg>().swap(coloredLineSegments_);
+    QVector<LabelParameters>().swap(labels_);
+    QVector<IsobathUtils::ColorInterval>().swap(colorIntervals_);
+    std::vector<QVector3D>().swap(vertPool_);
+    std::vector<HeightType>().swap(vertMark_);
+    std::vector<TrIndxs>().swap(tris_);
+
+    minZ_ = std::numeric_limits<float>::max();
+    maxZ_ = std::numeric_limits<float>::lowest();
 }
 
 void IsobathsProcessor::setSurfaceMeshPtr(SurfaceMesh* surfaceMeshPtr)
@@ -122,10 +125,9 @@ void IsobathsProcessor::edgeIntersection(const QVector3D& a,const QVector3D& b, 
     }
 }
 
-//等深线（Isobaths）创建（重建）
 void IsobathsProcessor::fullRebuildLinesLabels()
 {
-    // qDebug() << "等深线重绘......." << maxZ_ << "  " << minZ_;
+    // qDebug() << "等高线fullRebuildLinesLabels......." << maxZ_ << "  " << minZ_;
     if (!surfaceMeshPtr_ || (minZ_ >= maxZ_ - kmath::fltEps)) {
         return;
     }
@@ -169,7 +171,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
             }
         }
     }
-    // qDebug() << "tris_................" << tris_.size();
+    qDebug() << "tris_................" << tris_.size();
 
     if (vertPool_.empty()) {
         return;
@@ -216,7 +218,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
         }
     }
 
-    QHash<int, IsobathsPolylines> polysByLvl; // 多线段
+    QHash<int, IsobathsPolylines> polysByLvl; //多线段
     QVector<IsobathUtils::ColoredIsobathsSeg> resColoredLines;
     for (auto it = segsByLvl.begin(); it != segsByLvl.end(); ++it) {
         buildPolylines(it.value(), polysByLvl[it.key()]);
@@ -224,7 +226,6 @@ void IsobathsProcessor::fullRebuildLinesLabels()
 
     QVector<QVector3D> resLines;
     QVector<LabelParameters> resLabels;
-
 
     for (auto it = polysByLvl.begin(); it != polysByLvl.end(); ++it) {
         const int lvl = it.key();
@@ -281,7 +282,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
         }
     }
 
-    // qDebug() << "resLines.size() " << resLines.size();
+
     filterNearbyLabels(resLabels, labels_);
     lineSegments_ = std::move(resLines);
     coloredLineSegments_ = std::move(resColoredLines);

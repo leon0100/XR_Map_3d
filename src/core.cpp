@@ -42,10 +42,10 @@ void Core::setEngine(QQmlApplicationEngine *engine)
     qmlAppEnginePtr_->rootContext()->setContextProperty("IsobathsViewControlMenuController", isobathsViewControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("ImageViewControlMenuController",    imageViewControlMenuController_.get());
 
-    qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",   bleManager_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",   udpManager_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("SerialPort",   serialPortManager_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("Locations",    locations_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",    bleManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",    udpManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("SerialPort",    serialPortManager_.get());
+    qmlAppEnginePtr_->rootContext()->setContextProperty("Locations",     locations_.get());
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("dataProcessor", dataProcessor_);
 
@@ -392,6 +392,7 @@ void Core::openFileFromMenu()
         }
         QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::DirectConnection, Q_ARG(bool, true));
         setDataProcessorConnections();
+        datasetPtr_->logMemoryStatus("afterClear-beforeReopen");
     }
 
     if (progress_) {
@@ -489,7 +490,6 @@ void Core::openFileFromMenu()
         for(int i = 0; i < fileCnt; i++) {
             /*-按照已选择的文件名路径打开文件，给下一步做铺垫-*/
             QString nowFileName = fileNames.at(i);
-
             if(currentFileType_ == filetype_tslw) {
                 deviceManager_->openFile_tsl(nowFileName, filetype_tslw, i, fileCnt);
             }
@@ -1068,11 +1068,10 @@ void Core::destroyDataProcessor()
         dataProcThread_->quit();
         dataProcThread_->wait();
     }
+    dataProcThread_ = nullptr;
 
     delete dataProcessor_;
-
     dataProcessor_ = nullptr;
-    dataProcThread_ = nullptr;
 }
 
 void Core::createScene3dConnections()

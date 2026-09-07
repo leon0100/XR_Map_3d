@@ -31,7 +31,6 @@ void IsobathsView::setCameraDistToFocusPoint(float val)
 
 void IsobathsView::setLabels(const QVector<IsobathUtils::LabelParameters> &labels)
 {
-    // qDebug() << "IsobathsView::setLabels" << labels.size();
     if (auto* r = RENDER_IMPL(IsobathsView); r) {
         r->labels_ = labels;
         Q_EMIT changed();

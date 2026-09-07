@@ -36,6 +36,7 @@ void ComputeWorker::clearAll()
 void ComputeWorker::clearSurface()
 {
     surface_.clear();
+    surfaceMesh_.clear();
 }
 
 void ComputeWorker::clearMosaic()
@@ -182,11 +183,12 @@ void ComputeWorker::adaptSurfaceResolution()
 void ComputeWorker::processBundle(const WorkBundle& wb)
 {
     // qDebug() << "ComputeWorker::processBundle";
-    // wb.surfaceVec:在底部轨迹数据数组中的索引
     if (!wb.surfaceVec.isEmpty() && !isCanceled()) {
+        qDebug() << "高度场正在生成.....";
         adaptSurfaceResolution();
         surface_.onUpdatedBottomTrackData(wb.surfaceVec); //生成高度场，不负责等值线的绘制，但是却为等值线提供高度场网格
         surface_.rebuildColorIntervals();
+        qDebug() << "等高面完成！！！";
         auto colorIntervals = surface_.getColorIntervals();
         isobaths_.setColorsFromSurfaceProcessor(colorIntervals);
     }
@@ -199,5 +201,6 @@ void ComputeWorker::processBundle(const WorkBundle& wb)
         isobaths_.fullRebuildLinesLabels(); //只计算等值线....... 但它完全依赖于SurfaceProcessor生成的高度场网格。
     }
 
+    qDebug() << "等高线绘制完成！！！";
     // emit jobFinished();
 }

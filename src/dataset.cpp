@@ -15,6 +15,56 @@ Dataset::~Dataset()
 
 }
 
+#include <qt_windows.h>
+#include <QDebug>
+#include <Psapi.h>
+void Dataset::logMemoryStatus(const QString& tag) const
+{
+    MEMORY_BASIC_INFORMATION mbi;
+    quint64 totalFree = 0;
+    quint64 totalUsed = 0;
+    quint64 largestFree = 0;
+    quint64 addr = 0;
+
+    while (VirtualQuery(reinterpret_cast<LPCVOID>(addr), &mbi, sizeof(mbi)) == sizeof(mbi)) {
+        const quint64 next = reinterpret_cast<quint64>(mbi.BaseAddress) + mbi.RegionSize;
+        if (mbi.State == MEM_FREE) {
+            totalFree += mbi.RegionSize;
+            largestFree = qMax(largestFree, static_cast<quint64>(mbi.RegionSize));
+        }
+        else {
+            totalUsed += mbi.RegionSize;
+        }
+        if (next <= addr) {
+            break;
+        }
+        addr = next;
+    }
+
+    MEMORYSTATUSEX mse;
+    mse.dwLength = sizeof(mse);
+    GlobalMemoryStatusEx(&mse);
+
+    PROCESS_MEMORY_COUNTERS pmc;
+    pmc.cb = sizeof(pmc);
+    GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+
+    qDebug() << tag
+             << "| used(MB):" << (totalUsed / 1048576.0)
+             << "| free(MB):" << (totalFree / 1048576.0)
+             << "| largestFreeBlock(MB):" << (largestFree / 1048576.0)
+             << "| commit proc(MB):" << (pmc.PagefileUsage / 1048576.0)
+             << "| commit peak(MB):" << (pmc.PeakPagefileUsage / 1048576.0)
+             << "| pagefile total(MB):" << (mse.ullTotalPageFile / 1048576.0)
+             << "| pagefile avail(MB):" << (mse.ullAvailPageFile / 1048576.0)
+             << "| phys avail(MB):" << (mse.ullAvailPhys / 1048576.0)
+             << "| sizeof(Epoch):" << sizeof(Epoch)
+             << "| pool size/cap:" << pool_.size() << pool_.capacity()
+            << "| pool detached:" << pool_.isDetached()
+             << "| vec_CSV cap:" << vec_CSV_.capacity();
+}
+
+
 void Dataset::setState(DatasetState state)
 {
     state_ = state;

@@ -143,6 +143,7 @@ void IsobathsViewControlMenuController::onTrianglesVisible(bool state)
     trianglesVisible_ = state;
 
     if (graphicsSceneViewPtr_) {
+
     }
     else {
         tryInitPendingLambda();
