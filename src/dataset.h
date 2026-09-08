@@ -64,7 +64,7 @@ public:
         int index = validIndex(index_offset);
         if(index >= 0) {
             // return &pool_[index];
-            return const_cast<Epoch*>(&pool_.constData()[index]);
+            return const_cast<Epoch*>(&pool_.constData()[index]);//避免触发深拷贝
         }
 
         return NULL;
@@ -166,10 +166,6 @@ public:
 
     int getLastBottomTrackEpoch() const;
 
-    // float getLastYaw() {
-    //     return _lastYaw;
-    // }
-
     BottomTrackParam getBottomTrackParam() {
         QReadLocker rl(&lock_);
 
@@ -264,8 +260,6 @@ protected:
     QVector<Epoch> pool_;
     QVector<Epoch> polygonOutline_;
     QVector<North_East_Down> polygonOutlineNED_;
-
-    // float _lastYaw = 0.0f, _lastPitch = 0.0f, _lastRoll = 0.0f;
 
 public:
     Epoch* addNewEpoch();

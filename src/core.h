@@ -13,7 +13,6 @@
 #include "boat_track_control_menu_controller.h"
 #include "bottom_track_control_menu_controller.h"
 #include "isobaths_view_control_menu_controller.h"
-#include "image_view_control_menu_controller.h"
 #include "tile_manager.h"
 #include "data_horizon.h"
 #include "device_manager.h"
@@ -125,7 +124,6 @@ private:
     std::shared_ptr<BoatTrackControlMenuController>     boatTrackControlMenuController_;
     std::shared_ptr<BottomTrackControlMenuController>   bottomTrackControlMenuController_;
     std::shared_ptr<IsobathsViewControlMenuController>  isobathsViewControlMenuController_;
-    std::shared_ptr<ImageViewControlMenuController>     imageViewControlMenuController_;
     std::unique_ptr<map::TileManager>                   tileManager_;
 
     std::shared_ptr<DeviceManager> deviceManager_;

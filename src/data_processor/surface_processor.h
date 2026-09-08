@@ -12,7 +12,6 @@
 #include "bottom_track.h"
 #include "point_3d.h"
 
-// enum class EdgeDirection { Top, Bottom, Left, Right };
 
 class BottomTrack;
 class DataProcessor;
@@ -36,10 +35,13 @@ public:
     void setThemeId(int val);
     float getEdgeLimit() const;
     QVector<IsobathUtils::ColorInterval> getColorIntervals();
+    float getMinZ() const;
+    float getMaxZ() const;
+
 
 private:
     QVector<QPair<char, int>> filterDensePoints(const QVector<QVector3D>& pts,
-                                const QVector<QPair<char, int>>& indxs, int maxPoints) const;
+                            const QVector<QPair<char, int>>& indxs, int maxPoints) const;
     void writeTriangleToMesh(const QVector3D& A, const QVector3D& B, const QVector3D& C, QSet<SurfaceTile*>& updatedTiles);
     QVector<QVector3D> generateExpandedPalette(int totalColors) const;
     void updateTexture() const;
@@ -48,7 +50,7 @@ private:
     bool canceled() const noexcept;
     bool isPointInPolygon(const QVector3D& point) const;
     void smoothTileHeights(SurfaceTile* tile);
-    void clipHeightFieldToPolygon();
+    void clipHeightFieldToPolygon(QSet<SurfaceTile*>& changedTiles);
 
 
     //从三角网提取边界轮廓
@@ -80,7 +82,6 @@ private:
     int tileHeightMatrixRatio_;
     int themeId_;
     int cellPx_;
-    // int extraWidth_;
     bool originSet_;
     QSet<TileKey> visibleTileKeys_;
 

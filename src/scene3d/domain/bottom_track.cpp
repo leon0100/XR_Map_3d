@@ -142,31 +142,17 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     }
 
     QVector<QVector3D> prepData;
-    datasetPtr_->logMemoryStatus(QString("isEpochsChanged entry l=%1 r=%2").arg(lEpoch).arg(rEpoch));
     qDebug() << "lEpoch....." << lEpoch << "   rEpoch...." << rEpoch;
     epIndxUpdated_.clear();
     vertIndxUpdated_.clear();
     const int cnt = rEpoch - lEpoch;
-    // if(cnt > 0) {
-    //     prepData.reserve(cnt);
-    //     epIndxUpdated_.reserve(cnt);
-    //     vertIndxUpdated_.reserve(cnt);
-    // }
-    try {
-        if(cnt > 0) {
-            prepData.reserve(cnt);
-            epIndxUpdated_.reserve(cnt);
-            vertIndxUpdated_.reserve(cnt);
-            epoch2Vertex_.reserve(epoch2Vertex_.size() + cnt);
-            vertex2Epoch_.reserve(vertex2Epoch_.size() + cnt);
-        }
-    }
-    catch (const std::bad_alloc&) {
-        qDebug() << "isEpochsChanged: reserve failed, cnt =" << cnt;
-        return;
+    if(cnt > 0) {
+        prepData.reserve(cnt);
+        epIndxUpdated_.reserve(cnt);
+        vertIndxUpdated_.reserve(cnt);
     }
 
-    QWriteLocker dataWl(&dataMtx_);
+    // QWriteLocker dataWl(&dataMtx_);
 
     try {
     for (int epIndx = lEpoch; epIndx < rEpoch; ++epIndx) {
@@ -176,7 +162,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
             if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
                 if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
                     auto vIndx = *vIt;
-                    // const float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
                     float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
                     if (vIndx >= 0 && vIndx < r->m_data.size()) {
                         r->m_data[vIndx].setZ(dist);
@@ -189,7 +174,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
         else { // 情况B: 新点，创建3D坐标
             if (auto* ep = datasetPtr_->fromIndex(epIndx); ep) {
                 if (auto pos = ep->getSonarPosition().ned; pos.isCoordinatesValid()) {
-                    // float dist = -1.f * static_cast<float>(ep->distProccesing(visibleChannel_.channelId_));
                     float dist = datasetPtr_->getDistProccesing_CSV(epIndx);
                     prepData.push_back(QVector3D(pos.n, pos.e, dist));
                     epIndxUpdated_.push_back(epIndx);
@@ -207,7 +191,7 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
         qDebug() << "isEpochsChanged: out of memory, processed" << epIndxUpdated_.size() << "of" << cnt;
     }
 
-    dataWl.unlock();
+    // dataWl.unlock();
 
     qDebug() << "epIndxUpdated_.size():" << epIndxUpdated_.size() << "  " << vertIndxUpdated_.size();
     emit updatedPoints(epIndxUpdated_, vertIndxUpdated_, manual);  //这句绘制等高线
@@ -218,9 +202,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
 void BottomTrack::setData(const QVector<QVector3D> &data, int primitiveType)
 {
     qDebug() << "BottomTrack::setData................";
-    QWriteLocker dataWl(&dataMtx_);
-    vertex2Epoch_.clear();
-    epoch2Vertex_.clear();
     if (m_filter) {
         QVector<QVector3D> filteredData;
         m_filter->apply(data, filteredData);
@@ -233,7 +214,7 @@ void BottomTrack::setData(const QVector<QVector3D> &data, int primitiveType)
 
 void BottomTrack::clearData()
 {
-    QWriteLocker dataWl(&dataMtx_);
+    // QWriteLocker dataWl(&dataMtx_);
     vertex2Epoch_.clear();
     epoch2Vertex_.clear();
     visibleChannel_ = DatasetChannel();
@@ -437,7 +418,6 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
     epIndxUpdated.reserve(need);
     vertIndxUpdated.reserve(need);
 
-    QWriteLocker dataWl(&dataMtx_);
     for (int epIndx = fromIndx; epIndx < toIndx; ++epIndx) {
         auto vIt = epoch2Vertex_.find(epIndx);
         if (vIt != epoch2Vertex_.end()) {
@@ -471,15 +451,9 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
         }
     }
 
-    dataWl.unlock();
-
     emit updatedPoints(epIndxUpdated, vertIndxUpdated, manually); // for dataHorizon -> dataProcessor
 
-    // SceneObject::appendData(prepData);
-    {
-        QWriteLocker dataWl2(&dataMtx_);
-        SceneObject::appendData(prepData);
-    }
+    SceneObject::appendData(prepData);
 }
 
 QVector<QPair<int, int>> BottomTrack::getSubarrays(const QVector<int>& sequenceVector)
@@ -510,8 +484,6 @@ QVector<QPair<int, int>> BottomTrack::getSubarrays(const QVector<int>& sequenceV
 
 void BottomTrack::clearCache()
 {
-    Q_ASSERT(QThread::currentThread() == thread());
-    QWriteLocker dataWl(&dataMtx_);
     auto* r = RENDER_IMPL(BottomTrack);
     r->m_data.resize(0);
     // r->m_data.clear();

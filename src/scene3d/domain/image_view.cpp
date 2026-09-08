@@ -1,8 +1,5 @@
 #include "image_view.h"
 
-// #include "scene3d_view.h"
-
-
 ImageView::ImageView(QObject* parent) :
     SceneObject(new ImageViewRenderImplementation, parent),
     useLinearFilter_(false)
@@ -109,9 +106,6 @@ void ImageView::updateTexture(const QString& imagePath, QVector3D lt, QVector3D 
     Q_EMIT changed();
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-// ImageViewRenderImplementation
 ImageView::ImageViewRenderImplementation::ImageViewRenderImplementation() :
     textureId_(0)
 { }

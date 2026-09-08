@@ -125,15 +125,6 @@ void MosaicProcessor::updateDataWrapper(const QVector<int>& indxs)
         }
     }
 
-
-    //qDebug() << "task";
-    //qDebug() << vec;
-    //for (int i = 1; i < vec.size(); ++i) {
-    //   if (vec[i] != vec[i - 1] + 1) {
-    //       qWarning() << "Hole in mosaic task" << vec[i - 1] << "and" << vec[i];
-    //   }
-    //}
-
     updateData(vec);
 }
 

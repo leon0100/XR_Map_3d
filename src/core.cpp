@@ -40,7 +40,6 @@ void Core::setEngine(QQmlApplicationEngine *engine)
     qmlAppEnginePtr_->rootContext()->setContextProperty("BoatTrackControlMenuController",    boatTrackControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("BottomTrackControlMenuController",  bottomTrackControlMenuController_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("IsobathsViewControlMenuController", isobathsViewControlMenuController_.get());
-    qmlAppEnginePtr_->rootContext()->setContextProperty("ImageViewControlMenuController",    imageViewControlMenuController_.get());
 
     qmlAppEnginePtr_->rootContext()->setContextProperty("BleManager",    bleManager_.get());
     qmlAppEnginePtr_->rootContext()->setContextProperty("UdpManager",    udpManager_.get());
@@ -173,9 +172,6 @@ void Core::UILoad(QObject* object, const QUrl& url)
     isobathsViewControlMenuController_->setQmlEngine(object);
     isobathsViewControlMenuController_->setDataProcessorPtr(dataProcessor_);
     isobathsViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
-
-    imageViewControlMenuController_->setQmlEngine(object);
-    imageViewControlMenuController_->setGraphicsSceneView(scene3dViewPtr_);
 
     onChannelsUpdated();
 
@@ -392,7 +388,7 @@ void Core::openFileFromMenu()
         }
         QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::DirectConnection, Q_ARG(bool, true));
         setDataProcessorConnections();
-        datasetPtr_->logMemoryStatus("afterClear-beforeReopen");
+        // datasetPtr_->logMemoryStatus("afterClear-beforeReopen");
     }
 
     if (progress_) {
@@ -792,7 +788,7 @@ void Core::createControllers()
     boatTrackControlMenuController_     = std::make_shared<BoatTrackControlMenuController>();
     bottomTrackControlMenuController_   = std::make_shared<BottomTrackControlMenuController>();
     isobathsViewControlMenuController_  = std::make_shared<IsobathsViewControlMenuController>();
-    imageViewControlMenuController_     = std::make_shared<ImageViewControlMenuController>();
+    // imageViewControlMenuController_     = std::make_shared<ImageViewControlMenuController>();
 
     deviceManager_                      = std::make_shared<DeviceManager>(datasetPtr_);
     bleManager_                         = std::make_shared<BLEManager>();

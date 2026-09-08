@@ -937,7 +937,6 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
         this, [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll)->void {
-            // qDebug() << "connect&Dataset::bottomTrackUpdated...........";
             //暂时注释
             // auto chList = datasetPtr_->channelsList();
             // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
@@ -2126,12 +2125,12 @@ void GraphicsScene3dView::Camera::updateViewMatrix()
 
 void GraphicsScene3dView::Camera::checkRotateAngle()
 {
-    if (m_rotAngle[1] > M_PI_2) {
-       m_rotAngle[1] = M_PI_2;
-    }
-    else if (m_rotAngle[1] < 0.0f) {
-       m_rotAngle[1] = 0.0f;
-    }
+    // if (m_rotAngle[1] > M_PI_2) {
+    //    m_rotAngle[1] = M_PI_2;
+    // }
+    // else if (m_rotAngle[1] < 0.0f) {
+    //    m_rotAngle[1] = 0.0f;
+    // }
 }
 
 void GraphicsScene3dView::Camera::tryResetRotateAngle()

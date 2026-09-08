@@ -20,7 +20,6 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     bottomTrackCounter_(0),
     epochCounter_(0),
     positionCounter_(0),
-    attitudeCounter_(0),
     updateBottomTrack_(false),
     updateIsobaths_(false),
     updateMosaic_(false),
@@ -52,8 +51,7 @@ DataProcessor::DataProcessor(QObject *parent, Dataset* datasetPtr)
     pendingWorkTimer_.setSingleShot(true);
     pendingWorkTimer_.setInterval(10);
     connect(&pendingWorkTimer_, &QTimer::timeout, this, &DataProcessor::runCoalescedWork);
-
-    connect(worker_, &ComputeWorker::jobFinished, this, &DataProcessor::onWorkerFinished,  Qt::QueuedConnection);
+    connect(worker_, &ComputeWorker::jobFinished, this, &DataProcessor::onWorkerFinished, Qt::QueuedConnection);
 
     computeThread_.setObjectName("ComputeWorkerThread");
     computeThread_.start();
@@ -99,7 +97,6 @@ void DataProcessor::clearProcessing(DataProcessorType procType)
     bottomTrackCounter_ = 0;
     epochCounter_ = 0;
     positionCounter_ = 0;
-    attitudeCounter_ = 0;
     mosaicCounter_ = 0;
 }
 
@@ -112,7 +109,6 @@ void DataProcessor::clearProcessing2(bool isClearTrack)
         bottomTrackCounter_ = 0;
         epochCounter_ = 0;
         positionCounter_ = 0;
-        attitudeCounter_ = 0;
         mosaicCounter_ = 0;
     }
     else {
@@ -128,11 +124,11 @@ void DataProcessor::setUpdateBottomTrack(bool state)
     qDebug() << "DataProcessor::setUpdateBottomTrack(bool state)..........";
     updateBottomTrack_ = state;
 
-    // if ((updateBottomTrack_ || updateIsobaths_ || updateMosaic_) && !pendingSurfaceIndxs_.empty()) {
+    // if ((updateBottomTrack_ || updateIsobaths_) && !pendingSurfaceIndxs_.empty()) {
     //     scheduleLatest(WorkSet(WF_Surface));
     // }
 
-    if ((updateIsobaths_ || updateMosaic_) && !pendingSurfaceIndxs_.empty()) {
+    if (updateIsobaths_ && !pendingSurfaceIndxs_.empty()) {
         scheduleLatest(WorkSet(WF_Surface));
     }
 }
@@ -169,9 +165,7 @@ void DataProcessor::onChartsAdded(uint64_t indx)
 
         const int endIndx    = static_cast<int>(indx);
         const int windowSize = btP.windowSize;
-
         int currCount = std::floor(endIndx / windowSize);
-
         if (bottomTrackWindowCounter_ != currCount) {
             auto additionalBTPGap = windowSize / 2;
             btP.indexFrom = std::max(0, windowSize * bottomTrackWindowCounter_ - (windowSize / 2 + 1) - additionalBTPGap);
@@ -204,17 +198,12 @@ void DataProcessor::onBottomTrack3DAdded(const QVector<int>& epIndxs, const QVec
 
 void DataProcessor::onEpochAdded(uint64_t indx)
 {
-    epochCounter_    = indx;
+    epochCounter_ = indx;
 }
 
 void DataProcessor::onPositionAdded(uint64_t indx)
 {
     positionCounter_ = indx;
-}
-
-void DataProcessor::onAttitudeAdded(uint64_t indx)
-{
-    attitudeCounter_ = indx;
 }
 
 void DataProcessor::onMosaicCanCalc(uint64_t indx)
@@ -240,11 +229,6 @@ void DataProcessor::setSurfaceEdgeLimit(int val)
 
     scheduleLatest(WorkSet(WF_All), true);
 }
-
-// void DataProcessor::setExtraWidth(int val)
-// {
-//     QMetaObject::invokeMethod(worker_, "setSurfaceExtraWidth", Qt::QueuedConnection, Q_ARG(int, val));
-// }
 
 void DataProcessor::setSurfaceIsobathsLevelCnt(int cnt)
 {
@@ -378,14 +362,14 @@ void DataProcessor::onMosaicUpdated()
 
 void DataProcessor::runCoalescedWork()
 {
-    // qDebug() << "DataProcessor::runCoalescedWork..................";
+    qDebug() << "DataProcessor::runCoalescedWork....thread ID: " << QThread::currentThreadId();
     const uint32_t maskNow  = requestedMask_.exchange(0);
     const bool wantSurface  = maskNow & WF_Surface;
-    const bool wantMosaic   = maskNow & WF_Mosaic;
+    // const bool wantMosaic   = maskNow & WF_Mosaic;
     const bool wantIsobaths = maskNow & WF_Isobaths;
 
     WorkBundle wb;
-    if (wantSurface && !pendingSurfaceIndxs_.isEmpty() && (updateIsobaths_ || updateMosaic_)) {
+    if (wantSurface && !pendingSurfaceIndxs_.isEmpty() && updateIsobaths_) {
         wb.surfaceVec.reserve(pendingSurfaceIndxs_.size());
 
         for (auto it = pendingSurfaceIndxs_.cbegin(); it != pendingSurfaceIndxs_.cend(); ++it) {
@@ -399,32 +383,13 @@ void DataProcessor::runCoalescedWork()
         pendingSurfaceIndxs_.clear();
     }
 
-    if (wantMosaic && !pendingMosaicIndxs_.isEmpty() && updateMosaic_) {
-        auto it = pendingMosaicIndxs_.begin();
-        while (it != pendingMosaicIndxs_.end()) {
-            const int idx = *it;
-            if (idx <= mosaicCounter_) {
-                wb.mosaicVec.append(idx);
-                it = pendingMosaicIndxs_.erase(it);
-            }
-            else {
-                ++it;
-            }
-        }
-
-        if (!wb.mosaicVec.isEmpty()) {
-            std::sort(wb.mosaicVec.begin(), wb.mosaicVec.end());
-        }
-    }
-
-    if (wantIsobaths && pendingIsobathsWork_ && updateIsobaths_ && !updateMosaic_) {
+    if (wantIsobaths && pendingIsobathsWork_ && updateIsobaths_) {
         wb.doIsobaths = true;
         pendingIsobathsWork_ = false;
     }
 
-    if (wb.surfaceVec.isEmpty() && wb.mosaicVec.isEmpty() && !wb.doIsobaths) {
+    if (wb.surfaceVec.isEmpty() && !wb.doIsobaths) {
         pendingIsobathsWork_ = false;
-        // qDebug() <<"pendingIsobathsWork_ = false..........";
         return;
     }
 
@@ -441,11 +406,15 @@ void DataProcessor::startTimerIfNeeded()
     // qDebug() << "DataProcessor::startTimerIfNeeded()..........";
     //确保pendingWorkTimer_只能在 DataProcessor所属线程启动，却可以从任意线程安全调用
     if (QThread::currentThread() == this->thread()) {
-        if(!pendingWorkTimer_.isActive()) pendingWorkTimer_.start();
+        if(!pendingWorkTimer_.isActive()) {
+            pendingWorkTimer_.start();
+        }
     }
     else {
         QMetaObject::invokeMethod(this, [this]() {
-            if(!pendingWorkTimer_.isActive()) pendingWorkTimer_.start();
+            if(!pendingWorkTimer_.isActive()) {
+                pendingWorkTimer_.start();
+            }
         }, Qt::QueuedConnection);
     }
 }
@@ -624,7 +593,7 @@ void DataProcessor::scheduleLatest(WorkSet mask, bool replace, bool clearUnreque
 
 bool DataProcessor::isCanStartCalculations() const
 {
-    return chartsCounter_ || bottomTrackCounter_ || epochCounter_ || positionCounter_ || attitudeCounter_ || mosaicCounter_;
+    return chartsCounter_ || bottomTrackCounter_ || epochCounter_ || positionCounter_ || mosaicCounter_;
 }
 
 void DataProcessor::requestCancel() noexcept

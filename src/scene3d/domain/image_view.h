@@ -14,8 +14,6 @@ class ImageView : public SceneObject
     QML_NAMED_ELEMENT(ImageView)
 
 public:
-
-    /*structures*/
     class ImageViewRenderImplementation : public SceneObject::RenderImplementation
     {
     public:
@@ -25,13 +23,11 @@ public:
     private:
         friend class ImageView;
 
-        /*data*/
         QVector<int> indices_;
         QVector<QVector2D> texCoords_;
         GLuint textureId_;
     };
 
-    /*methods*/
     explicit ImageView(QObject* parent = nullptr);
     virtual ~ImageView();
 
@@ -47,9 +43,6 @@ public:
     QImage& getTextureTasksRef();
 
 private:
-    /*methods*/
-
-    /*data*/
     GLuint textureId_;
     QImage textureTask_;
     QVector3D lt_;

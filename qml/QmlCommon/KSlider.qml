@@ -4,24 +4,6 @@ import QtQuick.Controls 2.15
 Slider {
     id: control
 
-    property color trackOffColor: AppPalette.trackOff
-    property color trackOffBorderColor: AppPalette.trackOffBorder
-    property color trackFillColor: AppPalette.accentBar
-    property color knobColor: AppPalette.knob
-    property color knobBorderColor: AppPalette.borderHover
-    property color knobBorderActiveColor: AppPalette.accentBorder
-
-    property int trackHeight: Math.round(8 * AppPalette.scale)
-    property int knobSize: Math.round(28 * AppPalette.scale)
-
-    property string toolTipText: ""
-    property bool showValueTip: true
-    property int valueDecimals: 0
-    property real valueDivisor: 1.0
-    property string valueSuffix: ""
-
-    signal valueModified(real val)
-
     implicitWidth: 200
     implicitHeight: Math.max(knobSize, Math.round(44 * AppPalette.scale))
     horizontalPadding: knobSize / 2
@@ -29,6 +11,46 @@ Slider {
     snapMode: Slider.SnapAlways
     opacity: enabled ? 1.0 : 0.55
     focusPolicy: Qt.StrongFocus
+
+    property color trackOffColor: AppPalette.trackOff
+    property color trackOffBorderColor: AppPalette.trackOffBorder
+    property color trackFillColor: AppPalette.accentBar
+    property color knobColor: AppPalette.knob
+    property color knobBorderColor: AppPalette.borderHover
+    property color knobBorderActiveColor: AppPalette.accentBorder
+
+    property int    trackHeight: Math.round(8 * AppPalette.scale)
+    property int    knobSize:    Math.round(28 * AppPalette.scale)
+
+    property string toolTipText: ""
+    property bool   showValueTip: true
+    property int    valueDecimals: 0
+    property real   valueDivisor: 1.0
+    property string valueSuffix: ""
+    property real   _grabOffset: 0.0
+
+    signal valueModified(real val)
+
+    function _valueAtX(x) {
+        let p = (x - control.leftPadding) / Math.max(control.availableWidth, 1.0)
+        p = Math.max(0.0, Math.min(1.0, p))
+        if (control.mirrored) {
+            p = 1.0 - p
+        }
+        let v = control.from + p * (control.to - control.from)
+        if (control.stepSize > 0) {
+            v = control.from + Math.round((v - control.from) / control.stepSize) * control.stepSize
+        }
+        return Math.max(control.from, Math.min(control.to, v))
+    }
+
+    function _isOnHandle(x, y) {
+        const h = control.handle
+        if (!h) {
+            return false
+        }
+        return x >= h.x && x <= h.x + h.width && y >= h.y && y <= h.y + h.height
+    }
 
     onMoved: control.valueModified(value)
 
@@ -54,33 +76,71 @@ Slider {
             color: control.trackFillColor
 
             Behavior on width {
-                enabled: !control.pressed
+                // enabled: !control.pressed
+                enabled: !inputArea.pressed
                 NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
             }
         }
     }
 
     handle: Rectangle {
-        x: control.leftPadding + control.visualPosition * (control.availableWidth) - width / 2
+        x: control.leftPadding + control.visualPosition * control.availableWidth - width / 2
         y: control.topPadding + (control.availableHeight - height) / 2
         width: control.knobSize * 1.8
         height: control.knobSize
         radius: width  * 0.5
-        color: "white"
-        border.width: control.pressed || control.hovered || control.visualFocus ? 2 : 1
-        border.color: control.pressed || control.hovered || control.visualFocus
-                      ? control.knobBorderActiveColor
-                      : control.knobBorderColor
+        color: "#f0f8ff"
+        // border.width: control.pressed || control.hovered || control.visualFocus ? 2 : 1
+        // border.color: control.pressed || control.hovered || control.visualFocus
+        //               ? control.knobBorderActiveColor : control.knobBorderColor
+        border.width: inputArea.pressed || inputArea.containsMouse || control.visualFocus ? 2 : 1
+        border.color: inputArea.pressed || inputArea.containsMouse || control.visualFocus
+                      ? control.knobBorderActiveColor : control.knobBorderColor
 
         Behavior on border.color {
             ColorAnimation { duration: 100 }
         }
+    }
 
-        scale: control.pressed ? 1.1 : 1.0
-        Behavior on scale {
-            NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+
+
+    MouseArea {
+        id: inputArea
+        anchors.fill: parent
+        hoverEnabled: true
+        preventStealing: true
+
+        onPressed: {
+            control.forceActiveFocus()
+            if (control._isOnHandle(mouse.x, mouse.y)) {
+                // 点击在手柄上：只记抓取偏移，值不变——未拖动则滑块不动
+                control._grabOffset = mouse.x - (control.handle.x + control.handle.width / 2)
+            }
+            else {
+                // 点击在轨道上：立即跳到点击处，随后拖动跟随光标
+                control._grabOffset = 0
+                const v = control._valueAtX(mouse.x)
+                if (v !== control.value) {
+                    control.value = v
+                }
+                control.valueModified(control.value)
+            }
+        }
+
+        onPositionChanged: {
+            if (!pressed) {
+                return
+            }
+            const v = control._valueAtX(mouse.x - control._grabOffset)
+            if (v !== control.value) {
+                control.value = v
+                control.valueModified(v)
+            }
         }
     }
+
+
+
 
     KToolTip {
         targetItem: control

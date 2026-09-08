@@ -40,7 +40,6 @@ Item {
     }
 
 
-
     Item {
         id: blinkGroup
         anchors.fill: parent
@@ -66,11 +65,9 @@ Item {
 
         Rectangle {
             id: frame
-
             anchors.centerIn: parent
             width: boxSize
             height: boxSize
-
             color: "transparent"
             border.width: lineWidth
             border.color: lineColor
@@ -80,9 +77,7 @@ Item {
         Rectangle {
             width: lineWidth - 1
             height: lineLength
-
             color: lineColor
-
             anchors.horizontalCenter: frame.horizontalCenter
             anchors.bottom: frame.top
         }
@@ -91,9 +86,7 @@ Item {
         Rectangle {
             width: lineWidth - 1
             height: lineLength
-
             color: lineColor
-
             anchors.horizontalCenter: frame.horizontalCenter
             anchors.top: frame.bottom
         }
@@ -102,9 +95,7 @@ Item {
         Rectangle {
             width: lineLength
             height: lineWidth - 1
-
             color: lineColor
-
             anchors.verticalCenter: frame.verticalCenter
             anchors.right: frame.left
         }
@@ -113,9 +104,7 @@ Item {
         Rectangle {
             width: lineLength
             height: lineWidth - 1
-
             color: lineColor
-
             anchors.verticalCenter: frame.verticalCenter
             anchors.left: frame.right
         }

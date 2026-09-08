@@ -66,9 +66,6 @@ QVector<QPair<char, int>> SurfaceProcessor::filterDensePoints(const QVector<QVec
         if (vi < 0 || vi >= pts.size()) {
             continue;
         }
-        if (!qIsFinite(pts[vi].x()) || !qIsFinite(pts[vi].y())) {
-            continue;
-        }
         srcPos.push_back(i);
         xs.push_back(pts[vi].x());
         ys.push_back(pts[vi].y());
@@ -79,13 +76,10 @@ QVector<QPair<char, int>> SurfaceProcessor::filterDensePoints(const QVector<QVec
         return indxs;
     }
 
-    double minX = xs[0], maxX = xs[0], minY = ys[0], maxY = ys[0];
-    for (int i = 1; i < total; ++i) {
-        minX = qMin(minX, xs[i]);
-        maxX = qMax(maxX, xs[i]);
-        minY = qMin(minY, ys[i]);
-        maxY = qMax(maxY, ys[i]);
-    }
+    float minX = dataProcessor_->datasetPtr_->minX_;
+    float maxX = dataProcessor_->datasetPtr_->maxX_;
+    float minY = dataProcessor_->datasetPtr_->minY_;
+    float maxY = dataProcessor_->datasetPtr_->maxY_;
     const double diag = std::sqrt((maxX - minX) * (maxX - minX) + (maxY - minY) * (maxY - minY));
     if (diag <= 0.0) {
         QVector<QPair<char, int>> out;
@@ -160,9 +154,9 @@ QVector<QPair<char, int>> SurfaceProcessor::filterDensePoints(const QVector<QVec
     return out;
 }
 
-
 void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> &indxs)
 {
+    // qDebug() << "SurfaceProcessor::onUpdatedBottomTrackData....thread ID: " << QThread::currentThreadId();
     if (indxs.empty()) {
         return;
     }
@@ -253,8 +247,6 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         return;
     }
 
-    float lastMinZ = minZ_;
-    float lastMaxZ = maxZ_;
     for (int triIdx : std::as_const(updsTrIndx)) {  // 网格内三角形的追踪
         if (canceled()) {
             return;
@@ -289,12 +281,12 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
         minZ_ = std::min(static_cast<double>(minZ_), std::min({pt[t.a].z, pt[t.b].z, pt[t.c].z}));
         maxZ_ = std::max(static_cast<double>(maxZ_), std::max({pt[t.a].z, pt[t.b].z, pt[t.c].z}));
     }
-    propagateBorderHeights(changedTiles);
-    for (SurfaceTile* tile : std::as_const(changedTiles)) {
-        smoothTileHeights(tile);  //对高度场进行平滑处理，减少噪声
-        // clipHeightFieldToPolygon();
-        tile->updateBoundaryStepVertices();
 
+    propagateBorderHeights(changedTiles);
+    clipHeightFieldToPolygon(changedTiles);
+    for (SurfaceTile* tile : std::as_const(changedTiles)) {
+        smoothTileHeights(tile);  //平滑处理，减少噪声
+        tile->updateBoundaryStepVertices();
         tile->updateHeightIndices();
         tile->setIsUpdated(false);
     }
@@ -317,11 +309,9 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
             maxZ_ = currMax;
         }
     }
-    const bool zChanged = !qFuzzyCompare(1.0+minZ_, 1.0+lastMinZ) || !qFuzzyCompare(1.0+maxZ_, 1.0+lastMaxZ);
-    if (zChanged) {
-        QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ_));
-        QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ_));
-    }
+
+    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ_));
+    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ_));
     TileMap res;
     res.reserve(changedTiles.size());
     for (auto it = changedTiles.cbegin(); it != changedTiles.cend(); ++it) {
@@ -385,6 +375,16 @@ float SurfaceProcessor::getEdgeLimit() const
 QVector<IsobathUtils::ColorInterval> SurfaceProcessor::getColorIntervals()
 {
     return colorIntervals_;
+}
+
+float SurfaceProcessor::getMinZ() const
+{
+    return minZ_;
+}
+
+float SurfaceProcessor::getMaxZ() const
+{
+    return maxZ_;
 }
 
 void SurfaceProcessor::writeTriangleToMesh(const QVector3D &A, const QVector3D &B, const QVector3D &C, QSet<SurfaceTile*> &updatedTiles)
@@ -683,7 +683,7 @@ bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
     }
     bool inside = false;
     int n = polygonOutlineNed.size();
-    for(int i = 0, j = (n-1); i < n; j = i++) {
+    for(int i = 0, j = n-1; i < n; j = i++) {
         const float xi = polygonOutlineNed.at(i).n;
         const float yi = polygonOutlineNed.at(i).e;
         const float xj = polygonOutlineNed.at(j).n;
@@ -694,7 +694,6 @@ bool SurfaceProcessor::isPointInPolygon(const QVector3D& point) const
             inside = !inside;
         }
     }
-
     return inside;
 }
 
@@ -761,9 +760,7 @@ void SurfaceProcessor::smoothTileHeights(SurfaceTile* tile)
     }
 }
 
-
-
-void SurfaceProcessor::clipHeightFieldToPolygon()
+void SurfaceProcessor::clipHeightFieldToPolygon(QSet<SurfaceTile*>& changedTiles)
 {
     if (!dataProcessor_ || !dataProcessor_->datasetPtr_) {
         return;
@@ -774,15 +771,20 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
         return;
     }
 
-    // qDebug() << "Clipping height field to polygon boundary, polygon size:" << polygonNed.size();
+    double polyMinN = std::numeric_limits<float>::max();
+    double polyMaxN = std::numeric_limits<float>::lowest();
+    double polyMinE = std::numeric_limits<float>::max();
+    double polyMaxE = std::numeric_limits<float>::lowest();
+    const int polyCnt = polygonNed.size();
+    for (int i = 0; i < polyCnt; ++i) {
+        polyMinN = qMin(polyMinN, polygonNed[i].n);
+        polyMaxN = qMax(polyMaxN, polygonNed[i].n);
+        polyMinE = qMin(polyMinE, polygonNed[i].e);
+        polyMaxE = qMax(polyMaxE, polygonNed[i].e);
+    }
 
     const auto& tilesRef = surfaceMeshPtr_->getTilesCRef();
-    const int stepPix = surfaceMeshPtr_->getStepSizeHeightMatrix();
-    const int tileSidePix = surfaceMeshPtr_->getTileSidePixelSize();
-    const int hvSide = tileSidePix / stepPix + 1;
-
-    // 遍历所有瓦片
-    for (auto* tile : tilesRef) {
+    for (SurfaceTile* tile : tilesRef) {
         if (!tile || !tile->getIsInited()) {
             continue;
         }
@@ -791,21 +793,31 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
         auto& marks = tile->getHeightMarkVerticesRef();
 
         // 遍历瓦片内的所有顶点
-        for (int y = 0; y < hvSide; ++y) {
-            for (int x = 0; x < hvSide; ++x) {
-                int idx = y * hvSide + x;
-                QVector3D& vertex = vertices[idx];
+        for (int idx = 0; idx < vertices.size(); ++idx) {
+            QVector3D& vertex = vertices[idx];
+            const float wx = vertex.x();
+            const float wy = vertex.y();
 
-                // 计算该顶点相对于瓦片原点的偏移
-                // 注意：顶点数组中的坐标可能已经是物理坐标，直接使用即可
-                float worldX = vertex.x();
-                float worldY = vertex.y();
-
-                // 如果顶点在多边形外，设置为无效高度
-                if (!isPointInPolygon(QVector3D(worldX, worldY, 0))) {
-                    vertex.setZ(std::numeric_limits<float>::quiet_NaN());
-                    marks[idx] = HeightType::kUndefined;
+            bool inside = false;
+            if (wx >= polyMinN && wx <= polyMaxN && wy >= polyMinE && wy <= polyMaxE) {
+                for (int i = 0, j = polyCnt - 1; i < polyCnt; j = i++) {
+                    const float xi = polygonNed.at(i).n;
+                    const float yi = polygonNed.at(i).e;
+                    const float xj = polygonNed.at(j).n;
+                    const float yj = polygonNed.at(j).e;
+                    const bool intersect = ((yi > wy) != (yj > wy)) &&
+                                           (wx < (xj - xi) * (wy - yi) / (yj - yi + 1e-12f) + xi);
+                    if (intersect) {
+                        inside = !inside;
+                    }
                 }
+            }
+
+            if (!inside) {
+                // z=0 与网格既有的"无数据"约定一致（checkVerticesDepth/平滑均按 ~0 判无效），
+                // 不能用 NaN：qFuzzyIsNull(NaN)==false，NaN 三角形会穿透索引防线进入 GPU
+                vertex.setZ(0.0f);
+                marks[idx] = HeightType::kUndefined;
             }
         }
 
@@ -814,9 +826,7 @@ void SurfaceProcessor::clipHeightFieldToPolygon()
 
 }
 
-
-
-// // Edge（无向边，自动排序）
+// Edge（无向边，自动排序）
 struct Edge2 {
     int a, b;
 

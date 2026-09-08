@@ -7,7 +7,9 @@
 ImageViewControlMenuController::ImageViewControlMenuController(QObject *parent) :
     QmlComponentController(parent),
     m_graphicsSceneView(nullptr)
-{ }
+{
+
+}
 
 void ImageViewControlMenuController::setGraphicsSceneView(GraphicsScene3dView *sceneView)
 {
@@ -31,9 +33,6 @@ void ImageViewControlMenuController::onUseFilterChanged(bool state)
 void ImageViewControlMenuController::onUpdateClicked(const QString& imagePath, double lat_lt, double lon_lt, double lat_rb, double lon_rb, float z)
 {
     if (m_graphicsSceneView) {
-        // QVector3D lt {static_cast<float>(x1), static_cast<float>(y1), static_cast<float>(z)};
-        // QVector3D rb {static_cast<float>(x2), static_cast<float>(y2), static_cast<float>(z)};
-
         Dataset * dataset = m_graphicsSceneView->dataset();
         if(dataset) {
             LLARef ref = dataset->getLlaRef();

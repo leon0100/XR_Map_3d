@@ -396,6 +396,10 @@ ApplicationWindow  {
             "103": { "functionName":  "verScrollDown",     "parameter": 5 },          // Down Arrow
         })
 
+        Keys.onPressed: function(event) {
+            console.log("key =", event.key, "text =", event.text)
+        }
+
         Keys.onReleased: function(event) {
             if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
                 if (handleAndroidBack()) {
@@ -1175,7 +1179,8 @@ ApplicationWindow  {
                         to: 1
                         width: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
-                        onMoved: core.resetAim();
+                        // onMoved: core.resetAim();
+                        onValueModified: core.resetAim();
                     }
                 }
             }

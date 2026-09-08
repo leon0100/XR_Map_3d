@@ -45,7 +45,6 @@ public slots:
     void onBottomTrack3DAdded(const QVector<int>& epIndxs, const QVector<int> &vertIndxs, bool manual);
     void onEpochAdded(uint64_t indx);
     void onPositionAdded(uint64_t indx);
-    void onAttitudeAdded(uint64_t indx);
     void onMosaicCanCalc(uint64_t indx);
 
     // SurfaceProcessor
@@ -137,7 +136,6 @@ private:
     bool isCanStartCalculations() const;
 
 
-
 private:
     friend class SurfaceProcessor;
     friend class BottomTrackProcessor;
@@ -155,7 +153,6 @@ private:
     uint64_t bottomTrackCounter_;
     uint64_t epochCounter_;
     uint64_t positionCounter_;
-    uint64_t attitudeCounter_;
     bool updateBottomTrack_;
     bool updateIsobaths_;
     bool updateMosaic_;

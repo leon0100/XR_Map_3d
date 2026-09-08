@@ -127,7 +127,7 @@ void IsobathsProcessor::edgeIntersection(const QVector3D& a,const QVector3D& b, 
 
 void IsobathsProcessor::fullRebuildLinesLabels()
 {
-    // qDebug() << "等高线fullRebuildLinesLabels......." << maxZ_ << "  " << minZ_;
+    // qDebug() << "IsobathsProcessor::fullRebuildLinesLabels....thread ID: " << QThread::currentThreadId();
     if (!surfaceMeshPtr_ || (minZ_ >= maxZ_ - kmath::fltEps)) {
         return;
     }

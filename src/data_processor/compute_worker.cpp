@@ -70,7 +70,7 @@ void ComputeWorker::setBottomTrackPtr(BottomTrack* bt)
 void ComputeWorker::setSurfaceThemeId(int id)
 {
     surface_.setThemeId(id);
-    surface_.rebuildColorIntervals(); //颜色区间重构
+    surface_.rebuildColorIntervals();
 }
 
 void ComputeWorker::setSurfaceEdgeLimit(float v)
@@ -175,22 +175,20 @@ void ComputeWorker::adaptSurfaceResolution()
     }
 
     if (res != curRes) {
-        qDebug() << "adaptSurfaceResolution:" << curRes << "->" << res;
+        // qDebug() << "adaptSurfaceResolution:" << curRes << "->" << res;
         setMosaicTileResolution(res);
     }
 }
 
 void ComputeWorker::processBundle(const WorkBundle& wb)
 {
-    // qDebug() << "ComputeWorker::processBundle";
+    qDebug() << "ComputeWorker::processBundle....thread ID: " << QThread::currentThreadId();
     if (!wb.surfaceVec.isEmpty() && !isCanceled()) {
         qDebug() << "高度场正在生成.....";
         adaptSurfaceResolution();
-        surface_.onUpdatedBottomTrackData(wb.surfaceVec); //生成高度场，不负责等值线的绘制，但是却为等值线提供高度场网格
+        surface_.onUpdatedBottomTrackData(wb.surfaceVec); //生成高度场，不负责等值线的绘制，但是却为等高线提供高度场网格
         surface_.rebuildColorIntervals();
         qDebug() << "等高面完成！！！";
-        auto colorIntervals = surface_.getColorIntervals();
-        isobaths_.setColorsFromSurfaceProcessor(colorIntervals);
     }
 
     // if (!wb.mosaicVec.isEmpty() && !isCanceled()) {
@@ -198,7 +196,11 @@ void ComputeWorker::processBundle(const WorkBundle& wb)
     // }
 
     if (wb.doIsobaths && !isCanceled()) {
-        isobaths_.fullRebuildLinesLabels(); //只计算等值线....... 但它完全依赖于SurfaceProcessor生成的高度场网格。
+        auto colorIntervals = surface_.getColorIntervals();
+        isobaths_.setColorsFromSurfaceProcessor(colorIntervals);
+        isobaths_.setMinZ(surface_.getMinZ());
+        isobaths_.setMaxZ(surface_.getMaxZ());
+        isobaths_.fullRebuildLinesLabels(); //只计算等值线，但它完全依赖于SurfaceProcessor生成的高度场网格
     }
 
     qDebug() << "等高线绘制完成！！！";
