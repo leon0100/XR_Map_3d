@@ -80,11 +80,6 @@ public:
     Q_INVOKABLE void setColorScheme(int index);
 
 
-protected:
-    Dataset* dataset_ = nullptr;
-    // QTimer* m_updateTimer;
-    bool _isHorizontal = true;
-
 
 signals:
     void timelinePositionChanged();
@@ -166,9 +161,16 @@ public slots:
     Q_INVOKABLE int  getDeleteEndIdx();
     Q_INVOKABLE bool deleteSelectedFrames();
 
+
+protected:
+    Dataset* dataset_ = nullptr;
+    bool _isHorizontal = true;
+
+
 private:
     int indx_ = -1;
     int currentUpRng_ = 0, currentLoRng_ = 1500;
+    float currentMaxDepth_ = 0.0f;
     bool prompt_ = true;
     bool isBatchCorrect_ = false;
     bool isDepthCorrect_ = false;

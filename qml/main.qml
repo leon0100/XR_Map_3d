@@ -23,7 +23,8 @@ ApplicationWindow  {
     minimumHeight: 256
     visibility: Qt.platform.os === "android" ? Window.Windowed : Window.FullScreen
     color:      "black"
-    title:      qsTr("XR-Viewer")
+    title: core && core.filePath.length > 0 ?
+                    "[" + core.filePath + "]--" + qsTr("XR-Viewer") : qsTr("XR-Viewer")
 
     readonly property int _rightBarWidth:                360
     readonly property int _activeObjectParamsMenuHeight: 500
@@ -397,7 +398,37 @@ ApplicationWindow  {
         })
 
         Keys.onPressed: function(event) {
-            console.log("key =", event.key, "text =", event.text)
+            var keyName = ""
+
+            switch (event.key) {
+            case Qt.Key_A: keyName = "A"; break
+            case Qt.Key_B: keyName = "B"; break
+            case Qt.Key_C: keyName = "C"; break
+            case Qt.Key_D: keyName = "D"; break
+
+            case Qt.Key_Control: keyName = "Control"; break
+            case Qt.Key_Shift:   keyName = "Shift"; break
+            case Qt.Key_Alt:     keyName = "Alt"; break
+
+            case Qt.Key_Enter:   keyName = "Enter"; break
+            case Qt.Key_Return:  keyName = "Return"; break
+            case Qt.Key_Escape:  keyName = "Escape"; break
+            case Qt.Key_Space:   keyName = "Space"; break
+            case Qt.Key_Tab:     keyName = "Tab"; break
+            case Qt.Key_Backspace: keyName = "Backspace"; break
+            case Qt.Key_Delete:  keyName = "Delete"; break
+
+            case Qt.Key_Left:    keyName = "Left"; break
+            case Qt.Key_Right:   keyName = "Right"; break
+            case Qt.Key_Up:      keyName = "Up"; break
+            case Qt.Key_Down:    keyName = "Down"; break
+
+            default:
+                keyName = event.text
+                break
+            }
+
+            console.log("key =", keyName, "text =", event.text)
         }
 
         Keys.onReleased: function(event) {
@@ -663,12 +694,12 @@ ApplicationWindow  {
 
                     MouseArea {
                         id: mousearea3D
-                        enabled:              true
-                        anchors.fill:         parent
-                        acceptedButtons:      Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-                        focus:                true
-                        hoverEnabled:         true
-                        Keys.enabled:         true
+                        enabled:           true
+                        anchors.fill:      parent
+                        acceptedButtons:   Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                        focus:             true
+                        hoverEnabled:      true
+                        Keys.enabled:      true
                         Keys.onDeletePressed: function(event) { renderer.keyPressTrigger(event.key) }
                         Keys.onReturnPressed: function(event) { renderer.keyPressTrigger(event.key) }
                         Keys.onEnterPressed:  function(event) { renderer.keyPressTrigger(event.key) }
@@ -810,7 +841,6 @@ ApplicationWindow  {
                         width: completeText.implicitWidth + 8
                         height: completeText.implicitHeight + 4
                         radius: 4
-                        // color: "#99000000"
                         color: "#66000000"
                         border.width: 1
                         border.color: "#777777"
@@ -1179,7 +1209,6 @@ ApplicationWindow  {
                         to: 1
                         width: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
-                        // onMoved: core.resetAim();
                         onValueModified: core.resetAim();
                     }
                 }

@@ -85,9 +85,9 @@ void Plot2DEchogram::setUpperRng(int maxUpRng)
     resetCash();
 }
 
-void Plot2DEchogram::setLowerRng(int minLoRng)
+void Plot2DEchogram::setLowerRng(int maxLoRng)
 {
-    currentLoRng_ = minLoRng;
+    currentLoRng_ = maxLoRng;
     resetCash();
 }
 
@@ -213,7 +213,8 @@ QList<int> Plot2DEchogram::getDepthListKF()
             mark_dif = (depth-mark_last)/diffValue;
             mark_count = 0;
             mark_last = depth;
-        } else {
+        }
+        else {
             mark_count++;
         }
 
@@ -229,7 +230,8 @@ QList<int> Plot2DEchogram::getDepthListKF()
                 list_kf.append(KalmanFilter(depth, 1, R_small*depthFilterLevel_, 4000.0, isFirst));
             }
             //list_midCount.append(3);
-        } else {
+        }
+        else {
             //list_kfR.append(100);
             if(0 == depth) {
                 if(list_kf.isEmpty()) {
@@ -735,7 +737,9 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
     }
 
-    float currentViewMaxLoRng = -1.0f;
+    // float currentViewMaxLoRng = -1.0f;
+    QVector<int> loRngVals;
+    QVector<int> depthVals;
     for(int column = 0; column < width; column++) {
         int cursorPos = column - wrapStartPos;
         if(column < wrapStartPos) {
@@ -791,7 +795,12 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     sfEnd   = 0;
                 }
 
-                currentViewMaxLoRng = qMax(currentViewMaxLoRng, loRng);
+                // currentViewMaxLoRng = qMax(currentViewMaxLoRng, loRng);
+                if((loRng > 0) && (upRng != loRng)) {
+                    loRngVals.append((int)loRng);
+                    depthVals.append((int)params.depth);
+                }
+
 
                 QVector<uint8_t> rawDataVec;
                 rawDataVec.resize(PING_SIZE_MAX);
@@ -952,64 +961,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 _cash[column].longitude = params.longitude;
                 _cash[column].latitude  = params.latitude;
                 _cash[column].startIdx  = startIdx;
-
-                // uint32_t* img_data = (uint32_t*)_image.bits();
-                // int bytesPerLine   = _image.bytesPerLine() / 4;
-                // for (int j = 0; j < height; j++) {
-                //     uint8_t dataValue = cacheData[j];
-                //     int bgColor = ZyColorScheme::background[ZyColorScheme::backgroundIndex];
-                //     int rgb = bgColor;
-                //     // qDebug() << "dataValue....." << dataValue;
-
-                //     if (j >= 0 && j < frameSfEnd) {
-                //         // 水表
-                //         if(dataValue == 0) {
-                //             rgb = bgColor;
-                //         } else {
-                //             if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                //                 rgb = ZyColorScheme::colorScheme_surface[254];
-                //             } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                //                 rgb = ZyColorScheme::colorScheme_surface[0];
-                //             } else {
-                //                 rgb =  ZyColorScheme::colorScheme_surface[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
-                //             }
-                //         }
-                //     }
-                //     else if (j >= frameSfEnd && j < frameBtStart) {
-                //         // 水中
-                //         if(dataValue == 0) {
-                //             rgb = bgColor;
-                //         } else {
-                //             if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                //                 rgb = ZyColorScheme::colorScheme_fish[254];
-                //             } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                //                 rgb = ZyColorScheme::colorScheme_fish[254];
-                //             } else {
-                //                 rgb = ZyColorScheme::colorScheme_fish[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
-                //             }
-                //         }
-                //     }
-                //     else if(j >= frameBtStart) {
-                //         // 水底
-                //         if(dataValue == 0) {
-                //             rgb = bgColor;
-                //         } else {
-                //             if(dataValue + ZyColorScheme::colorLine * COLOR_LINE > 254) {
-                //                 rgb = ZyColorScheme::colorScheme_bottom[254];
-                //             } else if(dataValue + ZyColorScheme::colorLine * COLOR_LINE < 0) {
-                //                 rgb = ZyColorScheme::colorScheme_bottom[254];
-                //             } else {
-                //                 rgb = ZyColorScheme::colorScheme_bottom[dataValue + ZyColorScheme::colorLine * COLOR_LINE];
-                //             }
-                //         }
-                //     }
-
-                //     QRgb color = qRgb((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF);
-                //     img_data[j* bytesPerLine + column] = color;
-                // }
-
-                // delete[] cacheData;
-                // cacheData = nullptr;
             }
 
         }
@@ -1031,15 +982,50 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
     }
 
+
+
+
+
+
+
+    if(!loRngVals.isEmpty()) {
+        auto robustMax = [](const QVector<int>& vals) -> int {
+            const int total = vals.size();
+            QList<int> buf;
+            for(int i = 0; (i + 10) <= total; i += 10) {
+                QList<int> g(vals.cbegin() + i, vals.cbegin() + i + 10);
+                std::sort(g.begin(), g.end());
+                if((g.last() < (int)((float)g.first() * 1.5f)) || (g.last() < 200)) {
+                    buf.append(g.last());
+                }
+            }
+            if(buf.isEmpty()) {
+                int m = vals.first();
+                for(int v : vals) {
+                    m = qMax(m, v);
+                }
+                return m;
+            }
+            std::sort(buf.begin(), buf.end());
+            return buf.last();
+        };
+
+        parent->currentViewMaxLoRng_ = (float)robustMax(loRngVals);
+        qDebug() << "robust maxLoRng:" << parent->currentViewMaxLoRng_;
+    }
+
+
+
+
     int visualRightColumn = (wrapStartPos == 0) ? (width - 1) : (wrapStartPos - 1);
     if (visualRightColumn >= 0 && visualRightColumn < _cash.size()) {
         wavePixel_ = _cash[visualRightColumn];
-        if(currentViewMaxLoRng == -1.0f) {
-            parent->currentViewMaxLoRng_ = 3200.0f;
-        }
-        else {
-            parent->currentViewMaxLoRng_ = currentViewMaxLoRng;
-        }
+        // if(currentViewMaxLoRng == -1.0f) {
+        //     parent->currentViewMaxLoRng_ = 3200.0f;
+        // }
+        // else {
+        //     parent->currentViewMaxLoRng_ = currentViewMaxLoRng;
+        // }
     }
     _lastCursor = cursor;
 

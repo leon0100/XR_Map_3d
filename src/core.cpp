@@ -501,6 +501,7 @@ void Core::openFileFromMenu()
 
     }
 
+    setFilePath(QFileInfo(fileNames.first()).fileName());
 }
 
 void Core::clearRouteData()
@@ -606,6 +607,7 @@ void Core::clearRouteData()
                             plot2d->clearPlotData();
                         }
                     }
+                    setFilePath("");
                 }
                 QMetaObject::invokeMethod(dataProcessor_, "clearProcessing2", Qt::DirectConnection, Q_ARG(bool,clearTrack));
             }
@@ -830,6 +832,12 @@ bool Core::isOpenedFile() const
 QString Core::getFilePath() const
 {
     return filePath_;
+}
+
+void Core::setFilePath(QString filePath)
+{
+    filePath_ = filePath;
+    emit filePathChanged();
 }
 
 void Core::fixFilePathString(QString& filePath) const

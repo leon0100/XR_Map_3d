@@ -12,22 +12,22 @@ Slider {
     opacity: enabled ? 1.0 : 0.55
     focusPolicy: Qt.StrongFocus
 
-    property color trackOffColor: AppPalette.trackOff
-    property color trackOffBorderColor: AppPalette.trackOffBorder
-    property color trackFillColor: AppPalette.accentBar
-    property color knobColor: AppPalette.knob
-    property color knobBorderColor: AppPalette.borderHover
+    property color trackOffColor:         AppPalette.trackOff
+    property color trackOffBorderColor:   AppPalette.trackOffBorder
+    property color trackFillColor:        AppPalette.accentBar
+    property color knobColor:             AppPalette.knob
+    property color knobBorderColor:       AppPalette.borderHover
     property color knobBorderActiveColor: AppPalette.accentBorder
 
-    property int    trackHeight: Math.round(8 * AppPalette.scale)
-    property int    knobSize:    Math.round(28 * AppPalette.scale)
+    property int   trackHeight: Math.round(8  * AppPalette.scale)
+    property int   knobSize:    Math.round(25 * AppPalette.scale)
 
-    property string toolTipText: ""
-    property bool   showValueTip: true
+    property string toolTipText:   ""
+    property bool   showValueTip:  true
     property int    valueDecimals: 0
-    property real   valueDivisor: 1.0
-    property string valueSuffix: ""
-    property real   _grabOffset: 0.0
+    property real   valueDivisor:  1.0
+    property string valueSuffix:   ""
+    property real   _grabOffset:   0.0
 
     signal valueModified(real val)
 
@@ -76,7 +76,6 @@ Slider {
             color: control.trackFillColor
 
             Behavior on width {
-                // enabled: !control.pressed
                 enabled: !inputArea.pressed
                 NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
             }
@@ -86,13 +85,10 @@ Slider {
     handle: Rectangle {
         x: control.leftPadding + control.visualPosition * control.availableWidth - width / 2
         y: control.topPadding + (control.availableHeight - height) / 2
-        width: control.knobSize * 1.8
+        width: control.knobSize * 2
         height: control.knobSize
         radius: width  * 0.5
         color: "#f0f8ff"
-        // border.width: control.pressed || control.hovered || control.visualFocus ? 2 : 1
-        // border.color: control.pressed || control.hovered || control.visualFocus
-        //               ? control.knobBorderActiveColor : control.knobBorderColor
         border.width: inputArea.pressed || inputArea.containsMouse || control.visualFocus ? 2 : 1
         border.color: inputArea.pressed || inputArea.containsMouse || control.visualFocus
                       ? control.knobBorderActiveColor : control.knobBorderColor
@@ -101,7 +97,6 @@ Slider {
             ColorAnimation { duration: 100 }
         }
     }
-
 
 
     MouseArea {
@@ -138,7 +133,6 @@ Slider {
             }
         }
     }
-
 
 
 

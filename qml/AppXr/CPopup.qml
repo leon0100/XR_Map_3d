@@ -9,20 +9,20 @@ Popup {
 
     x: {
         switch (popupPosition) {
-        case "topLeft":     return parent.mouseX - contentItem.implicitWidth - popupOffset.x
-        case "bottomLeft":  return parent.mouseX - contentItem.implicitWidth - popupOffset.x
-        case "topRight":    return parent.mouseX + popupOffset.x
-        case "bottomRight": return parent.mouseX + popupOffset.x
-        default:            return parent.mouseX + popupOffset.x
+            case "topLeft":     return parent.mouseX - contentItem.implicitWidth - popupOffset.x
+            case "bottomLeft":  return parent.mouseX - contentItem.implicitWidth - popupOffset.x
+            case "topRight":    return parent.mouseX + popupOffset.x
+            case "bottomRight": return parent.mouseX + popupOffset.x
+            default:            return parent.mouseX + popupOffset.x
         }
     }
     y: {
         switch (popupPosition) {
-        case "topLeft":
-        case "topRight":   return parent.mouseY - contentItem.implicitHeight - popupOffset.y
-        case "bottomLeft":
-        case "bottomRight":return parent.mouseY + popupOffset.y
-        default:           return parent.mouseY + popupOffset.y
+            case "topLeft":
+            case "topRight":   return parent.mouseY - contentItem.implicitHeight - popupOffset.y
+            case "bottomLeft":
+            case "bottomRight":return parent.mouseY + popupOffset.y
+            default:           return parent.mouseY + popupOffset.y
         }
     }
 
@@ -46,7 +46,7 @@ Popup {
                 id: textItem
                 text: popupText
                 color: "white"
-                font.pixelSize: 14
+                font.pixelSize: theme.iconSize
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.Wrap
             }

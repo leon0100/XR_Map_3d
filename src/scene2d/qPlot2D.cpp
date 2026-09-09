@@ -104,6 +104,7 @@ void qPlot2D::plotUpdate()
     emit timelinePositionChanged();
 
     if(dataset_ && !dataset_->vec_CSV_.empty()  && cursor_.distance.mode == AutoRangeNone) {
+        qDebug() << "currentViewMaxLoRng_:" << currentViewMaxLoRng_ << "  " << (int)(currentViewMaxLoRng_ * 1.25f);
         setMaxLoRng((int)(currentViewMaxLoRng_ * 1.25f));
     }
 
@@ -278,6 +279,7 @@ void qPlot2D::setIndx(int indx)
 
 void qPlot2D::resetUpLoRng(int upper, int lower)
 {
+    qDebug() << "upper:" << upper << "       lower:" << lower;
     cursor_.distance.mode = AutoRangeMaxOnScreen;
 
     currentUpRng_ = upper * 100;
@@ -524,6 +526,7 @@ void qPlot2D::setOffsetZ(float value)
 
 void qPlot2D::scaleYZoomEvent(int delta)
 {
+    qDebug() << "delta....." << delta;
     cursor_.distance.mode = AutoRangeMaxOnScreen;
 
     if(delta < 0) {

@@ -155,7 +155,6 @@ bool Plot2D::isHorizontal()
 void Plot2D::setHorizontal(bool is_horizontal)
 {
     isHorizontal_ = is_horizontal;
-    // contacts_.setIsHorizontal(isHorizontal_);
 }
 
 void Plot2D::setAimEpochEventState(bool state)
@@ -174,6 +173,7 @@ void Plot2D::setTimelinePosition(float position)
 
     if (cursor_.position != position) {
         cursor_.position = position;
+        cursor_.last_dataset_size = 0;
         plotUpdate();
     }
 }
@@ -193,6 +193,7 @@ void Plot2D::setTimelinePositionSec(float position)
     }
 
     cursor_.position = position;
+    cursor_.last_dataset_size = 0;
     plotUpdate();
 }
 

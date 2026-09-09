@@ -53,7 +53,7 @@ public:
     int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
     void resetCash();
     void setUpperRng(int maxUpRng);
-    void setLowerRng(int minLoRng);
+    void setLowerRng(int maxLoRng);
     int  getSoundVelocity();
     void setSoundVelocity(int soundVelocity, int draftOffset);
     void setSensitivity(int sensitive);
@@ -78,8 +78,8 @@ public:
     void updateDeleteFrameMousePos(int mouseX, int mouseY);
     void drawDeleteFrameHint(int width, int height);
     void clearDeleteFrame();
-    int getDeleteStartIdx() const;
-    int getDeleteEndIdx() const;
+    int  getDeleteStartIdx() const;
+    int  getDeleteEndIdx() const;
     bool deleteFrames(Plot2D* parent, Dataset* dataset);
 
 

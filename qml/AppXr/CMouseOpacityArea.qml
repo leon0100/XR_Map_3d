@@ -3,6 +3,7 @@ import QtQuick 2.15
 
 import QmlCommon 1.0
 
+
 MouseArea {
     id: hoverArea
     anchors.fill: parent
@@ -10,10 +11,10 @@ MouseArea {
 
     anchors.margins: -2
 
-    property bool isMouseAccepted: false
+    property bool   isMouseAccepted: false
     property string toolTipText: qsTr("Tooltip")
     property string popupPosition: "bottomRight"
-    property point popupOffset: Qt.point(8, 8)
+    property point  popupOffset: Qt.point(8, 8)
 
     onPressed: function(mouse) {
         if (mouse.source === 2) {
@@ -23,9 +24,11 @@ MouseArea {
 
         mouse.accepted = isMouseAccepted
     }
+
     onReleased: function(mouse) {
         mouse.accepted = isMouseAccepted
     }
+
     onClicked: function(mouse) {
         if (mouse.source === 2) {
              tooltipTimer.stop()
@@ -34,9 +37,11 @@ MouseArea {
 
         mouse.accepted = isMouseAccepted
     }
+
     onEntered: {
         tooltipTimer.start()
     }
+
     onExited: {
         tooltipTimer.stop()
         customToolTip.close()
@@ -57,4 +62,6 @@ MouseArea {
         popupPosition: hoverArea.popupPosition
         popupOffset: hoverArea.popupOffset
     }
+
+
 }

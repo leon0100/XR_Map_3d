@@ -29,7 +29,7 @@ public:
     Core();
     ~Core();
 
-    Q_PROPERTY(QString   filePath            READ getFilePath                NOTIFY filePathChanged)
+    Q_PROPERTY(QString   filePath            READ getFilePath  WRITE setFilePath   NOTIFY filePathChanged)
     Q_PROPERTY(bool      isFileOpening       READ getIsFileOpening           NOTIFY sendIsFileOpening)
     Q_PROPERTY(bool      isSeparateReading   READ getIsSeparateReading       CONSTANT)
     Q_PROPERTY(QString   ch1Name             READ getChannel1Name            NOTIFY channelListUpdated  FINAL)
@@ -117,6 +117,7 @@ private:
     bool isOpenedFile() const;
 
     QString getFilePath() const;
+    void setFilePath(QString filePath);
     void fixFilePathString(QString& filePath) const;
     void loadLLARefFromSettings();
 
