@@ -541,7 +541,8 @@ void Plot2D::reindexingCursor()
         int data_index = head_data_index + round((i - image_width)/hor_ratio);
         if(data_index >= 0 && data_index < data_width) {
             cursor_.indexes[i] = data_index;
-        } else {
+        }
+        else {
             ++cntZeros;
             cursor_.indexes[i] = -1;
         }

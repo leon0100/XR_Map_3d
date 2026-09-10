@@ -59,6 +59,7 @@ public:
     void setSensitivity(int sensitive);
     QList<int> getDepthListKF();
     void setBatchCorrect(bool batch);
+    bool getBatchCorrect();
     void drawBatchCorrect(Plot2D* parent, Dataset* dataset, int width, int height);
     void updateBatchCorrect(Plot2D* parent, Dataset* dataset, int width, int height);
     void addBatchCorrect(QPoint pos);
@@ -146,6 +147,7 @@ private:
 
     double KalmanFilter(double ResrcData, double ProcessNiose_Q, double MeasureNoise_R, double InitialPredict, int isFirst);
     void drawDepthFilter(Canvas canvas, int width, int cash_position, bool isVisible);
+    int  robustMaxLoRng(const QVector<int>& vals, int groupSize);
 
 private:
     ThemeId themeId_;

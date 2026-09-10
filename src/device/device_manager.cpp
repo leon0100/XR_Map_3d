@@ -12,6 +12,7 @@
 #include "console.h"
 
 
+
 DiskSonarCache::DiskSonarCache(const QString& filePath) : filePath_(filePath)
 {
     // qDebug() << "filePath....." << filePath;
@@ -56,22 +57,50 @@ void DiskSonarCache::clearFile()
 
     totalFramesWritten_ = 0;
     channelOffsets_.clear();
+    frameMap_.clear();
     openForWrite();
 }
 
 void DiskSonarCache::writeFrame(const QByteArray& rawFrame)
 {
     file_.write(rawFrame.constData(), PING_SIZE_MAX);
+    frameMap_.append(totalFramesWritten_);
     totalFramesWritten_++;
 }
 
 void DiskSonarCache::readFrame(qint64 epochIdx, QByteArray& outFrame)
 {
-    const qint64 offset = epochIdx * PING_SIZE_MAX;
+    QMutexLocker lk(&mtx_);
+    if (epochIdx < 0 || epochIdx >= frameMap_.size()) {
+        outFrame.clear();
+        return;
+    }
+    const qint64 offset = frameMap_[epochIdx] * PING_SIZE_MAX;
     if (!file_.seek(offset)) {
-        return ;
+        outFrame.clear();
+        return;
     }
     outFrame = file_.read(PING_SIZE_MAX);
+}
+
+void DiskSonarCache::removeFrames(int startIndex, int endIndex)
+{
+    if (startIndex > endIndex) {
+        std::swap(startIndex, endIndex);
+    }
+    const int sz = frameMap_.size();
+    if (startIndex < 0) {
+        startIndex = 0;
+    }
+    if (endIndex >= sz) {
+        endIndex = sz - 1;
+    }
+    if (startIndex > endIndex || startIndex >= sz) {
+        return;
+    }
+
+    QMutexLocker lk(&mtx_);
+    frameMap_.remove(startIndex, endIndex - startIndex + 1);   //磁盘帧不移动，仅同步映射
 }
 
 
@@ -234,6 +263,9 @@ void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType,
     }
     if(currentFileType == filetype_tslw) {
         openFileData_tslw(tslByteArray, fileIndex, fileCnt);
+    }
+    if(currentFileType == filetype_tsly) {
+        openFileData_tsly(tslByteArray, fileIndex, fileCnt);
     }
     else if(currentFileType == filetype_tsl3) {
         openFileData_tsl3_2(tslByteArray, fileIndex, fileCnt);
@@ -579,6 +611,253 @@ void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, 
         });
     }
 
+}
+
+
+void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, int fileCnt)
+{
+    /*- 与 tslw 的区别：像素(%Y, tsly_t)与经纬度(%G, navix_info_t)分属两个结构体，按 hdr[1] 分流解析 -*/
+    const int maxCount = tslyByteArray.size();
+    if(maxCount < 512 + (int)sizeof(navix_info_t)) {
+        return;
+    }
+    const char* data = tslyByteArray.constData();
+
+    /*- 双流交织：最新 %G 导航状态供随后到来的 %Y 声呐帧组装位置/航向/速度 -*/
+    struct GnssState {
+        double lon = 0.0, lat = 0.0;
+        float  heading = 0.0f;      /* x10度 */
+        float  speed = 0.0f;        /* x100节 */
+        float  temperature = 0.0f;  /* 华氏度 */
+        quint32 unixTime = 0;
+    } gnss;
+
+    double last_lon = 0.0, last_lat = 0.0;
+    bool haveLast = false;
+    int sonarOk = 0, gnssOk = 0, frameSkip = 0, processed = 0;
+    int crcFailStreak = 0;
+    bool crcCheckEnabled = true;   /* XOR校验与实际算法不符时自动降级 */
+
+    int pos = 512;   /*- 跳过512字节文件头 -*/
+    while(pos + 14 <= maxCount) {
+        if(data[pos] != '%') {
+            pos++;
+            continue;
+        }
+
+        if(data[pos + 1] == 'G') {
+            /*---------------- %G：导航帧 navix_info_t（64字节定长） ----------------*/
+            if(pos + (int)sizeof(navix_info_t) > maxCount) {
+                break;
+            }
+            navix_info_t nav;
+            memcpy(&nav, data + pos, sizeof(navix_info_t));
+            /*- lenght 不含 hdr[2] 与 lenght[2] 本身，正常应为60，异常时按结构体定长兑底 -*/
+            int advance = (int)nav.lenght + 4;
+            if(advance != (int)sizeof(navix_info_t)) {
+                advance = sizeof(navix_info_t);
+            }
+            gnss.lon = dm_to_dd(nav.longitude);   /*- 度分→度 -*/
+            gnss.lat = dm_to_dd(nav.latitude);
+            gnss.heading = nav.heading;
+            gnss.speed = nav.speed;
+            gnss.temperature = nav.temperature;
+            gnss.unixTime = nav.time;
+            if(gnssOk < 2) {
+                qDebug() << "TSLY gnss:" << gnss.lon << gnss.lat
+                         << "heading:" << gnss.heading << "speed:" << gnss.speed
+                         << "time:" << gnss.unixTime << "lenght:" << nav.lenght;
+            }
+            gnssOk++;
+            pos += advance;
+        }
+        else if(data[pos + 1] == 'Y') {
+            /*---------------- %Y：声呐帧 tsly_t（14字节头 + 变长像素） ----------------*/
+            tsly_t frame;
+            memcpy(&frame, data + pos, 14);   /*- pixels[]为柔性数组，仅拷贝定长头 -*/
+
+            const quint8  reg0Type   = frame.length >> 14;             /*- bit[15:14]：reg0含义 -*/
+            const quint16 pixelCount = frame.ping_size & 0x07FF;       /*- bit[10:0]：像素数 -*/
+            const quint8  pixelRes   = (frame.ping_size >> 11) & 0x3;  /*- bit[12:11]：分辨率 -*/
+
+            int pixBytes = pixelCount;
+            if(pixelRes == Pixel2Bit)       { pixBytes = (pixelCount + 3) / 4; }
+            else if(pixelRes == Pixel4Bit)  { pixBytes = (pixelCount + 1) / 2; }
+            else if(pixelRes == Pixel16Bit) { pixBytes = pixelCount * 2; }
+
+            const int advance = 14 + pixBytes;
+            if(pixelCount == 0 || (pos + advance) > maxCount) {
+                pos++;
+                frameSkip++;
+                continue;
+            }
+
+            /*- CRC8按XOR实现：HDR_CRC8覆盖hdr[0]~lo_Rng共12字节，PIX_CRC8仅覆盖pixels[] -*/
+            if(crcCheckEnabled) {
+                quint8 hdrChk = 0;
+                for(int i = 0; i <= 11; ++i) {
+                    hdrChk ^= (quint8)data[pos + i];
+                }
+                quint8 pixChk = 0;
+                for(int i = 0; i < pixBytes; ++i) {
+                    pixChk ^= (quint8)data[pos + 14 + i];
+                }
+                if(hdrChk != frame.HDR_CRC8 || pixChk != frame.PIX_CRC8) {
+                    crcFailStreak++;
+                    if(crcFailStreak >= 16) {
+                        crcCheckEnabled = false;
+                        qDebug() << "TSLY: CRC mismatch x16, CRC check disabled";
+                    }
+                    else {
+                        frameSkip++;
+                        pos++;
+                        continue;
+                    }
+                }
+                else {
+                    crcFailStreak = 0;
+                }
+            }
+
+            if(sonarOk < 3) {
+                qDebug() << "TSLY sonar #" << sonarOk
+                         << "depth:" << frame.depth << "pixelCount:" << pixelCount
+                         << "res:" << pixelRes << "reg0Type:" << reg0Type
+                         << "upRng:" << frame.up_Rng << "loRng:" << frame.lo_Rng;
+            }
+
+            /*- 位置：声呐帧使用最近一次 %G 状态；异常 GPS 过滤同 tsl3_2。
+                判断须在写缓存前，保证磁盘帧索引与 epoch 索引一致 -*/
+            double lon = gnss.lon;
+            double lat = gnss.lat;
+            if((lon < 0.000001f) && (lat < 0.000001f)) {
+                if(flag_haveReportAbnormalGPS == false) {
+                    flag_haveReportAbnormalGPS = true;
+                    flag_deleteAbnormalGPS = GIF->dialogYesNoSync(tr("Delete abnormal GPS coordinates?"));
+                }
+                if(flag_deleteAbnormalGPS == true) {
+                    count_abnormalGPS++;
+                    pos += advance;
+                    continue;
+                }
+            }
+            else if(haveLast) {
+                double distance = GpsCal_GaussPC_DST(lon, lat, last_lon, last_lat);
+                if(distance > GPS_ERROR_DISTANCE) {
+                    if(flag_haveReportAbnormalGPS == false) {
+                        flag_haveReportAbnormalGPS = true;
+                        flag_deleteAbnormalGPS = GIF->dialogYesNoSync(tr("Delete abnormal GPS coordinates?"));
+                    }
+                    if(flag_deleteAbnormalGPS == true) {
+                        count_abnormalGPS++;
+                        last_lon = lon;
+                        last_lat = lat;
+                        pos += advance;
+                        continue;
+                    }
+                }
+            }
+            if(lon > 0.000001f || lat > 0.000001f) {
+                last_lon = lon;
+                last_lat = lat;
+                haveLast = true;
+            }
+
+            /*- 像素分辨率归一到8bit，零填充到 PING_SIZE_MAX 后写入磁盘缓存 -*/
+            QByteArray rawDat;
+            rawDat.reserve(PING_SIZE_MAX);
+            const char* px = data + pos + 14;
+            if(pixelRes == Pixel8Bit) {
+                rawDat.append(px, pixBytes);
+            }
+            else if(pixelRes == Pixel4Bit) {
+                for(int i = 0; i < pixBytes; ++i) {
+                    const quint8 b = (quint8)px[i];
+                    rawDat.append((char)((b >> 4) * 17));
+                    rawDat.append((char)((b & 0x0F) * 17));
+                }
+            }
+            else if(pixelRes == Pixel2Bit) {
+                for(int i = 0; i < pixBytes; ++i) {
+                    const quint8 b = (quint8)px[i];
+                    rawDat.append((char)(((b >> 6) & 0x3) * 85));
+                    rawDat.append((char)(((b >> 4) & 0x3) * 85));
+                    rawDat.append((char)(((b >> 2) & 0x3) * 85));
+                    rawDat.append((char)((b & 0x3) * 85));
+                }
+            }
+            else {
+                for(int i = 0; (i + 1) < pixBytes; i += 2) {
+                    quint16 v;
+                    memcpy(&v, px + i, 2);
+                    rawDat.append((char)(v >> 8));
+                }
+            }
+            while(rawDat.size() < PING_SIZE_MAX) {
+                rawDat.append('\0');
+            }
+            diskSonarCache_->writeFrame(rawDat);
+
+            const float depth = (float)frame.depth;   /*- cm -*/
+            LLA lla;
+            lla.latitude  = lat;
+            lla.longitude = lon;
+            lla.altitude  = depth / 100.f;
+
+            ChartParameters chartParams;
+            chartParams.depth       = depth;                          /*- cm -*/
+            chartParams.pingSize    = pixelCount;
+            chartParams.upRng       = (float)frame.up_Rng * 100.0f;   /*- m→cm -*/
+            chartParams.loRng       = (float)frame.lo_Rng * 100.0f;   /*- m→cm -*/
+            chartParams.temperature = (reg0Type == Reg0Temperature)
+                                          ? (float)frame.reg0           /*- x10华氏度 -*/
+                                          : gnss.temperature * 10.0f;   /*- 华氏度→x10 -*/
+            chartParams.heading     = (quint16)gnss.heading;          /*- x10度，显示层 /10 还原为度 -*/
+            chartParams.speed       = (quint16)gnss.speed;            /*- x100节，显示层 /100×0.514444（节→m/s） -*/
+            chartParams.time        = gnss.unixTime;
+            chartParams.latitude    = lat;
+            chartParams.longitude   = lon;
+            qDebug() << "lat,lon..." << lat << "  " << lon;
+
+            datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
+            datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
+
+            depthVec_.append(lla.altitude);
+            minZ_ = std::min(minZ_, lla.altitude);
+            maxZ_ = std::max(maxZ_, lla.altitude);
+
+            sonarOk++;
+            processed++;
+            if(processed % 200 == 0) {
+                double progress = static_cast<double>(pos - 512) / (maxCount - 512);
+                QString statusText = tr("Openging files %1 of %2 (%3%)")
+                                         .arg(fileIndex+1).arg(fileCnt).arg(static_cast<int>(progress * 100.0 + 0.5));
+                QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
+                QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
+                QCoreApplication::processEvents();
+            }
+            pos += advance;
+        }
+        else {
+            pos++;   /*- 未知帧类型：仅跳过同步字继续搜索 -*/
+        }
+    }
+
+    qDebug() << "TSLY parsed: sonar" << sonarOk << "gnss" << gnssOk
+             << "skipped" << frameSkip << "abnormalGPS" << count_abnormalGPS
+             << "crc" << (crcCheckEnabled ? "on" : "off");
+
+    QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
+    if(fileIndex == (fileCnt - 1)) {
+        datasetPtr_->triggerRenderUpdate();
+        emit fileStopsOpening(depthVec_, minZ_, maxZ_);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
+        QTimer::singleShot(2000, progressDialog_, [this]() {
+            if(progressDialog_) {
+                QMetaObject::invokeMethod(progressDialog_, "close");
+            }
+        });
+    }
 }
 
 

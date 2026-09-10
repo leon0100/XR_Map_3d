@@ -347,6 +347,7 @@ void Core::openFileFromMenu()
     QFileDialog dialog(nullptr, tr("Open"), defaultPath,
         "Toslon Sonar Log(*.tsl3);;"
         "Toslon Sonar Log(*.tslw);;"
+        "Toslon Sonar Log(*.tsly);;"
         "Toslon Sonar(*.kml *.kmz);;"
         "Toslon Sonar Log(*.csv)");
     dialog.setFileMode(QFileDialog::ExistingFiles);
@@ -473,6 +474,9 @@ void Core::openFileFromMenu()
         else if(fileNames.last().endsWith("tslw")) {
             currentFileType_ = filetype_tslw;
         }
+        else if(fileNames.last().endsWith("tsly")) {
+            currentFileType_ = filetype_tsly;
+        }
         else if(fileNames.last().endsWith("txt")) {
             currentFileType_ = filetype_serial;
             return;
@@ -488,6 +492,9 @@ void Core::openFileFromMenu()
             QString nowFileName = fileNames.at(i);
             if(currentFileType_ == filetype_tslw) {
                 deviceManager_->openFile_tsl(nowFileName, filetype_tslw, i, fileCnt);
+            }
+            if(currentFileType_ == filetype_tsly) {
+                deviceManager_->openFile_tsl(nowFileName, filetype_tsly, i, fileCnt);
             }
             else if(currentFileType_ == filetype_tsl3) {
                 deviceManager_->openFile_tsl(nowFileName, filetype_tsl3, i, fileCnt);

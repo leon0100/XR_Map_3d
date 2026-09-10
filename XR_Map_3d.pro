@@ -38,8 +38,6 @@ HEADERS += \
     src/isobaths_defs.h \
     src/math_defs.h \
     src/themes.h \
-    src/tsl3.h \
-    src/tslw.h \
 
 
 SOURCES += \

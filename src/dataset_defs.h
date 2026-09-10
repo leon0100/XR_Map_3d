@@ -26,6 +26,7 @@
 
 
 #include "tslw.h"
+#include "tsly.h"
 #include "tsl3.h"
 
 
@@ -38,6 +39,7 @@ typedef enum
     filetype_NMEA,
     filetype_CSV,
     filetype_tslw,
+    filetype_tsly,
     filetype_tsl2,
     filetype_tsl3,
     filetype_serial,
@@ -67,7 +69,7 @@ struct BoatPoint {
     BoatPoint(double lo = 0.0, double la = 0.0, double he = 0.0, double sp = 0.0, double de = 0.0)
         : latitude(la), longitude(lo), depth(de), heading(he), speed(sp) {}
 };
-Q_DECLARE_METATYPE(BoatPoint)
+// Q_DECLARE_METATYPE(BoatPoint)
 
 
 #define  u32           unsigned int
@@ -199,22 +201,20 @@ struct ChannelId
     uint8_t address;
 };
 
-// std::unordered_map, std::unordered_set
 namespace std {
-template <>
-struct hash<ChannelId>
-{
-    size_t operator()(const ChannelId& key) const noexcept
+    template <>
+    struct hash<ChannelId>
     {
-        const uint32_t* p = reinterpret_cast<const uint32_t*>(&key.uuid);
-
-        return (hash<uint32_t>()(p[0])) ^
-               (hash<uint32_t>()(p[1]) << 1) ^
-               (hash<uint32_t>()(p[2]) << 2) ^
-               (hash<uint32_t>()(p[3]) << 3) ^
-               (hash<uint8_t>()(key.address) << 4);
-    }
-};
+        size_t operator()(const ChannelId& key) const noexcept
+        {
+            const uint32_t* p = reinterpret_cast<const uint32_t*>(&key.uuid);
+            return (hash<uint32_t>()(p[0])) ^
+                   (hash<uint32_t>()(p[1]) << 1) ^
+                   (hash<uint32_t>()(p[2]) << 2) ^
+                   (hash<uint32_t>()(p[3]) << 3) ^
+                   (hash<uint8_t>()(key.address) << 4);
+        }
+    };
 } // namespace std
 
 // QHash, QSet

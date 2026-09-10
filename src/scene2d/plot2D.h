@@ -85,7 +85,7 @@ public:
 
 
 public:
-    float currentViewMaxLoRng_ = 1.0f;
+    int currentViewMaxLoRng_ = 1.0f;
     QString fromLonStr_, fromLatiStr_, toLonStr_, toLatiStr_;
 
 protected:

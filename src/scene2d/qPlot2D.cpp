@@ -103,9 +103,10 @@ void qPlot2D::plotUpdate()
     }
     emit timelinePositionChanged();
 
-    if(dataset_ && !dataset_->vec_CSV_.empty()  && cursor_.distance.mode == AutoRangeNone) {
-        qDebug() << "currentViewMaxLoRng_:" << currentViewMaxLoRng_ << "  " << (int)(currentViewMaxLoRng_ * 1.25f);
-        setMaxLoRng((int)(currentViewMaxLoRng_ * 1.25f));
+    if(dataset_ && !dataset_->vec_CSV_.empty() && !echogram_.getBatchCorrect()
+                                         && cursor_.distance.mode == AutoRangeNone) {
+        // setMaxLoRng((int)(currentViewMaxLoRng_ * 1.25f));
+        setMaxLoRng(currentViewMaxLoRng_);
     }
 
     update();
@@ -315,6 +316,7 @@ void qPlot2D::drawBatchCorrect(int x, int y)
 
 void qPlot2D::clearBatchCorrect()
 {
+    qDebug() << "qPlot2D........";
     echogram_.clearBatchCorrect();
     plotUpdate();
 }
@@ -526,7 +528,7 @@ void qPlot2D::setOffsetZ(float value)
 
 void qPlot2D::scaleYZoomEvent(int delta)
 {
-    qDebug() << "delta....." << delta;
+    // qDebug() << "delta....." << delta;
     cursor_.distance.mode = AutoRangeMaxOnScreen;
 
     if(delta < 0) {

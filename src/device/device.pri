@@ -6,10 +6,13 @@ HEADERS *= \
     $$PWD/blemanager.h \
     $$PWD/serialportmanager.h \
     $$PWD/tmodem.h \
+    $$PWD/tsly.h \
     $$PWD/udpmanager.h \
     $$PWD/minilzo.h \
     $$PWD/lzoconf.h \
-    $$PWD/lzodefs.h
+    $$PWD/lzodefs.h \
+    $$PWD/tsl3.h    \
+    $$PWD/tslw.h    \
 
 
 SOURCES *= \

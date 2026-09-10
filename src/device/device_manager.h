@@ -61,11 +61,13 @@ public:
 
     void writeFrame(const QByteArray& rawFrame);
     void readFrame(qint64 epochIdx, QByteArray& outFrame);
+    void removeFrames(int startIndex, int endIndex);
 
 private:
     QString filePath_;
     QFile file_;
     QHash<QPair<QUuid, int>, qint64> channelOffsets_;
+    QVector<qint64> frameMap_;  // pool索引 → 磁盘帧槽位（删除帧时同步erase）
     qint64 totalFramesWritten_ = 0;
     QMutex mtx_;
 };
@@ -100,6 +102,7 @@ signals:
 private:
     void openFileData_tslw(QByteArray &tslByteArray, int fileIndex, int fileCnt);
     void openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, int fileCnt);
+    void openFileData_tsly(QByteArray &tslByteArray, int fileIndex, int fileCnt);
     void openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, int fileCnt);
     void openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex, int fileCnt);
 

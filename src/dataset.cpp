@@ -385,6 +385,11 @@ void Dataset::removeFrames(int startIndex, int endIndex)
     }
     QWriteLocker wl(&poolMtx_);
     pool_.remove(startIndex, endIndex-startIndex+1);
+
+    //磁盘声呐缓存同步：磁盘帧不移动，仅同步 pool索引→帧槽位的映射，否则删除后像素错位
+    if (diskSonarCache_) {
+        diskSonarCache_->removeFrames(startIndex, endIndex);
+    }
 }
 
 void Dataset::setRefPosition(int epoch_index)

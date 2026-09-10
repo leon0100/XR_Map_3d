@@ -74,6 +74,11 @@ void Plot2DEchogram::setBatchCorrect(bool batch)
     batchCorrect_ = batch;
 }
 
+bool Plot2DEchogram::getBatchCorrect()
+{
+    return batchCorrect_;
+}
+
 void Plot2DEchogram::resetCash()
 {
     _cashFlags.resetCash = true;
@@ -183,7 +188,51 @@ void Plot2DEchogram::drawDepthFilter(Canvas canvas, int width, int cash_position
         lastPoint = currentPoint;
         hasLast = true;
     }
+}
 
+int Plot2DEchogram::robustMaxLoRng(const QVector<int>& vals, int groupSize)
+{
+    if (vals.isEmpty() || groupSize <= 0) {
+        return 3200;
+    }
+
+    const int total = vals.size();
+    int robustMax = 0;
+    bool hasValidGroup = false;
+    for (int i = 0; i + groupSize <= total; i += groupSize) {
+        int minValue = vals[i];
+        int maxValue = vals[i];
+
+        for (int j = 1; j < groupSize; ++j) {
+            const int value = vals[i + j];
+            if (value < minValue) {
+                minValue = value;
+            }
+            if (value > maxValue) {
+                maxValue = value;
+            }
+        }
+
+        if (maxValue < minValue * 1.5f || maxValue < 200) {
+            hasValidGroup = true;
+            if (maxValue > robustMax) {
+                robustMax = maxValue;
+            }
+        }
+    }
+
+    if (!hasValidGroup) {
+        int maxValue = vals[0];
+        for (int i = 1; i < total; ++i) {
+            if (vals[i] > maxValue) {
+                maxValue = vals[i];
+            }
+        }
+
+        return maxValue;
+    }
+
+    return robustMax;
 }
 
 QList<int> Plot2DEchogram::getDepthListKF()
@@ -737,7 +786,7 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
         }
     }
 
-    // float currentViewMaxLoRng = -1.0f;
+    // int currentViewMaxLoRng = -1;
     QVector<int> loRngVals;
     QVector<int> depthVals;
     for(int column = 0; column < width; column++) {
@@ -801,7 +850,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                     depthVals.append((int)params.depth);
                 }
 
-
                 QVector<uint8_t> rawDataVec;
                 rawDataVec.resize(PING_SIZE_MAX);
                 if (cursor.channel2 == CHANNEL_NONE) {
@@ -838,8 +886,6 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
                 for(int i = (pingSize+draft); i < height; i++) {
                     cacheData.append(0);
                 }
-
-
 
                 float nowScaleY = (float)height / pingSize * (loRng / (currentLoRng_-currentUpRng_));
                 int startIdx = pingSize * currentUpRng_ / loRng;
@@ -981,47 +1027,14 @@ int Plot2DEchogram::updateCache(Plot2D* parent, Dataset* dataset, int width, int
             }
         }
     }
-
-
-
-
-
-
-
-    if(!loRngVals.isEmpty()) {
-        auto robustMax = [](const QVector<int>& vals) -> int {
-            const int total = vals.size();
-            QList<int> buf;
-            for(int i = 0; (i + 10) <= total; i += 10) {
-                QList<int> g(vals.cbegin() + i, vals.cbegin() + i + 10);
-                std::sort(g.begin(), g.end());
-                if((g.last() < (int)((float)g.first() * 1.5f)) || (g.last() < 200)) {
-                    buf.append(g.last());
-                }
-            }
-            if(buf.isEmpty()) {
-                int m = vals.first();
-                for(int v : vals) {
-                    m = qMax(m, v);
-                }
-                return m;
-            }
-            std::sort(buf.begin(), buf.end());
-            return buf.last();
-        };
-
-        parent->currentViewMaxLoRng_ = (float)robustMax(loRngVals);
-        qDebug() << "robust maxLoRng:" << parent->currentViewMaxLoRng_;
-    }
-
-
-
+    parent->currentViewMaxLoRng_ = robustMaxLoRng(loRngVals, 10);
+    // qDebug() << "robust maxLoRng:" << parent->currentViewMaxLoRng_;
 
     int visualRightColumn = (wrapStartPos == 0) ? (width - 1) : (wrapStartPos - 1);
     if (visualRightColumn >= 0 && visualRightColumn < _cash.size()) {
         wavePixel_ = _cash[visualRightColumn];
-        // if(currentViewMaxLoRng == -1.0f) {
-        //     parent->currentViewMaxLoRng_ = 3200.0f;
+        // if(currentViewMaxLoRng == -1) {
+        //     parent->currentViewMaxLoRng_ = 3200;
         // }
         // else {
         //     parent->currentViewMaxLoRng_ = currentViewMaxLoRng;
@@ -1071,7 +1084,7 @@ void Plot2DEchogram::clearDeleteFrame()
 int Plot2DEchogram::getDeleteStartIdx() const
 {
     int dataSize = dataset_->size();
-    if(dataSize <= deleteStartIdx_) {
+    if(dataSize <= deleteStartIdx_ || deleteStartIdx_ < 0) {
         return -1;
     }
     DatasetCursor& cursor = plot2d_->cursor();
@@ -1361,7 +1374,6 @@ bool Plot2DEchogram::draw(Plot2D* parent, Dataset* dataset)
                 cash_col++;
             }
         }
-
 
         canvas.painter()->drawPixmap(0, 0, _pixmap, cash_position, 0, image_width - cash_position, image_height);
         canvas.painter()->drawPixmap(image_width - cash_position, 0, _pixmap, 0, 0, cash_position, image_height);
