@@ -9,6 +9,7 @@ Rectangle {
     height: landSize * 0.8
     radius: 10
     z: 10000
+    clip: true
     visible: renderer.screetShot.landMarkMode
 
 
@@ -33,8 +34,8 @@ Rectangle {
 
         Rectangle {
             id: titleBar
-            width: parent.width
-            height: landSize * 0.1
+            Layout.fillWidth: true
+            Layout.preferredHeight: landSize * 0.1
             color: "#c3cfe2"
 
             Text {
@@ -49,7 +50,7 @@ Rectangle {
 
         // Name
         RowLayout {
-            // Layout.fillWidth: true
+            Layout.fillWidth: true
             spacing: 10
             Label {
                 text: qsTr("Name")
@@ -99,7 +100,7 @@ Rectangle {
 
         // Latitude
         RowLayout {
-            // Layout.fillWidth: true
+            Layout.fillWidth: true
             spacing: 10
 
             Label {

@@ -182,7 +182,7 @@ void ComputeWorker::adaptSurfaceResolution()
 
 void ComputeWorker::processBundle(const WorkBundle& wb)
 {
-    qDebug() << "ComputeWorker::processBundle....thread ID: " << QThread::currentThreadId();
+    // qDebug() << "ComputeWorker::processBundle....thread ID: " << QThread::currentThreadId();
     if (!wb.surfaceVec.isEmpty() && !isCanceled()) {
         qDebug() << "高度场正在生成.....";
         adaptSurfaceResolution();
@@ -201,8 +201,8 @@ void ComputeWorker::processBundle(const WorkBundle& wb)
         isobaths_.setMinZ(surface_.getMinZ());
         isobaths_.setMaxZ(surface_.getMaxZ());
         isobaths_.fullRebuildLinesLabels(); //只计算等值线，但它完全依赖于SurfaceProcessor生成的高度场网格
+        qDebug() << "等高线绘制完成！！！";
     }
 
-    qDebug() << "等高线绘制完成！！！";
     // emit jobFinished();
 }

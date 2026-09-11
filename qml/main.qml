@@ -49,7 +49,7 @@ ApplicationWindow  {
 
     Loader {
         id: stateGroupLoader
-        active: Qt.platform.os === "windows"
+        // active: Qt.platform.os === "windows"
         sourceComponent: stateGroupComp
     }
 
@@ -181,7 +181,6 @@ ApplicationWindow  {
 
     KProgress {
         id: fileProgress
-        showCancelButton: true
     }
 
     function setFullScreenMode(enabled) {

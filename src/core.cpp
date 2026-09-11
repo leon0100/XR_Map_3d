@@ -71,7 +71,7 @@ void Core::refreshMap(LLA lla)
     if (auto cameraShared = camera.lock();cameraShared) {
         cameraShared->setStartupInitLla(lla);
     }
-
+qDebug() << "100101010101010101010";
     scene3dViewPtr_->updateMapView();
 }
 

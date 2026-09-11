@@ -17,9 +17,9 @@ Rectangle {
     property  bool    indeterminate:    true
     property  bool    showProgressBar:  true
     property  bool    showCancelButton: true
-    property  int     dialogWidth:      theme.screenSize * 0.36
+    property  int     dialogWidth:      theme.screenSize * 0.33
     property  int     dialogHeight:     theme.screenSize * 0.14
-    property  int     iconSize:         theme.iconSize * 0.9
+    property  int     iconSize:         theme.iconSize
 
 
     MouseArea {
@@ -60,15 +60,15 @@ Rectangle {
         y: theme.screenHeight*0.4 - dialogHeight*0.5
         width:  dialogWidth
         height: dialogHeight
-        radius: 8
+        radius: iconSize * 0.5
         color: "#E6F2FA"
     }
 
 
     ColumnLayout {
         anchors.fill: dialogBox
-        anchors.margins: 8
-        spacing: 8
+        anchors.margins: iconSize * 0.5
+        spacing: iconSize * 0.5
 
         // Title
         KText {
@@ -80,8 +80,8 @@ Rectangle {
         Rectangle {
             id: separator
             Layout.fillWidth: true
-            height: 1
-            color: "#dcdcdc"
+            height: 2
+            color: "#c8c8c8"
             Layout.topMargin: 2
             Layout.bottomMargin: 5
         }
@@ -104,12 +104,12 @@ Rectangle {
             visible: true
 
             background: Rectangle {
-                implicitHeight: 6
+                implicitHeight: iconSize * 0.7
                 color: "#E0E0E0"
                 radius: 3
             }
             contentItem: Rectangle {
-                implicitHeight: 6
+                implicitHeight: iconSize * 0.7
                 width: progressBar.visualPosition * progressBar.width
                 color: "#00cd00"
                 radius: 3
@@ -117,21 +117,25 @@ Rectangle {
         }
 
         // Cancel Button
-        Button {
-            id: cancelButton
-            text: qsTr("Close")
-            font.pixelSize: iconSize
-            visible: showCancelButton
-            Layout.alignment: Qt.AlignRight
-            background: Rectangle {
-               radius: 4
-               color: cancelButton.hovered ? "#d0e8ff" : "#d9edff"
-               border.color: "#9bbfe9"
-               border.width: 1
-            }
-            onClicked: {
-                close()
-            }
+        // Button {
+        //     id: cancelButton
+        //     text: qsTr("Close")
+        //     font.pixelSize: iconSize
+        //     visible: showCancelButton
+        //     Layout.alignment: Qt.AlignRight
+        //     background: Rectangle {
+        //        radius: 4
+        //        color: cancelButton.hovered ? "#d0e8ff" : "#d9edff"
+        //        border.color: "#9bbfe9"
+        //        border.width: 1
+        //     }
+        //     onClicked: {
+        //         close()
+        //     }
+        // }
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: iconSize * 2
         }
 
     }

@@ -165,17 +165,12 @@ public:
     }
 
     void setSize(int width, int height, QPainter* painter) {
-//        if(_width != width || _height != height) {
-//            _image = QImage(width, height, QImage::Format_RGB555);
-//        }
-
         _width = width;
         _height = height;
         _painter = painter;
     }
 
     void clear() {
-//        _image.fill(0);
     }
 
     int width() const { return _width; }
@@ -187,7 +182,6 @@ public:
         qpen.setWidth(pen.width);
         qpen.setColor(QColor(pen.color.r, pen.color.g, pen.color.b, pen.color.a));
         qpen.setCapStyle(Qt::FlatCap);
-//        qpen.setJoinStyle()
 
         _painter->setPen(qpen);
 

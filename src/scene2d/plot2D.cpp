@@ -283,7 +283,6 @@ void Plot2D::setDistance(float from, float to)
 
 void Plot2D::scrollDistance(float ratio)
 {
-    qDebug() << "Plot2D::scrollDistance.........";
     cursor_.distance.mode = AutoRangeNone;
 
     float from = cursor_.distance.from;

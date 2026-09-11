@@ -267,7 +267,7 @@ void qPlot2D::setToLatiStr(QString toLati)
 
 void qPlot2D::setCursorFromTo(float from, float to)
 {
-    qDebug() << "qPlot2D::setCursorFromTo....." << from << "  " <<to;
+    // qDebug() << "qPlot2D::setCursorFromTo....." << from << "  " << to;
     cursor_.distance.mode = AutoRangeNone;
     Plot2D::cursor_.distance.from = from;
     Plot2D::cursor_.distance.to = to;
@@ -528,13 +528,12 @@ void qPlot2D::setOffsetZ(float value)
 
 void qPlot2D::scaleYZoomEvent(int delta)
 {
-    // qDebug() << "delta....." << delta;
     cursor_.distance.mode = AutoRangeMaxOnScreen;
-
-    if(delta < 0) {
+    qDebug() << "delta...." << delta;
+    if(delta > 0) {
         currentLoRng_ /= 2;
     }
-    else if(delta > 0) {
+    else if(delta < 0) {
         currentLoRng_ *= 2;
     }
 
@@ -567,23 +566,6 @@ void qPlot2D::plotMousePosition(int x, int y, bool isSync)
 
     }
 }
-
-// void qPlot2D::simplePlotMousePosition(int x, int y)
-// {
-//     Plot2D::setAimEpochEventState(false);
-
-//     if(_isHorizontal) {
-//         Plot2D::simpleSetMousePosition(x, y);
-//     }
-//     else {
-//         if(x >=0 && y >= 0) {
-//             Plot2D::simpleSetMousePosition(height() - y, x);
-//         }
-//         else {
-//             Plot2D::simpleSetMousePosition(-1, -1);
-//         }
-//     }
-// }
 
 void qPlot2D::dataUpdate()
 {

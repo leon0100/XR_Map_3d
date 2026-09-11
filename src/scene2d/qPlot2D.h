@@ -11,15 +11,16 @@
 class qPlot2D : public QQuickPaintedItem, public Plot2D
 {
     Q_OBJECT
+
 public:
-    Q_PROPERTY(bool horizontal          READ isHorizontal        WRITE setHorizontal)
-    Q_PROPERTY(float timelinePosition   READ timelinePosition    WRITE setTimelinePosition NOTIFY timelinePositionChanged)
-    Q_PROPERTY(bool isEnabled           READ getPlotEnabled      WRITE setPlotEnabled)
+    Q_PROPERTY(bool horizontal         READ isHorizontal      WRITE setHorizontal)
+    Q_PROPERTY(float timelinePosition  READ timelinePosition  WRITE setTimelinePosition NOTIFY timelinePositionChanged)
+    Q_PROPERTY(bool isEnabled          READ getPlotEnabled    WRITE setPlotEnabled)
     Q_PROPERTY(bool batchCorrect   READ batchCorrect    WRITE setBatchCorrect    NOTIFY drawBatchCorrectChanged)
     Q_PROPERTY(bool depthCorrect   READ depthCorrect    WRITE setDepthCorrect    NOTIFY drawDepthCorrectChanged)
 
-    Q_PROPERTY(int  minUpRng  READ  getMinUpRng   WRITE  setMinUpRng   NOTIFY minUpRngChanged)
-    Q_PROPERTY(int  maxLoRng  READ  getMaxLoRng   WRITE  setMaxLoRng   NOTIFY maxLoRngChanged)
+    Q_PROPERTY(int  minUpRng        READ getMinUpRng   WRITE setMinUpRng   NOTIFY minUpRngChanged)
+    Q_PROPERTY(int  maxLoRng        READ getMaxLoRng   WRITE setMaxLoRng   NOTIFY maxLoRngChanged)
     Q_PROPERTY(QString fromLonStr   READ fromLonStr  WRITE setFromLonStr   NOTIFY fromToLonLatiChanged)
     Q_PROPERTY(QString fromLatiStr  READ fromLatiStr WRITE setFromLatiStr  NOTIFY fromToLonLatiChanged)
     Q_PROPERTY(QString toLonStr     READ toLonStr    WRITE setToLonStr     NOTIFY fromToLonLatiChanged)
@@ -62,21 +63,19 @@ public:
     QString toLatiStr();
     void setToLatiStr(QString toLati);
 
-    Q_INVOKABLE void drawDepthCorrect(int x, int y);
+    Q_INVOKABLE void  drawDepthCorrect(int x, int y);
     Q_INVOKABLE float cursorFrom() const { return Plot2D::cursor_.distance.from; }
-    Q_INVOKABLE float cursorTo() const { return Plot2D::cursor_.distance.to; }
-    Q_INVOKABLE void setCursorFromTo(float from, float to);
-    Q_INVOKABLE void setIndx(int indx);
-    Q_INVOKABLE void resetUpLoRng(int upper, int lower);
-    Q_INVOKABLE void setSensitivity(int sensitive);
-
-    Q_INVOKABLE void setBottomLineVisible(bool isVisible);
-    Q_INVOKABLE void drawBatchCorrect(int x, int y);
-    Q_INVOKABLE void clearBatchCorrect();
-    Q_INVOKABLE void updateBatchCorrect();
-    Q_INVOKABLE void setMarkDistTimeVisible(bool visible, int dist0time1, int distInterval, int timeInterval,
+    Q_INVOKABLE float cursorTo()   const { return Plot2D::cursor_.distance.to; }
+    Q_INVOKABLE void  setCursorFromTo(float from, float to);
+    Q_INVOKABLE void  setIndx(int indx);
+    Q_INVOKABLE void  resetUpLoRng(int upper, int lower);
+    Q_INVOKABLE void  setSensitivity(int sensitive);
+    Q_INVOKABLE void  setBottomLineVisible(bool isVisible);
+    Q_INVOKABLE void  drawBatchCorrect(int x, int y);
+    Q_INVOKABLE void  clearBatchCorrect();
+    Q_INVOKABLE void  updateBatchCorrect();
+    Q_INVOKABLE void  setMarkDistTimeVisible(bool visible, int dist0time1, int distInterval, int timeInterval,
                                     bool isFrame, bool isTime, bool isDepth, bool isCoordinate);
-
     Q_INVOKABLE void setColorScheme(int index);
 
 
@@ -102,22 +101,7 @@ public slots:
     void verScrollEvent(int delta);
     Q_INVOKABLE void scaleYZoomEvent(int delta);
     Q_INVOKABLE void plotMousePosition(int x, int y, bool isSync = false);
-    // Q_INVOKABLE void simplePlotMousePosition(int x, int y);
     Q_INVOKABLE void plotMouseTool(int mode);
-
-    void plotDatasetChannelFromStrings(const QString& ch1Str, const QString& ch2Str)
-    {
-        if (!datasetPtr_) {
-           return;
-        }
-
-        auto [ch1, sub1, name1] = datasetPtr_->channelIdFromName(ch1Str);
-        auto [ch2, sub2, name2] = datasetPtr_->channelIdFromName(ch2Str);
-
-        setDataChannel(true, ch1, sub1, name1, ch2, sub2, name2);
-
-        plotUpdate();
-    }
 
     ChannelId plotDatasetChannel()     { return cursor_.channel1; }
     uint8_t   plotDatasetSubChannel()  { return cursor_.subChannel1; }
@@ -127,11 +111,6 @@ public slots:
     void plotEchogramVisible(bool visible) { setEchogramVisible(visible); }
     void plotBottomTrackVisible(bool visible) { setBottomTrackVisible(visible); }
     void plotBottomTrackTheme(int theme_id) { setBottomTrackTheme(theme_id); }
-
-    void plotEchogramSetLevels(float low, float hight) {
-        setEchogramLowLevel(low);
-        setEchogramHightLevel(hight);
-    }
 
     Q_INVOKABLE float getLowEchogramLevel() const;
     Q_INVOKABLE float getHighEchogramLevel() const;

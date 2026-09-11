@@ -1189,7 +1189,6 @@ void GraphicsScene3dView::updateMapView()
     else {
         emit sendLlaRef(m_camera->viewLlaRef_);
     }
-
     currentLat_ = m_camera->viewLlaRef_.refLla.latitude;
     currentLon_ = m_camera->viewLlaRef_.refLla.longitude;
     emit currentLatChanged();
@@ -1197,7 +1196,6 @@ void GraphicsScene3dView::updateMapView()
     mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     QQuickFramebufferObject::update();
-
     updateDistance();
 }
 

@@ -5,22 +5,22 @@
 
 
 /* ping_size bit[12:11]: pixel resolution */
-enum TslyPixelRes
-{
-    Pixel8Bit  = 0,
-    Pixel2Bit  = 1,
-    Pixel4Bit  = 2,
-    Pixel16Bit = 3
-};
+// enum TslyPixelRes
+// {
+//     Pixel8Bit  = 0,
+//     Pixel2Bit  = 1,
+//     Pixel4Bit  = 2,
+//     Pixel16Bit = 3
+// };
 
 
-/* length bit[15:14]: meaning of reg0 dynamic parameter */
-enum TslyReg0Type
-{
-    Reg0Temperature = 0,
-    Reg0Voltage     = 1,
-    Reg0DepthTrust  = 2
-};
+// /* length bit[15:14]: meaning of reg0 dynamic parameter */
+// enum TslyReg0Type
+// {
+//     Reg0Temperature = 0,
+//     Reg0Voltage     = 1,
+//     Reg0DepthTrust  = 2
+// };
 
 
 /*
@@ -32,7 +32,7 @@ enum TslyReg0Type
 typedef struct
 {
     uint8_t   hdr[2];        /* '%', 'G' */
-    uint16_t  lenght;        /* length of this frame, not include hdr[] & length */
+    uint16_t  length;        /* length of this frame, not include hdr[] & length */
 
     double    longitude;     /* dddmm.mmmmmmm */
     double    latitude;      /* ddmm.mmmmmmm */

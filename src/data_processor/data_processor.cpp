@@ -295,7 +295,6 @@ void DataProcessor::setMosaicRAngleOffset(float val)
 
 void DataProcessor::setMosaicTileResolution(float val)
 {
-    qDebug() << "DataProcessor::setMosaicTileResolution...........";
     if (qFuzzyIsNull(val)) {
         return;
     }
@@ -340,7 +339,6 @@ void DataProcessor::setMosaicHighLevel(float val)
 
 void DataProcessor::onIsobathsUpdated()
 {
-    qDebug() << "onIsobathsUpdated..........";
     if (!updateIsobaths_) {
         return;
     }
@@ -352,7 +350,6 @@ void DataProcessor::onIsobathsUpdated()
 
 void DataProcessor::onMosaicUpdated()
 {
-    qDebug() << "DataProcessor::onMosaicUpdated().........";
     if (!updateMosaic_ || pendingMosaicIndxs_.isEmpty()) {
         return;
     }
@@ -362,7 +359,7 @@ void DataProcessor::onMosaicUpdated()
 
 void DataProcessor::runCoalescedWork()
 {
-    qDebug() << "DataProcessor::runCoalescedWork....thread ID: " << QThread::currentThreadId();
+    // qDebug() << "DataProcessor::runCoalescedWork....thread ID: " << QThread::currentThreadId();
     const uint32_t maskNow  = requestedMask_.exchange(0);
     const bool wantSurface  = maskNow & WF_Surface;
     // const bool wantMosaic   = maskNow & WF_Mosaic;

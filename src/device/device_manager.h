@@ -42,6 +42,7 @@
 
 
 #define PING_SIZE_MAX 1024
+#define PING_SIZE_MAX_TSLY 2028
 #define GPS_ERROR_DISTANCE 5000
 
 

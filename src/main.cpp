@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
     qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "0");  // TODO: use qt scaling!
     qputenv("QT_SCALE_FACTOR", "0.5");
 #endif
-
 #if defined(Q_OS_LINUX)
     QCoreApplication::setAttribute(Qt::AA_ForceRasterWidgets, false);
     ::qputenv("QT_SUPPORT_GL_CHILD_WIDGETS", "1");
@@ -56,7 +55,6 @@ int main(int argc, char *argv[])
     ::qputenv("QT_OPENGL", "es2");
 #endif
 #endif
-
     QCoreApplication::setOrganizationName("Toslon");
     QCoreApplication::setOrganizationDomain("Toslon.tech");
     QCoreApplication::setApplicationName("ToslonApp");
@@ -65,7 +63,6 @@ int main(int argc, char *argv[])
     //QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
 #endif
-
     QSurfaceFormat format;
 #if defined(Q_OS_ANDROID) || defined(LINUX_ES)
     format.setRenderableType(QSurfaceFormat::OpenGLES);

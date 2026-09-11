@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QDataStream>
 #include <QMutexLocker>
+#include <QStandardPaths>
 
 #include "console.h"
 
@@ -144,11 +145,21 @@ void DeviceManager::resetFileAndChannel(int fileCnt)
         delete diskSonarCache_;
         diskSonarCache_ = nullptr;
     }
+
+    QString dirPath;
+#ifdef Q_OS_ANDROID
+    dirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/pixL/";
+#else
+    dirPath = QString(qApp->applicationDirPath().append("/pixL/"));
+#endif
     QDir dir;
-    QString dirPath = QString(qApp->applicationDirPath().append("/pixL/"));
     if (!dir.mkpath(dirPath)) {
-        qDebug() << "mkpath failed:" << dirPath;
-        return;
+        qDebug() << "mkpath failed:" << dirPath << "fallback to temp";
+        dirPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/pixL/";
+        if (!dir.mkpath(dirPath)) {
+            qDebug() << "temp mkpath also failed, disk cache disabled";
+            return;
+        }
     }
 
     QString filePath = QDir(dirPath).filePath("pixL.txt");
@@ -483,7 +494,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
         QTimer::singleShot(2000, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
-            }});
+            }
+        });
     }
 
 }
@@ -610,97 +622,73 @@ void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, 
             }
         });
     }
-
 }
 
 
 void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, int fileCnt)
 {
-    /*- 与 tslw 的区别：像素(%Y, tsly_t)与经纬度(%G, navix_info_t)分属两个结构体，按 hdr[1] 分流解析 -*/
-    const int maxCount = tslyByteArray.size();
-    if(maxCount < 512 + (int)sizeof(navix_info_t)) {
-        return;
-    }
+    tslyByteArray.remove(0, 512);
+    const int tslyCount = tslyByteArray.size();
     const char* data = tslyByteArray.constData();
 
-    /*- 双流交织：最新 %G 导航状态供随后到来的 %Y 声呐帧组装位置/航向/速度 -*/
     struct GnssState {
-        double lon = 0.0, lat = 0.0;
-        float  heading = 0.0f;      /* x10度 */
-        float  speed = 0.0f;        /* x100节 */
-        float  temperature = 0.0f;  /* 华氏度 */
+        double longitude = 0.0;
+        double latitude = 0.0;
+        quint16  heading = 0.0f;
+        float  speed = 0.0f;
+        float  temperature = 0.0f;
         quint32 unixTime = 0;
     } gnss;
 
     double last_lon = 0.0, last_lat = 0.0;
     bool haveLast = false;
-    int sonarOk = 0, gnssOk = 0, frameSkip = 0, processed = 0;
+    int processed = 0;
     int crcFailStreak = 0;
     bool crcCheckEnabled = true;   /* XOR校验与实际算法不符时自动降级 */
 
-    int pos = 512;   /*- 跳过512字节文件头 -*/
-    while(pos + 14 <= maxCount) {
-        if(data[pos] != '%') {
-            pos++;
+    int nowIndex = 0;
+    const int TSLYT_SIZE = sizeof(tsly_t);
+    const int NAVIX_SIZE = sizeof(navix_info_t);
+    while(nowIndex + TSLYT_SIZE <= tslyCount) {
+        if(data[nowIndex] != '%') {
+            nowIndex++;
             continue;
         }
 
-        if(data[pos + 1] == 'G') {
-            /*---------------- %G：导航帧 navix_info_t（64字节定长） ----------------*/
-            if(pos + (int)sizeof(navix_info_t) > maxCount) {
+        if(data[nowIndex + 1] == 'G') {
+            /*---------------- %G：导航帧 navix_info_t----------------*/
+            if(nowIndex + NAVIX_SIZE > tslyCount) {
                 break;
             }
             navix_info_t nav;
-            memcpy(&nav, data + pos, sizeof(navix_info_t));
-            /*- lenght 不含 hdr[2] 与 lenght[2] 本身，正常应为60，异常时按结构体定长兑底 -*/
-            int advance = (int)nav.lenght + 4;
-            if(advance != (int)sizeof(navix_info_t)) {
-                advance = sizeof(navix_info_t);
-            }
-            gnss.lon = dm_to_dd(nav.longitude);   /*- 度分→度 -*/
-            gnss.lat = dm_to_dd(nav.latitude);
+            memcpy(&nav, data + nowIndex, NAVIX_SIZE);
+            gnss.longitude = dm_to_dd(nav.longitude);
+            gnss.latitude = dm_to_dd(nav.latitude);
             gnss.heading = nav.heading;
             gnss.speed = nav.speed;
-            gnss.temperature = nav.temperature;
+            gnss.temperature = nav.temperature * 10.0f;
             gnss.unixTime = nav.time;
-            if(gnssOk < 2) {
-                qDebug() << "TSLY gnss:" << gnss.lon << gnss.lat
-                         << "heading:" << gnss.heading << "speed:" << gnss.speed
-                         << "time:" << gnss.unixTime << "lenght:" << nav.lenght;
-            }
-            gnssOk++;
-            pos += advance;
+            nowIndex += NAVIX_SIZE;
         }
-        else if(data[pos + 1] == 'Y') {
+        else if(data[nowIndex + 1] == 'Y') {
             /*---------------- %Y：声呐帧 tsly_t（14字节头 + 变长像素） ----------------*/
             tsly_t frame;
-            memcpy(&frame, data + pos, 14);   /*- pixels[]为柔性数组，仅拷贝定长头 -*/
-
-            const quint8  reg0Type   = frame.length >> 14;             /*- bit[15:14]：reg0含义 -*/
-            const quint16 pixelCount = frame.ping_size & 0x07FF;       /*- bit[10:0]：像素数 -*/
-            const quint8  pixelRes   = (frame.ping_size >> 11) & 0x3;  /*- bit[12:11]：分辨率 -*/
-
-            int pixBytes = pixelCount;
-            if(pixelRes == Pixel2Bit)       { pixBytes = (pixelCount + 3) / 4; }
-            else if(pixelRes == Pixel4Bit)  { pixBytes = (pixelCount + 1) / 2; }
-            else if(pixelRes == Pixel16Bit) { pixBytes = pixelCount * 2; }
-
-            const int advance = 14 + pixBytes;
-            if(pixelCount == 0 || (pos + advance) > maxCount) {
-                pos++;
-                frameSkip++;
+            memcpy(&frame, data + nowIndex, TSLYT_SIZE);
+            const quint16 pixelCount = frame.ping_size;
+            const int advance = TSLYT_SIZE + pixelCount;
+            if(pixelCount == 0 || (nowIndex + advance) > tslyCount) {
+                nowIndex++;
                 continue;
             }
 
-            /*- CRC8按XOR实现：HDR_CRC8覆盖hdr[0]~lo_Rng共12字节，PIX_CRC8仅覆盖pixels[] -*/
             if(crcCheckEnabled) {
                 quint8 hdrChk = 0;
                 for(int i = 0; i <= 11; ++i) {
-                    hdrChk ^= (quint8)data[pos + i];
+                    hdrChk ^= (quint8)data[nowIndex + i];
                 }
                 quint8 pixChk = 0;
-                for(int i = 0; i < pixBytes; ++i) {
-                    pixChk ^= (quint8)data[pos + 14 + i];
+                for(int i = 0; i < pixelCount; ++i) {
+                    pixChk ^= (quint8)data[nowIndex + TSLYT_SIZE + i];
                 }
                 if(hdrChk != frame.HDR_CRC8 || pixChk != frame.PIX_CRC8) {
                     crcFailStreak++;
@@ -709,8 +697,7 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
                         qDebug() << "TSLY: CRC mismatch x16, CRC check disabled";
                     }
                     else {
-                        frameSkip++;
-                        pos++;
+                        nowIndex++;
                         continue;
                     }
                 }
@@ -719,17 +706,8 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
                 }
             }
 
-            if(sonarOk < 3) {
-                qDebug() << "TSLY sonar #" << sonarOk
-                         << "depth:" << frame.depth << "pixelCount:" << pixelCount
-                         << "res:" << pixelRes << "reg0Type:" << reg0Type
-                         << "upRng:" << frame.up_Rng << "loRng:" << frame.lo_Rng;
-            }
-
-            /*- 位置：声呐帧使用最近一次 %G 状态；异常 GPS 过滤同 tsl3_2。
-                判断须在写缓存前，保证磁盘帧索引与 epoch 索引一致 -*/
-            double lon = gnss.lon;
-            double lat = gnss.lat;
+            double lon = gnss.longitude;
+            double lat = gnss.latitude;
             if((lon < 0.000001f) && (lat < 0.000001f)) {
                 if(flag_haveReportAbnormalGPS == false) {
                     flag_haveReportAbnormalGPS = true;
@@ -737,7 +715,7 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
                 }
                 if(flag_deleteAbnormalGPS == true) {
                     count_abnormalGPS++;
-                    pos += advance;
+                    nowIndex += advance;
                     continue;
                 }
             }
@@ -752,7 +730,7 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
                         count_abnormalGPS++;
                         last_lon = lon;
                         last_lat = lat;
-                        pos += advance;
+                        nowIndex += advance;
                         continue;
                     }
                 }
@@ -763,61 +741,32 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
                 haveLast = true;
             }
 
-            /*- 像素分辨率归一到8bit，零填充到 PING_SIZE_MAX 后写入磁盘缓存 -*/
             QByteArray rawDat;
-            rawDat.reserve(PING_SIZE_MAX);
-            const char* px = data + pos + 14;
-            if(pixelRes == Pixel8Bit) {
-                rawDat.append(px, pixBytes);
-            }
-            else if(pixelRes == Pixel4Bit) {
-                for(int i = 0; i < pixBytes; ++i) {
-                    const quint8 b = (quint8)px[i];
-                    rawDat.append((char)((b >> 4) * 17));
-                    rawDat.append((char)((b & 0x0F) * 17));
-                }
-            }
-            else if(pixelRes == Pixel2Bit) {
-                for(int i = 0; i < pixBytes; ++i) {
-                    const quint8 b = (quint8)px[i];
-                    rawDat.append((char)(((b >> 6) & 0x3) * 85));
-                    rawDat.append((char)(((b >> 4) & 0x3) * 85));
-                    rawDat.append((char)(((b >> 2) & 0x3) * 85));
-                    rawDat.append((char)((b & 0x3) * 85));
-                }
-            }
-            else {
-                for(int i = 0; (i + 1) < pixBytes; i += 2) {
-                    quint16 v;
-                    memcpy(&v, px + i, 2);
-                    rawDat.append((char)(v >> 8));
-                }
-            }
-            while(rawDat.size() < PING_SIZE_MAX) {
+            rawDat.reserve(PING_SIZE_MAX_TSLY);
+            const char* px = data + nowIndex + TSLYT_SIZE;
+            rawDat.append(px, pixelCount);
+            while(rawDat.size() < PING_SIZE_MAX_TSLY) {
                 rawDat.append('\0');
             }
             diskSonarCache_->writeFrame(rawDat);
 
-            const float depth = (float)frame.depth;   /*- cm -*/
+            const float depth = frame.depth;
             LLA lla;
             lla.latitude  = lat;
             lla.longitude = lon;
             lla.altitude  = depth / 100.f;
 
             ChartParameters chartParams;
-            chartParams.depth       = depth;                          /*- cm -*/
+            chartParams.depth       = depth;
             chartParams.pingSize    = pixelCount;
-            chartParams.upRng       = (float)frame.up_Rng * 100.0f;   /*- m→cm -*/
-            chartParams.loRng       = (float)frame.lo_Rng * 100.0f;   /*- m→cm -*/
-            chartParams.temperature = (reg0Type == Reg0Temperature)
-                                          ? (float)frame.reg0           /*- x10华氏度 -*/
-                                          : gnss.temperature * 10.0f;   /*- 华氏度→x10 -*/
-            chartParams.heading     = (quint16)gnss.heading;          /*- x10度，显示层 /10 还原为度 -*/
-            chartParams.speed       = (quint16)gnss.speed;            /*- x100节，显示层 /100×0.514444（节→m/s） -*/
+            chartParams.upRng       = frame.up_Rng * 100.0f;
+            chartParams.loRng       = frame.lo_Rng * 100.0f;
+            chartParams.temperature = gnss.temperature;
+            chartParams.heading     = gnss.heading;
+            chartParams.speed       = gnss.speed* 10 / 0.514444f;
             chartParams.time        = gnss.unixTime;
             chartParams.latitude    = lat;
             chartParams.longitude   = lon;
-            qDebug() << "lat,lon..." << lat << "  " << lon;
 
             datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
             datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
@@ -826,27 +775,23 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
             minZ_ = std::min(minZ_, lla.altitude);
             maxZ_ = std::max(maxZ_, lla.altitude);
 
-            sonarOk++;
             processed++;
             if(processed % 200 == 0) {
-                double progress = static_cast<double>(pos - 512) / (maxCount - 512);
+                double progress = static_cast<double>(nowIndex) / tslyCount;
                 QString statusText = tr("Openging files %1 of %2 (%3%)")
-                                         .arg(fileIndex+1).arg(fileCnt).arg(static_cast<int>(progress * 100.0 + 0.5));
+                                .arg(fileIndex+1).arg(fileCnt).arg(static_cast<int>(progress * 100.0 + 0.5));
                 QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
                 QMetaObject::invokeMethod(progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
                 QCoreApplication::processEvents();
             }
-            pos += advance;
+            nowIndex += advance;
         }
         else {
-            pos++;   /*- 未知帧类型：仅跳过同步字继续搜索 -*/
+            nowIndex++;
         }
     }
 
-    qDebug() << "TSLY parsed: sonar" << sonarOk << "gnss" << gnssOk
-             << "skipped" << frameSkip << "abnormalGPS" << count_abnormalGPS
-             << "crc" << (crcCheckEnabled ? "on" : "off");
-
+    qDebug() << "abnormalGPS" << count_abnormalGPS << "crc" << (crcCheckEnabled ? "on" : "off");
     QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
     if(fileIndex == (fileCnt - 1)) {
         datasetPtr_->triggerRenderUpdate();

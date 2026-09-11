@@ -365,7 +365,6 @@ Epoch::Echogram *Epoch::chart(const ChannelId &channelId, uint8_t subChannelId)
     if (chartAvail(channelId, subChannelId)) {
         return &charts_[channelId][subChannelId];
     }
-
     return nullptr;
 }
 

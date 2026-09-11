@@ -11,7 +11,7 @@ Rectangle {
     // 使用绝对坐标
     x: renderer.screetShot.selectionRect.x
     y: renderer.screetShot.selectionRect.y
-    width: renderer.screetShot.selectionRect.width
+    width:  renderer.screetShot.selectionRect.width
     height: renderer.screetShot.selectionRect.height
 
 

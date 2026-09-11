@@ -14,12 +14,14 @@ Dataset::~Dataset()
 {
 
 }
-
+#ifdef  Q_OS_WIN
 #include <qt_windows.h>
 #include <QDebug>
 #include <Psapi.h>
+#endif
 void Dataset::logMemoryStatus(const QString& tag) const
 {
+#ifdef  Q_OS_WIN
     MEMORY_BASIC_INFORMATION mbi;
     quint64 totalFree = 0;
     quint64 totalUsed = 0;
@@ -62,6 +64,7 @@ void Dataset::logMemoryStatus(const QString& tag) const
              << "| pool size/cap:" << pool_.size() << pool_.capacity()
             << "| pool detached:" << pool_.isDetached()
              << "| vec_CSV cap:" << vec_CSV_.capacity();
+#endif
 }
 
 

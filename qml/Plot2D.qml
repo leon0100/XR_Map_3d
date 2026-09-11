@@ -112,66 +112,89 @@ WaterFall {
         anchors.fill: parent
         enabled: true
 
-        property int thresholdXAxis: 15
-        property int thresholdYAxis: 15
-        property double zoomThreshold: 0.1
+        // property int thresholdXAxis: 15
+        // property int thresholdYAxis: 15
+        // property double zoomThreshold: 0.1
 
-        property bool movementX: false
-        property bool movementY: false
-        property bool zoomY: false
-        property point pinchStartPos: Qt.point(-1, -1)
+        // property bool movementX: false
+        // property bool movementY: false
+        // property bool zoomY: false
+        // property point pinchStartPos: Qt.point(-1, -1)
+        property real zoomAccum: 1.0
+        property real zoomStepThreshold: 1.2
 
-        function clearPinchMovementState() {
-            movementX = false
-            movementY = false
-            zoomY = false
-        }
+        // function clearPinchMovementState() {
+        //     movementX = false
+        //     movementY = false
+        //     zoomY = false
+        //     zoomAccum = 1.0
+        // }
 
-        onPinchStarted: {
-            menuBlock.visible = false
+        // onPinchStarted: {
+        //     menuBlock.visible = false
 
-            mousearea.enabled = false
-            plot.plotMousePosition(-1, -1)
+        //     mousearea.enabled = false
+        //     plot.plotMousePosition(-1, -1)
 
-            clearPinchMovementState()
-            pinchStartPos = Qt.point(pinch.center.x, pinch.center.y)
-        }
+        //     clearPinchMovementState()
+        //     pinchStartPos = Qt.point(pinch.center.x, pinch.center.y)
+        // }
 
         onPinchUpdated: {
-            if (movementX) {
-                let val = -(pinch.previousCenter.x - pinch.center.x)
-                plot.horScrollEvent(val)
-                updateOtherPlot(indx)
-            }
-            else if (movementY) {
-                let val = pinch.previousCenter.y - pinch.center.y
-                plot.verScrollEvent(val)
-                plotCursorChanged(indx, cursorFrom(), cursorTo())
-            }
-            else if (zoomY) {
-                let val = (pinch.previousScale - pinch.scale) * 500.0
-                plotCursorChanged(indx, cursorFrom(), cursorTo())
-            }
-            else {
-                if (Math.abs(pinchStartPos.x - pinch.center.x) > thresholdXAxis) {
-                    movementX = true
-                }
-                else if (Math.abs(pinchStartPos.y - pinch.center.y) > thresholdYAxis) {
-                    movementY = true
-                }
-                else if (pinch.scale > (1.0 + zoomThreshold) || pinch.scale < (1.0 - zoomThreshold)) {
-                    zoomY = true
-                }
-            }
+            // if (movementX) {
+            //     let val = -(pinch.previousCenter.x - pinch.center.x)
+            //     plot.horScrollEvent(val)
+            //     updateOtherPlot(indx)
+            // }
+            // else if (movementY) {
+            //     let val = pinch.previousCenter.y - pinch.center.y
+            //     plot.verScrollEvent(val)
+            //     plotCursorChanged(indx, cursorFrom(), cursorTo())
+            // }
+            // else if (zoomY) {
+                // let val = (pinch.previousScale - pinch.scale) * 500.0
+            var scaleDelta = pinch.scale / pinch.previousScale
+
+              if (!isFinite(scaleDelta) || scaleDelta <= 0) {
+                  return
+              }
+
+              zoomAccum *= scaleDelta
+
+              if (zoomAccum >= zoomStepThreshold) {
+                  while (zoomAccum >= zoomStepThreshold) {
+                      zoomAccum /= zoomStepThreshold
+                      plot.scaleYZoomEvent(120)
+                  }
+              }
+              else if (zoomAccum <= (1.0 / zoomStepThreshold)) {
+                  while (zoomAccum <= (1.0 / zoomStepThreshold)) {
+                      zoomAccum /= (1.0 / zoomStepThreshold)
+                      plot.scaleYZoomEvent(-120)
+                  }
+              }
+                // plotCursorChanged(indx, cursorFrom(), cursorTo())
+            // }
+            // else {
+            //     if (Math.abs(pinchStartPos.x - pinch.center.x) > thresholdXAxis) {
+            //         movementX = true
+            //     }
+            //     else if (Math.abs(pinchStartPos.y - pinch.center.y) > thresholdYAxis) {
+            //         movementY = true
+            //     }
+            //     else if (pinch.scale > (1.0 + zoomThreshold) || pinch.scale < (1.0 - zoomThreshold)) {
+            //         zoomY = true
+            //     }
+            // }
         }
 
-        onPinchFinished: {
-            mousearea.enabled = true
-            plot.plotMousePosition(-1, -1)
+        // onPinchFinished: {
+        //     mousearea.enabled = true
+        //     plot.plotMousePosition(-1, -1)
 
-            clearPinchMovementState()
-            pinchStartPos = Qt.point(-1, -1)
-        }
+        //     clearPinchMovementState()
+        //     pinchStartPos = Qt.point(-1, -1)
+        // }
 
         MouseArea {
             id: mousearea
