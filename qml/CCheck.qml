@@ -5,11 +5,11 @@ import QtQuick.Controls 2.15
 
 CheckBox {
      id: control
-     text: qsTr("Check")
-     // implicitWidth: iconSize * 1.2
      implicitHeight: iconSize * 1.2
+     implicitWidth: text.length > 0 ? indicator.width + spacing + contentItem.implicitWidth : indicator.width
 
      property int iconSize: theme.iconSize * 1.5
+
 
      indicator: Rectangle {
          id: backRect
@@ -37,6 +37,7 @@ CheckBox {
          text: control.text
          font.pixelSize: iconSize
          verticalAlignment: Text.AlignVCenter
-         leftPadding: control.indicator.width + control.spacing
+         leftPadding: control.text.length > 0 ? control.indicator.width + control.spacing : 0
+         visible: control.text.length > 0
      }
  }

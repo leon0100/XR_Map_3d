@@ -54,6 +54,8 @@ XRRectangle {
     ColumnLayout {
         id: plotSettings
         Layout.alignment: Qt.AlignHCenter
+        anchors.left: parent.left
+        anchors.leftMargin: plotIconSize * 0.2
         spacing: plotIconSize * 0.5
 
         RowLayout {

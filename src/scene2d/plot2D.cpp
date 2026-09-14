@@ -164,18 +164,15 @@ void Plot2D::setAimEpochEventState(bool state)
 
 void Plot2D::setTimelinePosition(float position)
 {
-    if (position > 1.0f) {
-        position = 1.0f;
-    }
-    if (position < 0) {
-        position = 0;
+    if (position > 1.0f)  position = 1.0f;
+    if (position < 0)     position = 0;
+    if(cursor_.position == position) {
+        return;
     }
 
-    if (cursor_.position != position) {
-        cursor_.position = position;
-        cursor_.last_dataset_size = 0;
-        plotUpdate();
-    }
+    cursor_.position = position;
+    cursor_.last_dataset_size = 0;
+    plotUpdate();
 }
 
 void Plot2D::resetAim()
@@ -229,7 +226,7 @@ void Plot2D::setDataChannel(bool fromGui, const ChannelId& channel, uint8_t subC
         }
     }
 
-    resetCash();
+    // resetCash();
 }
 
 float Plot2D::getEchogramLowLevel() const
@@ -260,7 +257,7 @@ void Plot2D::setEchogramVisible(bool visible)
 {
     // qDebug() << "Plot2D::setEchogramVisible.........";
     echogram_.setVisible(visible);
-    echogram_.resetCash();
+    // echogram_.resetCash();
     plotUpdate();
 }
 
@@ -284,16 +281,13 @@ void Plot2D::setDistance(float from, float to)
 void Plot2D::scrollDistance(float ratio)
 {
     cursor_.distance.mode = AutoRangeNone;
-
     float from = cursor_.distance.from;
-    float to = cursor_.distance.to;
+    float to   = cursor_.distance.to;
     float absrange = abs(to - from);
-
     float delta_offset = ((float)absrange*(float)ratio*0.001f);
 
     if(from < to) {
         float round_cef = 10.0f;
-
         float from_n = (round((from + delta_offset)*round_cef)/round_cef);
         float to_n = (round((to + delta_offset)*round_cef)/round_cef);
 
@@ -307,7 +301,8 @@ void Plot2D::scrollDistance(float ratio)
         cursor_.distance.from = from_n;
         cursor_.distance.to = to_n;
 
-    } else if(from > to) {
+    }
+    else if(from > to) {
         cursor_.distance.from = (from - delta_offset);
         cursor_.distance.to = (to - delta_offset);
     }
@@ -483,10 +478,10 @@ DatasetCursor &Plot2D::cursor()
     return cursor_;
 }
 
-void Plot2D::resetCash()
-{
-    echogram_.resetCash();
-}
+// void Plot2D::resetCash()
+// {
+//     // echogram_.resetCash();
+// }
 
 void Plot2D::plotUpdate()
 {

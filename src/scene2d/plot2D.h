@@ -73,8 +73,8 @@ public:
 
     Canvas& canvas();
     DatasetCursor& cursor();
+    // void resetCash();
 
-    void resetCash();
     Canvas image(int width, int height);
     void reindexingCursor();
 

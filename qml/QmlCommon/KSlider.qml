@@ -4,8 +4,8 @@ import QtQuick.Controls 2.15
 Slider {
     id: control
 
-    implicitWidth: 200
-    implicitHeight: Math.max(knobSize, Math.round(44 * AppPalette.scale))
+    implicitWidth:  knobSize * 2
+    implicitHeight: knobSize
     horizontalPadding: knobSize / 2
     verticalPadding: 0
     snapMode: Slider.SnapAlways
@@ -20,7 +20,7 @@ Slider {
     property color knobBorderActiveColor: AppPalette.accentBorder
 
     property int   trackHeight: Math.round(8  * AppPalette.scale)
-    property int   knobSize:    Math.round(25 * AppPalette.scale)
+    property int   knobSize:    Math.round(45 * AppPalette.scale)
 
     property string toolTipText:   ""
     property bool   showValueTip:  true
@@ -135,13 +135,11 @@ Slider {
     }
 
 
-
     KToolTip {
         targetItem: control
         // shown: control.showValueTip && (control.pressed || control.hovered) && control.enabled
         shown: false
-        text: control.toolTipText.length > 0
-              ? control.toolTipText
+        text: control.toolTipText.length > 0 ? control.toolTipText
               : (control.value / control.valueDivisor).toFixed(control.valueDecimals) + control.valueSuffix
     }
 }

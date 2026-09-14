@@ -378,7 +378,7 @@ inline qreal Themes::checkResolutionCoeff() const
     qreal retVal = 1.0;
 
 #if defined(Q_OS_ANDROID) || defined(LINUX_ES)
-    retVal = 2.0;
+    retVal = 3.0;
 #endif
 
     return retVal;

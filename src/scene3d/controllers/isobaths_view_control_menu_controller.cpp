@@ -9,7 +9,6 @@ IsobathsViewControlMenuController::IsobathsViewControlMenuController(QObject* pa
     pendingLambda_(nullptr),
     themeId_(0),
     edgeLimit_(100),
-    // extraWidth_(0),
     visibility_(false),
     edgesVisible_(false),
     trianglesVisible_(false),

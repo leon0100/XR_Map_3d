@@ -8,7 +8,7 @@ import AppXr 1.0
 // ----------------- Bathymetry Config抽屉面板------------------
 XRRectangle {
     id: bathymetry
-    width:  bathymetrySize * 1.6
+    width:  iconSize * 24
     height: iconSize * 12
 
     color: "#dbe3f2"
@@ -17,16 +17,9 @@ XRRectangle {
     radius: iconSize * 0.25
 
 
-    property var  targetPlot:    null
-    property int  bathymetrySize:  theme.screenSize * 0.35
-    property int  iconSize:      bathymetrySize * 0.05
+    property var  targetPlot: null
+    property int  iconSize:   theme.iconSize * 1.5
 
-    // 拦截鼠标事件，防止点击穿透到地图
-    // MouseArea {
-    //     anchors.fill: parent
-    //     enabled: bluetoothDrawOpen
-    //     preventStealing: true
-    // }
 
     Behavior on anchors.rightMargin {
         NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
@@ -53,30 +46,22 @@ XRRectangle {
         anchors.top: bathymetryConfigTitle.bottom
         anchors.topMargin: iconSize
         anchors.left: parent.left
-        anchors.leftMargin: iconSize
-        anchors.right: parent.right
-        anchors.rightMargin: iconSize
-        spacing: iconSize * 0.2
+        anchors.leftMargin: iconSize * 0.2
+        // anchors.right: parent.right
+        // anchors.rightMargin: iconSize
+        spacing: iconSize * 0.5
 
         RowLayout {
             Layout.fillWidth: true
             spacing: iconSize * 0.2
 
             Text {
-                text: qsTr("Parameter:")
+                text: qsTr("Sound Velocity")
                 font.pixelSize: iconSize
-                font.bold: true
                 verticalAlignment: Text.AlignVCenter
                 // width: 200 //布局中，width不起效果xxx
                 // implicitWidth: 200  //Text在布局中implicitWidth仅读不能赋值xxx
             }
-
-            Text {
-                text: qsTr("Sound Velocity")
-                font.pixelSize: iconSize
-                verticalAlignment: Text.AlignVCenter
-            }
-
 
             TextField {
                 id: soundSpeedField
@@ -151,7 +136,8 @@ XRRectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 1
+            Layout.preferredHeight: 2
+            Layout.minimumHeight: 2
             color: "#555555"
         }
 
@@ -161,11 +147,17 @@ XRRectangle {
             Layout.fillWidth: true
             spacing: iconSize * 0.3
 
-            CheckBox {
+            // CheckBox {
+            //     id: depthFilterCheck
+            //     font.pixelSize: iconSize
+            //     rightPadding: 0
+            //     checked: false
+            //     onCheckedChanged: targetPlot.setDepthFilterVisible(checked, depthFilterXRSlider.value)
+            // }
+            CCheck {
                 id: depthFilterCheck
-                font.pixelSize: iconSize
-                rightPadding: 0
                 checked: false
+                rightPadding: 0
                 onCheckedChanged: targetPlot.setDepthFilterVisible(checked, depthFilterXRSlider.value)
             }
             XRSlider {
@@ -175,8 +167,7 @@ XRRectangle {
                 Layout.alignment: Qt.AlignVCenter
                 fontSize: iconSize
                 spacing:  iconSize * 0.3
-                handleWidth: iconSize * 0.4
-                sliderLen: iconSize * 5
+                sliderLen: iconSize * 8
                 from: 1
                 to: 4
                 value: 1
@@ -187,11 +178,43 @@ XRRectangle {
                 }
             }
 
-            Rectangle {
-                Layout.fillHeight: true
-                Layout.preferredWidth: 2
-                color: "#888888"
-            }
+            // Rectangle {
+            //     Layout.fillHeight: true
+            //     Layout.preferredWidth: 2
+            //     color: "#888888"
+            // }
+
+            // XRSlider {
+            //     id: keelOffset
+            //     // title: "Outline Correct"
+            //     title: qsTr("Keel Offset")
+            //     Layout.preferredWidth: iconSize * 8
+            //     Layout.alignment: Qt.AlignVCenter
+            //     fontSize: iconSize
+            //     spacing:  iconSize * 0.1
+            //     sliderLen: iconSize * 7
+            //     from: -100
+            //     to: 100
+            //     value: 0
+            //     unit: " cm"
+            //     onValueChanged: {
+            //         targetPlot.setKeelOffsetValue(keelOffset.value)
+            //     }
+            // }
+
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 2
+            Layout.minimumHeight: 2
+            color: "#555555"
+        }
+
+        // 第三行:
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: iconSize * 0.3
 
             XRSlider {
                 id: keelOffset
@@ -201,8 +224,8 @@ XRRectangle {
                 Layout.alignment: Qt.AlignVCenter
                 fontSize: iconSize
                 spacing:  iconSize * 0.1
-                handleWidth: iconSize * 0.4
-                sliderLen: iconSize * 7
+                sliderLen: iconSize * 9
+                textLen: iconSize * 3
                 from: -100
                 to: 100
                 value: 0
@@ -216,16 +239,29 @@ XRRectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 1
+            Layout.preferredHeight: 2
+            Layout.minimumHeight: 2
             color: "#555555"
         }
 
-        //第三行
+        //第四行
         RowLayout {
             Layout.fillWidth: true
             spacing: iconSize * 0.3
 
-            CheckBox {
+            // CheckBox {
+            //     id: attitudeCorrectCheck
+            //     text: qsTr("Attitude Correction")
+            //     font.pixelSize: iconSize
+            //     checked: false
+            //     enabled: false
+            //     opacity: 0.7
+            //     onCheckedChanged: {
+            //         // attitudeCorrectionEnable = checked
+            //     }
+            // }
+
+            CCheck {
                 id: attitudeCorrectCheck
                 text: qsTr("Attitude Correction")
                 font.pixelSize: iconSize
@@ -233,7 +269,7 @@ XRRectangle {
                 enabled: false
                 opacity: 0.7
                 onCheckedChanged: {
-                    // attitudeCorrectionEnable = checked
+
                 }
             }
 
@@ -243,7 +279,7 @@ XRRectangle {
                 color: "#888888"
             }
 
-            CheckBox {
+            CCheck {
                 id: batchCorrectionCheck
                 text: qsTr("Batch Correct")
                 font.pixelSize: iconSize

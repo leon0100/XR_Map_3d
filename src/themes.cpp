@@ -155,10 +155,8 @@ void Themes::updateSystemToolBarStatus()
 void Themes::updateResCoeff()
 {
     qreal currCoeff = checkResolutionCoeff();
-    if (!qFuzzyCompare(1.0 + currCoeff, 1.0 + resolutionCoeff_)) {
-        resolutionCoeff_ = currCoeff;
-        emit changed();
-    }
+    resolutionCoeff_ = currCoeff;
+    emit changed();
 };
 
 void Themes::openGoogleHelpDocument()

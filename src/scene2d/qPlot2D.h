@@ -149,6 +149,7 @@ protected:
 private:
     int indx_ = -1;
     int currentUpRng_ = 0, currentLoRng_ = 1500;
+    int manualLoRng_ = -1; //-1表示恢复自动量程
     float currentMaxDepth_ = 0.0f;
     bool prompt_ = true;
     bool isBatchCorrect_ = false;

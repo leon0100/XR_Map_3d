@@ -49,7 +49,7 @@ ApplicationWindow  {
 
     Loader {
         id: stateGroupLoader
-        // active: Qt.platform.os === "windows"
+        active: Qt.platform.os === "windows"
         sourceComponent: stateGroupComp
     }
 
@@ -1201,12 +1201,11 @@ ApplicationWindow  {
                         Layout.margins: 0
                         Layout.fillWidth: true
                         Layout.columnSpan: parent.columns
-                        Layout.preferredHeight: theme.iconSize
+                        Layout.preferredHeight: theme.iconSize * 2
                         value: waterViewFirst.timelinePosition
                         stepSize: 0.0001
                         from: 0
                         to: 1
-                        width: 50 * theme.resCoeff
                         onValueChanged: core.setTimelinePosition(value);
                         onValueModified: core.resetAim();
                     }

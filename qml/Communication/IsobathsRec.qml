@@ -848,36 +848,31 @@ XRRectangle {
             Slider {
                 id: verticalScaleSlider
                 Layout.fillWidth: true
-
                 from: 0.5
                 to: 10.0
                 stepSize: 0.1
                 value: IsobathsViewControlMenuController.verticalScale()
-
-                onValueChanged: {
-                    IsobathsViewControlMenuController.onVerticalScaleSliderValueChanged(value)
-                }
-
+                snapMode: Slider.SnapAlways
+                live: true
+                onValueChanged: IsobathsViewControlMenuController.onVerticalScaleSliderValueChanged(value)
                 background: Rectangle {
                     x: verticalScaleSlider.leftPadding
                     y: verticalScaleSlider.topPadding + verticalScaleSlider.availableHeight / 2 - height / 2
                     width: verticalScaleSlider.availableWidth
                     height: iconSize * 0.3
-                    color: "#f2f2f2"
+                    color: "#cdc9c9"
                 }
 
                 handle: Rectangle {
-                    x: verticalScaleSlider.leftPadding +
-                       verticalScaleSlider.visualPosition * (verticalScaleSlider.availableWidth - width)
-                    y: verticalScaleSlider.topPadding +
-                       verticalScaleSlider.availableHeight / 2 - height / 2
-
-                    width: iconSize * 1.2
-                    height: iconSize * 1.2
+                    width: iconSize * 1.6
+                    height: iconSize * 1.6
                     radius: width / 2
-
-                    color: verticalScaleSlider.pressed ? "#dddddd" : "#f6f6f6"
-                    border.color: "#aaaaaa"
+                    x: verticalScaleSlider.leftPadding + verticalScaleSlider.visualPosition
+                       * (verticalScaleSlider.availableWidth - width)
+                    y: verticalScaleSlider.topPadding + (verticalScaleSlider.availableHeight - height) / 2
+                    color: "#666666"
+                    border.width: 1
+                    border.color: "#444444"
                 }
             }
         }

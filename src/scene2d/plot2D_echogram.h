@@ -25,15 +25,6 @@ typedef struct {
 
 class Plot2DEchogram : public PlotLayer {
 public:
-    enum ThemeId {
-        ClassicTheme,
-        SepiaTheme,
-        WRGBDTheme,
-        WBTheme,
-        BWTheme,
-        CustomTheme
-    };
-
     Plot2DEchogram();
     ~Plot2DEchogram();
     bool draw(Plot2D* parent, Dataset* dataset);
@@ -51,7 +42,7 @@ public:
     void setKeelOffsetValue(int value);
 
     int  updateCache(Plot2D* parent, Dataset* dataset, int width, int height);
-    void resetCash();
+    // void resetCash();
     void setUpperRng(int maxUpRng);
     void setLowerRng(int maxLoRng);
     int  getSoundVelocity();
@@ -119,29 +110,24 @@ protected:
     QImage _image;
     QPixmap _pixmap;
 
-    struct {
-        bool resetCash = true;
-    } _cashFlags;
+    // struct {
+    //     bool resetCash = true;
+    // } _cashFlags;
 
     struct {
        float low = 100, high = 10;
     } _levels;
 
-    struct {
-       float low = NAN, high = NAN;
-    } _lastLevels;
-
     DatasetCursor _lastCursor;
 
-    bool getTriggerCashReset() {
-        bool reset_cash = _cashFlags.resetCash;
-        _cashFlags.resetCash = false;
-        return reset_cash;
-    }
+    // bool getTriggerCashReset() {
+    //     bool reset_cash = _cashFlags.resetCash;
+    //     _cashFlags.resetCash = false;
+    //     return reset_cash;
+    // }
 
 
 private:
-    void stretchCompressPixel(QVector<uint8_t> &rawDataVec, uint8_t* dist, int distLen, float scale, int startIndx);
     void drawLatestWavePixel(Plot2D* parent, int panelX, int panelY, int height);
     void drawBottomLine(Canvas canvas, int width, int cash_position, bool isVisible);
 
@@ -150,7 +136,6 @@ private:
     int  robustMaxLoRng(const QVector<int>& vals, int groupSize);
 
 private:
-    ThemeId themeId_;
     ZyColorScheme *zyColorScheme_;
 
     int currentUpRng_ = 0, currentLoRng_ = 3200;
@@ -185,6 +170,4 @@ private:
     quint8 deleteHint_ = 0;  //0:隐藏提示;  1:start;  2: end;
     int deleteFrameMouseX_ = -1;
     int deleteFrameMouseY_ = -1;
-
-    int dbgCnt = 0;
 };

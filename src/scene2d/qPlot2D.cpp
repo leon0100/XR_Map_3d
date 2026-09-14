@@ -104,7 +104,7 @@ void qPlot2D::plotUpdate()
     emit timelinePositionChanged();
 
     if(dataset_ && !dataset_->vec_CSV_.empty() && !echogram_.getBatchCorrect()
-                                         && cursor_.distance.mode == AutoRangeNone) {
+                        && cursor_.distance.mode == AutoRangeNone && manualLoRng_ < 0 ) {
         // setMaxLoRng((int)(currentViewMaxLoRng_ * 1.25f));
         setMaxLoRng(currentViewMaxLoRng_);
     }
@@ -141,10 +141,12 @@ void qPlot2D::sendSyncEvent(int epoch_index, QEvent::Type eventType)
 void qPlot2D::horScrollEvent(int delta)
 {
     cursor_.selectEpochIndx = -1;
+    manualLoRng_ = -1;
 
     if(_isHorizontal) {
         scrollPosition(-delta);
-    } else {
+    }
+    else {
         scrollPosition(delta);
     }
 }
@@ -294,6 +296,7 @@ void qPlot2D::resetUpLoRng(int upper, int lower)
     plotUpdate();    
 
     cursor_.distance.mode = AutoRangeNone;
+    manualLoRng_ = currentLoRng_;
 }
 
 void qPlot2D::setSensitivity(int sensitive)
@@ -529,7 +532,6 @@ void qPlot2D::setOffsetZ(float value)
 void qPlot2D::scaleYZoomEvent(int delta)
 {
     cursor_.distance.mode = AutoRangeMaxOnScreen;
-    qDebug() << "delta...." << delta;
     if(delta > 0) {
         currentLoRng_ /= 2;
     }
@@ -549,6 +551,7 @@ void qPlot2D::scaleYZoomEvent(int delta)
     plotUpdate();
 
     cursor_.distance.mode = AutoRangeNone;
+    manualLoRng_ = currentLoRng_;
 }
 
 void qPlot2D::plotMousePosition(int x, int y, bool isSync)
@@ -569,6 +572,7 @@ void qPlot2D::plotMousePosition(int x, int y, bool isSync)
 
 void qPlot2D::dataUpdate()
 {
+    manualLoRng_ = -1;
     setMinUpRng(0);
     setMaxLoRng(3200);
     plotUpdate();

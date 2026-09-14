@@ -19,7 +19,6 @@ namespace mosaic {
 class PlotColorTable // TODO: copy-paste from Plot2DEchogram
 {
 public:
-    /*structures*/
     enum class ThemeId {
         kUndefined,
         kClassic,
@@ -29,10 +28,9 @@ public:
         kBW
     };
 
-    /*methods*/
     PlotColorTable();
 
-    void setTheme(int id); // enum ThemeId
+    void setTheme(int id);
     void setLevels(float low, float high);
     void setLowLevel(float val);
     void setHighLevel(float val);
@@ -44,11 +42,9 @@ public:
     std::vector<uint8_t>    getRgbaColors() const;
 
 private:
-    /*methods*/
     void update();
     void setColorScheme(const QVector<QColor>& colors, const QVector<int>& levels);
 
-    /*data*/
     int themeId_;
     QVector<QRgb> colorTable_;
     QVector<QRgb> colorTableWithLevels_;
