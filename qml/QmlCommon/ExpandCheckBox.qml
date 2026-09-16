@@ -11,7 +11,7 @@ Item {
 
     property string text: qsTr("Check")
     property bool   checked:  false
-    property int    iconSize: theme.iconSize * 1.5
+    property int    iconSize: theme.iconSize * 1.4
 
     signal checkClicked()
     signal textClicked()

@@ -196,7 +196,6 @@ struct ChannelId
         return address < other.address;
     }
 
-    /*data*/
     QUuid uuid; // usually link ID
     uint8_t address;
 };

@@ -245,8 +245,9 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
     if(fileIndex == (fileCnt - 1)) {
         datasetPtr_->triggerRenderUpdate();
         emit fileStopsOpening(depthVec_, minZ_, maxZ_);
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
-        QTimer::singleShot(2000, progressDialog_, [this]() {
+        progressDialog_->setProperty("showCancelButton", true);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Completed!")));
+        QTimer::singleShot(2500, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
             }
@@ -264,7 +265,6 @@ void DeviceManager::openFile_tsl(QString filePath, EnumFileType currentFileType,
         return;
     }
     isOpeningFile_ = true;
-
     QFile tslFile;
     tslFile.setFileName(filePath);
     QByteArray tslByteArray;
@@ -490,8 +490,9 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
     if(fileIndex == (fileCnt - 1)) {
         datasetPtr_->triggerRenderUpdate();
         emit fileStopsOpening(depthVec_, minZ_, maxZ_);
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
-        QTimer::singleShot(2000, progressDialog_, [this]() {
+        progressDialog_->setProperty("showCancelButton", true);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Completed!")));
+        QTimer::singleShot(2500, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
             }
@@ -615,8 +616,9 @@ void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, 
     if(fileIndex == (fileCnt - 1)) {
         datasetPtr_->triggerRenderUpdate();
         emit fileStopsOpening(depthVec_, minZ_, maxZ_);
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
-        QTimer::singleShot(2000, progressDialog_, [this]() {
+        progressDialog_->setProperty("showCancelButton", true);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Completed!")));
+        QTimer::singleShot(2500, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
             }
@@ -796,8 +798,9 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
     if(fileIndex == (fileCnt - 1)) {
         datasetPtr_->triggerRenderUpdate();
         emit fileStopsOpening(depthVec_, minZ_, maxZ_);
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
-        QTimer::singleShot(2000, progressDialog_, [this]() {
+        progressDialog_->setProperty("showCancelButton", true);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Completed!")));
+        QTimer::singleShot(2500, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
             }
@@ -975,7 +978,8 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
     if (progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
         if(fileIndex == (fileCnt - 1)) {
-            QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
+            progressDialog_->setProperty("showCancelButton", true);
+            QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Completed!")));
             QTimer::singleShot(2500, progressDialog_, [this]() {
                 if(progressDialog_) {
                     QMetaObject::invokeMethod(progressDialog_, "close");
@@ -987,7 +991,6 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
         emit fileStopsOpening(depthVec_, minZ_, maxZ_);
     }
 }
-
 
 void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex, int fileCnt)
 {
@@ -1044,7 +1047,6 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
     }
 
     tslByteArray.remove(0, 512);
-
     QList<QByteArray> tslByteList;
     int nowIndex = 0;
     int byteCount = 0;
@@ -1090,7 +1092,6 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
     if(tslByteList.isEmpty() || !progressDialog_) {
         return;
     }
-
     tsl_3 tslSingleStruct;
     memcpy(&tslSingleStruct, tslByteList.first(), idx);
     double last_lon = dm_to_dd(tslSingleStruct.boat.longitude);
@@ -1197,7 +1198,6 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
         depthVec_.append(lla.altitude);
         minZ_ = std::min(minZ_, lla.altitude);
         maxZ_ = std::max(maxZ_, lla.altitude);
-
         if (i % 200 == 0) {
             double progress = static_cast<double>(i + 1) / tslCount;
             QString statusText = tr("Openging files %1 of %2 (%3%)")
@@ -1212,8 +1212,9 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
     if(fileIndex == (fileCnt - 1)) {
         datasetPtr_->triggerRenderUpdate();
         emit fileStopsOpening(depthVec_, minZ_, maxZ_);
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
-        QTimer::singleShot(2000, progressDialog_, [this]() {
+        progressDialog_->setProperty("showCancelButton", true);
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Completed!")));
+        QTimer::singleShot(2500, progressDialog_, [this]() {
             if(progressDialog_) {
                 QMetaObject::invokeMethod(progressDialog_, "close");
             }

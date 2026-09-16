@@ -1,14 +1,9 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
-        <file>CCombo.qml</file>
-        <file>CButton.qml</file>
-        <file>CSlider.qml</file>
-        <file>CProgressButton.qml</file>
         <file>CCheck.qml</file>
         <file>SpinBoxCustom.qml</file>
         <file>CText.qml</file>
-        <file>CTextField.qml</file>
         <file>Scene3DToolbar.qml</file>
         <file>QmlCommon/qmldir</file>
         <file>QmlCommon/KRButton.qml</file>
@@ -18,9 +13,6 @@
         <file>QmlCommon/KSpinBox.qml</file>
         <file>SceneControlMenu.qml</file>
         <file>Plot2D.qml</file>
-        <file>MenuRow.qml</file>
-        <file>ConnectionButton.qml</file>
-        <file>MenuFrame.qml</file>
         <file>CheckButton.qml</file>
         <file>MouseOpacityArea.qml</file>
         <file>ScreetRect.qml</file>

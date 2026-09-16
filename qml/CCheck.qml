@@ -8,7 +8,7 @@ CheckBox {
      implicitHeight: iconSize * 1.2
      implicitWidth: text.length > 0 ? indicator.width + spacing + contentItem.implicitWidth : indicator.width
 
-     property int iconSize: theme.iconSize * 1.5
+     property int iconSize: theme.iconSize * 1.4
 
 
      indicator: Rectangle {

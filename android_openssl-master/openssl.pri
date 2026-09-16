@@ -12,7 +12,8 @@
             $$SSL_PATH/ssl_3/x86/libssl_3.so \
             $$SSL_PATH/ssl_3/x86_64/libcrypto_3.so \
             $$SSL_PATH/ssl_3/x86_64/libssl_3.so
-    } else {
+    }
+    else {
         ANDROID_EXTRA_LIBS += \
             $$SSL_PATH/ssl_1.1/arm64-v8a/libcrypto_1_1.so \
             $$SSL_PATH/ssl_1.1/arm64-v8a/libssl_1_1.so \

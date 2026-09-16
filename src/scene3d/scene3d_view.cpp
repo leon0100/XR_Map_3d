@@ -937,17 +937,6 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
         this, [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll)->void {
-            //暂时注释
-            // auto chList = datasetPtr_->channelsList();
-            // if (!datasetPtr_ || chList.empty() || chList.first().channelId_ != channelId) {
-            //     return;
-            // }
-            // if(datasetPtr_->polygonNEDEmpty() && qmlRootObject_) {
-            //     if(auto isobathsSet = qmlRootObject_->findChild<QObject*>("isobathsSet")) {
-            //         isobathsSet->setProperty("outlineMode", true);
-            //     }
-            // }
-
             m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
     }, Qt::DirectConnection);
 
@@ -991,7 +980,6 @@ void GraphicsScene3dView::addPoints(QVector<QVector3D> positions, QColor color, 
 
 void GraphicsScene3dView::setQmlRootObject(QObject* object)
 {
-    // qmlRootObject_ = object;
     polygonOutline_->setQmlRootObject(object);
 }
 
@@ -1300,12 +1288,20 @@ void GraphicsScene3dView::slotScreetGraphics()
     request.append(LLA(minLat, maxLon, targetHeight));
     request.append(LLA(minLat, minLon, targetHeight));
     emit sendRectRequest(request, m_camera->getIsPerspective(), m_camera->viewLlaRef_, true);
-    GIF->dialogInfo(Dialog_Loading, "show");
+    // GIF->dialogInfo(Dialog_Loading, "show");
+    if(progressDialog_) {
+        QMetaObject::invokeMethod(progressDialog_, "open");
+        QMetaObject::invokeMethod(progressDialog_, "setTitle", Q_ARG(QVariant, tr("Screenshot")));
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("正在请求目标瓦片...")));
+    }
 }
 
 void GraphicsScene3dView::onTargetTilesLoaded()
 {
     qDebug() << "onTargetTilesLoaded............";
+    if (progressDialog_) {
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("目标瓦片请求完成")));
+    }
     screenshotPending_ = true;
     QQuickFramebufferObject::update();
 
@@ -1314,9 +1310,7 @@ void GraphicsScene3dView::onTargetTilesLoaded()
 
 void GraphicsScene3dView::setProgressDialog(QObject* dialog)
 {
-    if (progressDialog_ != dialog) {
-        progressDialog_ = dialog;
-    }
+    progressDialog_ = dialog;
 }
 
 
@@ -1353,9 +1347,10 @@ void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask
 bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask& task)
 {
     qDebug() << "============ renderAndSaveTiles START ================";
+    QObject* progressDialog = graphicsView_->progressDialog_;
     QOpenGLContext* ctx = QOpenGLContext::currentContext();
     QOpenGLFunctions* func = ctx ? ctx->functions() : nullptr;
-    if (!ctx || !func) {
+    if (!ctx || !func || !progressDialog) {
         qCritical() << "[FAIL] No OpenGL context!";
         return false;
     }
@@ -1404,10 +1399,14 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     func->glFinish();
     GLenum status = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE) {
-        GIF->dialogInfo(Dialog_OK, tr("Loading failed, please try again."));
+        // GIF->dialogInfo(Dialog_OK, tr("Loading failed, please try again."));
+        // return false;
+        progressDialog->setProperty("showCancelButton", true);
+        QMetaObject::invokeMethod(progressDialog, "setStatus", Q_ARG(QVariant, tr("Loading failed, please try again.")));
         return false;
     }
-    GIF->dialogInfo(Dialog_Loading, "hide");
+    progressDialog->setProperty("showCancelButton", false);
+    QMetaObject::invokeMethod(progressDialog, "setStatus", Q_ARG(QVariant, tr("正在生成.kmz文件")));
 
 #ifdef Q_OS_WIN
     QImage fullResult = QImage(pixelWidth, pixelHeight, QImage::Format_RGB32);
@@ -1416,7 +1415,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
 
     int chunkIndex = 0;
     int kmzCnt = rows * cols;
-    QMetaObject::invokeMethod(graphicsView_->progressDialog_, "open");
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
             // 左上角为原点，x向右，y向下
@@ -1457,13 +1455,10 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
 
             chunkIndex++;
             double progress = static_cast<double>(chunkIndex) / kmzCnt;
-            QString statusText = tr("Processing CSV %1 / %2 (%3%)").arg(chunkIndex)
+            QString statusText = tr("Generate KMZ %1 / %2 (%3%)").arg(chunkIndex)
                                      .arg(kmzCnt).arg(static_cast<int>(progress * 100));
-            if (graphicsView_->progressDialog_) {
-                QMetaObject::invokeMethod(graphicsView_->progressDialog_, "setProgress", Q_ARG(QVariant, progress));
-                QMetaObject::invokeMethod(graphicsView_->progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
-            }
-
+            QMetaObject::invokeMethod(progressDialog, "setProgress", Q_ARG(QVariant, progress));
+            QMetaObject::invokeMethod(progressDialog, "setStatus",   Q_ARG(QVariant, statusText));
             QCoreApplication::processEvents();
         }
     }
@@ -1478,7 +1473,7 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
 
     int chunkIndex = 0;
     int kmzCnt = rows * cols;
-    QMetaObject::invokeMethod(graphicsView_->progressDialog_, "open");
+    QMetaObject::invokeMethod(progressDialog, "open");
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
             // 左上角为原点，x向右，y向下
@@ -1538,10 +1533,8 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
             double progress = static_cast<double>(chunkIndex) / kmzCnt;
             QString statusText = tr("Processing CSV %1 / %2 (%3%)").arg(chunkIndex)
                                      .arg(kmzCnt).arg(static_cast<int>(progress * 100));
-            if (graphicsView_->progressDialog_) {
-                QMetaObject::invokeMethod(graphicsView_->progressDialog_, "setProgress", Q_ARG(QVariant, progress));
-                QMetaObject::invokeMethod(graphicsView_->progressDialog_, "setStatus",   Q_ARG(QVariant, statusText));
-            }
+            QMetaObject::invokeMethod(progressDialog, "setProgress", Q_ARG(QVariant, progress));
+            QMetaObject::invokeMethod(progressDialog, "setStatus",   Q_ARG(QVariant, statusText));
 
             QCoreApplication::processEvents();
         }
@@ -1576,10 +1569,12 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
         env->DeleteLocalRef(byteArray);
     }
 #endif
-    if (graphicsView_->progressDialog_) {
-        QMetaObject::invokeMethod(graphicsView_->progressDialog_, "setProgress", Q_ARG(QVariant, 1.0));
-        QMetaObject::invokeMethod(graphicsView_->progressDialog_, "setStatus", Q_ARG(QVariant, tr("Processing completed!")));
-    }
+    QMetaObject::invokeMethod(progressDialog, "setProgress", Q_ARG(QVariant, 1.0));
+    progressDialog->setProperty("showCancelButton", true);
+    QMetaObject::invokeMethod(progressDialog, "setStatus", Q_ARG(QVariant, tr("Completed!")));
+    QTimer::singleShot(2500, [progressDialog]() {
+        QMetaObject::invokeMethod(progressDialog, "close");
+    });
 
     // 恢复状态
     offScreenFbo_->release();
@@ -2123,12 +2118,14 @@ void GraphicsScene3dView::Camera::updateViewMatrix()
 
 void GraphicsScene3dView::Camera::checkRotateAngle()
 {
-    // if (m_rotAngle[1] > M_PI_2) {
-    //    m_rotAngle[1] = M_PI_2;
-    // }
-    // else if (m_rotAngle[1] < 0.0f) {
-    //    m_rotAngle[1] = 0.0f;
-    // }
+    /*
+      if (m_rotAngle[1] > M_PI_2) {
+        m_rotAngle[1] = M_PI_2;
+      }
+      else if (m_rotAngle[1] < 0.0f) {
+        m_rotAngle[1] = 0.0f;
+      }
+    */
 }
 
 void GraphicsScene3dView::Camera::tryResetRotateAngle()

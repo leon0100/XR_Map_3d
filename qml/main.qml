@@ -116,9 +116,9 @@ ApplicationWindow  {
         id: liveDataPanel
     }
 
-    ExportAsData {
+    ExportAsData { }
 
-    }
+    MapLevelChoose { }
 
     // IsobathsSet {
     //     id: isobathsSet
@@ -396,40 +396,6 @@ ApplicationWindow  {
             "103": { "functionName":  "verScrollDown",     "parameter": 5 },          // Down Arrow
         })
 
-        Keys.onPressed: function(event) {
-            var keyName = ""
-
-            switch (event.key) {
-            case Qt.Key_A: keyName = "A"; break
-            case Qt.Key_B: keyName = "B"; break
-            case Qt.Key_C: keyName = "C"; break
-            case Qt.Key_D: keyName = "D"; break
-
-            case Qt.Key_Control: keyName = "Control"; break
-            case Qt.Key_Shift:   keyName = "Shift"; break
-            case Qt.Key_Alt:     keyName = "Alt"; break
-
-            case Qt.Key_Enter:   keyName = "Enter"; break
-            case Qt.Key_Return:  keyName = "Return"; break
-            case Qt.Key_Escape:  keyName = "Escape"; break
-            case Qt.Key_Space:   keyName = "Space"; break
-            case Qt.Key_Tab:     keyName = "Tab"; break
-            case Qt.Key_Backspace: keyName = "Backspace"; break
-            case Qt.Key_Delete:  keyName = "Delete"; break
-
-            case Qt.Key_Left:    keyName = "Left"; break
-            case Qt.Key_Right:   keyName = "Right"; break
-            case Qt.Key_Up:      keyName = "Up"; break
-            case Qt.Key_Down:    keyName = "Down"; break
-
-            default:
-                keyName = event.text
-                break
-            }
-
-            console.log("key =", keyName, "text =", event.text)
-        }
-
         Keys.onReleased: function(event) {
             if (event.key === Qt.Key_Back || event.key === Qt.Key_Escape) {
                 if (handleAndroidBack()) {
@@ -572,7 +538,7 @@ ApplicationWindow  {
 
 
         Item {
-            id:  visualisationLayout
+            id: visualisationLayout
             SplitView.fillHeight: true
             SplitView.fillWidth:  true
             Layout.fillHeight: true
@@ -645,8 +611,6 @@ ApplicationWindow  {
                 focus: true
 
                 ScreetRect { }
-
-                MapLevelChoose { }
 
                 PolygonTool {
                     x: toolBarXR.iconSize
@@ -1201,12 +1165,12 @@ ApplicationWindow  {
                         Layout.margins: 0
                         Layout.fillWidth: true
                         Layout.columnSpan: parent.columns
-                        Layout.preferredHeight: theme.iconSize * 2
+                        Layout.preferredHeight: Qt.platform.os==="android" ? theme.iconSize*2:theme.iconSize
                         value: waterViewFirst.timelinePosition
                         stepSize: 0.0001
                         from: 0
                         to: 1
-                        onValueChanged: core.setTimelinePosition(value);
+                        onValueChanged:  core.setTimelinePosition(value);
                         onValueModified: core.resetAim();
                     }
                 }

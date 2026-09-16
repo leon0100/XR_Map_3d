@@ -185,7 +185,10 @@ WaterFall {
 
                 if (Qt.platform.os === "android") {
                     startMousePos = Qt.point(mouse.x, mouse.y)
-                    longPressTimer.start()
+                    // longPressTimer.start()
+                    if(!plot.batchCorrect) {
+                        longPressTimer.start()
+                    }
                 }
 
                 if(batchCorrect) {
@@ -255,7 +258,7 @@ WaterFall {
                 plotReleased(indx)
                 isPanning = false
                 panStartX = -1
-                batchCorrect = false
+                // batchCorrect = false
                 plot.clearBatchCorrect()
             }
 

@@ -141,7 +141,7 @@ Rectangle {
                 Row {
                     anchors.fill: parent
                     anchors.leftMargin: iconSize * 3.5
-                    spacing: iconSize * 0.6
+                    spacing: iconSize * 0.5
 
                     Rectangle {
                         width:  iconSize * 1.1

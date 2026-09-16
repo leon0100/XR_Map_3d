@@ -16,7 +16,7 @@ XRRectangle {
 
     property var  targetPlot: null
 
-    property int  plotIconSize: theme.iconSize * 1.5
+    property int  plotIconSize: theme.iconSize * 1.4
 
     property bool  currentFrameChecked:  currentFrame.checked
     property bool  bottomLineChecked:    bottomLine.checked
@@ -56,7 +56,9 @@ XRRectangle {
         Layout.alignment: Qt.AlignHCenter
         anchors.left: parent.left
         anchors.leftMargin: plotIconSize * 0.2
-        spacing: plotIconSize * 0.5
+        anchors.right: parent.right
+        anchors.rightMargin: plotIconSize * 0.2
+        spacing: plotIconSize * 0.4
 
         RowLayout {
             Layout.fillWidth:  true
@@ -81,14 +83,13 @@ XRRectangle {
                 Component.onCompleted: {
                     plot.setColorScheme(currentIndex)
                 }
-
             }
 
         }
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 1
+            Layout.preferredHeight: 2
             color: "#555555"
         }
 
@@ -107,7 +108,7 @@ XRRectangle {
                 horizontalAlignment: TextInput.AlignHCenter
                 font.pixelSize: plotIconSize
                 selectByMouse: true
-                validator: IntValidator { bottom: 0; top: 511;}
+                validator: IntValidator { bottom: 0;   top: 511; }
                 text: (plot.minUpRng / 100).toFixed(0)
                 onEditingFinished: {
                     let value = parseInt(text, 10)
@@ -167,8 +168,8 @@ XRRectangle {
 
             XRButton {
                 id: applyBtn
-                width:  plotIconSize * 4
-                height: plotIconSize * 1.2
+                Layout.preferredWidth:  plotIconSize * 4
+                Layout.preferredHeight: plotIconSize * 1.4
                 buttonText: qsTr("Apply")
                 recTextSize: plotIconSize
                 checkable: false
@@ -194,7 +195,7 @@ XRRectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 1
+            Layout.preferredHeight: 2
             color: "#555555"
         }
 
@@ -230,7 +231,7 @@ XRRectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 1
+            Layout.preferredHeight: 2
             color: "#555555"
         }
 
@@ -242,7 +243,7 @@ XRRectangle {
                 id: currentFrame
                 checked: false
                 text: qsTr("Current Frame")
-                height: plotIconSize
+                Layout.preferredWidth: plotIconSize * 8
                 onCheckedChanged: {
                     currentFrameChecked = !currentFrameChecked
                     if(!currentFrameChecked) {
@@ -253,7 +254,7 @@ XRRectangle {
 
             ExpandCheckBox {
                 id: addMarks
-                Layout.preferredWidth: plotIconSize * 6
+                Layout.preferredWidth: plotIconSize * 6.3
                 text: qsTr("Add Marks")
                 onTextClicked: {
                     if(addMarks.isTextClicked) {
@@ -359,12 +360,12 @@ XRRectangle {
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 5
-                    spacing: 2
+                    spacing: 5
 
                     Rectangle {
                         id: frame
                         Layout.fillWidth: true
-                        Layout.preferredHeight: marksDrawer.markIconSize
+                        Layout.preferredHeight: marksDrawer.markIconSize * 1.1
                         color: "#d6e6ff"
 
                         Row {
@@ -412,7 +413,7 @@ XRRectangle {
                     Rectangle {
                         id: time
                         Layout.fillWidth: true
-                        Layout.preferredHeight: marksDrawer.markIconSize
+                        Layout.preferredHeight: marksDrawer.markIconSize * 1.1
                         color: "#d6e6ff"
 
                         Row {
@@ -460,7 +461,7 @@ XRRectangle {
                     Rectangle {
                         id: depth
                         Layout.fillWidth: true
-                        Layout.preferredHeight: marksDrawer.markIconSize
+                        Layout.preferredHeight: marksDrawer.markIconSize * 1.1
                         color: "#d6e6ff"
 
                         Row {
@@ -508,7 +509,7 @@ XRRectangle {
                     Rectangle {
                         id: coordinate
                         Layout.fillWidth: true
-                        Layout.preferredHeight: marksDrawer.markIconSize
+                        Layout.preferredHeight: marksDrawer.markIconSize * 1.1
                         color: "#d6e6ff"
 
                         Row {
@@ -766,7 +767,6 @@ XRRectangle {
             opened = false
         }
     }
-
 
 
 

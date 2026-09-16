@@ -11,7 +11,7 @@ ComboBox {
 
         [ "#1e3a8a", "#3b82f6", "#93c5fd", "#ffb5a7", "#ff8fab", "#ff4d6d" ],
 
-        [ "#000000", "#2b2b2b", "#555555", "#888888", "#cccccc", "#ffffff" ],
+        [ "#ffffff", "#cccccc", "#888888", "#555555", "#2b2b2b", "#000000" ],
 
         [ "#ffea00", "#ffaa00", "#ff7b00", "#ff0000", "#d00000", "#800020" ],
 
@@ -22,6 +22,7 @@ ComboBox {
     property int   schemeIconSize: theme.iconSize * 1.2
     property int   schemeLength:   6
     property int   schemeCount:    5
+    property int   arrowSize: schemeIconSize * 0.7
 
 
     implicitWidth:  schemeIconSize * 7.5
@@ -83,11 +84,13 @@ ComboBox {
     // 下拉箭头
     indicator: Canvas {
         id: canvas
-        width:  schemeIconSize * 0.8
-        height: schemeIconSize * 0.8
-        x: control.width - schemeIconSize
-        y: control.height * 0.5 - height * 0.5
+        width:  arrowSize
+        height: arrowSize
+        anchors.right: control.right
+        anchors.rightMargin: schemeIconSize * 0.25
+        anchors.verticalCenter: control.verticalCenter
         contextType: "2d"
+        antialiasing: true
 
         Connections {
             target: theme
@@ -113,13 +116,12 @@ ComboBox {
             context.fillStyle = "#696969";
             context.fill();
         }
-
     }
 
 
-    // 背景
     background: Rectangle {
-        implicitWidth: 100
+        // implicitWidth: 100
+        implicitWidth: schemeIconSize * 7.5
         implicitHeight: schemeIconSize
         color: "transparent"
         border.width: 1
@@ -144,10 +146,9 @@ ComboBox {
             model: control.popup.visible ? control.delegateModel : null
             currentIndex: control.highlightedIndex
             highlightFollowsCurrentItem: false
-            focus:true
+            focus: true
             ScrollIndicator.vertical: ScrollIndicator {}
         }
-
     }
 
 }

@@ -8,7 +8,6 @@ PolygonOutline::PolygonOutline(GraphicsScene3dView* view, QObject* parent) :
 {
     setPrimitiveType(GL_LINE_LOOP);
 
-    // setColor({0, 0, 205});
     setColor({255, 64, 64});
     setWidth(4.0f);
 }

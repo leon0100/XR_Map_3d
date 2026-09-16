@@ -9,7 +9,7 @@ import AppXr 1.0
 XRRectangle {
     id: bathymetry
     width:  iconSize * 24
-    height: iconSize * 12
+    height: iconSize * 11
 
     color: "#dbe3f2"
     border.color: "#d8e0ef"
@@ -18,7 +18,7 @@ XRRectangle {
 
 
     property var  targetPlot: null
-    property int  iconSize:   theme.iconSize * 1.5
+    property int  iconSize:   theme.iconSize * 1.4
 
 
     Behavior on anchors.rightMargin {
@@ -38,17 +38,16 @@ XRRectangle {
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Bathymetry Config")
             font.pixelSize: iconSize
+            font.bold: true
         }
     }
 
 
     ColumnLayout {
         anchors.top: bathymetryConfigTitle.bottom
-        anchors.topMargin: iconSize
+        anchors.topMargin: iconSize * 0.5
         anchors.left: parent.left
         anchors.leftMargin: iconSize * 0.2
-        // anchors.right: parent.right
-        // anchors.rightMargin: iconSize
         spacing: iconSize * 0.5
 
         RowLayout {
@@ -114,10 +113,10 @@ XRRectangle {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            XRButton{
+            XRButton {
                 id: applyBtn
-                width: iconSize * 3
-                height: iconSize * 1.2
+                width: iconSize * 3.3
+                height: iconSize * 1.4
                 buttonText: qsTr("Apply")
                 recTextSize: iconSize
                 checkable: false
@@ -137,7 +136,6 @@ XRRectangle {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 2
-            Layout.minimumHeight: 2
             color: "#555555"
         }
 
@@ -147,13 +145,6 @@ XRRectangle {
             Layout.fillWidth: true
             spacing: iconSize * 0.3
 
-            // CheckBox {
-            //     id: depthFilterCheck
-            //     font.pixelSize: iconSize
-            //     rightPadding: 0
-            //     checked: false
-            //     onCheckedChanged: targetPlot.setDepthFilterVisible(checked, depthFilterXRSlider.value)
-            // }
             CCheck {
                 id: depthFilterCheck
                 checked: false
@@ -178,36 +169,11 @@ XRRectangle {
                 }
             }
 
-            // Rectangle {
-            //     Layout.fillHeight: true
-            //     Layout.preferredWidth: 2
-            //     color: "#888888"
-            // }
-
-            // XRSlider {
-            //     id: keelOffset
-            //     // title: "Outline Correct"
-            //     title: qsTr("Keel Offset")
-            //     Layout.preferredWidth: iconSize * 8
-            //     Layout.alignment: Qt.AlignVCenter
-            //     fontSize: iconSize
-            //     spacing:  iconSize * 0.1
-            //     sliderLen: iconSize * 7
-            //     from: -100
-            //     to: 100
-            //     value: 0
-            //     unit: " cm"
-            //     onValueChanged: {
-            //         targetPlot.setKeelOffsetValue(keelOffset.value)
-            //     }
-            // }
-
         }
 
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 2
-            Layout.minimumHeight: 2
             color: "#555555"
         }
 
@@ -234,13 +200,11 @@ XRRectangle {
                     targetPlot.setKeelOffsetValue(keelOffset.value)
                 }
             }
-
         }
 
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 2
-            Layout.minimumHeight: 2
             color: "#555555"
         }
 
@@ -248,18 +212,6 @@ XRRectangle {
         RowLayout {
             Layout.fillWidth: true
             spacing: iconSize * 0.3
-
-            // CheckBox {
-            //     id: attitudeCorrectCheck
-            //     text: qsTr("Attitude Correction")
-            //     font.pixelSize: iconSize
-            //     checked: false
-            //     enabled: false
-            //     opacity: 0.7
-            //     onCheckedChanged: {
-            //         // attitudeCorrectionEnable = checked
-            //     }
-            // }
 
             CCheck {
                 id: attitudeCorrectCheck
@@ -288,22 +240,6 @@ XRRectangle {
                     targetPlot.batchCorrect = checked
                 }
             }
-
-            // Rectangle {
-            //     Layout.fillHeight: true
-            //     Layout.preferredWidth: 2
-            //     color: "#888888"
-            // }
-
-            // CheckBox {
-            //     id: depthCorrectionCheck
-            //     text: qsTr("Depth Correct")
-            //     font.pixelSize: iconSize
-            //     checked: false
-            //     onCheckedChanged: {
-            //         core.depthCorrect = checked
-            //     }
-            // }
 
         }
 

@@ -213,9 +213,11 @@ bool qPlot2D::batchCorrect()
 
 void qPlot2D::setBatchCorrect(bool batchCorrect)
 {
+#ifdef Q_OS_WIN
     if(batchCorrect) {
         GIF->dialogInfo(Dialog_OK, "Right-click and Drag to Pan Sonar Image.");
     }
+#endif
     isBatchCorrect_ = batchCorrect;
     emit drawBatchCorrectChanged();
     echogram_.setBatchCorrect(batchCorrect);

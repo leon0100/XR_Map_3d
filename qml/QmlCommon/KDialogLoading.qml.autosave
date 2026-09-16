@@ -1,0 +1,42 @@
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Window 2.15
+
+
+// 加载指示器
+Rectangle {
+    id: loader
+    anchors.centerIn: parent
+    width: loadSize
+    height: loadSize
+    color: "#d6e6ff"
+    visible: false
+    z: 99999
+
+    property int loadSize: Math.min(Screen.width, Screen.height) * 0.075
+    property int iconSize: loadSize * 0.3
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
+        preventStealing: true   // 阻止事件传递到下层
+    }
+
+    BusyIndicator {
+        anchors.centerIn: parent
+        width: loadSize * 0.85
+        height: loadSize * 0.85
+        running: loader.visible
+    }
+
+
+    function show(msg) {
+        if(msg === "show") {
+            loader.visible = true
+        }
+        else if(msg === "hide") {
+            loader.visible = false
+        }
+    }
+
+}

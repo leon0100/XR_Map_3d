@@ -524,7 +524,6 @@ void Plot2DEchogram::applyDepthCorrect(Plot2D* parent, Dataset* dataset, int mou
     float newDepth = currentUpRng_ + (currentLoRng_ - currentUpRng_) * ((float)mouseY / height);
     float temp = wavePixel_.btStart / ((1500.0/soundVelocity_) * wavePixel_.depth);
     depthCorrectBtStart_ = newDepth / temp - wavePixel_.startIdx;
-    // resetCash();
     parent->plotUpdate();
 }
 
@@ -1205,7 +1204,7 @@ void Plot2DEchogram::drawBatchCorrect(Plot2D* parent, Dataset* dataset, int widt
         auto& canvas = parent->canvas();
         QPainter* p  = canvas.painter();
         QPen pen;
-        pen.setWidth(3);
+        pen.setWidth(4);
         pen.setColor(Qt::red);
         p->setPen(pen);
 

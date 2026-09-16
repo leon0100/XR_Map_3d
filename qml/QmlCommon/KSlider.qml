@@ -9,7 +9,7 @@ Slider {
     horizontalPadding: knobSize / 2
     verticalPadding: 0
     snapMode: Slider.SnapAlways
-    opacity: enabled ? 1.0 : 0.55
+    opacity: enabled ? 1.0 : 0.6
     focusPolicy: Qt.StrongFocus
 
     property color trackOffColor:         AppPalette.trackOff
@@ -19,8 +19,10 @@ Slider {
     property color knobBorderColor:       AppPalette.borderHover
     property color knobBorderActiveColor: AppPalette.accentBorder
 
-    property int   trackHeight: Math.round(8  * AppPalette.scale)
-    property int   knobSize:    Math.round(45 * AppPalette.scale)
+    property int trackHeight: Math.round(8  * AppPalette.scale)
+    // property int   knobSize:    Math.round(45 * AppPalette.scale)
+    property int knobSize: Qt.platform.os === "android" ? Math.round(45 * AppPalette.scale)
+                                                        : Math.round(28 * AppPalette.scale)
 
     property string toolTipText:   ""
     property bool   showValueTip:  true

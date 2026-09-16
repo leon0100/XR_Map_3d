@@ -71,7 +71,6 @@ void Core::refreshMap(LLA lla)
     if (auto cameraShared = camera.lock();cameraShared) {
         cameraShared->setStartupInitLla(lla);
     }
-qDebug() << "100101010101010101010";
     scene3dViewPtr_->updateMapView();
 }
 
@@ -484,16 +483,16 @@ void Core::openFileFromMenu()
 
         datasetPtr_->preallocatePool(totalFileSize);
         deviceManager_->resetFileAndChannel(fileCnt);
-
         //读取内容并调用相应的处理函数
         fileNames.sort();
         for(int i = 0; i < fileCnt; i++) {
             /*-按照已选择的文件名路径打开文件，给下一步做铺垫-*/
+
             QString nowFileName = fileNames.at(i);
             if(currentFileType_ == filetype_tslw) {
                 deviceManager_->openFile_tsl(nowFileName, filetype_tslw, i, fileCnt);
             }
-            if(currentFileType_ == filetype_tsly) {
+            else if(currentFileType_ == filetype_tsly) {
                 deviceManager_->openFile_tsl(nowFileName, filetype_tsly, i, fileCnt);
             }
             else if(currentFileType_ == filetype_tsl3) {

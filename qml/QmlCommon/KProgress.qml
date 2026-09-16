@@ -15,10 +15,9 @@ Rectangle {
     property  string  statusText:       qsTr("Openging")
     property  real    progress:         338
     property  bool    indeterminate:    true
-    property  bool    showProgressBar:  true
-    property  bool    showCancelButton: true
-    property  int     dialogWidth:      theme.screenSize * 0.33
-    property  int     dialogHeight:     theme.screenSize * 0.14
+    property  bool    showCancelButton: false
+    property  int     dialogWidth:      theme.screenSize * 0.31
+    property  int     dialogHeight:     theme.screenSize * 0.145
     property  int     iconSize:         theme.iconSize
 
 
@@ -36,6 +35,7 @@ Rectangle {
 
     function close() {
         visible = false
+        showCancelButton = false
     }
 
     function setProgress(value) {
@@ -67,10 +67,9 @@ Rectangle {
 
     ColumnLayout {
         anchors.fill: dialogBox
-        anchors.margins: iconSize * 0.5
-        spacing: iconSize * 0.5
+        anchors.margins: iconSize* 0.5
+        spacing: iconSize * 0.4
 
-        // Title
         KText {
             text: title
             font.bold: true
@@ -86,7 +85,6 @@ Rectangle {
             Layout.bottomMargin: 5
         }
 
-        // Status Text
         KText {
             id: statusLabel
             text: progressDialog.statusText
@@ -99,43 +97,42 @@ Rectangle {
         ProgressBar {
             id: progressBar
             Layout.fillWidth: true
+            Layout.preferredHeight: iconSize * 0.6
             value: progressDialog.progress
             indeterminate: indeterminate
             visible: true
 
             background: Rectangle {
-                implicitHeight: iconSize * 0.7
                 color: "#E0E0E0"
                 radius: 3
             }
             contentItem: Rectangle {
-                implicitHeight: iconSize * 0.7
                 width: progressBar.visualPosition * progressBar.width
                 color: "#00cd00"
                 radius: 3
             }
         }
 
-        // Cancel Button
-        // Button {
-        //     id: cancelButton
-        //     text: qsTr("Close")
-        //     font.pixelSize: iconSize
-        //     visible: showCancelButton
-        //     Layout.alignment: Qt.AlignRight
-        //     background: Rectangle {
-        //        radius: 4
-        //        color: cancelButton.hovered ? "#d0e8ff" : "#d9edff"
-        //        border.color: "#9bbfe9"
-        //        border.width: 1
-        //     }
-        //     onClicked: {
-        //         close()
-        //     }
-        // }
+        Button {
+            id: cancelButton
+            text: qsTr("Close")
+            font.pixelSize: iconSize
+            visible: showCancelButton
+            Layout.alignment: Qt.AlignRight
+            Layout.preferredHeight: iconSize * 1.5
+            background: Rectangle {
+               radius: 4
+               color: cancelButton.hovered ? "#d0e8ff" : "#d9edff"
+               border.color: "#9bbfe9"
+               border.width: 1
+            }
+            onClicked: {
+                close()
+            }
+        }
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: iconSize * 2
+            Layout.preferredHeight: iconSize * 3
         }
 
     }

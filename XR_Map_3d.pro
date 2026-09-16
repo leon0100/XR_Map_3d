@@ -98,7 +98,6 @@ DISTFILES += \
     qml/BackStyle.qml \
     qml/ButtonBackStyle.qml \
     qml/CButton.qml \
-    qml/CCombo.qml \
     qml/CComboBox.qml \
     qml/CSlider.qml \
     qml/ComboBackStyle.qml \
@@ -107,7 +106,6 @@ DISTFILES += \
     qml/CustomGroupBox.qml \
     qml/DeviceSettingsViewer.qml \
     qml/MenuBar.qml \
-    qml/MenuFrame.qml \
     qml/MenuButton.qml \
     qml/MenuViewer.qml \
     qml/TabBackStyle.qml \

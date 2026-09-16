@@ -12,7 +12,7 @@ Rectangle {
     x: Screen.width * 0.5  - width * 0.5
     y: Screen.height * 0.5 - height * 0.8
     z: 9999
-    radius: 5
+    radius: iconSize * 0.5
 
     property int  mapLevelSize: theme.screenSize * 0.45
     property int  iconSize:     theme.iconSize * 0.9
@@ -24,6 +24,7 @@ Rectangle {
             GradientStop { position: 0.0; color: "#f5f7fa" }
             GradientStop { position: 1.0; color: "#c3cfe2" }
         }
+        radius: iconSize * 0.5
     }
 
     ListModel {
@@ -49,6 +50,7 @@ Rectangle {
 
         currentLevel = -1;
     }
+
     Connections {
         target: renderer.screetShot
 
@@ -108,7 +110,7 @@ Rectangle {
 
                 Label {
                     Layout.preferredWidth: mapLevelSize * 0.3
-                    text: qsTr("Size")
+                    text: qsTr("Screen Size")
                     font.bold: true
                     font.pixelSize: iconSize
                     verticalAlignment: Text.AlignVCenter
@@ -153,12 +155,12 @@ Rectangle {
                     height: iconSize * 2.5
                     color: "transparent"
 
-                    required property int index
-                    required property int level
+                    required property int    index
+                    required property int    level
                     required property string size
                     required property string theoreticalSize
                     required property string downloadTime
-                    required property bool enabled
+                    required property bool   enabled
 
                     RowLayout {
                         anchors.fill: parent
@@ -167,42 +169,40 @@ Rectangle {
                             Layout.preferredWidth: mapLevelSize * 0.25
                             Layout.fillHeight: true
 
-                            RadioButton {
-                                anchors.centerIn: parent
-                                enabled: parent.parent.enabled
-                                checked: root.currentLevel === level
+                            Row {
+                                anchors.fill: parent
+                                anchors.leftMargin: iconSize
+                                spacing: iconSize * 0.2
+                                anchors.verticalCenter: parent.verticalCenter
 
-                                indicator: Rectangle {
+                                Rectangle {
                                     width: iconSize
                                     height: iconSize
-                                    x: 0
-                                    y: (parent.height - height) * 0.5
-                                    radius: width * 0.5
-                                    border.color: "#666666"
-                                    border.width: 2
-                                    color: "white"
-
-                                    Rectangle {
-                                        anchors.centerIn: parent
-                                        width: parent.width * 0.6
+                                    radius: 4
+                                    border.color: "#b0b3b8"
+                                    border.width: 1
+                                    Image {
+                                        source: "qrc:/XR/check.svg"
+                                        width: parent.width * 0.9
                                         height: width
-                                        radius: width * 0.5
-                                        color: "#66E07A"
-                                        visible: parent.parent.checked
+                                        visible: root.currentLevel === level
+                                        anchors.centerIn: parent
                                     }
+                                    anchors.verticalCenter: parent.verticalCenter
                                 }
 
-                                contentItem: Text {
-                                    text: "Level " + level
+                                Text {
+                                    text: qsTr("Level ") + level
                                     font.pixelSize: iconSize
                                     color: "black"
-                                    verticalAlignment: Text.AlignVCenter
-                                    leftPadding: iconSize * 1.5
+                                    anchors.verticalCenter: parent.verticalCenter
                                 }
-
-                                onClicked: root.currentLevel = level
                             }
 
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: root.currentLevel = level
+                            }
                         }
 
                         Label {

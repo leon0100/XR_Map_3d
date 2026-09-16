@@ -90,7 +90,7 @@ public:
 
         Camera* cameraListener_ = nullptr;
 
-        QVector3D m_lookAt = {0.0f, 0.0f, 0.0f};//焦点 （注视目标点），轨道中心。平移操作移动的就是它
+        QVector3D m_lookAt = {0.0f, 0.0f, 0.0f}; //焦点（注视目标点），轨道中心。平移操作移动的就是它
         QVector3D m_lookAtSave = {0.0f, 0.0f, 0.0f};
 
         QMatrix4x4 m_view;
@@ -320,7 +320,6 @@ private:
 
     bool wasMoved_;
     Qt::MouseButtons wasMovedMouseButton_;
-    // QObject* qmlRootObject_;
     bool needToResetStartPos_;
     float lastCameraDist_;
     bool gridVisibility_;

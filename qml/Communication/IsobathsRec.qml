@@ -19,11 +19,11 @@ XRRectangle {
     radius: iconSize * 0.3
 
 
-    property int  isobathSize:  theme.screenSize * 0.35
+    property int  isobathSize:  theme.screenSize * 0.36
     property int  layoutHeight: isobathSize * 0.1
     property var  targetPlot:   null
 
-    property int  iconSize:     isobathSize * 0.05
+    property int  iconSize:     isobathSize * 0.06
 
     property bool outlineMode:     false
     property bool isShowBoatTrack: true
@@ -66,20 +66,21 @@ XRRectangle {
             anchors.verticalCenter: parent.verticalCenter
             text: qsTr("Isobaths Settings")
             font.pixelSize: iconSize
+            font.bold: true
         }
     }
 
     ColumnLayout {
         anchors.top: isobathsTitleBar.bottom
-        anchors.topMargin: iconSize
+        anchors.topMargin: iconSize * 0.8
         anchors.left: parent.left
-        anchors.leftMargin: iconSize
+        anchors.leftMargin: iconSize * 0.8
         anchors.right: parent.right
-        anchors.rightMargin: iconSize
-        spacing: 12
+        anchors.rightMargin: iconSize * 0.8
+        spacing: iconSize * 0.3
 
         RowLayout {
-            spacing: 32
+            spacing: iconSize
             Layout.alignment: Qt.AlignHCenter
 
             XRButton {
@@ -119,6 +120,11 @@ XRRectangle {
 
         }
 
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: iconSize * 0.2
+            color: "transparent"
+        }
 
         Rectangle {
             Layout.fillWidth: true
@@ -191,8 +197,7 @@ XRRectangle {
                                 width: parent.width * 0.9
                                 height: parent.width * 0.9
                                 visible: isShowBoatTrack
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.centerIn: parent
                                 anchors.rightMargin: 2
                             }
                         }
@@ -276,8 +281,7 @@ XRRectangle {
                                 width: parent.width * 0.9
                                 height: parent.width * 0.9
                                 visible: isShowOutline
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.centerIn: parent
                                 anchors.rightMargin: 2
                             }
                         }
@@ -363,8 +367,7 @@ XRRectangle {
                                 width: parent.width * 0.9
                                 height: parent.width * 0.9
                                 visible: isContours
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.centerIn: parent
                                 anchors.rightMargin: 2
                             }
                         }
@@ -393,91 +396,6 @@ XRRectangle {
                         onExited:  parent.color = "#f9f9fb"
                     }
                 }
-
-
-                // Rectangle {
-                //     id: isobaths
-                //     Layout.fillWidth: true
-                //     Layout.preferredHeight: layoutHeight
-                //     color: "#f9f9fb"
-
-                //     property bool checked: true
-
-                //     SequentialAnimation {
-                //         id: flashAnim_isobaths
-                //         running: false
-                //         loops: 1
-
-                //         ColorAnimation {
-                //             target: isobaths
-                //             property: "color"
-                //             to: "#9ecbff"
-                //             duration: 100
-                //         }
-                //         ColorAnimation {
-                //             target: isobaths
-                //             property: "color"
-                //             to: "#d6e6ff"
-                //             duration: 100
-                //         }
-                //     }
-
-                //     Row {
-                //         anchors.fill: parent
-                //         anchors.leftMargin: iconSize * 0.5
-                //         anchors.rightMargin: iconSize * 0.5
-                //         spacing: iconSize * 0.5
-                //         anchors.verticalCenter: parent.verticalCenter
-
-                //         Image {
-                //             source: "qrc:/XR/contour.png"
-                //             width: iconSize * 1.2
-                //             height: iconSize * 1.2
-                //             fillMode: Image.PreserveAspectFit
-                //             anchors.verticalCenter: parent.verticalCenter
-                //         }
-
-                //         Rectangle {
-                //             width:  iconSize * 1.2
-                //             height: iconSize * 1.2
-                //             radius: 5
-                //             border.color: "#b0b3b8"
-                //             border.width: 1
-                //             anchors.verticalCenter: parent.verticalCenter
-
-                //             Image {
-                //                 source: "qrc:/XR/check.svg"
-                //                 width: parent.width * 0.9
-                //                 height: parent.width * 0.9
-                //                 visible: isShowIsobaths
-                //                 anchors.verticalCenter: parent.verticalCenter
-                //                 anchors.horizontalCenter: parent.horizontalCenter
-                //                 anchors.rightMargin: 2
-                //             }
-                //         }
-
-                //         Text {
-                //             text: qsTr("Isobaths")
-                //             font.pixelSize: iconSize
-                //             color: "black"
-                //             anchors.verticalCenter: parent.verticalCenter
-                //         }
-                //     }
-
-                //     MouseArea {
-                //         anchors.fill: parent
-                //         hoverEnabled: true
-
-                //         onClicked: {
-                //             flashAnim_isobaths.restart()
-                //             isShowIsobaths = !isShowIsobaths
-                //             IsobathsViewControlMenuController.onIsobathsVisibilityCheckBoxCheckedChanged(isShowIsobaths)
-                //         }
-
-                //         onEntered: parent.color = "#d6e6ff"
-                //         onExited:  parent.color = "#f9f9fb"
-                //     }
-                // }
 
 
                 Rectangle {
@@ -535,8 +453,7 @@ XRRectangle {
                                 width: parent.width * 0.9
                                 height: parent.width * 0.9
                                 visible: isShowBoat
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.centerIn: parent
                                 anchors.rightMargin: 2
                             }
                         }
@@ -620,8 +537,7 @@ XRRectangle {
                                 width:  parent.width * 0.9
                                 height: parent.width * 0.9
                                 visible: isShowGround
-                                anchors.verticalCenter: parent.verticalCenter
-                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.centerIn: parent
                                 anchors.rightMargin: 2
                             }
                         }
@@ -670,8 +586,8 @@ XRRectangle {
 
             Rectangle {
                 id: renderSpanControl
-                width:  iconSize * 3.2
-                height: iconSize * 1.3
+                Layout.preferredWidth:  iconSize * 3.1
+                Layout.preferredHeight: iconSize * 1.3
                 radius: iconSize * 0.65
                 color:  hovered ? (renderSpanControl.isOn ? "#36D85A" : "#AFCFFF")
                                 : (renderSpanControl.isOn?  "#66E07A" : "#D0D0D2")
@@ -772,7 +688,7 @@ XRRectangle {
 
             SpinBoxCustom {
                 id: edgeLimitSpinBox
-                implicitWidth: isobathSize * 0.4
+                Layout.preferredWidth: isobathSize * 0.32
                 from: 10
                 to: 3000
                 stepSize: 5
@@ -812,7 +728,7 @@ XRRectangle {
 
             SpinBoxCustom {
                 id: contourStep
-                implicitWidth: isobathSize * 0.4
+                implicitWidth: isobathSize * 0.32
                 from: 3
                 to: 20
                 stepSize: 1
@@ -864,8 +780,8 @@ XRRectangle {
                 }
 
                 handle: Rectangle {
-                    width: iconSize * 1.6
-                    height: iconSize * 1.6
+                    width:  Qt.platform.os == "android" ? iconSize * 1.6 : iconSize
+                    height: Qt.platform.os == "android" ? iconSize * 1.6 : iconSize
                     radius: width / 2
                     x: verticalScaleSlider.leftPadding + verticalScaleSlider.visualPosition
                        * (verticalScaleSlider.availableWidth - width)
