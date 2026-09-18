@@ -61,7 +61,8 @@ Rectangle {
         width:  dialogWidth
         height: dialogHeight
         radius: iconSize * 0.5
-        color: "#E6F2FA"
+        // color: "#E6F2FA"
+        color: "#d6e5ff"
     }
 
 

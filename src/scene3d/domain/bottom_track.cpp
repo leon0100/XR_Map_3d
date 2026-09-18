@@ -516,43 +516,6 @@ void BottomTrack::BottomTrackRenderImplementation::render(QOpenGLFunctions *ctx,
         return;
     }
 
-    //nie:test  这里是带颜色和高度的轨迹线
-    // track
-    // {
-    //     QOpenGLShaderProgram* shaderProgram = nullptr;
-    //     int posLoc = -1, maxZLoc = -1, minZLoc = -1, matrixLoc = -1;
-
-    //     shaderProgram = shaderProgramMap["height"].get();
-    //     shaderProgram->bind();
-
-    //     int isPointLoc   = shaderProgram->uniformLocation("isPoint");
-    //     int isTriangleLoc= shaderProgram->uniformLocation("isTriangle");
-    //     shaderProgram->setUniformValue(isPointLoc,    true);
-    //     shaderProgram->setUniformValue(isTriangleLoc, false);
-
-    //     maxZLoc = shaderProgram->uniformLocation("max_z");
-    //     minZLoc = shaderProgram->uniformLocation("min_z");
-    //     shaderProgram->setUniformValue(maxZLoc, m_bounds.maximumZ());
-    //     shaderProgram->setUniformValue(minZLoc, m_bounds.minimumZ());
-
-    //     posLoc = shaderProgram->attributeLocation("position");
-    //     matrixLoc = shaderProgram->uniformLocation("matrix");
-
-    //     shaderProgram->setUniformValue(matrixLoc, projection * view * model);
-    //     shaderProgram->enableAttributeArray(posLoc);
-    //     shaderProgram->setAttributeArray(posLoc, m_data.constData());
-
-    //     ctx->glLineWidth(4.0);
-    //     ctx->glDrawArrays(m_primitiveType, 0, m_data.size());
-    //     ctx->glLineWidth(1.0);
-
-    //     shaderProgram->setUniformValue(isPointLoc,    false);
-    //     shaderProgram->setUniformValue(isTriangleLoc, false);
-
-    //     shaderProgram->disableAttributeArray(posLoc);
-    //     shaderProgram->release();
-    // }
-
     {
         QOpenGLShaderProgram* shaderProgram = nullptr;
         int colorLoc = -1, posLoc = -1, matrixLoc = -1;

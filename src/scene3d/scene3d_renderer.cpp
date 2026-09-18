@@ -114,7 +114,8 @@ void GraphicsScene3dRenderer::render()
 {
     glDepthMask(true);
 
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // back color
+    // glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // back color
+    glClearColor(0.45f, 0.45f, 0.45f, 1.0f); // back color（测试阶段：灰色背景）
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     drawObjects();
@@ -141,11 +142,11 @@ void GraphicsScene3dRenderer::drawObjects()
 {
     QMatrix4x4 model, view, projection;
 
-    const float perspectiveEdge{ 5000.0f };
-    const float nearPlanePersp{ 1.0f };
-    const float farPlanePersp{ 20000.0f };
-    const float nearPlaneOrthoCoeff{ 0.05f };
-    const float farPlaneOrthoCoeff{ 1.2f };
+    const float perspectiveEdge     { HIGH_DIST_THRESHOLD };
+    const float nearPlanePersp      { 1.0f };
+    const float farPlanePersp       { 20000.0f };
+    const float nearPlaneOrthoCoeff { 0.05f };
+    const float farPlaneOrthoCoeff  { 1.2f };
 
     float perspCoeff  = m_camera.getHeightAboveGround() / perspectiveEdge;
     qreal perspFixFov = m_camera.fov() + m_camera.fov() * perspCoeff;
@@ -170,7 +171,7 @@ void GraphicsScene3dRenderer::drawObjects()
         }
     }
 
-    view = m_camera.m_view;
+    view = m_camera.m_viewMatrix;
     QMatrix4x4 surfaceModel = model; //nie:test，新建一个锚点缩放surfaceModel矩阵
 
     model.scale(1.0f, 1.0f, m_verticalScale);
@@ -285,7 +286,7 @@ void GraphicsScene3dRenderer::drawObjects()
     QMatrix4x4 axesModel;
 
     m_axesThumbnailCamera.setDistance(25);
-    axesView = m_axesThumbnailCamera.m_view;
+    axesView = m_axesThumbnailCamera.m_viewMatrix;
     axesProjection.perspective(m_camera.fov(), 150/150, 1.0f, 11000.0f);
     m_coordAxesRenderImpl.render(this, axesModel, axesView, axesProjection, m_shaderProgramMap);
 

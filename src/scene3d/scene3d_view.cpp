@@ -192,27 +192,11 @@ void GraphicsScene3dView::clear(bool isClearTrack, bool cleanMap)
     QQuickFramebufferObject::update();
 }
 
-QVector3D GraphicsScene3dView::calculateIntersectionPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float planeZ)
-{
-    QVector3D retVal;
-
-    if (qAbs(rayDirection.z()) < 1e-6) {
-        return retVal;
-    }
-    const float t = (planeZ - rayOrigin.z()) / rayDirection.z();
-    if (t < 0) {
-        return retVal;
-    }
-    retVal = rayOrigin + rayDirection * t;
-
-    return retVal;
-}
-
 void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal x, qreal y, Qt::Key keyboardKey)
 {
     Q_UNUSED(keyboardKey)
 
-    //当前点x,y的经纬度坐标
+    //当前点(x,y)的经纬度
     calculateLatLong(x, y, currentLat_, currentLon_);
     emit currentLatChanged();
     emit currentLonChanged();
@@ -221,6 +205,26 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
 
     if (mouseButton == Qt::LeftButton)
     {
+        /*--- 测距模块 ---*/
+        if(screetShot_.isDistMeasureMode_)
+        {
+            if(screetShot_.isDrawMeasure_ == 0) {
+                screetShot_.isDrawMeasure_ = 1;
+                screetShot_.setP1Visible(true);
+                screetShot_.setDistLineP1(QPointF(x, y));
+                screetShot_.worldCoorOrigin_ = convertToWorldCoor(x, y);
+                emit screetShot_.signalStartToEndDist(0);
+            }
+            else if(screetShot_.isDrawMeasure_ == 1) {
+                screetShot_.isDrawMeasure_ = 2;
+                screetShot_.setP2Visible(true);
+                screetShot_.setDistLineP2(QPointF(x, y));
+                double dist = calculateGroundDistance(screetShot_.getDistLineP1(), QPointF(x, y));
+                emit screetShot_.signalStartToEndDist(dist);
+                QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
+            }
+        }
+
         /*-- 截图模式 --*/
         if(screetShot_.isScreenMode_)
         {
@@ -239,29 +243,6 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
             }
 
             return;
-        }
-
-        /*--- 测距模块 ---*/
-        if(screetShot_.isDistMeasureMode_)
-        {
-            if(screetShot_.isDrawMeasure_ == 0) {
-                screetShot_.isDrawMeasure_ = 1;
-                screetShot_.setP1Visible(true);
-                screetShot_.setDistLineP1(QPointF(x, y));
-                screetShot_.worldCoorOrigin_ = calculateToWorldCoor(x, y);
-                emit screetShot_.signalStartToEndDist(0);
-            }
-            else if(screetShot_.isDrawMeasure_ == 1) {
-                screetShot_.isDrawMeasure_ = 2;
-                screetShot_.setP2Visible(true);
-                screetShot_.setDistLineP2(QPointF(x, y));
-                QVector3D worldCoorEnd = calculateToWorldCoor(x, y);
-                const float dx = (worldCoorEnd.x() - screetShot_.worldCoorOrigin_.x());
-                const float dy = (worldCoorEnd.y() - screetShot_.worldCoorOrigin_.y());
-                double dist = std::sqrt(dx * dx + dy * dy);
-                emit screetShot_.signalStartToEndDist(dist);
-                QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
-            }
         }
 
         /*- 绘制多边形轮廓模式 -*/
@@ -307,6 +288,31 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 
     QPoint pos = QPoint(x,y);
 
+    /*-- 测距模块 --*/
+    if(screetShot_.isDistMeasureMode_)
+    {
+        if(screetShot_.isDrawMeasure_ == 1) {
+            screetShot_.setDistLineP2(QPointF(x, y));
+            double dist = calculateGroundDistance(screetShot_.getDistLineP1(), QPointF(x, y));
+            emit screetShot_.signalStartToEndDist(dist);
+        }
+    }
+
+    if(screetShot_.getLandMarkMode())
+    {
+        if(mouseButton == Qt::LeftButton) {
+            screetShot_.setLandMarkPtX(x);
+            screetShot_.setLandMarkPtY(y);
+            double landMarkLat, landMarkLon;
+            calculateLatLong(x, y, landMarkLat, landMarkLon);
+            screetShot_.setSpotLatitude(QString::number(landMarkLat) + "°");
+            screetShot_.setSpotLongitude(QString::number(landMarkLon) + "°");
+        }
+
+        return;
+    }
+
+
     if(screetShot_.isScreenMode_)
     {
         if(!screetShot_.firstScreenDown_) {
@@ -340,34 +346,6 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
         return;
     }
 
-    /*-- 测距模块 --*/
-    if(screetShot_.isDistMeasureMode_)
-    {
-        if(screetShot_.isDrawMeasure_ == 1) {
-            screetShot_.setDistLineP2(QPointF(x, y));
-            QVector3D worldCoorEnd = calculateToWorldCoor(x, y);
-            const float dx = (worldCoorEnd.x() - screetShot_.worldCoorOrigin_.x());
-            const float dy = (worldCoorEnd.y() - screetShot_.worldCoorOrigin_.y());
-            double dist = std::sqrt(dx * dx + dy * dy);
-            emit screetShot_.signalStartToEndDist(dist);
-        }
-    }
-
-    if(screetShot_.getLandMarkMode())
-    {
-        if(mouseButton == Qt::LeftButton) {
-            screetShot_.setLandMarkPtX(x);
-            screetShot_.setLandMarkPtY(y);
-            double landMarkLat, landMarkLon;
-            calculateLatLong(x, y, landMarkLat, landMarkLon);
-            screetShot_.setSpotLatitude(QString::number(landMarkLat) + "°");
-            screetShot_.setSpotLongitude(QString::number(landMarkLon) + "°");
-        }
-
-        return;
-    }
-
-
     /*- 绘制多边形轮廓模式 -*/
     if(polygonOutline_->getOutlineMode()) {
         setCursorShape(Qt::PointingHandCursor);
@@ -396,19 +374,18 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
     }
 
     // ray for marker
-    auto toOrig = QVector3D(x, height() - y, -1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-    auto toEnd  = QVector3D(x, height() - y, 1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-    auto toDir  = (toEnd - toOrig).normalized();
-    auto to     = calculateIntersectionPoint(toOrig, toDir, 0);
+    QVector3D toOrig = QVector3D(x, height() - y, -1.0f)
+                       .unproject(m_camera->m_viewMatrix * m_model, m_projection, boundingRect().toRect());
+    QVector3D toEnd  = QVector3D(x, height() - y, 1.0f)
+                       .unproject(m_camera->m_viewMatrix * m_model, m_projection, boundingRect().toRect());
+    QVector3D toDir  = (toEnd - toOrig).normalized();
+    QVector3D to     = calculateIntersectionPoint(toOrig, toDir, 0);
     m_ray.setOrigin(toOrig);
     m_ray.setDirection(toDir);
 
 #if defined(Q_OS_ANDROID)
         Q_UNUSED(keyboardKey);
-        auto fromOrig = QVector3D(m_startMousePos.x(), height() - m_startMousePos.y(), -1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-        auto fromEnd = QVector3D(m_startMousePos.x(), height() - m_startMousePos.y(), 1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-        auto fromDir = (fromEnd - fromOrig).normalized();
-        auto from = calculateIntersectionPoint(fromOrig, fromDir , 0);
+        auto from = convertToWorldCoor(m_startMousePos.x(), m_startMousePos.y());
         m_camera->move(QVector2D(from.x(), from.y()), QVector2D(to.x() ,to.y()));
         cameraWasMoved = true;
 #else
@@ -421,10 +398,7 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
             }
         }
         else if (mouseButton.testFlag(Qt::LeftButton)) {
-            auto fromOrig = QVector3D(m_startMousePos.x(), height() - m_startMousePos.y(), -1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-            auto fromEnd = QVector3D(m_startMousePos.x(), height() - m_startMousePos.y(), 1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-            auto fromDir = (fromEnd - fromOrig).normalized();
-            auto from = calculateIntersectionPoint(fromOrig, fromDir , 0);
+            auto from = convertToWorldCoor(m_startMousePos.x(), m_startMousePos.y());
             m_camera->move(QVector2D(from.x(), from.y()), QVector2D(to.x() ,to.y()));
             cameraWasMoved = true;
         }
@@ -455,7 +429,6 @@ void GraphicsScene3dView::mouseReleaseTrigger(Qt::MouseButtons mouseButton, qrea
         }
 
         screetShot_.setScreetToolBar(true);
-        qDebug() << "Screen capture completed";
         return;
     }
 
@@ -587,14 +560,15 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
     screetShot_.isScreenMode_ = isScreen;
 
     if (m_camera && m_camera->getIsPerspective()) {
-        m_camera->resetRotationAngle();
+        m_camera->m_lookAt.setZ(0);
+        m_camera->m_rotAngle = {0.0f, 0.0f};
+        m_camera->updateCameraAndViewMatrix();
         if (m_axesThumbnailCamera) {
             m_axesThumbnailCamera->resetRotationAngle();
         }
-
-        m_camera->resetZAxis();
-        updateProjection();
     }
+
+    updateProjection();
 
     QQuickFramebufferObject::update();
     emit cameraIsMoved();
@@ -617,14 +591,15 @@ void GraphicsScene3dView::setDistMeasureMode(bool isDist)
 {
     screetShot_.isDistMeasureMode_ = isDist;
     if (m_camera && m_camera->getIsPerspective()) {
-        m_camera->resetRotationAngle();
+        m_camera->m_lookAt.setZ(0);
+        m_camera->m_rotAngle = {0.0f, 0.0f};
+        m_camera->updateCameraAndViewMatrix();
         if (m_axesThumbnailCamera) {
             m_axesThumbnailCamera->resetRotationAngle();
         }
-
-        m_camera->resetZAxis();
-        updateProjection();
     }
+
+    updateProjection();
 
     QQuickFramebufferObject::update();
     emit cameraIsMoved();
@@ -667,28 +642,6 @@ void GraphicsScene3dView::setGridVisibility(bool state)
     QQuickFramebufferObject::update();
 }
 
-void GraphicsScene3dView::updateProjection()
-{
-    QMatrix4x4 currProj;
-    if (m_camera) {
-        //这里有个bug，14等级时，地图等级切换会出现抖动现象！！！
-        float aspectRatio = width() / height();
-        if (m_camera->getIsPerspective()) { //当地图等级大于14的某个值时为perspective透视投影
-            float coeff = m_camera->getHeightAboveGround() / perspectiveEdge_;
-            qreal fixFov = m_camera->fov() + m_camera->fov() * coeff;
-            // qDebug() << "coeff: " << coeff << "............  :fixFov:" <<fixFov;
-            currProj.perspective(fixFov, aspectRatio, nearPlanePersp_, farPlanePersp_);
-        }
-        else {  //当地图等级小于14的某个值时为ortho正交投影
-            float orthV = m_camera->getHeightAboveGround();
-            // qDebug() << "orthV:.........." << orthV << "        aspectRatio:" << aspectRatio;
-            currProj.ortho(-orthV*aspectRatio, orthV*aspectRatio, -orthV, orthV, orthV*nearPlaneOrthoCoeff_, orthV*farPlaneOrthoCoeff_);
-        }
-
-        m_projection = std::move(currProj);
-    }
-}
-
 void GraphicsScene3dView::setNeedToResetStartPos(bool state)
 {
     needToResetStartPos_ = state;
@@ -721,7 +674,7 @@ void GraphicsScene3dView::ensureInView(const QVector3D& worldPos)
 
     float viewRadius;
     if (m_camera->getIsPerspective()) {
-        const float halfFovRad = m_camera->fov() * 0.5f * M_PI / 180.0f;
+        const float halfFovRad = qDegreesToRadians(m_camera->fov() * 0.5f);
         viewRadius = m_camera->distToFocusPoint() * std::tan(halfFovRad);
     }
     else {
@@ -758,7 +711,6 @@ void GraphicsScene3dView::focusTrackBounds()
     // 轨迹区域占70%
     constexpr float VIEW_RATIO = 0.70f;
     float targetViewSize = maxSize / VIEW_RATIO;
-
 
     //正交模式
     if(!m_camera->getIsPerspective()) {
@@ -799,7 +751,7 @@ void GraphicsScene3dView::fitAllInView()
 {
     auto maxSize = std::max(m_bounds.width(), std::max(m_bounds.height(), m_bounds.length()));
     auto d = (maxSize/2.0f)/(std::tan(m_camera->fov() * 0.5f)) * 2.0f;
-    if(d>0) m_camera->setDistance(d);
+    if(d > 0) m_camera->setDistance(d);
 
     m_camera->focusOnPosition(m_bounds.center());
 
@@ -983,11 +935,28 @@ void GraphicsScene3dView::setQmlRootObject(QObject* object)
     polygonOutline_->setQmlRootObject(object);
 }
 
+void GraphicsScene3dView::updateProjection()
+{
+    QMatrix4x4 currProjection;
+    if (m_camera) {
+        float aspectRatio = static_cast<float>(width()) / height();
+        if (m_camera->getIsPerspective()) {
+            float coeff = m_camera->getHeightAboveGround() / perspectiveEdge_;
+            qreal fixFov = m_camera->fov() + m_camera->fov() * coeff;
+            currProjection.perspective(fixFov, aspectRatio, nearPlanePersp_, farPlanePersp_);
+        }
+        else {
+            float orthV = m_camera->getHeightAboveGround();
+            currProjection.ortho(-orthV*aspectRatio, orthV*aspectRatio, -orthV, orthV, orthV*nearPlaneOrthoCoeff_, orthV*farPlaneOrthoCoeff_);
+        }
+
+        m_projection = std::move(currProjection);
+    }
+}
+
 void GraphicsScene3dView::updateBounds()
 {
-    // qDebug() << "GraphicsScene3dView::updateBounds........";
-    m_bounds = boatTrack_->bounds()
-                   .merge(isobathsView_->bounds())
+    m_bounds = boatTrack_->bounds().merge(isobathsView_->bounds())
                    .merge(m_bottomTrack->bounds())
                    .merge(polygonOutline_->bounds())
                    .merge(m_polygonGroup->bounds())
@@ -1005,52 +974,80 @@ void GraphicsScene3dView::updatePlaneGrid()
 
 void GraphicsScene3dView::calculateLatLong(qreal x, qreal y, double& latitude, double& longitude)
 {
-    // 1. 用完整矩阵 unproject（必须乘 model）
-    QVector3D rayOrigin = QVector3D(x, height() - y, -1.0f) .unproject(m_camera->m_view * m_model,
-                                    m_projection,boundingRect().toRect());
-
-    QVector3D rayEnd = QVector3D(x, height() - y, 1.0f) .unproject(m_camera->m_view * m_model,
-                                    m_projection, boundingRect().toRect());
-
-    QVector3D rayDir = (rayEnd - rayOrigin).normalized();
-
-    // 2. 地面高度必须正确
-    float groundZ = 0.0f;
-    QVector3D hitPoint = calculateIntersectionPoint(rayOrigin, rayDir, groundZ);
+    QVector3D hitPoint = convertToWorldCoor(x, y);
     if (hitPoint == QVector3D())  return;
 
-    // 3. hitPoint 本身就是 North_East_Down 坐标（不要减相机）
+    // hitPoint 本身就是 North_East_Down 坐标（不要减相机）
     North_East_Down ned;
     ned.n = hitPoint.x();
     ned.e = hitPoint.y();
     ned.d = 0.0;
 
-    // 4. 转换成经纬度
     LLA lla(&ned, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
     mapView_->setViewLlaRef(m_camera->viewLlaRef_);
 
     latitude  = lla.latitude;
     longitude = lla.longitude;
-
-    // qDebug() << "mouseTrigger x:" << x << "   y:" << y << "   lati:" << lla.latitude << "   long:" << lla.longitude;
 }
 
-QVector3D GraphicsScene3dView::calculateToWorldCoor(qreal x, qreal y)
+QVector3D GraphicsScene3dView::convertToWorldCoor(qreal x, qreal y)
 {
+/*
+    一个屏幕像素(x, y)对应3D场景中的无数个点（这条视线上的所有点都投影到同一像素）
+    它是一条 射线 ，不是一个点。要得到唯一坐标，必须额外约束：与地面（groundZ = 0.0f平面）的交点 。
+*/
     QVector3D rayOrigin = QVector3D(x, height() - y, -1.0f)
-                            .unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
+                            .unproject(m_camera->m_viewMatrix * m_model, m_projection, boundingRect().toRect());
     QVector3D rayEnd = QVector3D(x, height() - y, 1.0f)
-                            .unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
+                            .unproject(m_camera->m_viewMatrix * m_model, m_projection, boundingRect().toRect());
     QVector3D rayDir = (rayEnd - rayOrigin).normalized();
 
     float groundZ = 0.0f;
     return calculateIntersectionPoint(rayOrigin, rayDir, groundZ);
 }
 
+QVector3D GraphicsScene3dView::calculateIntersectionPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float planeZ)
+{
+    QVector3D retVal;
+
+    if (qAbs(rayDirection.z()) < 1e-6) {
+        return retVal;
+    }
+    const float t = (planeZ - rayOrigin.z()) / rayDirection.z();
+    if (t < 0) {
+        return retVal;
+    }
+    retVal = rayOrigin + rayDirection * t;
+
+    return retVal;
+}
+
+double GraphicsScene3dView::calculateGroundDistance(const QPointF& p1, const QPointF& p2)
+{
+    double lati1, lon1, lati2, lon2 ;
+    calculateLatLong(p1.x(), p1.y(), lati1, lon1);
+    calculateLatLong(p2.x(), p2.y(), lati2, lon2);
+    if (!qIsFinite(lati1) || !qIsFinite(lon1) || !qIsFinite(lati2) || !qIsFinite(lon2)) {
+        return 0.0;
+    }
+
+    LLA lla1(lati1, lon1, 0.0);
+    LLA lla2(lati2, lon2, 0.0);
+    //固定使用球面换算，不随投影模式切换，结果为真实地面距离
+    North_East_Down ned1(&lla1, &m_camera->viewLlaRef_, true);
+    North_East_Down ned2(&lla2, &m_camera->viewLlaRef_, true);
+    const double dn = ned2.n - ned1.n;
+    const double de = ned2.e - ned1.e;
+    return std::sqrt(dn * dn + de * de);
+}
+
+
 void GraphicsScene3dView::updateDistance()
 {
-    QVector3D origin = calculateToWorldCoor(16, 16);
-    QVector3D end    = calculateToWorldCoor(16 + screetShot_.rulerBar_, 16);
+    updateProjection();
+
+    QVector3D origin = convertToWorldCoor(16, 16);
+    QVector3D end    = convertToWorldCoor(16 + screetShot_.rulerBar_, 16);
     const float dx   = (end.x() - origin.x());
     const float dy   = (end.y() - origin.y());
     double dist = std::sqrt(dx * dx + dy * dy);
@@ -1058,13 +1055,7 @@ void GraphicsScene3dView::updateDistance()
 
     /*------- 测距模块 -------*/
     if(screetShot_.isDistMeasureMode_) {
-        QPointF p1 = screetShot_.getDistLineP1();
-        QPointF p2 = screetShot_.getDistLineP2();
-        QVector3D worldCoorOrigin = calculateToWorldCoor(p1.x(), p1.y());
-        QVector3D worldCoorEnd    = calculateToWorldCoor(p2.x(), p2.y());
-        const float dx = (worldCoorEnd.x() - worldCoorOrigin.x());
-        const float dy = (worldCoorEnd.y() - worldCoorOrigin.y());
-        double dist = std::sqrt(dx * dx + dy * dy);
+        double dist = calculateGroundDistance(screetShot_.getDistLineP1(), screetShot_.getDistLineP2());
         emit screetShot_.signalStartToEndDist(dist);
     }
 }
@@ -1082,10 +1073,10 @@ void GraphicsScene3dView::updateMapView()
 
     float reductorFactor = -0.05f;
     QVector<QPair<float, float>> cornerMultipliers = {
-        {       reductorFactor,         reductorFactor },   // lt
-        {       reductorFactor,  1.0f - reductorFactor },   // lb
-        {1.0f - reductorFactor,  1.0f - reductorFactor },   // rb
-        {1.0f - reductorFactor,         reductorFactor }    // rt
+        {       reductorFactor,         reductorFactor },   // left_top
+        {       reductorFactor,  1.0f - reductorFactor },   // left_bottom
+        {1.0f - reductorFactor,  1.0f - reductorFactor },   // right_bottom
+        {1.0f - reductorFactor,         reductorFactor }    // right_top
     };
 
     updateProjection();
@@ -1102,13 +1093,11 @@ void GraphicsScene3dView::updateMapView()
 
         QVector3D point;
         if (m_camera->getIsPerspective()) {
-            auto toOrigin = QVector3D(currWidth, currHeight, -1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-            auto toEnd = QVector3D(currWidth, currHeight,  1.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
-            auto toDist = (toEnd - toOrigin).normalized();
-            point = calculateIntersectionPoint(toOrigin, toDist, 0);
+            point = convertToWorldCoor(currWidth, height() - currHeight);
         }
         else {
-            point = QVector3D(currWidth, currHeight, 0.0f).unproject(m_camera->m_view * m_model, m_projection, boundingRect().toRect());
+            point = QVector3D(currWidth, currHeight, 0.0f)
+                        .unproject(m_camera->m_viewMatrix * m_model, m_projection, boundingRect().toRect());
         }
 
         if (point == QVector3D()) {
@@ -1194,7 +1183,6 @@ void GraphicsScene3dView::updateViews()
     }
 }
 
-
 void GraphicsScene3dView::onPositionAdded(uint64_t indx)
 {
     // qDebug() << "GraphicsScene3dView::onPositionAdded........";
@@ -1237,7 +1225,6 @@ void GraphicsScene3dView::setIsNorth(bool state)
     emit cameraIsMoved();
 }
 
-
 void GraphicsScene3dView::slotScreetGraphics()
 {
     double minLat = std::min({screetShot_.topLeftLati_, screetShot_.bottomRightLati_});
@@ -1255,8 +1242,10 @@ void GraphicsScene3dView::slotScreetGraphics()
 
     LLA topLeftLla(maxLat, minLon, 0.0);
     LLA bottomRightLla(minLat, maxLon, 0.0);
-    North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
-    North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
+    bool isPerspective = m_camera->getIsPerspective();
+    North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, isPerspective);
+    North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, isPerspective);
+    qDebug() << "screetShot_.getPerspective()" << screetShot_.getPerspective() << "  " << isPerspective;
 
     // 在 NED 坐标系中计算宽度和高度（使用平面距离）
     double geoWidth  = std::abs(bottomRightNed.e - topLeftNed.e);
@@ -1270,12 +1259,12 @@ void GraphicsScene3dView::slotScreetGraphics()
     double centerLon = (minLon + maxLon) * 0.5;
     // 不修改 viewLlaRef_，只移动 lookAt
     LLA targetCenterLla(centerLat, centerLon, 0.0);
-    North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
+    North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, isPerspective);
     m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
 
     // double targetHeight = std::max(geoWidth, geoHeight) * 0.5;
     // 计算对应目标地图级别的高度值
-    double targetHeight = TILE_CONSTANT / std::pow(2.0, 21);
+    double targetHeight  = TILE_CONSTANT / std::pow(2.0, 21);
     m_camera->m_distToFocusPoint = static_cast<float>(targetHeight);
     m_camera->distForMapView_    = static_cast<float>(targetHeight);
     m_camera->distToGround_      = static_cast<float>(targetHeight);
@@ -1288,19 +1277,17 @@ void GraphicsScene3dView::slotScreetGraphics()
     request.append(LLA(minLat, maxLon, targetHeight));
     request.append(LLA(minLat, minLon, targetHeight));
     emit sendRectRequest(request, m_camera->getIsPerspective(), m_camera->viewLlaRef_, true);
-    // GIF->dialogInfo(Dialog_Loading, "show");
     if(progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "open");
         QMetaObject::invokeMethod(progressDialog_, "setTitle", Q_ARG(QVariant, tr("Screenshot")));
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("正在请求目标瓦片...")));
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Requesting Tile...")));
     }
 }
 
 void GraphicsScene3dView::onTargetTilesLoaded()
 {
-    qDebug() << "onTargetTilesLoaded............";
     if (progressDialog_) {
-        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("目标瓦片请求完成")));
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Tile Request Completed")));
     }
     screenshotPending_ = true;
     QQuickFramebufferObject::update();
@@ -1351,17 +1338,16 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     QOpenGLContext* ctx = QOpenGLContext::currentContext();
     QOpenGLFunctions* func = ctx ? ctx->functions() : nullptr;
     if (!ctx || !func || !progressDialog) {
-        qCritical() << "[FAIL] No OpenGL context!";
         return false;
     }
 
-    // float metersPerPixel = TILE_CONSTANT / std::pow(2.0, task.mapLevel) / 256.0;
-    float metersPerPixel = TILE_CONSTANT / std::pow(2.0, 21) / 256.0;
+    float metersPerPixel = TILE_CONSTANT / std::pow(2.0, task.mapLevel) / 256.0;
+    // float metersPerPixel = TILE_CONSTANT / std::pow(2.0, 21) / 256.0;
     int pixelWidth  = static_cast<int>(task.geoWidth / metersPerPixel);
     int pixelHeight = static_cast<int>(task.geoHeight / metersPerPixel);
 
     // 划分300m × 300m的小正方形
-    constexpr double CHUNK_SIZE_METERS = 300.0;
+    constexpr int CHUNK_SIZE_METERS = 300;
     int rows = static_cast<int>(std::ceil(task.geoWidth  / CHUNK_SIZE_METERS));  // 经度方向（东西）
     int cols = static_cast<int>(std::ceil(task.geoHeight / CHUNK_SIZE_METERS));  // 纬度方向（南北）
     int chunkPixelWidth  = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
@@ -1399,14 +1385,12 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     func->glFinish();
     GLenum status = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE) {
-        // GIF->dialogInfo(Dialog_OK, tr("Loading failed, please try again."));
-        // return false;
         progressDialog->setProperty("showCancelButton", true);
         QMetaObject::invokeMethod(progressDialog, "setStatus", Q_ARG(QVariant, tr("Loading failed, please try again.")));
         return false;
     }
     progressDialog->setProperty("showCancelButton", false);
-    QMetaObject::invokeMethod(progressDialog, "setStatus", Q_ARG(QVariant, tr("正在生成.kmz文件")));
+    QMetaObject::invokeMethod(progressDialog, "setStatus", Q_ARG(QVariant, tr("Generating KMZ File...")));
 
 #ifdef Q_OS_WIN
     QImage fullResult = QImage(pixelWidth, pixelHeight, QImage::Format_RGB32);
@@ -1599,6 +1583,7 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
 
 void GraphicsScene3dView::InFboRenderer::synchronize(QQuickFramebufferObject* fbo)
 {
+    // qDebug() << "synchronize..........";
     //仅在 synchronize()中，将 Item 的属性复制到 Renderer 的成员变量中
     GraphicsScene3dView* graphicsView = qobject_cast<GraphicsScene3dView*>(fbo);  //线程安全：GUI线程在此处被阻塞
     if (!graphicsView) {
@@ -1760,8 +1745,8 @@ GraphicsScene3dView::Camera::Camera(GraphicsScene3dView* viewPtr) : viewPtr_(vie
     setMapView();
 }
 
-GraphicsScene3dView::Camera::Camera(qreal pitch, qreal yaw, qreal distToFocusPoint, qreal fov, qreal sensivity)
-    :m_fov(std::move(fov)) ,m_distToFocusPoint(std::move(distToFocusPoint)) ,distForMapView_(m_distToFocusPoint)
+GraphicsScene3dView::Camera::Camera(qreal pitch, qreal yaw, qreal distToFocusPoint, qreal sensivity)
+    :m_distToFocusPoint(distToFocusPoint), distForMapView_(m_distToFocusPoint)
 {
    setIsometricView();
 }
@@ -1790,8 +1775,7 @@ void GraphicsScene3dView::Camera::rotate(const QVector2D& lastMouse, const QVect
 
     tryResetRotateAngle();
     checkRotateAngle();
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::rotate(const QPointF& prevCenter, const QPointF& currCenter, qreal angleDelta, qreal widgetHeight)
@@ -1804,8 +1788,7 @@ void GraphicsScene3dView::Camera::rotate(const QPointF& prevCenter, const QPoint
 
     tryResetRotateAngle();
     checkRotateAngle();
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::move(const QVector2D &startPos, const QVector2D &endPos)
@@ -1818,24 +1801,22 @@ void GraphicsScene3dView::Camera::move(const QVector2D &startPos, const QVector2
 
     m_lookAt = m_lookAtSave + m_deltaOffset;
 
-    updateCameraParams();
     tryToChangeViewLlaRef();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::resetZAxis()
 {
     m_lookAt.setZ(0);
 
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::moveZAxis(float z)
 {
     float xCamera = -sinf(m_rotAngle.y()) * cosf(-m_rotAngle.x()) * m_distToFocusPoint;
     float yCamera = -sinf(m_rotAngle.y()) * sinf(-m_rotAngle.x()) * m_distToFocusPoint;
-    float zCamera = cosf(m_rotAngle.y()) * m_distToFocusPoint;
+    float zCamera =  cosf(m_rotAngle.y()) * m_distToFocusPoint;
     float currLookAtHeight = -(m_lookAt.z() + z);
     float currCameraHeight = zCamera + currLookAtHeight;
 
@@ -1850,8 +1831,7 @@ void GraphicsScene3dView::Camera::moveZAxis(float z)
 
     m_lookAt.setZ(m_lookAt.z() + z);
 
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::zoom(qreal delta)
@@ -1880,7 +1860,7 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
 
     bool preIsPersp{ false };
     distToGround_ = std::max(0.0f, std::fabs(-cosf(m_rotAngle.y()) * m_distToFocusPoint));
-    float perspEdge = viewPtr_ ? viewPtr_->perspectiveEdge_ : 5000.0f;
+    float perspEdge = viewPtr_ ? viewPtr_->perspectiveEdge_ : HIGH_DIST_THRESHOLD;
     preIsPersp = distToGround_ < perspEdge;
     bool projectionChanged    =  isPerspective_ !=  preIsPersp;
 
@@ -1916,10 +1896,8 @@ void GraphicsScene3dView::Camera::zoom(qreal delta)
         m_rotAngle = {0.0f, 0.0f};
     }
 
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
-
 
 void GraphicsScene3dView::Camera::zoomAndroid(qreal delta)
 {
@@ -1939,7 +1917,7 @@ void GraphicsScene3dView::Camera::zoomAndroid(qreal delta)
 
     bool preIsPersp{ false };
     distToGround_ = std::max(0.0f, std::fabs(-cosf(m_rotAngle.y()) * m_distToFocusPoint));
-    float perspEdge = viewPtr_ ? viewPtr_->perspectiveEdge_ : 5000.0f;
+    float perspEdge = viewPtr_ ? viewPtr_->perspectiveEdge_ : HIGH_DIST_THRESHOLD;
     preIsPersp = distToGround_ < perspEdge;
     bool projectionChanged    =  isPerspective_ !=  preIsPersp;
 
@@ -1970,34 +1948,21 @@ void GraphicsScene3dView::Camera::zoomAndroid(qreal delta)
         m_rotAngle = { 0.0f, 0.0f };
     }
 
-    updateCameraParams();
-    updateViewMatrix();
-}
-
-void GraphicsScene3dView::Camera::commitMovement()
-{
-    m_lookAt += m_deltaOffset;
-    m_deltaOffset = QVector3D();
-
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::focusOnPosition(const QVector3D &point)
 {
     m_lookAt = point;
-
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::setDistance(qreal distance)
 {
     m_distToFocusPoint = distance;
-    distForMapView_ = m_distToFocusPoint;
+    distForMapView_    = m_distToFocusPoint;
 
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::setIsometricView()
@@ -2007,8 +1972,7 @@ void GraphicsScene3dView::Camera::setIsometricView()
     m_rotAngle.setX(qDegreesToRadians(135.0f));
     m_rotAngle.setY(qDegreesToRadians(45.0f));
 
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::setMapView()
@@ -2027,7 +1991,6 @@ void GraphicsScene3dView::Camera::reset()
 
     m_deltaOffset = {0.0f, 0.0f, 0.0f};
 
-    m_fov = 45.f;
     m_distToFocusPoint = 3050.f;
     distForMapView_ = m_distToFocusPoint;
 
@@ -2035,16 +1998,14 @@ void GraphicsScene3dView::Camera::reset()
     angleToGround_ = 0.0f;
     isPerspective_ = false;
 
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::resetRotationAngle()
 {
     m_rotAngle = {0.0f, 0.0f};
 
-    updateCameraParams();
-    updateViewMatrix();
+    updateCameraAndViewMatrix();
 }
 
 void GraphicsScene3dView::Camera::setStartupInitLla(LLA lla)
@@ -2057,12 +2018,9 @@ void GraphicsScene3dView::Camera::updateCameraParams()
 {
     distToGround_ = std::max(0.0f, std::fabs(-cosf(m_rotAngle.y()) * m_distToFocusPoint));
 
-    float perspEdge = 5000.f;
-    if (viewPtr_) {
-        perspEdge = viewPtr_->perspectiveEdge_;
+    if(viewPtr_) {
+        isPerspective_ = distToGround_ < viewPtr_->perspectiveEdge_;
     }
-
-    isPerspective_ = distToGround_ < perspEdge;
 }
 
 void GraphicsScene3dView::Camera::tryToChangeViewLlaRef()
@@ -2092,28 +2050,27 @@ void GraphicsScene3dView::Camera::tryToChangeViewLlaRef()
 
 void GraphicsScene3dView::Camera::updateViewMatrix()
 {
-    QVector3D cf; //从焦点指向相机的偏移向量
-    cf[0] = -sinf(m_rotAngle.y())*cosf(-m_rotAngle.x())*m_distToFocusPoint;
-    cf[1] = -sinf(m_rotAngle.y())*sinf(-m_rotAngle.x())*m_distToFocusPoint;
-    cf[2] = -cosf(m_rotAngle.y())*m_distToFocusPoint;
+    QVector3D cameraOffset; //从焦点指向相机的偏移向量
+    cameraOffset[0] = -sinf(m_rotAngle.y())*cosf(-m_rotAngle.x())*m_distToFocusPoint;  // n（北）
+    cameraOffset[1] = -sinf(m_rotAngle.y())*sinf(-m_rotAngle.x())*m_distToFocusPoint;  // e（东）
+    cameraOffset[2] = -cosf(m_rotAngle.y())*m_distToFocusPoint;                        // z（下）
 
     if (!isPerspective_) {
         m_rotAngle = QVector2D();
     }
 
-    QVector3D cu; //相机的up向量
-    cu[0] = cosf(m_rotAngle.y())*cosf(-m_rotAngle.x());
-    cu[1] = cosf(m_rotAngle.y())*sinf(-m_rotAngle.x());
-    cu[2] = -sinf(m_rotAngle.y());
+    QVector3D cameraUp; //相机的up向量
+    cameraUp[0] = cosf(m_rotAngle.y())*cosf(-m_rotAngle.x());
+    cameraUp[1] = cosf(m_rotAngle.y())*sinf(-m_rotAngle.x());
+    cameraUp[2] = -sinf(m_rotAngle.y());
 
-    angleToGround_ = 90.f * std::fabs(cu.z());
+    angleToGround_ = 90.f * std::fabs(cameraUp.z());
 
-    QMatrix4x4 view;
-    //LookAt函数：创建一个看着给定目标的观察矩阵。三个参数，相机位置、相机看的点位(焦点）、相机上向量up
-    view.lookAt(cf + m_lookAt, m_lookAt, cu.normalized());
-    view.scale(1.0f,1.0f,-1.0f);
-
-    m_view = std::move(view);
+    QMatrix4x4 viewMatrix;
+    //LookAt函数：创建一个看着给定目标的观察/视图矩阵。三个参数，相机位置、相机看的点位(焦点）、相机上向量up
+    viewMatrix.lookAt(cameraOffset + m_lookAt, m_lookAt, cameraUp.normalized());
+    viewMatrix.scale(1.0f, 1.0f, -1.0f);
+    m_viewMatrix = std::move(viewMatrix);
 }
 
 void GraphicsScene3dView::Camera::checkRotateAngle()
@@ -2128,11 +2085,17 @@ void GraphicsScene3dView::Camera::checkRotateAngle()
     */
 }
 
+void GraphicsScene3dView::Camera::updateCameraAndViewMatrix()
+{
+    updateCameraParams();
+    updateViewMatrix();
+}
+
 void GraphicsScene3dView::Camera::tryResetRotateAngle()
 {
     bool preIsPersp{ false };
     distToGround_ = std::max(0.0f, std::fabs(-cosf(m_rotAngle.y()) * m_distToFocusPoint));
-    float perspEdge = viewPtr_ ? viewPtr_->perspectiveEdge_ : 5000.0f;
+    float perspEdge = viewPtr_ ? viewPtr_->perspectiveEdge_ : HIGH_DIST_THRESHOLD;
     preIsPersp = distToGround_ < perspEdge;
     bool projectionChanged = isPerspective_ != preIsPersp;
     if (projectionChanged && isPerspective_) {

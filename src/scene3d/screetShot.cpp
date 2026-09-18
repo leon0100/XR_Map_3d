@@ -59,9 +59,9 @@ void ScreetShot::setSelectionRect(const QRectF rect)
     North_East_Down topLeftNed(&topLeftLla, &viewLlaRef_, isPerspective_);
     LLA bottomRightLla(bottomRightLati_, bottomRightLong_, 0.0);
     North_East_Down bottomRightNed(&bottomRightLla, &viewLlaRef_, isPerspective_);
-    topWidth_    = std::abs(bottomRightNed.e - topLeftNed.e); // 宽度（米）
-    rightHeight_ = std::abs(bottomRightNed.n - topLeftNed.n); // 高度（米）
-    // qDebug() << "topWidth_:" << topWidth_ << "   rightHeight_:" << rightHeight_;
+    topWidth_    = std::abs(bottomRightNed.e - topLeftNed.e); // 米
+    rightHeight_ = std::abs(bottomRightNed.n - topLeftNed.n); // 米
+    qDebug() << "topWidth_:" << topWidth_ << "   rightHeight_:" << rightHeight_ << " isPerspective_" << isPerspective_;
 
     QString topWidthStr    = getLengthChEn(topWidth_);
     QString rightHeightStr = getLengthChEn(rightHeight_);
@@ -121,6 +121,11 @@ void ScreetShot::setLLARef(LLARef viewLlaRef, bool isPerspective)
 {
     viewLlaRef_ = viewLlaRef;
     isPerspective_ = isPerspective;
+}
+
+bool ScreetShot::getPerspective()
+{
+    return isPerspective_;
 }
 
 float ScreetShot::mapLevelToDistance(int level) const

@@ -120,7 +120,7 @@ public:
     float mapLevelToDistance(int level) const;
 
     void setLLARef(LLARef viewLlaRef, bool isPerspective);
-
+    bool getPerspective();
     bool isMapLevelChooseVisible() const;
     void setMapLevelChooseVisible(bool visible);
 

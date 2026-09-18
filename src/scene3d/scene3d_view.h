@@ -21,7 +21,6 @@
 #include "polygon_outline.h"
 
 
-
 /*
  * 在大多数平台上，渲染将在专用线程上进行。因此，QQuickFramebufferObject 类在 QML Item实现和FBO呈现之间强制执行严格的分离。
  * QML所需的所有Item逻辑，例如属性和与 UI相关的辅助函数，都应该位于QQuickFramebufferObject类的子类GraphicsScene3dView中;
@@ -36,10 +35,10 @@ class GraphicsScene3dView : public QQuickFramebufferObject
     QML_NAMED_ELEMENT(GraphicsScene3dView)
 
 public:
-    Q_PROPERTY(double currLat READ getCurrLat NOTIFY currentLatChanged)
-    Q_PROPERTY(double currLon READ getCurrLon NOTIFY currentLonChanged)
-    Q_PROPERTY(Qt::CursorShape cursorShape READ cursorShape WRITE setCursorShape NOTIFY cursorShapeChanged)
-    Q_PROPERTY(bool outlineCompleted READ outlineCompleted  NOTIFY outlineCompletedChanged)
+    Q_PROPERTY(double currLat  READ getCurrLat  NOTIFY currentLatChanged)
+    Q_PROPERTY(double currLon  READ getCurrLon  NOTIFY currentLonChanged)
+    Q_PROPERTY(Qt::CursorShape cursorShape  READ cursorShape  WRITE setCursorShape  NOTIFY cursorShapeChanged)
+    Q_PROPERTY(bool outlineCompleted        READ outlineCompleted              NOTIFY outlineCompletedChanged)
 
 
     //Camera
@@ -47,7 +46,7 @@ public:
     {
     public:
         explicit Camera(GraphicsScene3dView* viewPtr = nullptr);
-        Camera(qreal pitch, qreal yaw, qreal distToFocusPoint, qreal fov, qreal sensivity);
+        Camera(qreal pitch, qreal yaw, qreal distToFocusPoint, qreal sensivity);
 
         float distForMapView() const;
         qreal distToFocusPoint() const;
@@ -62,7 +61,6 @@ public:
         void moveZAxis(float z);
         void zoom(qreal delta);
         void zoomAndroid(qreal delta);
-        void commitMovement();
         void focusOnPosition(const QVector3D& pos);
         void setDistance(qreal distance);
         void setIsometricView();
@@ -78,9 +76,14 @@ public:
 
 
     private:
-        void updateCameraParams();
         void tryToChangeViewLlaRef();
+        void updateCameraParams();
+        /*
+         * 欧拉角包括3D空间中任何旋转的3个值，一共有3种欧拉角：
+         * 1、俯仰角(Pitch)，绕X轴旋转；  2、偏航角(Yaw)，绕Y轴旋转；  3、滚转角(Roll)，绕Z轴旋转。
+        */
         void updateViewMatrix(); //通过欧拉角和距离参数，计算相机在3D空间中的位置和方向
+        void updateCameraAndViewMatrix();
         void checkRotateAngle();
         void tryResetRotateAngle();
 
@@ -93,22 +96,22 @@ public:
         QVector3D m_lookAt = {0.0f, 0.0f, 0.0f}; //焦点（注视目标点），轨道中心。平移操作移动的就是它
         QVector3D m_lookAtSave = {0.0f, 0.0f, 0.0f};
 
-        QMatrix4x4 m_view;
+        QMatrix4x4 m_viewMatrix; // 视图（观察）矩阵
 
         QVector3D m_offset;
         QVector3D m_deltaOffset;
 
-        qreal m_fov = 45.f;
+        qreal m_fov = 45.f; // 视野(Field of View)
         float m_distToFocusPoint = 50.f;
         float distForMapView_ = m_distToFocusPoint;
-        float distToGround_ = 0.0f;
-        float angleToGround_ = 0.0f;
-        bool  isPerspective_ = false;
-        float highDistThreshold_ = 5000.0f;
+        float distToGround_   = 0.0f;
+        float angleToGround_  = 0.0f;
+        bool  isPerspective_  = false;
+        float highDistThreshold_ = HIGH_DIST_THRESHOLD;
         float lowDistThreshold_ = highDistThreshold_ * 0.9f;
         /*
-         * m_rotAngle.x():相机方位角，绕垂直轴。可多圈旋转，相机绕焦点水平转了多少度，决定“从哪个方向看”
-         * m_rotAngle.y():相机俯仰角，从天顶算起的偏角。[0, π/2]，0=正俯视（天顶往下看），π/2=水平贴地看
+         * m_rotAngle.x():相机方位角，       绕Z轴旋转，相机绕焦点水平转了多少度，决定“从哪个方向看”
+         * m_rotAngle.y():相机俯仰角(Pitch)，绕X轴旋转，从天顶算起的偏角。0=正俯视（天顶往下看），π/2=水平贴地看
         */
         QVector2D m_rotAngle;
         GraphicsScene3dView* viewPtr_ = nullptr;
@@ -116,6 +119,7 @@ public:
         LLA startupInitLla = LLA(32.262781f, 118.702785f, 0.0f);
 
     public:
+        //是当前NED局部平面坐标系的地理原点(局部坐标)，视图里所有NED坐标（北/东/下的米制坐标）都以这个参考点的经纬度为原点计算
         LLARef viewLlaRef_ = LLARef(startupInitLla);
     };
 
@@ -145,9 +149,7 @@ public:
         friend class GraphicsScene3dView;
 
         void processMapTextures(GraphicsScene3dView* viewPtr) const; // maps
-
         void processImageTexture(GraphicsScene3dView* viewPtr) const;  // image
-
         void processSurfaceTexture(GraphicsScene3dView* viewPtr) const; // surface
 
         QString checkOpenGLError() const;
@@ -174,10 +176,6 @@ public:
 
     virtual ~GraphicsScene3dView();
 
-    /*
-     * @brief Creates renderer
-     * @return renderer
-     */
     Renderer *createRenderer() const override;
     std::shared_ptr<BoatTrack>       getBoatTrackPtr() const;
     std::shared_ptr<BottomTrack>     bottomTrack() const;
@@ -200,8 +198,6 @@ public:
     bool outlineCompleted() const { return outlineCompleted_; }
     void setOutlineCompleted(bool completed) { outlineCompleted_ = completed; emit outlineCompletedChanged();}
     void clear(bool isClearTrack, bool cleanMap = false);
-    QVector3D calculateIntersectionPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float planeZ);
-    void updateProjection();
     void setNeedToResetStartPos(bool state);
     void forceUpdateDatasetLlaRef();
     void ensureInView(const QVector3D& worldPos);
@@ -267,10 +263,13 @@ signals:
     void outlineCompletedChanged();
 
 private:
+    void updateProjection();
     void updateBounds();
     void updatePlaneGrid();
+    QVector3D calculateIntersectionPoint(const QVector3D &rayOrigin, const QVector3D &rayDirection, float planeZ);
     void calculateLatLong(qreal x, qreal y, double& latitude, double& longitude);
-    QVector3D calculateToWorldCoor(qreal x, qreal y);
+    QVector3D convertToWorldCoor(qreal x, qreal y);
+    double calculateGroundDistance(const QPointF& p1, const QPointF& p2);
     void updateDistance();
 
 private:
@@ -312,7 +311,7 @@ private:
     static constexpr double mouseThreshold_{ 10.0 };
 #endif
 
-    float perspectiveEdge_{ 5000.0f };
+    const float perspectiveEdge_{ HIGH_DIST_THRESHOLD };
     static constexpr float nearPlanePersp_{ 1.0f };
     static constexpr float farPlanePersp_{ 20000.0f };
     static constexpr float nearPlaneOrthoCoeff_{ 0.05f };

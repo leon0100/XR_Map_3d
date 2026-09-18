@@ -171,7 +171,6 @@ void IsobathsProcessor::fullRebuildLinesLabels()
             }
         }
     }
-    qDebug() << "tris_................" << tris_.size();
 
     if (vertPool_.empty()) {
         return;
@@ -181,7 +180,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
 
     QHash<int, IsobathsSegVec> segsByLvl;
 
-    for (const TrIndxs& t : tris_) {  // 三角形的交点
+    for (const TrIndxs& t : tris_) {  // 三角形交点
         const QVector3D  A  = vertPool_[t.a];
         const QVector3D  B  = vertPool_[t.b];
         const QVector3D  C  = vertPool_[t.c];
@@ -297,7 +296,7 @@ void IsobathsProcessor::fullRebuildLinesLabels()
 //把杂乱等深线段拼接成最大连续折线
 void IsobathsProcessor::buildPolylines(const IsobathsSegVec& segs, IsobathsPolylines& polys) const
 {
-    constexpr float EPS = 0.05f; // 5 см
+    constexpr float EPS = 0.05f; // 5cm
     auto eq = [&](const QVector3D& a, const QVector3D& b) {
         return (a - b).lengthSquared() < (EPS * EPS);
     };
@@ -350,7 +349,7 @@ void IsobathsProcessor::buildPolylines(const IsobathsSegVec& segs, IsobathsPolyl
     }
 }
 
-// 新增20260328：平滑折线，减少锯齿和碎片
+// 滑折线，减少锯齿和碎片
 void IsobathsProcessor::smoothPolyline(QList<QVector3D>& poly) const
 {
     if (poly.size() < 3) {
