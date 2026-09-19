@@ -325,6 +325,8 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
                 std::min(screetShot_.startPos_.y(), currentPos.y()), std::abs(width), std::abs(height));
                 calculateLatLong(shotRect.topLeft().x(), shotRect.topLeft().y(),
                                 screetShot_.topLeftLati_,screetShot_.topLeftLong_);
+                calculateLatLong(shotRect.topRight().x(), shotRect.topRight().y(),
+                                 screetShot_.topRightLati_, screetShot_.topRightLong_);
                 calculateLatLong(shotRect.bottomRight().x(), shotRect.bottomRight().y(),
                                 screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
                 screetShot_.setSelectionRect(shotRect);
@@ -337,6 +339,8 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
                 screetShot_.resizeMode(screetShot_.shotRect_, pos);
                 calculateLatLong(screetShot_.shotRect_.topLeft().x(), screetShot_.shotRect_.topLeft().y(),
                                 screetShot_.topLeftLati_, screetShot_.topLeftLong_);
+                calculateLatLong(screetShot_.shotRect_.topRight().x(), screetShot_.shotRect_.topRight().y(),
+                                 screetShot_.topRightLati_, screetShot_.topRightLong_);
                 calculateLatLong(screetShot_.shotRect_.bottomRight().x(), screetShot_.shotRect_.bottomRight().y(),
                                 screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
                 screetShot_.setSelectionRect(screetShot_.shotRect_);
@@ -994,7 +998,7 @@ QVector3D GraphicsScene3dView::convertToWorldCoor(qreal x, qreal y)
 {
 /*
     一个屏幕像素(x, y)对应3D场景中的无数个点（这条视线上的所有点都投影到同一像素）
-    它是一条 射线 ，不是一个点。要得到唯一坐标，必须额外约束：与地面（groundZ = 0.0f平面）的交点 。
+    它是一条射线，不是一个点。要得到唯一坐标，必须额外约束：与地面（groundZ = 0.0f平面）的交点。
 */
     QVector3D rayOrigin = QVector3D(x, height() - y, -1.0f)
                             .unproject(m_camera->m_viewMatrix * m_model, m_projection, boundingRect().toRect());
@@ -1057,6 +1061,19 @@ void GraphicsScene3dView::updateDistance()
     if(screetShot_.isDistMeasureMode_) {
         double dist = calculateGroundDistance(screetShot_.getDistLineP1(), screetShot_.getDistLineP2());
         emit screetShot_.signalStartToEndDist(dist);
+    }
+
+
+    /*------- 截图模块：相机变化后重算矩形角点与地面边长 -------*/
+    if(screetShot_.isScreenMode_ && !screetShot_.shotRect_.isEmpty()) {
+        screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
+        calculateLatLong(screetShot_.shotRect_.topLeft().x(), screetShot_.shotRect_.topLeft().y(),
+                         screetShot_.topLeftLati_, screetShot_.topLeftLong_);
+        calculateLatLong(screetShot_.shotRect_.topRight().x(), screetShot_.shotRect_.topRight().y(),
+                         screetShot_.topRightLati_, screetShot_.topRightLong_);
+        calculateLatLong(screetShot_.shotRect_.bottomRight().x(), screetShot_.shotRect_.bottomRight().y(),
+                         screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
+        screetShot_.updateRectGroundSizes();
     }
 }
 
@@ -1243,9 +1260,8 @@ void GraphicsScene3dView::slotScreetGraphics()
     LLA topLeftLla(maxLat, minLon, 0.0);
     LLA bottomRightLla(minLat, maxLon, 0.0);
     bool isPerspective = m_camera->getIsPerspective();
-    North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, isPerspective);
-    North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, isPerspective);
-    qDebug() << "screetShot_.getPerspective()" << screetShot_.getPerspective() << "  " << isPerspective;
+    North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, true);
+    North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, true);
 
     // 在 NED 坐标系中计算宽度和高度（使用平面距离）
     double geoWidth  = std::abs(bottomRightNed.e - topLeftNed.e);

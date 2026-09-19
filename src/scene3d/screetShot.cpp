@@ -55,23 +55,27 @@ void ScreetShot::setSelectionRect(const QRectF rect)
 {
     shotRect_ = rect;
 
-    LLA topLeftLla(topLeftLati_, topLeftLong_, 0.0);
-    North_East_Down topLeftNed(&topLeftLla, &viewLlaRef_, isPerspective_);
-    LLA bottomRightLla(bottomRightLati_, bottomRightLong_, 0.0);
-    North_East_Down bottomRightNed(&bottomRightLla, &viewLlaRef_, isPerspective_);
-    topWidth_    = std::abs(bottomRightNed.e - topLeftNed.e); // 米
-    rightHeight_ = std::abs(bottomRightNed.n - topLeftNed.n); // 米
-    qDebug() << "topWidth_:" << topWidth_ << "   rightHeight_:" << rightHeight_ << " isPerspective_" << isPerspective_;
-
-    QString topWidthStr    = getLengthChEn(topWidth_);
-    QString rightHeightStr = getLengthChEn(rightHeight_);
-
-    setScreetWidth(topWidthStr);
-    setScreetHeight(rightHeightStr);
+    updateRectGroundSizes();
 
     setScreetToolBar(false);
 
     emit selectionRectChanged();
+}
+
+void ScreetShot::updateRectGroundSizes()
+{
+    LLA topLeftLla(topLeftLati_, topLeftLong_, 0.0);
+    North_East_Down topLeftNed(&topLeftLla, &viewLlaRef_, true);
+    LLA topRightLla(topRightLati_, topRightLong_, 0.0);
+    North_East_Down topRightNed(&topRightLla, &viewLlaRef_, true);
+    LLA bottomRightLla(bottomRightLati_, bottomRightLong_, 0.0);
+    North_East_Down bottomRightNed(&bottomRightLla, &viewLlaRef_, true);
+
+    topWidth_    = std::hypot(topRightNed.n - topLeftNed.n, topRightNed.e - topLeftNed.e);
+    rightHeight_ = std::hypot(bottomRightNed.n - topRightNed.n, bottomRightNed.e - topRightNed.e);
+
+    setScreetWidth(getLengthChEn(topWidth_));
+    setScreetHeight(getLengthChEn(rightHeight_));
 }
 
 bool ScreetShot::isSelectionRectVisible() const
@@ -843,19 +847,6 @@ int ScreetShot::getTargetMapLevel()
 QString ScreetShot::getTargetDirPath()
 {
     return targetDirPath_;
-}
-
-double ScreetShot::calculateDistance(double lat1, double lon1, double lat2, double lon2)
-{
-    LLA lla1(lat1, lon1, 0.0);
-    LLA lla2(lat2, lon2, 0.0);
-
-    North_East_Down ned1(&lla1, &viewLlaRef_, isPerspective_);
-    North_East_Down ned2(&lla2, &viewLlaRef_, isPerspective_);
-
-    double dn = ned2.n - ned1.n;
-    double de = ned2.e - ned1.e;
-    return std::sqrt(dn * dn + de * de);
 }
 
 void ScreetShot::judgeCurrentLevelExist(double longitude,double latitude,int level)

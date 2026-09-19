@@ -148,7 +148,7 @@ public:
     void switchMapSource(MapSourceType sourceType);
     int getTargetMapLevel();
     QString getTargetDirPath();
-    double calculateDistance(double lat1, double lon1, double lat2, double lon2);
+    void updateRectGroundSizes();
 
     Q_INVOKABLE void setToArrowCursor();
     Q_INVOKABLE void setCancelShot();
@@ -181,7 +181,7 @@ public:
     ResizeMode resizeMode_;
     int currMapLevel_ = 0;
     bool dragging_ = false;
-    double topLeftLong_, topLeftLati_, bottomRightLong_, bottomRightLati_;
+    double topLeftLong_, topLeftLati_, topRightLong_, topRightLati_, bottomRightLong_, bottomRightLati_;
     bool screetToolBarShow_ = false;
     QRectF shotRect_;
     bool isSelectionRectVisible_ = false;
