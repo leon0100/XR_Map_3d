@@ -58,7 +58,6 @@ void ScreetShot::setSelectionRect(const QRectF rect)
     updateRectGroundSizes();
 
     setScreetToolBar(false);
-
     emit selectionRectChanged();
 }
 
@@ -66,13 +65,11 @@ void ScreetShot::updateRectGroundSizes()
 {
     LLA topLeftLla(topLeftLati_, topLeftLong_, 0.0);
     North_East_Down topLeftNed(&topLeftLla, &viewLlaRef_, true);
-    LLA topRightLla(topRightLati_, topRightLong_, 0.0);
-    North_East_Down topRightNed(&topRightLla, &viewLlaRef_, true);
     LLA bottomRightLla(bottomRightLati_, bottomRightLong_, 0.0);
     North_East_Down bottomRightNed(&bottomRightLla, &viewLlaRef_, true);
 
-    topWidth_    = std::hypot(topRightNed.n - topLeftNed.n, topRightNed.e - topLeftNed.e);
-    rightHeight_ = std::hypot(bottomRightNed.n - topRightNed.n, bottomRightNed.e - topRightNed.e);
+    topWidth_    = bottomRightNed.e - topLeftNed.e;
+    rightHeight_ = topLeftNed.n - bottomRightNed.n;
 
     setScreetWidth(getLengthChEn(topWidth_));
     setScreetHeight(getLengthChEn(rightHeight_));
@@ -121,16 +118,16 @@ void ScreetShot::setScreetToolBar(bool screetToolBarShow)
     emit screetToolBarShowChanged();
 }
 
-void ScreetShot::setLLARef(LLARef viewLlaRef, bool isPerspective)
+void ScreetShot::setLLARef(LLARef viewLlaRef)
 {
     viewLlaRef_ = viewLlaRef;
-    isPerspective_ = isPerspective;
+    // isPerspective_ = isPerspective;
 }
 
-bool ScreetShot::getPerspective()
-{
-    return isPerspective_;
-}
+// bool ScreetShot::getPerspective()
+// {
+//     return isPerspective_;
+// }
 
 float ScreetShot::mapLevelToDistance(int level) const
 {
@@ -514,10 +511,15 @@ QByteArray ScreetShot::readKmlFromKmz(const QString& kmzPath)
 void ScreetShot::judgeResizeMode(const QRectF rect,const QPoint pos)
 {
     const qreal margin = 15.0;
-    bool onLeft   =  qAbs(pos.x() - rect.left())   <= margin;
-    bool onRight  =  qAbs(pos.x() - rect.right())  <= margin;
-    bool onTop    =  qAbs(pos.y() - rect.top())    <= margin;
-    bool onBottom =  qAbs(pos.y() - rect.bottom()) <= margin;
+    const qreal inner  = 4.0;
+    bool onLeft   =  (rect.left()  - pos.x() <= margin) && (pos.x() - rect.left()  <= inner)
+                  && (pos.y() >= rect.top() - margin) && (pos.y() <= rect.bottom() + margin);
+    bool onRight  =  (pos.x() - rect.right() <= margin) && (rect.right() - pos.x() <= inner)
+                   && (pos.y() >= rect.top() - margin) && (pos.y() <= rect.bottom() + margin);
+    bool onTop    =  (rect.top()   - pos.y() <= margin) && (pos.y() - rect.top()   <= inner)
+                 && (pos.x() >= rect.left()  - margin) && (pos.x() <= rect.right()  + margin);
+    bool onBottom =  (pos.y() - rect.bottom() <= margin) && (rect.bottom() - pos.y() <= inner)
+                    && (pos.x() >= rect.left()  - margin) && (pos.x() <= rect.right()  + margin);
 
     if (onLeft && onTop) {
         resizeMode_ = ResizeMode::TopLeft;
@@ -559,6 +561,10 @@ void ScreetShot::judgeResizeMode(const QRectF rect,const QPoint pos)
     else {
         resizeMode_ = ResizeMode::None;
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
+    }
+
+    if(isDrawMeasure_ == 0 || isDrawMeasure_ == 1) {
+        QGuiApplication::setOverrideCursor(Qt::PointingHandCursor);
     }
 
 }
@@ -747,12 +753,12 @@ void ScreetShot::resizeMode(QRectF& rect, const QPoint pos)
         }
         break;
     }
-    case ResizeMode::Move: {
-        delta = QPointF(pos) - endPos_;
-        endPos_ = QPointF(pos);
-        rect.translate(delta);
-        break;
-    }
+    // case ResizeMode::Move: {
+    //     delta = QPointF(pos) - endPos_;
+    //     endPos_ = QPointF(pos);
+    //     rect.translate(delta);
+    //     break;
+    // }
     default:
         break;
     }
@@ -766,7 +772,6 @@ void ScreetShot::switchMapSource(MapSourceType sourceType)
 QString ScreetShot::getLengthChEn(double distance,int decimalPlaces)
 {
     QString distanceStr;
-    // bool isMetres = ContourSingleton::getInstance().getGlobalUnits();
     bool isMetres = true;
     if (distance > 1000) {
         double distanceKm = distance / 1000.0;

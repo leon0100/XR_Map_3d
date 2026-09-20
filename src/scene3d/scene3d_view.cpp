@@ -238,8 +238,9 @@ void GraphicsScene3dView::mousePressTrigger(Qt::MouseButtons mouseButton, qreal 
                 screetShot_.judgeResizeMode(screetShot_.shotRect_,pos); //确认调整模式
                 if(screetShot_.resizeMode_ == ResizeMode::Move) {
                     screetShot_.endPos_ = pos;
-                    screetShot_.dragging_ = true;
+                    // screetShot_.dragging_ = true;
                 }
+                screetShot_.dragStartRect_ = screetShot_.shotRect_; //记录拖拽起始矩形快照
             }
 
             return;
@@ -315,6 +316,7 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
 
     if(screetShot_.isScreenMode_)
     {
+        updateProjection();
         if(!screetShot_.firstScreenDown_) {
             QGuiApplication::setOverrideCursor(Qt::CrossCursor);
             if(mouseButton == Qt::LeftButton) {
@@ -322,31 +324,37 @@ void GraphicsScene3dView::mouseMoveTrigger(Qt::MouseButtons mouseButton, qreal x
                 qreal width  = currentPos.x() - screetShot_.startPos_.x();
                 qreal height = currentPos.y() - screetShot_.startPos_.y();
                 QRectF shotRect = QRectF(std::min(screetShot_.startPos_.x(), currentPos.x()),
-                std::min(screetShot_.startPos_.y(), currentPos.y()), std::abs(width), std::abs(height));
+                        std::min(screetShot_.startPos_.y(), currentPos.y()), std::abs(width), std::abs(height));
                 calculateLatLong(shotRect.topLeft().x(), shotRect.topLeft().y(),
-                                screetShot_.topLeftLati_,screetShot_.topLeftLong_);
-                calculateLatLong(shotRect.topRight().x(), shotRect.topRight().y(),
-                                 screetShot_.topRightLati_, screetShot_.topRightLong_);
+                                screetShot_.topLeftLati_, screetShot_.topLeftLong_);
                 calculateLatLong(shotRect.bottomRight().x(), shotRect.bottomRight().y(),
                                 screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
                 screetShot_.setSelectionRect(shotRect);
-                // qDebug() << "Screen capture rect:" << screetShot_.shotRect_;
             }
         }
         else {
-            screetShot_.judgeResizeMode(screetShot_.shotRect_, pos);
-            if(mouseButton == Qt::LeftButton) {
-                screetShot_.resizeMode(screetShot_.shotRect_, pos);
+            if(mouseButton != Qt::LeftButton) {
+                screetShot_.judgeResizeMode(screetShot_.shotRect_, pos);
+            }
+            else if(screetShot_.resizeMode_ != ResizeMode::None) {
+                //拖拽中：  沿用鼠标按下时锁定的模式，直接更新成员 shotRect_
+                //Move模式：用起始矩形快照+鼠标总位移计算，不依赖会过期的endPos_
+                screetShot_.shotRect_ = screetShot_.dragStartRect_;
+                if(screetShot_.resizeMode_ == ResizeMode::Move) {
+                    QPointF delta = pos - screetShot_.endPos_;
+                    screetShot_.shotRect_.translate(delta);
+                }
+                else {
+                    screetShot_.resizeMode(screetShot_.shotRect_, pos);
+                }
+
                 calculateLatLong(screetShot_.shotRect_.topLeft().x(), screetShot_.shotRect_.topLeft().y(),
-                                screetShot_.topLeftLati_, screetShot_.topLeftLong_);
-                calculateLatLong(screetShot_.shotRect_.topRight().x(), screetShot_.shotRect_.topRight().y(),
-                                 screetShot_.topRightLati_, screetShot_.topRightLong_);
+                            screetShot_.topLeftLati_, screetShot_.topLeftLong_);
                 calculateLatLong(screetShot_.shotRect_.bottomRight().x(), screetShot_.shotRect_.bottomRight().y(),
-                                screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
+                            screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
                 screetShot_.setSelectionRect(screetShot_.shotRect_);
             }
         }
-
         return;
     }
 
@@ -582,7 +590,7 @@ void GraphicsScene3dView::setScreenMode(bool isScreen)
     if(isScreen) {
         screetShot_.firstScreenDown_ = false;
         screetCurrentMapLevel_ = currentMapLevel_;
-        screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
+        screetShot_.setLLARef(m_camera->viewLlaRef_);
     }
     else {
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
@@ -609,16 +617,16 @@ void GraphicsScene3dView::setDistMeasureMode(bool isDist)
     emit cameraIsMoved();
 
     if(isDist) {
+        screetShot_.isDrawMeasure_ = 0;
         QGuiApplication::setOverrideCursor(Qt::PointingHandCursor);
-        screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
+        screetShot_.setLLARef(m_camera->viewLlaRef_);
     }
     else {
+        screetShot_.isDrawMeasure_ = -1;
         QGuiApplication::setOverrideCursor(Qt::ArrowCursor);
         screetShot_.setP1Visible(false);
         screetShot_.setP2Visible(false);
     }
-
-    screetShot_.isDrawMeasure_ = 0;
 }
 
 void GraphicsScene3dView::setLandMarkMode(bool mark)
@@ -1052,8 +1060,8 @@ void GraphicsScene3dView::updateDistance()
 
     QVector3D origin = convertToWorldCoor(16, 16);
     QVector3D end    = convertToWorldCoor(16 + screetShot_.rulerBar_, 16);
-    const float dx   = (end.x() - origin.x());
-    const float dy   = (end.y() - origin.y());
+    const float dx   = end.x() - origin.x();
+    const float dy   = end.y() - origin.y();
     double dist = std::sqrt(dx * dx + dy * dy);
     emit screetShot_.signalSreenBoxDist(dist);
 
@@ -1064,13 +1072,10 @@ void GraphicsScene3dView::updateDistance()
     }
 
 
-    /*------- 截图模块：相机变化后重算矩形角点与地面边长 -------*/
-    if(screetShot_.isScreenMode_ && !screetShot_.shotRect_.isEmpty()) {
-        screetShot_.setLLARef(m_camera->viewLlaRef_, m_camera->getIsPerspective());
+    /*------- 截图模块 -------*/
+    if(screetShot_.isScreenMode_) {
         calculateLatLong(screetShot_.shotRect_.topLeft().x(), screetShot_.shotRect_.topLeft().y(),
                          screetShot_.topLeftLati_, screetShot_.topLeftLong_);
-        calculateLatLong(screetShot_.shotRect_.topRight().x(), screetShot_.shotRect_.topRight().y(),
-                         screetShot_.topRightLati_, screetShot_.topRightLong_);
         calculateLatLong(screetShot_.shotRect_.bottomRight().x(), screetShot_.shotRect_.bottomRight().y(),
                          screetShot_.bottomRightLati_, screetShot_.bottomRightLong_);
         screetShot_.updateRectGroundSizes();
@@ -1259,7 +1264,6 @@ void GraphicsScene3dView::slotScreetGraphics()
 
     LLA topLeftLla(maxLat, minLon, 0.0);
     LLA bottomRightLla(minLat, maxLon, 0.0);
-    bool isPerspective = m_camera->getIsPerspective();
     North_East_Down topLeftNed(&topLeftLla, &m_camera->viewLlaRef_, true);
     North_East_Down bottomRightNed(&bottomRightLla, &m_camera->viewLlaRef_, true);
 
@@ -1275,7 +1279,7 @@ void GraphicsScene3dView::slotScreetGraphics()
     double centerLon = (minLon + maxLon) * 0.5;
     // 不修改 viewLlaRef_，只移动 lookAt
     LLA targetCenterLla(centerLat, centerLon, 0.0);
-    North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, isPerspective);
+    North_East_Down targetCenterNed(&targetCenterLla, &m_camera->viewLlaRef_, m_camera->getIsPerspective());
     m_camera->m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
 
     // double targetHeight = std::max(geoWidth, geoHeight) * 0.5;
@@ -1330,22 +1334,21 @@ GraphicsScene3dView::InFboRenderer::~InFboRenderer()
 void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask& task, double geoWidth, double geoHeight)
 {
     // 设置新相机位置
-    double centerLon = (task.minLon + task.maxLon) / 2.0;
-    double centerLat = (task.minLat + task.maxLat) / 2.0;
+    double centerLon = (task.minLon + task.maxLon) / 2;
+    double centerLat = (task.minLat + task.maxLat) / 2;
     LLA centerLla(centerLat, centerLon, 0.0);
     North_East_Down targetCenterNed(&centerLla, &m_renderer->m_camera.viewLlaRef_, false);
     m_renderer->m_camera.m_lookAt = QVector3D(targetCenterNed.n, targetCenterNed.e, 0.0f);
     m_renderer->m_camera.isPerspective_ = false;
 
     // 直接设置正交投影边界，确保目标区域正好填满视口（以目标区域中心为原点）
-    float orthoLeft   = static_cast<float>(-geoWidth  / 2.0);
-    float orthoRight  = static_cast<float>( geoWidth  / 2.0);
-    float orthoBottom = static_cast<float>(-geoHeight / 2.0);
-    float orthoTop    = static_cast<float>( geoHeight / 2.0);
+    float orthoLeft   = static_cast<float>(-geoWidth  / 2);
+    float orthoRight  = static_cast<float>( geoWidth  / 2);
+    float orthoBottom = static_cast<float>(-geoHeight / 2);
+    float orthoTop    = static_cast<float>( geoHeight / 2);
 
     m_renderer->setCustomOrtho(orthoLeft, orthoRight, orthoBottom, orthoTop);
 }
-
 
 bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask& task)
 {
@@ -1357,8 +1360,15 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
         return false;
     }
 
-    float metersPerPixel = TILE_CONSTANT / std::pow(2.0, task.mapLevel) / 256.0;
-    // float metersPerPixel = TILE_CONSTANT / std::pow(2.0, 21) / 256.0;
+
+    //截图内容是高度场（mosaic纹理原生分辨率约0.1m/纹素），不是瓦片底图，
+    //渲染密度必须比“所选等级瓦片密度”更细才能保留高度场细节；
+    //调色板索引纹理不能生成mipmap（索引插值=错误颜色），只能靠高渲染密度减轻缩小混叠。
+    //取所选等级密度与固定上限密度中更细者（上限受 FBO/内存约束）
+    constexpr double EQUATOR_CIRCUMFERENCE = 40075016.68;  //2πR，R=6378137
+    float levelDensity = static_cast<float>(EQUATOR_CIRCUMFERENCE / std::pow(2.0, task.mapLevel) / 256.0);
+    float maxDensity   = static_cast<float>(TILE_CONSTANT / std::pow(2.0, 21) / 256.0);
+    float metersPerPixel = std::min(levelDensity, maxDensity);
     int pixelWidth  = static_cast<int>(task.geoWidth / metersPerPixel);
     int pixelHeight = static_cast<int>(task.geoHeight / metersPerPixel);
 
@@ -1396,7 +1406,10 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     setupCameraForTask(task, task.geoWidth, task.geoHeight);
 
     m_renderer->m_viewSize = QSizeF(pixelWidth, pixelHeight);
+    bool groundVisibleBackup = m_renderer->surfaceViewRenderImpl_.isGroundVisible();
+    m_renderer->surfaceViewRenderImpl_.setGroundVisible(false);
     m_renderer->render();
+    m_renderer->surfaceViewRenderImpl_.setGroundVisible(groundVisibleBackup);
 
     func->glFinish();
     GLenum status = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1592,7 +1605,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     graphicsView_->m_camera->distToGround_      = graphicsView_->originCameraDist_;
     graphicsView_->m_camera->updateViewMatrix();
     graphicsView_->updateMapView();
-
     qDebug() << "========= renderAndSaveTiles END =================";
     return true;
 }
@@ -1809,8 +1821,8 @@ void GraphicsScene3dView::Camera::rotate(const QPointF& prevCenter, const QPoint
 
 void GraphicsScene3dView::Camera::move(const QVector2D &startPos, const QVector2D &endPos)
 {
-    QVector4D horizontalAxis{ -1.0f, 0.0f, 0.0f, 0.0f };
-    QVector4D verticalAxis{ 0.0f, -1.0f, 0.0f, 0.0f };
+    QVector4D horizontalAxis{ -1.0f,  0.0f, 0.0f, 0.0f };
+    QVector4D verticalAxis  {  0.0f, -1.0f, 0.0f, 0.0f };
 
     m_deltaOffset = ((horizontalAxis * (float)(endPos.x() - startPos.x()) +
                       verticalAxis * (float)(endPos.y() - startPos.y()))).toVector3D();
@@ -2046,7 +2058,7 @@ void GraphicsScene3dView::Camera::tryToChangeViewLlaRef()
         LLA lookAtLla(&lookAtNed, &viewLlaRef_, isPerspective_);
         LLARef lookAtLlaRef(lookAtLla);
 
-        float viewDist = map::calculateDistance(lookAtLlaRef, viewLlaRef_);
+        float viewDist    = map::calculateDistance(lookAtLlaRef, viewLlaRef_);
         float datasetDist = map::calculateDistance(lookAtLlaRef, datasetLlaRef_);
 
         if (datasetDist < lowDistThreshold_ && getIsFarAwayFromOriginLla()) {

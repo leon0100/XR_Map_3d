@@ -77,6 +77,7 @@ Rectangle {
             font.pixelSize: iconSize
             color: "black"
         }
+
         Rectangle {
             id: separator
             Layout.fillWidth: true

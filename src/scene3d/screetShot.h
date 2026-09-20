@@ -84,7 +84,6 @@ struct ScreenshotTask
     {}
 };
 
-
 /*------------------------------------------ScreetShot---------------------------------------------*/
 
 class MapView;
@@ -119,8 +118,7 @@ public:
 
     float mapLevelToDistance(int level) const;
 
-    void setLLARef(LLARef viewLlaRef, bool isPerspective);
-    bool getPerspective();
+    void setLLARef(LLARef viewLlaRef);
     bool isMapLevelChooseVisible() const;
     void setMapLevelChooseVisible(bool visible);
 
@@ -178,10 +176,10 @@ public:
     bool showHistoryScreen_ = false; // 显示历史截图
     bool firstScreenDown_ = false;
     QPointF startPos_,endPos_;       // 矩形场景坐标
+    QRectF dragStartRect_;           // 拖拽起始时的矩形快照
     ResizeMode resizeMode_;
     int currMapLevel_ = 0;
-    bool dragging_ = false;
-    double topLeftLong_, topLeftLati_, topRightLong_, topRightLati_, bottomRightLong_, bottomRightLati_;
+    double topLeftLong_, topLeftLati_, bottomRightLong_, bottomRightLati_;
     bool screetToolBarShow_ = false;
     QRectF shotRect_;
     bool isSelectionRectVisible_ = false;
@@ -192,7 +190,6 @@ public:
 private:
     double topWidth_,rightHeight_;
     LLARef viewLlaRef_;
-    bool  isPerspective_ = false;
     bool isReminderChecked_ = false;
     QString targetDirPath_;
     bool openMapLevelList_ = false;
@@ -207,7 +204,6 @@ private:
     QString amapMap = "http://wprd04.is.autonavi.com/appmaptile?style=6&x=%1&y=%2&z=%3";
     QVector<ImageInfo> jude_infos;
     int targetMapLevel_;
-
 
 
 

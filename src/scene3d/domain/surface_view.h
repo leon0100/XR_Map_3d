@@ -32,9 +32,10 @@ public:
         float getMinZ();
 
         QRectF getSurfaceBounds() const;
+        void setGroundVisible(bool visible) { groundVisible_ = visible; }
+        bool isGroundVisible() const        { return groundVisible_; }
 
-        // void renderBoundaryVertices(QOpenGLFunctions* ctx, const QMatrix4x4& mvp,
-        //         const QMap<QString, std::shared_ptr<QOpenGLShaderProgram>> &shaderProgramMap) const;
+
 
     private:
         friend class SurfaceView;
@@ -51,8 +52,6 @@ public:
         bool  mVis_;
 
         // =====边界顶点 =====
-        // QVector<QVector<QVector3D>> boundaryGroups_;  // 存储边界顶点
-        // QVector<QVector3D> boundaryVertices_;  // 存储边界顶点
         bool boundaryVerticesVisible_;  // 是否显示边界顶点
 
         float verticalScale_ = -1.0f;  // 与 renderer 一致的负值 vs，用于补偿水平陆地 Z

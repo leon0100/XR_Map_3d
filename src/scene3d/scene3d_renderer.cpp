@@ -1,8 +1,4 @@
 #include "scene3d_renderer.h"
-// #include "draw_utils.h"
-
-// #include "bottom_track.h"
-// #include "point_group.h"
 #include "polygon_group.h"
 
 #include <QThread>
@@ -114,8 +110,7 @@ void GraphicsScene3dRenderer::render()
 {
     glDepthMask(true);
 
-    // glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // back color
-    glClearColor(0.45f, 0.45f, 0.45f, 1.0f); // back color（测试阶段：灰色背景）
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // back color
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     drawObjects();
@@ -217,6 +212,8 @@ void GraphicsScene3dRenderer::drawObjects()
         if (depthTestEnabled) {
             glEnable(GL_DEPTH_TEST);
         }
+
+        return;
     }
 
     // 启用深度测试，渲染3D对象
