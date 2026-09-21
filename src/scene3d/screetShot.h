@@ -147,6 +147,7 @@ public:
     int getTargetMapLevel();
     QString getTargetDirPath();
     void updateRectGroundSizes();
+    void expandGroundBoundsTo(double groundW, double groundH);
 
     Q_INVOKABLE void setToArrowCursor();
     Q_INVOKABLE void setCancelShot();

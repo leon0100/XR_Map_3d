@@ -54,6 +54,11 @@ void TileManager::onTileProcessed()
 {
     if(isScreenSaveMode_) {
         // qDebug() << "dbReq_size: " << tileSet_->dbReq_size() <<"  " << tileSet_->dwReq_size();
+        const int remaining = tileSet_->dbReq_size() + tileSet_->dwReq_size();
+        if(screenSaveTotalPending_ > 0) {
+            emit tileRequestProgress(screenSaveTotalPending_ - remaining, screenSaveTotalPending_);
+        }
+
         if(tileSet_->dbReqIsEmpty() && tileSet_->dwReqIsEmpty()) {
             isScreenSaveMode_ = false;
             emit targetTilesLoaded();
@@ -197,6 +202,11 @@ void TileManager::getRectRequest(QVector<LLA> request, bool isPerspective, LLARe
     if (!indxRequest.isEmpty()) {
         tileSet_->onNewRequest(indxRequest, zoomState, viewLlaRef, isPerspective, minLon, maxLon);
     }
+
+    if(screenSaveMode) {
+        screenSaveTotalPending_ = tileSet_->dbReq_size() + tileSet_->dwReq_size();
+        emit tileRequestProgress(0, screenSaveTotalPending_);
+    }
 }
 
 void TileManager::getLlaRef(LLARef viewLlaRef)
@@ -211,9 +221,34 @@ void TileManager::switchMapSource(MapSourceType sourceType)
     }
 
     tileDownloader_->stopAndClearRequests();
-    tileDB_->stopAndClearRequests();
+    // tileDB_->stopAndClearRequests();
+    // QThread::msleep(500);
 
-    QThread::msleep(500);
+    QThread* oldDbThread = nullptr;
+    if (tileDB_) {
+        oldDbThread = tileDB_->thread();
+        if (oldDbThread->isRunning() && oldDbThread != QThread::currentThread()) {
+            QMetaObject::invokeMethod(tileDB_.get(), "stopAndClearRequests", Qt::BlockingQueuedConnection);
+            QMetaObject::invokeMethod(tileDB_.get(), "deinit", Qt::BlockingQueuedConnection);
+        }
+        else {
+            tileDB_->stopAndClearRequests();
+            tileDB_->deinit();
+        }
+
+        // 必须在 quit() 之前断开旧线程到旧 TileDB 的连接（尤其 finished→deleteLater）：
+        // Qt 线程结束前会处理队列中 pending 的 DeferredDelete 事件，
+        // 若不断开，旧 TileDB 会在旧线程退出时被 deleteLater 释放，
+        QObject::disconnect(oldDbThread, nullptr, tileDB_.get(), nullptr);
+    }
+
+    // 先退出并等待旧DB线程结束，再替换 tileDB_：
+    // 否则旧线程事件队列中遗留的 loadTiles等排队调用会作用在已析构的对象上（悬垂指针），
+    // 且跨线程 delete QObject / 跨线程 QSqlDatabase::close() 均属未定义行为
+    if (oldDbThread && oldDbThread->isRunning()) {
+        oldDbThread->quit();
+        oldDbThread->wait();
+    }
 
     currentMap_ = sourceType;
     switch (sourceType) {

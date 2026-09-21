@@ -29,6 +29,7 @@ signals:
     void zoomLevelChanged(int level);
     void tileSetChanged(std::shared_ptr<TileSet> tileSet);
     void targetTilesLoaded();
+    void tileRequestProgress(int done, int total);
 
 public slots:
     void getRectRequest(QVector<LLA> request, bool isPerspective, LLARef viewLlaRef, bool screenSaveMode);
@@ -51,6 +52,8 @@ private:
     static constexpr int maxConcurrentDownloads_{ 10 };
 
     bool isScreenSaveMode_ = false;
+    int screenSaveTotalPending_ = 0;  //截图请求发出后的待处理瓦片总数
+
 
 };
 

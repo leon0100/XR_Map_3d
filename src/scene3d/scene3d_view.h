@@ -250,6 +250,7 @@ public Q_SLOTS:
 
     void slotScreetGraphics();
     void onTargetTilesLoaded();
+    void onTileRequestProgress(int done, int total);
 
 signals:
     void sendRectRequest(QVector<LLA> rect, bool isPerspective, LLARef viewLlaRef, bool screenMode);

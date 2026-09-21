@@ -271,7 +271,7 @@ ApplicationWindow  {
         }
 
         if (renderer.rulerEnabled || renderer.rulerSelected || renderer.rulerHasGeometry) {
-            renderer.clearRuler()
+            // renderer.clearRuler()
             return true
         }
 
@@ -674,7 +674,7 @@ ApplicationWindow  {
                                 }
                             }
 
-                            renderer.clearRuler()
+                            // renderer.clearRuler()
                         }
 
                         property int   lastMouseKeyPressed: Qt.NoButton // TODO: maybe this mouseArea should be outside pinchArea

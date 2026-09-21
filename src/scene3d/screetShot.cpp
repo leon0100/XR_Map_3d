@@ -75,6 +75,24 @@ void ScreetShot::updateRectGroundSizes()
     setScreetHeight(getLengthChEn(rightHeight_));
 }
 
+void ScreetShot::expandGroundBoundsTo(double groundW, double groundH)
+{
+    LLA centerLla((topLeftLati_ + bottomRightLati_) * 0.5, (topLeftLong_ + bottomRightLong_) * 0.5, 0.0);
+    North_East_Down centerNed(&centerLla, &viewLlaRef_, true);
+    North_East_Down nEdge(centerNed.n + groundH * 0.5, centerNed.e, 0.0);
+    North_East_Down sEdge(centerNed.n - groundH * 0.5, centerNed.e, 0.0);
+    North_East_Down eEdge(centerNed.n, centerNed.e + groundW * 0.5, 0.0);
+    North_East_Down wEdge(centerNed.n, centerNed.e - groundW * 0.5, 0.0);
+    LLA nLla(&nEdge, &viewLlaRef_, true);
+    LLA sLla(&sEdge, &viewLlaRef_, true);
+    LLA eLla(&eEdge, &viewLlaRef_, true);
+    LLA wLla(&wEdge, &viewLlaRef_, true);
+    topLeftLati_      = nLla.latitude;
+    topLeftLong_      = wLla.longitude;
+    bottomRightLati_  = sLla.latitude;
+    bottomRightLong_  = eLla.longitude;
+}
+
 bool ScreetShot::isSelectionRectVisible() const
 {
     return isSelectionRectVisible_;
@@ -585,25 +603,34 @@ void ScreetShot::setCancelShot()
 
 void ScreetShot::saveScreetShot()
 {
-    setCancelShot();
-    isScreenSaveMode_ = true;
+    const double MIN_SIZE = 900.0; //m
+    const double SIZE_TOL = 1.0;
+    if (topWidth_ < (MIN_SIZE-SIZE_TOL) || rightHeight_ < (MIN_SIZE-SIZE_TOL)) {
+        // 以框选中心为基准，将不足900m的边长向外扩展至900m
+        const double newGroundW = std::max(topWidth_,    MIN_SIZE);
+        const double newGroundH = std::max(rightHeight_, MIN_SIZE);
+        const double screen_1m  = shotRect_.width() / topWidth_;
+        const QPointF center = shotRect_.center();
+        const double newPxW = newGroundW * screen_1m;
+        const double newPxH = newGroundH * screen_1m;
+        shotRect_ = QRectF(center.x() - newPxW * 0.5, center.y() - newPxH * 0.5, newPxW, newPxH);
 
-    const double MIN_SIZE = 900.0;
-    if (topWidth_ < MIN_SIZE || rightHeight_ < MIN_SIZE) {
-        double screen_1m = shotRect_.width() / topWidth_;
-        shotRect_.setWidth(screen_1m * 900);
-        shotRect_.setHeight(screen_1m * 900);
+        expandGroundBoundsTo(newGroundW, newGroundH);
 
-        topWidth_    = MIN_SIZE;
-        rightHeight_ = MIN_SIZE;
-
-        setScreetWidth("900m");
-        setScreetHeight("900m");
+        updateRectGroundSizes();
 
         emit selectionRectChanged();
 
         GIF->dialogInfo(Dialog_OK,tr("The selected range is less than 900m*900m,Automatically resized!"));
         return;
+    }
+    else {
+        if (topWidth_ < MIN_SIZE || rightHeight_ < MIN_SIZE) {
+            expandGroundBoundsTo(std::max(topWidth_, MIN_SIZE), std::max(rightHeight_, MIN_SIZE));
+            updateRectGroundSizes();
+        }
+        setCancelShot();
+        isScreenSaveMode_ = true;
     }
 
 

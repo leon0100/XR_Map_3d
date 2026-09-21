@@ -145,6 +145,19 @@ void TileDB::init()
 
 }
 
+void TileDB::deinit()
+{
+    // QSqlDatabase只能在创建它的线程中使用，因此关闭/注销必须通过队列投递到DB线程执行
+    if (db_.isOpen()) {
+        db_.close();
+    }
+    const QString connName = db_.connectionName();
+    db_ = QSqlDatabase();
+    if (!connName.isEmpty()) {
+        QSqlDatabase::removeDatabase(connName);
+    }
+}
+
 void TileDB::processNextTile()
 {
     if (stopRequested_) {

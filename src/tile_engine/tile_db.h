@@ -22,6 +22,7 @@ public:
 
 public slots:
     void init();
+    void deinit();
     void loadTiles(const QSet<map::TileIndex>& tileIndices);
     void saveTile(const map::TileIndex& tileIndx, const QImage& image);
     void stopLoading(const map::TileIndex& tileIndx);

@@ -1291,6 +1291,7 @@ void GraphicsScene3dView::slotScreetGraphics()
     m_camera->updateViewMatrix();
 
     targetHeight = TILE_CONSTANT / std::pow(2.0, mapLevel_);
+
     QVector<LLA> request;
     request.append(LLA(maxLat, minLon, targetHeight));
     request.append(LLA(maxLat, maxLon, targetHeight));
@@ -1300,6 +1301,7 @@ void GraphicsScene3dView::slotScreetGraphics()
     if(progressDialog_) {
         QMetaObject::invokeMethod(progressDialog_, "open");
         QMetaObject::invokeMethod(progressDialog_, "setTitle", Q_ARG(QVariant, tr("Screenshot")));
+        QMetaObject::invokeMethod(progressDialog_, "setIndeterminate", Q_ARG(QVariant, false));
         QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, tr("Requesting Tile...")));
     }
 }
@@ -1315,13 +1317,23 @@ void GraphicsScene3dView::onTargetTilesLoaded()
     QQuickFramebufferObject::update();
 }
 
+void GraphicsScene3dView::onTileRequestProgress(int done, int total)
+{
+    if (progressDialog_ && total > 0) {
+        const double progress = static_cast<double>(done) / total;
+        QMetaObject::invokeMethod(progressDialog_, "setProgress", Q_ARG(QVariant, progress));
+        QString statusText = tr("Downloading Tiles  %1%").arg(static_cast<int>(progress * 100));
+        QMetaObject::invokeMethod(progressDialog_, "setStatus", Q_ARG(QVariant, statusText));
+    }
+}
+
 void GraphicsScene3dView::setProgressDialog(QObject* dialog)
 {
     progressDialog_ = dialog;
 }
 
 
-/*-----------Renderer--------------------------------------*/
+/*-------------------------------------Renderer--------------------------------------*/
 GraphicsScene3dView::InFboRenderer::InFboRenderer() :
     QQuickFramebufferObject::Renderer(), m_renderer(new GraphicsScene3dRenderer)
 {
@@ -1352,7 +1364,6 @@ void GraphicsScene3dView::InFboRenderer::setupCameraForTask(const ScreenshotTask
 
 bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask& task)
 {
-    qDebug() << "============ renderAndSaveTiles START ================";
     QObject* progressDialog = graphicsView_->progressDialog_;
     QOpenGLContext* ctx = QOpenGLContext::currentContext();
     QOpenGLFunctions* func = ctx ? ctx->functions() : nullptr;
@@ -1360,11 +1371,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
         return false;
     }
 
-
-    //截图内容是高度场（mosaic纹理原生分辨率约0.1m/纹素），不是瓦片底图，
-    //渲染密度必须比“所选等级瓦片密度”更细才能保留高度场细节；
-    //调色板索引纹理不能生成mipmap（索引插值=错误颜色），只能靠高渲染密度减轻缩小混叠。
-    //取所选等级密度与固定上限密度中更细者（上限受 FBO/内存约束）
     constexpr double EQUATOR_CIRCUMFERENCE = 40075016.68;  //2πR，R=6378137
     float levelDensity = static_cast<float>(EQUATOR_CIRCUMFERENCE / std::pow(2.0, task.mapLevel) / 256.0);
     float maxDensity   = static_cast<float>(TILE_CONSTANT / std::pow(2.0, 21) / 256.0);
@@ -1378,9 +1384,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     int cols = static_cast<int>(std::ceil(task.geoHeight / CHUNK_SIZE_METERS));  // 纬度方向（南北）
     int chunkPixelWidth  = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
     int chunkPixelHeight = static_cast<int>(CHUNK_SIZE_METERS / metersPerPixel);
-    qDebug() << "Geo area:" << task.geoWidth << "m x" << task.geoHeight << "m";
-    qDebug() << "Chunk pixels:" << chunkPixelWidth << "x" << chunkPixelHeight;
-    qDebug() << "Pixel dimensions:" << pixelWidth << "x" << pixelHeight;
 
     if (!offScreenFbo_) {
         offScreenFbo_ = createFramebufferObject(QSize(pixelWidth, pixelHeight));
@@ -1422,9 +1425,9 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     QMetaObject::invokeMethod(progressDialog, "setStatus", Q_ARG(QVariant, tr("Generating KMZ File...")));
 
 #ifdef Q_OS_WIN
-    QImage fullResult = QImage(pixelWidth, pixelHeight, QImage::Format_RGB32);
-    func->glReadPixels(0, 0, pixelWidth, pixelHeight, GL_BGRA, GL_UNSIGNED_BYTE, fullResult.bits());
-    fullResult = fullResult.mirrored(false, true);
+    // QImage fullResult = QImage(pixelWidth, pixelHeight, QImage::Format_RGB32);
+    // func->glReadPixels(0, 0, pixelWidth, pixelHeight, GL_BGRA, GL_UNSIGNED_BYTE, fullResult.bits());
+    // fullResult = fullResult.mirrored(false, true);
 
     int chunkIndex = 0;
     int kmzCnt = rows * cols;
@@ -1434,7 +1437,7 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
             int pixelX = row * chunkPixelWidth;
             int pixelY = col * chunkPixelHeight;
 
-            int actualChunkWidth = std::min(chunkPixelWidth, pixelWidth - pixelX);
+            int actualChunkWidth  = std::min(chunkPixelWidth, pixelWidth - pixelX);
             int actualChunkHeight = std::min(chunkPixelHeight, pixelHeight - pixelY);
             if (actualChunkWidth <= 0 || actualChunkHeight <= 0) {
                 continue;
@@ -1453,7 +1456,15 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
             double northLat = task.maxLat - latRatioTop * (task.maxLat - task.minLat);
             double southLat = task.maxLat - latRatioBottom * (task.maxLat - task.minLat);
 
-            QImage chunkImage = fullResult.copy(pixelX, pixelY, actualChunkWidth, actualChunkHeight);
+            // QImage chunkImage = fullResult.copy(pixelX, pixelY, actualChunkWidth, actualChunkHeight);
+            QImage chunkImage(actualChunkWidth, actualChunkHeight, QImage::Format_RGB32);
+            if (chunkImage.isNull()) {
+                qWarning() << "Chunk QImage out of memory:" << actualChunkWidth << "x" << actualChunkHeight;
+                continue;
+            }
+            func->glReadPixels(pixelX, pixelHeight - pixelY - actualChunkHeight,
+                               actualChunkWidth, actualChunkHeight, GL_BGRA, GL_UNSIGNED_BYTE, chunkImage.bits());
+            chunkImage = chunkImage.mirrored(false, true);
 
             QString rowStr = QString::number(row + 1);
             QString colStr = QString::number(col + 1);
@@ -1480,9 +1491,9 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     ScreetShot::menu_renewMap(task.outputPath);
 
 #elif defined(Q_OS_ANDROID)
-    QImage fullResult(pixelWidth, pixelHeight, QImage::Format_RGBA8888);
-    func->glReadPixels(0, 0, pixelWidth, pixelHeight, GL_RGBA, GL_UNSIGNED_BYTE, fullResult.bits());
-    fullResult = fullResult.mirrored(false, true);
+    // QImage fullResult(pixelWidth, pixelHeight, QImage::Format_RGBA8888);
+    // func->glReadPixels(0, 0, pixelWidth, pixelHeight, GL_RGBA, GL_UNSIGNED_BYTE, fullResult.bits());
+    // fullResult = fullResult.mirrored(false, true);
 
     int chunkIndex = 0;
     int kmzCnt = rows * cols;
@@ -1512,7 +1523,15 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
             double northLat = task.maxLat - latRatioTop * (task.maxLat - task.minLat);
             double southLat = task.maxLat - latRatioBottom * (task.maxLat - task.minLat);
 
-            QImage chunkImage = fullResult.copy(pixelX, pixelY, actualChunkWidth, actualChunkHeight);
+            // QImage chunkImage = fullResult.copy(pixelX, pixelY, actualChunkWidth, actualChunkHeight);
+            QImage chunkImage(actualChunkWidth, actualChunkHeight, QImage::Format_RGBA8888);
+            if (chunkImage.isNull()) {
+                qWarning() << "Chunk QImage out of memory:" << actualChunkWidth << "x" << actualChunkHeight;
+                continue;
+            }
+            func->glReadPixels(pixelX, pixelHeight - pixelY - actualChunkHeight,
+                               actualChunkWidth, actualChunkHeight, GL_RGBA, GL_UNSIGNED_BYTE, chunkImage.bits());
+            chunkImage = chunkImage.mirrored(false, true);
 
             QString rowStr = QString::number(row + 1);
             QString colStr = QString::number(col + 1);
@@ -1591,7 +1610,7 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
 
     // 恢复状态
     offScreenFbo_->release();
-    if(offScreenFbo_){
+    if(offScreenFbo_) {
         delete offScreenFbo_;
         offScreenFbo_ = nullptr;
     }
@@ -1605,7 +1624,6 @@ bool GraphicsScene3dView::InFboRenderer::renderToOffscreen(const ScreenshotTask&
     graphicsView_->m_camera->distToGround_      = graphicsView_->originCameraDist_;
     graphicsView_->m_camera->updateViewMatrix();
     graphicsView_->updateMapView();
-    qDebug() << "========= renderAndSaveTiles END =================";
     return true;
 }
 

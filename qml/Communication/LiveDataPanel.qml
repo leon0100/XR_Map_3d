@@ -40,7 +40,7 @@ Item {
 
 
         // 纬度
-        Text { text: qsTr("Lat:"); font.pixelSize: iconSize-1; color: "#102040" }
+        Text { text: qsTr("Lat:");  font.pixelSize: iconSize-1;  color: "#102040" }
         Text {
             id: latiText
             font.pixelSize: iconSize
