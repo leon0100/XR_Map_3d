@@ -3,6 +3,116 @@
 #include "core.h"
 extern Core* corePtr;
 
+DiskSonarCache::DiskSonarCache(const QString& filePath) : filePath_(filePath)
+{
+    // qDebug() << "filePath....." << filePath;
+}
+
+DiskSonarCache::~DiskSonarCache()
+{
+    close();
+}
+
+bool DiskSonarCache::openForWrite()
+{
+    readFile_.setFileName(filePath_);
+    readFile_.open(QIODevice::ReadOnly);
+    file_.setFileName(filePath_);
+    return file_.open(QIODevice::ReadWrite | QIODevice::Append);
+}
+
+bool DiskSonarCache::openForRead()
+{
+    file_.setFileName(filePath_);
+    return file_.open(QIODevice::ReadOnly);
+}
+
+void DiskSonarCache::close()
+{
+    QMutexLocker lk(&mtx_);
+    if (file_.isOpen()) {
+        file_.flush();
+        file_.close();
+    }
+    if(readFile_.isOpen()) {
+        readFile_.flush();
+        readFile_.close();
+    }
+}
+void DiskSonarCache::clearFile()
+{
+    QMutexLocker lk(&mtx_);
+
+    if (QFile::exists(filePath_)) {
+        if (!QFile::remove(filePath_)) {
+            qDebug() << "Failed to remove cache file:" << filePath_;
+            return ;
+        }
+    }
+
+    totalFramesWritten_ = 0;
+    channelOffsets_.clear();
+    frameMap_.clear();
+    openForWrite();
+}
+
+void DiskSonarCache::writeFrame(const QByteArray& rawFrame)
+{
+    qDebug() << "rawFrame...." << rawFrame.size();
+    QMutexLocker lk(&mtx_);
+    file_.write(rawFrame.constData(), PING_SIZE_MAX);
+    frameMap_.append(totalFramesWritten_);
+    totalFramesWritten_++;
+}
+
+void DiskSonarCache::readFrame(qint64 epochIdx, QByteArray& outFrame)
+{
+    QMutexLocker lk(&mtx_);
+    if (epochIdx < 0 || epochIdx >= frameMap_.size()) {
+        outFrame.clear();
+        return;
+    }
+    const qint64 offset = frameMap_[epochIdx] * PING_SIZE_MAX;
+    // if (!file_.seek(offset)) {
+    // 独立只读句柄：与写句柄（append 语义）彻底隔离游标，
+    // 即使未来互斥被破坏，seek 也不会影响写入位置
+
+    if(!readFile_.isOpen()) {
+        readFile_.open(QIODevice::ReadOnly);
+    }
+    if (!readFile_.seek(offset)) {
+        outFrame.clear();
+        return;
+    }
+    // outFrame = file_.read(PING_SIZE_MAX);
+    outFrame = readFile_.read(PING_SIZE_MAX);
+}
+
+void DiskSonarCache::removeFrames(int startIndex, int endIndex)
+{
+    if (startIndex > endIndex) {
+        std::swap(startIndex, endIndex);
+    }
+    const int sz = frameMap_.size();
+    if (startIndex < 0) {
+        startIndex = 0;
+    }
+    if (endIndex >= sz) {
+        endIndex = sz - 1;
+    }
+    if (startIndex > endIndex || startIndex >= sz) {
+        return;
+    }
+
+    QMutexLocker lk(&mtx_);
+    frameMap_.remove(startIndex, endIndex - startIndex + 1);   //磁盘帧不移动，仅同步映射
+}
+
+
+
+
+
+
 
 Dataset::Dataset() : lastBottomTrackEpoch_(0), sonarPosIndx_(0)
 {
@@ -212,39 +322,43 @@ void Dataset::addChartMeta(const ChannelId& channelId, const ChartParameters& ch
     }
 }
 
-void Dataset::addPosition_realTime(double lat, double lon, double depth, bool isRead)
-{
-    QWriteLocker wl(&poolMtx_);
-    Epoch* lastEp = last();
-    if (!lastEp) {
-        return;
-    }
+// void Dataset::addPosition_realTime(double lat, double lon, double depth, bool isRead)
+// {
+//     QWriteLocker wl(&poolMtx_);
+//     Epoch* lastEp = last();
+//     if (!lastEp) {
+//         return;
+//     }
 
-    Position pos;
-    pos.lla = LLA(lat, lon);
+//     Position pos;
+//     pos.lla = LLA(lat, lon);
 
-    if (pos.lla.isCoordinatesValid()) {
-        if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
-            lastEp = addNewEpoch();
-        }
-        uint64_t lastIndx = pool_.size() - 1;
-        if (!getLlaRef().isInit) {
-            LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
-                                (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
-            setLlaRef(LLARef(pos.lla), llaState);
-        }
-        lastEp->setPositionLLA(pos);
-        lastEp->setPositionRef(&_llaRef);
-        lastEp->setPositionDataType(DataType::kRaw);
+//     if (lastEp->getPositionGNSS().lla.isCoordinatesValid()) {
+//         lastEp = addNewEpoch();
+//     }
+//     uint64_t lastIndx = pool_.size() - 1;
+//     if (!getLlaRef().isInit) {
+//         LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
+//                             (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
+//         setLlaRef(LLARef(pos.lla), llaState);
+//     }
+//     lastEp->setPositionLLA(pos);
+//     lastEp->setPositionRef(&_llaRef);
+//     lastEp->setPositionDataType(DataType::kRaw);
 
-        if(isRead) {
-            emit positionAdded(lastIndx);
-        }
-    }
-}
+//     North_East_Down curNed = lastEp->getPositionGNSS().ned;
+//     QVector3D new3DData = QVector3D(curNed.n, curNed.e, 0);
+//     minX_ = std::min(minX_, new3DData.x());
+//     maxX_ = std::max(maxX_, new3DData.x());
+//     minY_ = std::min(minY_, new3DData.y());
+//     maxY_ = std::max(maxY_, new3DData.y());
 
+//     if(isRead) {
+//         emit positionAdded(lastIndx);
+//     }
+// }
 
-void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRender)
+void Dataset::addPosition(double lat, double lon, int depth, bool enableRender)
 {
     QWriteLocker wl(&poolMtx_);
     Epoch* lastEp = last();
@@ -258,11 +372,6 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
 
     Position pos;
     pos.lla = LLA(lat, lon);
-    // if (!pos.lla.isCoordinatesValid()) {
-    //     return;
-    // }
-
-    uint64_t poolCnt = pool_.size();
     if (!_llaRef.isInit) {
         LlaRefState llaState = state_ == DatasetState::kUndefined ? LlaRefState::kFile :
             (state_ == DatasetState::kFile ? LlaRefState::kFile :  LlaRefState::kConnection);
@@ -280,6 +389,7 @@ void Dataset::addPosition_file(double lat, double lon, int depth, bool enableRen
     minY_ = std::min(minY_, new3DData.y());
     maxY_ = std::max(maxY_, new3DData.y());
 
+    uint64_t poolCnt = pool_.size();
     if (poolCnt >= 2) {
         Epoch* prevEp = fromIndex(poolCnt - 2);
         if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
@@ -305,6 +415,7 @@ void Dataset::location(double lat, double lon)
     LLA lla = LLA(lat, lon);
     if (lla.isCoordinatesValid()) {
         _llaRef = LLARef(lla);
+        qDebug() << "lat...." << lat << "  " << lon;
         emit locationToDest(lla);
     }
     else {

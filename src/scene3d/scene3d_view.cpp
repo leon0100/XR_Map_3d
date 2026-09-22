@@ -911,12 +911,10 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
     }, Qt::DirectConnection);
 
     QObject::connect(datasetPtr_, &Dataset::locationToDest, this, [this](LLA targetLla) ->void {
-        // 将经纬度转换为相对于当前参考点的NED坐标
-        // LLARef llaRef = m_camera->datasetLlaRef_;
-        // m_camera->datasetLlaRef_ = LLARef(targetLla);
-        // North_East_Down targetNed(&targetLla, &m_camera->datasetLlaRef_, false);
+        m_camera->datasetLlaRef_ = LLARef(targetLla);
+        North_East_Down targetNed(&targetLla, &m_camera->datasetLlaRef_, false);
         // 移动相机焦点到目标位置
-        // m_camera->focusOnPosition(QVector3D(targetNed.n, targetNed.e, 0.0f));
+        m_camera->focusOnPosition(QVector3D(targetNed.n, targetNed.e, 0.0f));
         forceUpdateDatasetLlaRef();
         m_camera->setDistance(1600.0f);
 

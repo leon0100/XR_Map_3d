@@ -8,7 +8,6 @@
 #include <QGeoPositionInfoSource>
 #include <QUuid>
 #include <QFile>
-#include <QMutex>
 #include "dataset.h"
 #include "id_binnary.h"
 
@@ -47,34 +46,6 @@
 
 
 
-
-
-
-class DiskSonarCache {
-public:
-    explicit DiskSonarCache(const QString& filePath);
-    ~DiskSonarCache();
-
-    bool openForWrite();
-    bool openForRead();
-    void close();
-    void clearFile();
-
-    void writeFrame(const QByteArray& rawFrame);
-    void readFrame(qint64 epochIdx, QByteArray& outFrame);
-    void removeFrames(int startIndex, int endIndex);
-
-private:
-    QString filePath_;
-    QFile file_;
-    QHash<QPair<QUuid, int>, qint64> channelOffsets_;
-    QVector<qint64> frameMap_;  // pool索引 → 磁盘帧槽位（删除帧时同步erase）
-    qint64 totalFramesWritten_ = 0;
-    QMutex mtx_;
-};
-
-
-
 class DeviceManager : public QObject
 {
     Q_OBJECT
@@ -84,7 +55,7 @@ public:
     ~DeviceManager();
 
     void setProgressDialog(QObject* dialog);
-    void resetFileAndChannel(int fileCnt);
+    void resetFileAndChannel();
 
 
 public slots:
@@ -95,8 +66,7 @@ signals:
     void dataSend(QByteArray data);
     void chartComplete(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void rawDataRecieved(const ChannelId& channelId, RawData rawData);
-    void positionComplete(double lat, double lon, uint32_t date, uint32_t time);
-    void positionComplete_file(double lat, double lon,int depth, bool enableRender);
+    void positionComplete(double lat, double lon,int depth, bool enableRender);
     void fileStopsOpening(QVector<float>& depth, double minZ, double maxZ);
 
 
@@ -128,7 +98,6 @@ private:
     };
     bool isOpeningFile_ = false;
     QList<PendingFile> pendingFiles_;
-
 
     QByteArray tslHeadByteArray;
     StructTslHead tslHead;

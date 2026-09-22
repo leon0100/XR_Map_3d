@@ -45,6 +45,7 @@ public:
     void setDatasetPtr(Dataset* datasetPtr);
     void setDataProcessorPtr(DataProcessor* dataProcessorPtr);
     void actionEvent(ActionEvent actionEvent);
+    void updateRenderData(int lEpoch = 0, int rEpoch = 0, bool redrawAll = false, bool manually = false);
 
 public Q_SLOTS:
     virtual void setData(const QVector<QVector3D>& data, int primitiveType = GL_POINTS) override;
@@ -70,8 +71,6 @@ protected:
     virtual void mousePressEvent(Qt::MouseButtons buttons, qreal x, qreal y) override;
     virtual void mouseReleaseEvent(Qt::MouseButtons buttons, qreal x, qreal y) override;
     virtual void keyPressEvent(Qt::Key key) override;
-    void updateRenderData(int lEpoch = 0, int rEpoch = 0, bool redrawAll = false, bool manually = false);
-
 
 private:
     QVector<QPair<int, int>> getSubarrays(const QVector<int>& sequenceVector); // TODO: to utils

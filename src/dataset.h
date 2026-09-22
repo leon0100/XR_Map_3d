@@ -7,9 +7,36 @@
 #include <QVector>
 #include <QVector3D>
 #include <QReadWriteLock>
+#include <QMutex>
 
 #include "epoch.h"
 #include "data_processor_defs.h"
+
+
+class DiskSonarCache {
+public:
+    explicit DiskSonarCache(const QString& filePath);
+    ~DiskSonarCache();
+
+    bool openForWrite();
+    bool openForRead();
+    void close();
+    void clearFile();
+
+    void writeFrame(const QByteArray& rawFrame);
+    void readFrame(qint64 epochIdx, QByteArray& outFrame);
+    void removeFrames(int startIndex, int endIndex);
+
+private:
+    QString filePath_;
+    QFile file_;
+    QFile readFile_;   //独立只读句柄：读线程 seek 不影响写句柄的 append 游标
+    QHash<QPair<QUuid, int>, qint64> channelOffsets_;
+    QVector<qint64> frameMap_;  // pool索引 → 磁盘帧槽位（删除帧时同步erase）
+    qint64 totalFramesWritten_ = 0;
+    QMutex mtx_;
+};
+
 
 class GraphicsScene3dView;
 class Dataset : public QObject
@@ -213,8 +240,8 @@ public slots:
     void  setSonarOffset(float x, float y, float z);
     void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void  addChartMeta(const ChannelId& channelId, const ChartParameters& chartParams, bool enableRender);
-    void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
-    void  addPosition_file(double lat, double lon, int depth, bool enableRender);
+    // void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
+    void  addPosition(double lat, double lon, int depth, bool enableRender);
 
     void resetDataset();
     void resetPolygonOutline();

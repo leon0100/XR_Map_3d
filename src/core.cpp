@@ -482,7 +482,7 @@ void Core::openFileFromMenu()
         }
 
         datasetPtr_->preallocatePool(totalFileSize);
-        deviceManager_->resetFileAndChannel(fileCnt);
+        deviceManager_->resetFileAndChannel();
         //读取内容并调用相应的处理函数
         fileNames.sort();
         for(int i = 0; i < fileCnt; i++) {
@@ -796,27 +796,25 @@ void Core::createControllers()
     boatTrackControlMenuController_     = std::make_shared<BoatTrackControlMenuController>();
     bottomTrackControlMenuController_   = std::make_shared<BottomTrackControlMenuController>();
     isobathsViewControlMenuController_  = std::make_shared<IsobathsViewControlMenuController>();
-    // imageViewControlMenuController_     = std::make_shared<ImageViewControlMenuController>();
 
     deviceManager_                      = std::make_shared<DeviceManager>(datasetPtr_);
     bleManager_                         = std::make_shared<BLEManager>();
     udpManager_                         = std::make_shared<UdpManager>();
-    serialPortManager_                  = std::make_shared<SerialPortManager>();
+    serialPortManager_                  = std::make_shared<SerialPortManager>(datasetPtr_);
     locations_                          = std::make_shared<Locations>();
 }
 
 void Core::createDeviceManagerConnections()
 {
     Qt::ConnectionType directionConnection = Qt::ConnectionType::DirectConnection;
-    QObject::connect(deviceManager_.get(), &DeviceManager::chartComplete, datasetPtr_,   &Dataset::addChart,         directionConnection);
-    QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,  directionConnection);
-    QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime,  directionConnection);
-    QObject::connect(serialPortManager_.get(), &SerialPortManager::positionComplete, datasetPtr_, &Dataset::addPosition_realTime, directionConnection);
+    QObject::connect(bleManager_.get(), &BLEManager::positionComplete, datasetPtr_, &Dataset::addPosition,  directionConnection);
+    QObject::connect(udpManager_.get(), &UdpManager::positionComplete, datasetPtr_, &Dataset::addPosition,  directionConnection);
+    QObject::connect(serialPortManager_.get(), &SerialPortManager::positionComplete, datasetPtr_, &Dataset::addPosition, directionConnection);
     QObject::connect(serialPortManager_.get(), &SerialPortManager::chartComplete,    datasetPtr_, &Dataset::addChart,  directionConnection);
 
-    QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete_file, datasetPtr_, &Dataset::addPosition_file, directionConnection);
-
-    QObject::connect(deviceManager_.get(), &DeviceManager::fileStopsOpening, this, &Core::onFileStopsOpening,     directionConnection);
+    QObject::connect(deviceManager_.get(), &DeviceManager::positionComplete, datasetPtr_, &Dataset::addPosition, directionConnection);
+    QObject::connect(deviceManager_.get(), &DeviceManager::chartComplete, datasetPtr_,   &Dataset::addChart,    directionConnection);
+    QObject::connect(deviceManager_.get(), &DeviceManager::fileStopsOpening, this, &Core::onFileStopsOpening,    directionConnection);
 
     QObject::connect(bleManager_.get(), &BLEManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourBle,  directionConnection);
     QObject::connect(udpManager_.get(), &UdpManager::signal_drawRealtimeContour, this, &Core::slot_RealtimeDrawContourWifi, directionConnection);
@@ -998,18 +996,22 @@ void Core::slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double m
         onDataProcesstorStateChanged(DataProcessorType::serialPortTrack);
     }
     if(isAutoRenderSpan_) {
-        if(vecSize == 200) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-        }
-        else if(vecSize == 400) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-        }
-        else if(vecSize == 600) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(50);
-        }
-        else if(vecSize == 800) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(40);
-        }
+        // if(vecSize == 200) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(80);
+        // }
+        // else if(vecSize == 400) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(60);
+        // }
+        // else if(vecSize == 600) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(50);
+        // }
+        // else if(vecSize == 800) {
+        //     isobathsViewControlMenuController_->setEdgeLimitChanged(40);
+        // }
+        float bboxW = datasetPtr_->maxX_ - datasetPtr_->minX_;
+        float bboxH = datasetPtr_->maxY_ - datasetPtr_->minY_;
+        int newLimit = sqrt(bboxW * bboxW + bboxH * bboxH) / 8;
+        isobathsViewControlMenuController_->setEdgeLimitChanged(newLimit);
     }
 
     datasetPtr_->vec_CSV_  = depthVec;

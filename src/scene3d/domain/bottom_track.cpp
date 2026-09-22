@@ -142,7 +142,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     }
 
     QVector<QVector3D> prepData;
-    qDebug() << "lEpoch....." << lEpoch << "   rEpoch...." << rEpoch;
     epIndxUpdated_.clear();
     vertIndxUpdated_.clear();
     const int cnt = rEpoch - lEpoch;
@@ -193,7 +192,6 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
 
     // dataWl.unlock();
 
-    qDebug() << "epIndxUpdated_.size():" << epIndxUpdated_.size() << "  " << vertIndxUpdated_.size();
     emit updatedPoints(epIndxUpdated_, vertIndxUpdated_, manual);  //这句绘制等高线
 
     SceneObject::appendData(prepData);

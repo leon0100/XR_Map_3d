@@ -88,7 +88,6 @@ void DataHorizon::onAddedAttitude(uint64_t indx)
 
 void DataHorizon::onAddedBottomTrack3D(const QVector<int>& epIndxs, const QVector<int>& vertIndx, bool isManual)
 {
-    qDebug() << "onAddedBottomTrack3D.............";
     bool beenChanged = true;
 
     if (canEmitHorizon(beenChanged)) {

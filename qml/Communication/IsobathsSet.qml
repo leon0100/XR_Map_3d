@@ -50,7 +50,7 @@ Item {
                     isobathsDrawOpen = !isobathsDrawOpen
                     if(isobathsDrawOpen) {
                         bluetoothDrawOpen = false
-                        bluetoothToggleBtn.color = "#879fc6"
+                        bluetoothToggleBtn.color  = "#879fc6"
                         parent.color = "#4a5f82"
                         isobathsToggleBtn.opacity = 0.95
                     }

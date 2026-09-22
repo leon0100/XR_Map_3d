@@ -11,10 +11,9 @@
 #include <QtEndian>
 #include <QHostAddress>
 
-#include "dataset_defs.h"
 #include "tsl3.h"
 #include "id_binnary.h"
-
+#include "dataset.h"
 
 
 #define  TEMP_PATH_SERIAL       (qApp->applicationDirPath().append("/temp/").append(QString::number(qApp->applicationPid())))
@@ -38,7 +37,7 @@ public:
 
 
 public:
-    explicit SerialPortManager(QObject *parent = nullptr);
+    explicit SerialPortManager(Dataset* datasetPtr, QObject *parent = nullptr);
     ~SerialPortManager();
 
     QStringList availablePorts();
@@ -81,8 +80,7 @@ private slots:
     void handleReadyRead();
 
 private:
-
-    QString getCurrentWifiName();
+    void resetFileAndChannel();
     uint8_t crc8_poly7(const uint8_t *data, int len);
     uint16_t crc16_modbus(const uint8_t *data, int len);
     QByteArray buildXrmapActivePayload(uint16_t map_ver, const QString &map_name, uint32_t map_size,
@@ -105,6 +103,8 @@ public:
 
 private:
     int baudRate_ = 230400;
+    Dataset* datasetPtr_ = nullptr;
+    DiskSonarCache* diskSonarCache_ = nullptr;
 
     QSerialPort *serialPort_;
     QStringList m_availablePorts;

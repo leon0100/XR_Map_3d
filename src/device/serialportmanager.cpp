@@ -8,7 +8,7 @@
 #include "console.h"
 #include "tmodem.h"
 
-SerialPortManager::SerialPortManager(QObject *parent) : QObject(parent)
+SerialPortManager::SerialPortManager(Dataset* datasetPtr, QObject *parent) : QObject(parent), datasetPtr_(datasetPtr)
 {
     serialPort_ = new QSerialPort(this);
     serialPort_->setDataBits(QSerialPort::Data8);
@@ -77,6 +77,7 @@ void SerialPortManager::toggleConnection(QString port, int baudRate)
         emit connectChanged(false);
     }
     else {
+        resetFileAndChannel();
         serialPort_->setPortName(port);
         serialPort_->setBaudRate(baudRate);
         if(serialPort_->open(QIODevice::ReadWrite)) {
@@ -87,6 +88,43 @@ void SerialPortManager::toggleConnection(QString port, int baudRate)
             emit dataReceived(tr("Failed to open port: %1").arg(serialPort_->errorString()));
         }
     }
+}
+
+void SerialPortManager::resetFileAndChannel()
+{
+    batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
+    // minZ_ = std::numeric_limits<float>::max();
+    // maxZ_ = std::numeric_limits<float>::lowest();
+    // depthVec_.clear();
+    // flag_haveReportAbnormalGPS = false;
+    // count_abnormalGPS = 0;
+
+    if (diskSonarCache_) {
+        diskSonarCache_->close();
+        delete diskSonarCache_;
+        diskSonarCache_ = nullptr;
+    }
+
+    QString dirPath;
+#ifdef Q_OS_ANDROID
+    dirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/pixL/";
+#else
+    dirPath = QString(qApp->applicationDirPath().append("/pixL/"));
+#endif
+    QDir dir;
+    if (!dir.mkpath(dirPath)) {
+        qDebug() << "mkpath failed:" << dirPath << "fallback to temp";
+        dirPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/pixL/";
+        if (!dir.mkpath(dirPath)) {
+            qDebug() << "temp mkpath also failed, disk cache disabled";
+            return;
+        }
+    }
+
+    QString filePath = QDir(dirPath).filePath("pixL.txt");
+    diskSonarCache_ = new DiskSonarCache(filePath);
+    diskSonarCache_->clearFile();
+    datasetPtr_->setDiskSonarCache(diskSonarCache_);
 }
 
 
@@ -340,6 +378,7 @@ void SerialPortManager::parseTsl3FromTModem()
     int byteCount = 0;
     int maxCount = m_tsl3Buffer.count();
     int tslIdx = sizeof(pack_head_t3)+sizeof(ping_info_t3)+sizeof(navi_info_t3)+sizeof(aux_info_t3);
+
     while(nowIndex_ < (maxCount-100))
     {
         if('#' == m_tsl3Buffer.at(nowIndex_)) {
@@ -386,26 +425,25 @@ void SerialPortManager::parseTsl3FromTModem()
         lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
         lla.altitude  = tslSingleStru.auxInfo.depth * 0.01f;
         // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
-
-        QByteArray rawDat;
-        for(int i = 0; i < tslSingleStru.ping.size; i++) {
-            rawDat.append(tslDataTemp[tslIdx + i]);
-        }
-        for(int i = tslSingleStru.ping.size; i < PING_SIZE_MAX; i++) {
-            rawDat.append('\0');
-        }
+        datasetPtr_->addPosition(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
 
         // ----------- 将声呐数据发送到 Dataset ------------
         int pingSize = tslSingleStru.ping.size;
-        QVector<QVector<uint8_t>> dataVec;
-        QVector<uint8_t> channelData;
-        for(int i = 0; i < pingSize; i++) {
-            channelData.append((uint8_t)tslDataTemp[tslIdx + i]);
+        QByteArray rawDat;
+        for(int i=0; i<pingSize; i++) {
+            rawDat.append(tslDataTemp[tslIdx +i]);
         }
         for(int i = pingSize; i < PING_SIZE_MAX; i++) {
-            channelData.append((uint8_t)'\0');
+            rawDat.append('\0');
         }
-        dataVec.append(channelData);
+        diskSonarCache_->writeFrame(rawDat);
+
+        // LLA lla;
+        // lla.latitude  = dm_to_dd(tslSingleStru.boat.latitude);
+        // lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
+        // lla.altitude  = tslSingleStru.auxInfo.depth * 0.01f;
+        // // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
+        // datasetPtr_->addPosition(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
 
         float upRng = tslSingleStru.ping.upRng;
         float loRng = tslSingleStru.ping.loRng;
@@ -437,16 +475,40 @@ void SerialPortManager::parseTsl3FromTModem()
         depth_     = depth;
         emit dataPanelUpdate();
 
-        emit chartComplete(batchChannelId_, chartParams, dataVec, readingDrawTrack_);
-
-        emit positionComplete(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
+        datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
 
         depthHistory_.append(static_cast<float>(lla.altitude));
         minDepth_ = std::min(minDepth_, lla.altitude);
         maxDepth_ = std::max(maxDepth_, lla.altitude);
 
-        emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
-        break;
+        // emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
+        datasetPtr_->setAutoBounadry();
+        if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
+            // btpPtr->preset      = static_cast<BottomTrackPreset>(preset);
+            // btpPtr->gainSlope   = gain_slope;
+            // btpPtr->threshold   = threshold;
+            // btpPtr->windowSize  = window_size;
+            // btpPtr->verticalGap = vertical_gap;
+            // btpPtr->minDistance = range_min;
+            // btpPtr->maxDistance = range_max;
+            btpPtr->indexFrom   = 0;
+            btpPtr->indexTo     = datasetPtr_->size();
+            // btpPtr->offset.x    = offsetx;
+            // btpPtr->offset.y    = offsety;
+            // btpPtr->offset.z    = offsetz;
+
+            ChannelId channelId;
+            datasetPtr_->onLastBottomTrackEpochChanged(channelId, btpPtr->indexTo, *btpPtr, true, true);
+        }
+        emit datasetPtr_->dataUpdate();
+        // break;
+    }
+
+
+    // 清理已消费前缀，防止长时间实时测量时 m_tsl3Buffer 无限增长
+    if (nowIndex_ > 65536) {
+        m_tsl3Buffer.remove(0, nowIndex_);
+        nowIndex_ = 0;
     }
 
 }

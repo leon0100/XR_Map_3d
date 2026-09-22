@@ -530,6 +530,8 @@ Popup {
                         mainMenuPopup.closeMenu()
                         if(theme.liveDataVisible === false) {
                             BleManager.setBleLiveScanningVisible(true)
+                            liveDataPanel.x = menuSize
+                            liveDataPanel.y = 1
                             theme.liveDataVisible = true
                         }
                         else {

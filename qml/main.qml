@@ -114,6 +114,8 @@ ApplicationWindow  {
 
     LiveData {
         id: liveDataPanel
+        parent: mainview.contentItem
+        dragArea: mainview.contentItem
     }
 
     ExportAsData { }

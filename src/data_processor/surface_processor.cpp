@@ -171,7 +171,7 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     }
 
     const QVector<QPair<char, int>> filteredIndxs = filterDensePoints(bTrData, indxs, 32000);
-    qDebug() << "indxs..." << indxs.size() << "   filteredIndxs....." << filteredIndxs.size();
+    // qDebug() << "indxs..." << indxs.size() << "   filteredIndxs....." << filteredIndxs.size();
 
     //头一次都是初始化时的数据
     auto& tr = delaunayProc_.getTriangles();

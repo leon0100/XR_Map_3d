@@ -2,7 +2,6 @@ import QtQuick 2.15
 
 Rectangle {
     id: root
-
     y: - height
     width: 100
     height: expanded ? expandHeight : 0
@@ -20,11 +19,12 @@ Rectangle {
 
     property bool expanded: false
     property real expandHeight: 100
+    property bool scaleUpToDown: false
 
    // 从底部向上展开的缩放变换
    transform: Scale {
        origin.x: root.width / 2
-       origin.y: root.height
+       origin.y: scaleUpToDown ? 0 : root.height
        xScale: 1
        yScale: root.expanded ? 1 : 0
 

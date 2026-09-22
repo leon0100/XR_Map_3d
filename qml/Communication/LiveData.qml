@@ -2,28 +2,28 @@ import QtQuick 2.15
 import QtQuick.Controls 2.12
 import QtQuick.Layouts  1.12
 
-
+import "../"
 
 // ----------------- Live Data 面板 ------------------
-Rectangle {
+XRRectangle {
     id: liveDataContent
     width:  liveDataSize
     height: liveDataSize * 0.8
-    x: width * 0.3
-    y: 2
+    // x: width * 0.3
+    // y: 2
     z: 9999
     color: "#f0f0f0"
     border.color: "#3498db"
     border.width: 1
     radius: 5
+    scaleUpToDown: true
     visible: theme.liveDataVisible
+    expanded: theme.liveDataVisible
 
 
-    // property int  currentCommPage: 0
     property bool bluetoothDrawOpen: false
     property int  liveDataSize: theme.screenSize * 0.35
     property int  layoutHeight: liveDataSize * 0.1
-    property var  targetPlot:   null
     property int  iconSize:     liveDataSize * 0.05
     property bool isShowDataPanel: false
 
@@ -44,7 +44,6 @@ Rectangle {
             liveDataContent.isShowDataPanel = connected
         }
     }
-
 
     // 拦截鼠标事件，防止点击穿透到地图
     MouseArea {
@@ -859,7 +858,7 @@ Rectangle {
                         id: baudCombo
                         model: [ "230400", "19200", "921600", "57600", "115200", "38400"]
                         font.pixelSize: iconSize
-                        Layout.preferredWidth: iconSize * 6
+                        Layout.preferredWidth: iconSize * 6.3
                         contentItem: Text {
                             text: baudCombo.displayText
                             color: "#333333"

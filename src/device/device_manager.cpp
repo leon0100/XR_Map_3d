@@ -13,99 +13,6 @@
 #include "console.h"
 
 
-
-DiskSonarCache::DiskSonarCache(const QString& filePath) : filePath_(filePath)
-{
-    // qDebug() << "filePath....." << filePath;
-}
-
-DiskSonarCache::~DiskSonarCache()
-{
-    close();
-}
-
-bool DiskSonarCache::openForWrite()
-{
-    file_.setFileName(filePath_);
-    return file_.open(QIODevice::ReadWrite | QIODevice::Append);
-}
-
-bool DiskSonarCache::openForRead()
-{
-    close();
-    file_.setFileName(filePath_);
-    return file_.open(QIODevice::ReadOnly);
-}
-
-void DiskSonarCache::close()
-{
-    QMutexLocker lk(&mtx_);
-    if (file_.isOpen()) {
-        file_.flush();
-        file_.close();
-    }
-}
-void DiskSonarCache::clearFile()
-{
-    QMutexLocker lk(&mtx_);
-
-    if (QFile::exists(filePath_)) {
-        if (!QFile::remove(filePath_)) {
-            qDebug() << "Failed to remove cache file:" << filePath_;
-            return ;
-        }
-    }
-
-    totalFramesWritten_ = 0;
-    channelOffsets_.clear();
-    frameMap_.clear();
-    openForWrite();
-}
-
-void DiskSonarCache::writeFrame(const QByteArray& rawFrame)
-{
-    file_.write(rawFrame.constData(), PING_SIZE_MAX);
-    frameMap_.append(totalFramesWritten_);
-    totalFramesWritten_++;
-}
-
-void DiskSonarCache::readFrame(qint64 epochIdx, QByteArray& outFrame)
-{
-    QMutexLocker lk(&mtx_);
-    if (epochIdx < 0 || epochIdx >= frameMap_.size()) {
-        outFrame.clear();
-        return;
-    }
-    const qint64 offset = frameMap_[epochIdx] * PING_SIZE_MAX;
-    if (!file_.seek(offset)) {
-        outFrame.clear();
-        return;
-    }
-    outFrame = file_.read(PING_SIZE_MAX);
-}
-
-void DiskSonarCache::removeFrames(int startIndex, int endIndex)
-{
-    if (startIndex > endIndex) {
-        std::swap(startIndex, endIndex);
-    }
-    const int sz = frameMap_.size();
-    if (startIndex < 0) {
-        startIndex = 0;
-    }
-    if (endIndex >= sz) {
-        endIndex = sz - 1;
-    }
-    if (startIndex > endIndex || startIndex >= sz) {
-        return;
-    }
-
-    QMutexLocker lk(&mtx_);
-    frameMap_.remove(startIndex, endIndex - startIndex + 1);   //磁盘帧不移动，仅同步映射
-}
-
-
-
 /**------------------------------------DeviceManager-------------------------------------------**/
 DeviceManager::DeviceManager(Dataset* datasetPtr): datasetPtr_(datasetPtr)
 {
@@ -131,7 +38,7 @@ void DeviceManager::setProgressDialog(QObject* dialog)
     }
 }
 
-void DeviceManager::resetFileAndChannel(int fileCnt)
+void DeviceManager::resetFileAndChannel()
 {
     batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
     minZ_ = std::numeric_limits<float>::max();
@@ -235,7 +142,7 @@ void DeviceManager::openFile_CSV(QString filePath, int fileIndex, int fileCnt)
             QCoreApplication::processEvents();
         }
         bool enableRender = currentLine == validTotal ? true : false;
-        emit positionComplete_file(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude,enableRender);
+        emit positionComplete(pos.lla.latitude, pos.lla.longitude, pos.lla.altitude,enableRender);
     }
     qDebug() << "minZ_...." << minZ_ << "   " << maxZ_ << "   vec_CSV.size():" << vec_CSV.size();
 
@@ -472,8 +379,8 @@ void DeviceManager::openFileData_tslw(QByteArray &tslByteArray, int fileIndex, i
         chartParams.latitude    = lla.latitude;
 
         // emit chartComplete(batchChannelId_, chartParams, dataVec, true);
-        // emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
-        datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
+        // emit positionComplete(lla.latitude, lla.longitude, lla.altitude, enableRender);
+        datasetPtr_->addPosition(lla.latitude, lla.longitude, lla.altitude, false);
         datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
 
         if (i % 200 == 0) {
@@ -595,7 +502,7 @@ void DeviceManager::openFileData_tslw2(QByteArray &tslByteArray, int fileIndex, 
         chartParams.longitude   = lla.longitude;
         chartParams.latitude    = lla.latitude;
 
-        datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
+        datasetPtr_->addPosition(lla.latitude, lla.longitude, lla.altitude, false);
         datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
 
         depthVec_.append(lla.altitude);
@@ -770,7 +677,7 @@ void DeviceManager::openFileData_tsly(QByteArray &tslyByteArray, int fileIndex, 
             chartParams.latitude    = lat;
             chartParams.longitude   = lon;
 
-            datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
+            datasetPtr_->addPosition(lla.latitude, lla.longitude, lla.altitude, false);
             datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
 
             depthVec_.append(lla.altitude);
@@ -961,7 +868,7 @@ void DeviceManager::openFileData_tsl3(QByteArray &tslByteArray, int fileIndex, i
         bool enableRender = (fileIndex == fileCnt - 1) && ((i + 1) == tsl3Cnt);
         emit chartComplete(batchChannelId_, chartParams, dataVec, enableRender);
 
-        emit positionComplete_file(lla.latitude, lla.longitude, lla.altitude, enableRender);
+        emit positionComplete(lla.latitude, lla.longitude, lla.altitude, enableRender);
 
         // 更新进度条
         if (progressDialog_ && (i % 200 == 0 || i == (tsl3Cnt - 1))) {
@@ -1192,7 +1099,7 @@ void DeviceManager::openFileData_tsl3_2(QByteArray &tslByteArray, int fileIndex,
         // dataVec.append(channelData);
         // datasetPtr_->addChart(batchChannelId_, chartParams, dataVec, false);
 
-        datasetPtr_->addPosition_file(lla.latitude, lla.longitude, lla.altitude, false);
+        datasetPtr_->addPosition(lla.latitude, lla.longitude, lla.altitude, false);
         datasetPtr_->addChartMeta(batchChannelId_, chartParams, false);
 
         depthVec_.append(lla.altitude);
