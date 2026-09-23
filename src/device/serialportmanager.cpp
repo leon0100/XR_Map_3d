@@ -123,6 +123,7 @@ void SerialPortManager::resetFileAndChannel()
 
     QString filePath = QDir(dirPath).filePath("pixL.txt");
     diskSonarCache_ = new DiskSonarCache(filePath);
+    diskSonarCache_->setRealtimeMode(true);
     diskSonarCache_->clearFile();
     datasetPtr_->setDiskSonarCache(diskSonarCache_);
 }
@@ -147,7 +148,7 @@ QStringList SerialPortManager::availablePorts()
 
 bool SerialPortManager::isConnected()
 {
-    // qDebug() << "serialPort_->isOpen........" << serialPort_->isOpen();
+    qDebug() << "serialPort_->isOpen........" << serialPort_->isOpen();
     return serialPort_->isOpen();
 }
 
@@ -296,7 +297,6 @@ QByteArray SerialPortManager::buildTModemFrame_xrmap(uint8_t dev_addr, uint8_t s
 
 void SerialPortManager::parseTModemFrame(QByteArray& rawData)
 {
-    // qDebug() << "rawData.size().... " << rawData.size();
     QList<StructFrameTM> frames;
 
     const quint8 HEAD1       = 0xAA;
@@ -306,7 +306,6 @@ void SerialPortManager::parseTModemFrame(QByteArray& rawData)
 
     int pos = 0;
     int dataLen = rawData.size();
-    bool frameLengNot = false;
     while (pos <= (dataLen - HEADER_LEN))
     {
         // 1. 查找包头 0xAA 0xBB
@@ -337,7 +336,6 @@ void SerialPortManager::parseTModemFrame(QByteArray& rawData)
         // 5. 检查整帧长度是否足够
         quint32 frameLen = HEADER_LEN + payloadLen + 2; // +2 是 check1/check2
         if (pos + frameLen > dataLen) {
-            frameLengNot = true;
             break; // 数据不足，等待更多数据
         }
 
@@ -365,11 +363,8 @@ void SerialPortManager::parseTModemFrame(QByteArray& rawData)
         pos += frameLen;  // 10. 移动到下一帧
     }
 
-    if(!frameLengNot) {
-        rawData.remove(0, pos);
-        parseTsl3FromTModem();
-    }
-
+    rawData.remove(0, pos);
+    parseTsl3FromTModem();
 }
 
 void SerialPortManager::parseTsl3FromTModem()
@@ -416,7 +411,7 @@ void SerialPortManager::parseTsl3FromTModem()
         }
     }
 
-    // qDebug() << "tslByteList.size()........" << tslByteList.size();
+    qDebug() << "tslByteList.size()........" << tslByteList.size();
     for(auto tslDataTemp : tslByteList) {
         tsl_3 tslSingleStru;
         memcpy(&tslSingleStru, tslDataTemp, tslIdx);
@@ -437,13 +432,6 @@ void SerialPortManager::parseTsl3FromTModem()
             rawDat.append('\0');
         }
         diskSonarCache_->writeFrame(rawDat);
-
-        // LLA lla;
-        // lla.latitude  = dm_to_dd(tslSingleStru.boat.latitude);
-        // lla.longitude = dm_to_dd(tslSingleStru.boat.longitude);
-        // lla.altitude  = tslSingleStru.auxInfo.depth * 0.01f;
-        // // qDebug() << "lla.latitude " << lla.latitude << "  " << lla.longitude << "  " << lla.altitude;
-        // datasetPtr_->addPosition(lla.latitude, lla.longitude, lla.altitude, readingDrawTrack_);
 
         float upRng = tslSingleStru.ping.upRng;
         float loRng = tslSingleStru.ping.loRng;
@@ -481,36 +469,19 @@ void SerialPortManager::parseTsl3FromTModem()
         minDepth_ = std::min(minDepth_, lla.altitude);
         maxDepth_ = std::max(maxDepth_, lla.altitude);
 
-        // emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
         datasetPtr_->setAutoBounadry();
-        if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
-            // btpPtr->preset      = static_cast<BottomTrackPreset>(preset);
-            // btpPtr->gainSlope   = gain_slope;
-            // btpPtr->threshold   = threshold;
-            // btpPtr->windowSize  = window_size;
-            // btpPtr->verticalGap = vertical_gap;
-            // btpPtr->minDistance = range_min;
-            // btpPtr->maxDistance = range_max;
-            btpPtr->indexFrom   = 0;
-            btpPtr->indexTo     = datasetPtr_->size();
-            // btpPtr->offset.x    = offsetx;
-            // btpPtr->offset.y    = offsety;
-            // btpPtr->offset.z    = offsetz;
-
-            ChannelId channelId;
-            datasetPtr_->onLastBottomTrackEpochChanged(channelId, btpPtr->indexTo, *btpPtr, true, true);
-        }
-        emit datasetPtr_->dataUpdate();
-        // break;
     }
 
+    if (!tslByteList.isEmpty()) {
+        emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
 
-    // 清理已消费前缀，防止长时间实时测量时 m_tsl3Buffer 无限增长
+        emit datasetPtr_->dataUpdate();
+    }
+
     if (nowIndex_ > 65536) {
         m_tsl3Buffer.remove(0, nowIndex_);
         nowIndex_ = 0;
     }
-
 }
 
 double SerialPortManager::dm_to_dd(double ddmmmmmmm)

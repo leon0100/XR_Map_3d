@@ -44,6 +44,11 @@ void registerQmlMetaTypes()
 
 int main(int argc, char *argv[])
 {
+    // QQuickPaintedItem 的 paint() 在线程化渲染循环下运行于渲染线程，
+    // 而 Plot2D/Dataset 数据通路按单线程设计无同步，强制基础循环使渲染回到 GUI 线程，
+    // 消除渲染线程与 GUI 线程（串口实时写入）之间的数据竞争（黄色条纹/isDetached 崩溃）
+    qputenv("QSG_RENDER_LOOP", "basic");
+
 #ifdef Q_OS_ANDROID
     qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "0");  // TODO: use qt scaling!
     qputenv("QT_SCALE_FACTOR", "0.5");

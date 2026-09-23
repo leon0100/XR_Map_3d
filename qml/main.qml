@@ -50,7 +50,7 @@ ApplicationWindow  {
     Loader {
         id: stateGroupLoader
         active: Qt.platform.os === "windows"
-        sourceComponent: stateGroupComp
+        // sourceComponent: stateGroupComp //在windows版下注释
     }
 
     MenuBar_XR {
@@ -186,6 +186,7 @@ ApplicationWindow  {
     }
 
     function setFullScreenMode(enabled) {
+        console.log("setFullScreenMode(enabled)...", enabled)
         appSettings.isFullScreen = enabled
         if (enabled) {
             mainview.showFullScreen()
@@ -327,6 +328,7 @@ ApplicationWindow  {
         waterViewSecond.plotPressed.connect(handlePlotPressed)
         waterViewSecond.plotReleased.connect(handlePlotReleased)
 
+        console.log("appSettings.isFullScreen...", appSettings.isFullScreen)
         if (appSettings.isFullScreen) {
             mainview.showFullScreen()
         }
@@ -416,6 +418,7 @@ ApplicationWindow  {
             let p = hotkeyData["parameter"];
 
             if (fn === "toggleFullScreen") {
+                console.log("fn === toggleFullScreen........")
                 toggleFullScreenMode()
                 return;
             }

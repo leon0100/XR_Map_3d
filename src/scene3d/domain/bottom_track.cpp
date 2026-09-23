@@ -151,7 +151,7 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
         vertIndxUpdated_.reserve(cnt);
     }
 
-    // QWriteLocker dataWl(&dataMtx_);
+    QWriteLocker dataWl(&dataMtx_);
 
     try {
     for (int epIndx = lEpoch; epIndx < rEpoch; ++epIndx) {
@@ -212,7 +212,7 @@ void BottomTrack::setData(const QVector<QVector3D> &data, int primitiveType)
 
 void BottomTrack::clearData()
 {
-    // QWriteLocker dataWl(&dataMtx_);
+    QWriteLocker dataWl(&dataMtx_);
     vertex2Epoch_.clear();
     epoch2Vertex_.clear();
     visibleChannel_ = DatasetChannel();
@@ -393,6 +393,7 @@ void BottomTrack::updateRenderData(int lEpIndx, int rEpIndx, bool redraw, bool m
         redrawAll = true;
     }
 
+    QWriteLocker dataWl(&dataMtx_);
     if (redrawAll) {
         clearCache();
     }
@@ -480,8 +481,15 @@ QVector<QPair<int, int>> BottomTrack::getSubarrays(const QVector<int>& sequenceV
     return retVal;
 }
 
+QVector<QVector3D> BottomTrack::cdataCopy() const
+{
+    QReadLocker rl(&dataMtx_);
+    return RENDER_IMPL(BottomTrack)->cdata();
+}
+
 void BottomTrack::clearCache()
 {
+    QWriteLocker dataWl(&dataMtx_);
     auto* r = RENDER_IMPL(BottomTrack);
     r->m_data.resize(0);
     // r->m_data.clear();

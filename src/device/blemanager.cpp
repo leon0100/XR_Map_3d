@@ -452,11 +452,6 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
     maxDepth_ = std::max(maxDepth_, pt.depth);
 
     emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
-
-
-
-
-
 }
 
 

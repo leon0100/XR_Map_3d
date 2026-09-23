@@ -1019,7 +1019,14 @@ void Core::slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double m
     datasetPtr_->maxDepth_ = maxZ;
     QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
     QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
-    emit drawRealtimeContour(isRead);
+    if(isRead) {
+        if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
+            btpPtr->indexFrom   = 0;
+            btpPtr->indexTo     = datasetPtr_->size();
+            ChannelId channelId;
+            datasetPtr_->onLastBottomTrackEpochChanged(channelId, btpPtr->indexTo, *btpPtr, true, true);
+        }
+    }
 }
 
 void Core::createDatasetConnections()

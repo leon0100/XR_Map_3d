@@ -15,8 +15,6 @@ DiskSonarCache::~DiskSonarCache()
 
 bool DiskSonarCache::openForWrite()
 {
-    readFile_.setFileName(filePath_);
-    readFile_.open(QIODevice::ReadOnly);
     file_.setFileName(filePath_);
     return file_.open(QIODevice::ReadWrite | QIODevice::Append);
 }
@@ -34,10 +32,6 @@ void DiskSonarCache::close()
         file_.flush();
         file_.close();
     }
-    if(readFile_.isOpen()) {
-        readFile_.flush();
-        readFile_.close();
-    }
 }
 void DiskSonarCache::clearFile()
 {
@@ -50,16 +44,23 @@ void DiskSonarCache::clearFile()
         }
     }
 
+    memFramesVec_.clear();
     totalFramesWritten_ = 0;
     channelOffsets_.clear();
     frameMap_.clear();
-    openForWrite();
+    if(!realtimeMode_) {
+        openForWrite();
+    }
 }
 
 void DiskSonarCache::writeFrame(const QByteArray& rawFrame)
 {
-    qDebug() << "rawFrame...." << rawFrame.size();
     QMutexLocker lk(&mtx_);
+    if(realtimeMode_) {
+        memFramesVec_.append(rawFrame);
+        return;
+    }
+
     file_.write(rawFrame.constData(), PING_SIZE_MAX);
     frameMap_.append(totalFramesWritten_);
     totalFramesWritten_++;
@@ -68,24 +69,31 @@ void DiskSonarCache::writeFrame(const QByteArray& rawFrame)
 void DiskSonarCache::readFrame(qint64 epochIdx, QByteArray& outFrame)
 {
     QMutexLocker lk(&mtx_);
-    if (epochIdx < 0 || epochIdx >= frameMap_.size()) {
+    if (epochIdx < 0) {
         outFrame.clear();
         return;
     }
-    const qint64 offset = frameMap_[epochIdx] * PING_SIZE_MAX;
-    // if (!file_.seek(offset)) {
-    // 独立只读句柄：与写句柄（append 语义）彻底隔离游标，
-    // 即使未来互斥被破坏，seek 也不会影响写入位置
 
-    if(!readFile_.isOpen()) {
-        readFile_.open(QIODevice::ReadOnly);
+    if (realtimeMode_) {
+        if (epochIdx >= memFramesVec_.size()) {
+            outFrame.clear();
+            return;
+        }
+        outFrame = memFramesVec_.at(epochIdx);
+        return;
     }
-    if (!readFile_.seek(offset)) {
+
+    if (epochIdx >= frameMap_.size()) {
         outFrame.clear();
         return;
     }
-    // outFrame = file_.read(PING_SIZE_MAX);
-    outFrame = readFile_.read(PING_SIZE_MAX);
+
+    const qint64 offset = frameMap_[epochIdx] * PING_SIZE_MAX;
+    if (!file_.seek(offset)) {
+        outFrame.clear();
+        return;
+    }
+    outFrame = file_.read(PING_SIZE_MAX);
 }
 
 void DiskSonarCache::removeFrames(int startIndex, int endIndex)
@@ -93,7 +101,7 @@ void DiskSonarCache::removeFrames(int startIndex, int endIndex)
     if (startIndex > endIndex) {
         std::swap(startIndex, endIndex);
     }
-    const int sz = frameMap_.size();
+    const int sz = realtimeMode_ ? memFramesVec_.size() : frameMap_.size();
     if (startIndex < 0) {
         startIndex = 0;
     }
@@ -105,9 +113,17 @@ void DiskSonarCache::removeFrames(int startIndex, int endIndex)
     }
 
     QMutexLocker lk(&mtx_);
-    frameMap_.remove(startIndex, endIndex - startIndex + 1);   //磁盘帧不移动，仅同步映射
-}
+    if (realtimeMode_) {
+        memFramesVec_.remove(startIndex, endIndex - startIndex + 1);
+    }
+    else {
+        frameMap_.remove(startIndex, endIndex - startIndex + 1);   //磁盘帧不移动，仅同步映射
+    }}
 
+void DiskSonarCache::setRealtimeMode(bool realtime)
+{
+    realtimeMode_ = realtime;
+}
 
 
 
@@ -302,6 +318,12 @@ void Dataset::addChart(const ChannelId& channelId, const ChartParameters& chartP
 
 void Dataset::addChartMeta(const ChannelId& channelId, const ChartParameters& chartParams, bool enableRender)
 {
+    // 必须持写锁：计算线程经 fromIndexCopy（读锁）拷贝同一 Epoch，
+    // setChartParameters2 对 charts_(QHash) 的插入/内部 QVector 的 detach 若无锁并发，
+    // 隐式共享引用计数被交错增减而损坏，后续 append/detach 触发，
+    // poolMtx_ 为 Recursive 锁，内嵌 addNewEpoch 再拿写锁是安全的同线程递归
+    QWriteLocker wl(&poolMtx_);
+
     uint8_t numSubChannels = 1;
     if (shouldAddNewEpoch(channelId, numSubChannels)) {
         addNewEpoch();
@@ -394,9 +416,9 @@ void Dataset::addPosition(double lat, double lon, int depth, bool enableRender)
         Epoch* prevEp = fromIndex(poolCnt - 2);
         if (prevEp && prevEp->getPositionGNSS().ned.isCoordinatesValid()) {
             North_East_Down prevNed = prevEp->getPositionGNSS().ned;
-            double dn    = curNed.n - prevNed.n;
-            double de    = curNed.e - prevNed.e;
-            double dist  = dn * dn + de * de;
+            double dn   = curNed.n - prevNed.n;
+            double de   = curNed.e - prevNed.e;
+            double dist = dn * dn + de * de;
             if (dist > 1000.0) {
                 lastEp->isRegionStart_ = true;
                 return;

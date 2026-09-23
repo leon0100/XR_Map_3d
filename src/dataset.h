@@ -26,15 +26,17 @@ public:
     void writeFrame(const QByteArray& rawFrame);
     void readFrame(qint64 epochIdx, QByteArray& outFrame);
     void removeFrames(int startIndex, int endIndex);
+    void setRealtimeMode(bool realtime);
 
 private:
     QString filePath_;
     QFile file_;
-    QFile readFile_;   //独立只读句柄：读线程 seek 不影响写句柄的 append 游标
     QHash<QPair<QUuid, int>, qint64> channelOffsets_;
     QVector<qint64> frameMap_;  // pool索引 → 磁盘帧槽位（删除帧时同步erase）
     qint64 totalFramesWritten_ = 0;
     QMutex mtx_;
+    QVector<QByteArray> memFramesVec_;
+    bool realtimeMode_ = true;
 };
 
 

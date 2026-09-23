@@ -55,17 +55,6 @@ void Epoch::setChartBySubChannelId(const ChannelId &channelId, uint8_t subChanne
     charts.type = 1;
 }
 
-// void Epoch::setRecParameters(const ChannelId& channelId, const RecordParameters& recParams)
-// {
-//     if (charts_.contains(channelId)) {
-//         auto& echograms =  charts_[channelId];
-
-//         for (auto& iEchogram : echograms) {
-//             iEchogram.recordParameters_ = recParams;
-//         }
-//     }
-// }
-
 void Epoch::setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams)
 {
     if (charts_.contains(channelId)) {

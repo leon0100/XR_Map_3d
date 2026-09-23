@@ -164,7 +164,8 @@ void SurfaceProcessor::onUpdatedBottomTrackData(const QVector<QPair<char, int>> 
     QVector<QVector3D> bTrData;
     {
         QReadLocker rl(&lock_);
-        bTrData = bottomTrackPtr_ ? bottomTrackPtr_->cdata() : QVector<QVector3D>();
+        // bTrData = bottomTrackPtr_ ? bottomTrackPtr_->cdata() : QVector<QVector3D>();
+        bTrData = bottomTrackPtr_ ? bottomTrackPtr_->cdataCopy() : QVector<QVector3D>();
     }
     if (bTrData.empty()) {
         return;

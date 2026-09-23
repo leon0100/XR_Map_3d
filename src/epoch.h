@@ -14,36 +14,6 @@
 class Epoch
 {
 public:
-    // struct Contact {
-    //     bool isValid() const {
-    //         return !info.isEmpty() && cursorX != -1 && cursorY != -1;
-    //     }
-
-    //     void clear() {
-    //         info.clear();
-    //         lat      = 0.0f;
-    //         lon      = 0.0f;
-    //         echogramDistance = 0.0f;
-    //         depth    = 0.0f;
-    //         nedX     = 0.0f;
-    //         nedY     = 0.0f;
-    //         cursorX  = -1;
-    //         cursorY  = -1;
-    //         rectEcho = QRectF();
-    //     }
-
-    //     QString info;
-    //     float   lat = 0.0f;
-    //     float   lon = 0.0f;
-    //     float   echogramDistance = 0.0f;
-    //     float   depth = 0.0f;
-    //     float   nedX = 0.0f;
-    //     float   nedY = 0.0f;
-    //     int     cursorX = -1;
-    //     int     cursorY = -1;
-    //     QRectF  rectEcho;
-    // };
-
     struct DistProcessing {
         enum class DistanceSource {
             DistanceSourceNone = 0,
@@ -132,7 +102,6 @@ public:
     void setChart(const ChannelId& channelId, const QVector<QVector<uint8_t>>& chartData, float resolution, float offset);
     void setChartBySubChannelId(const ChannelId& channelId, uint8_t subChannelId, const QVector<uint8_t>& chartData, float resolution, float offset);
 
-    // void setRecParameters(const ChannelId& channelId, const RecordParameters& recParams);
     void setChartParameters(const ChannelId& channelId, const ChartParameters& chartParams);
     void setChartParameters2(const ChannelId& channelId, const ChartParameters& chartParams);
     void setPositionLLA(double lat, double lon, LLARef* ref = NULL, uint32_t unix_time = 0, int32_t nanosec = 0);
