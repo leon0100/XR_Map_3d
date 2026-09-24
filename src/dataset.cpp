@@ -199,16 +199,6 @@ void Dataset::setState(DatasetState state)
     state_ = state;
 }
 
-void Dataset::setDataProcessorState(DataProcessorType dataProcessorState)
-{
-    dataProcessorState_ = dataProcessorState;
-}
-
-DataProcessorType Dataset::getDataProcessorState()
-{
-    return dataProcessorState_;
-}
-
 Dataset::DatasetState Dataset::getState() const
 {
     return state_;
@@ -284,6 +274,11 @@ Dataset::LlaRefState Dataset::getCurrentLlaRefState() const
     }
 
     return retVal;
+}
+
+uint64_t Dataset::getLastSonarPosIndx() const
+{
+    return sonarPosIndx_;
 }
 
 void Dataset::setSonarOffset(float x, float y, float z)
@@ -469,7 +464,7 @@ void Dataset::resetDataset()
     polygonOutlineNED_.clear();
 
     _llaRef = LLARef();
-    sonarPosIndx_   = 0;
+    sonarPosIndx_ = 0;
     lastBottomTrackEpoch_ = 0;
     emit channelsUpdated();
     emit dataUpdate();
@@ -590,13 +585,13 @@ QStringList Dataset::channelsNameList()
     return result;
 }
 
-void Dataset::onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll)
+void Dataset::onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual)
 {
     // qDebug() << "Dataset::onLastBottomTrackEpochChanged.............";
     bottomTrackParam_     = btP;
     lastBottomTrackEpoch_ = val;
 
-    emit bottomTrackUpdated(channelId, bottomTrackParam_.indexFrom, bottomTrackParam_.indexTo, manual, redrawAll);
+    emit bottomTrackUpdated(channelId, bottomTrackParam_.indexFrom, bottomTrackParam_.indexTo, manual);
 }
 
 void Dataset::validateChannelList(const ChannelId &channelId, uint8_t subChannelId)
@@ -766,7 +761,7 @@ void Dataset::onSonarPosCanCalc(uint64_t indx)
                 Position boatPos = ep->getPositionGNSS();
                 const North_East_Down d = fruOffsetToNed(sonarOffset_, ep->yaw());
                 North_East_Down sonarNed(boatPos.ned.n + d.n, boatPos.ned.e + d.e, /*always zero*/0.0);
-                LLA sonarLla(&sonarNed, &_llaRef, /*spherical=*/true);
+                LLA sonarLla(&sonarNed, &_llaRef);
                 boatPos.lla      = sonarLla;
                 boatPos.LLA2NED(&_llaRef);
                 ep->setSonarPosition(boatPos);

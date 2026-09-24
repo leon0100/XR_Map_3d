@@ -538,8 +538,6 @@ void Core::clearRouteData()
                         plot2d->clearPlotData();
                     }
                 }
-
-                emit isobathsViewControlMenuController_->edgeLimitChanged(100);
             }
         });
     }
@@ -562,8 +560,6 @@ void Core::clearRouteData()
                         plot2d->clearPlotData();
                     }
                 }
-
-                emit isobathsViewControlMenuController_->edgeLimitChanged(100);
             }
         });
     }
@@ -586,8 +582,6 @@ void Core::clearRouteData()
                         plot2d->clearPlotData();
                     }
                 }
-
-                emit isobathsViewControlMenuController_->edgeLimitChanged(100);
             }
         });
     }
@@ -643,7 +637,6 @@ void Core::clearAll()
                 scene3dViewPtr_->clear(true);
                 scene3dViewPtr_->getNavigationArrowPtr()->resetPositionAndAngle();
             }
-            // emit isobathsViewControlMenuController_->edgeLimitChanged(100);
         }
 
     });
@@ -751,19 +744,6 @@ void Core::location(uint8_t type)
 void Core::onFileStopsOpening(QVector<float>& depthVec, double minZ, double maxZ)
 {
     if(isAutoRenderSpan_) {
-        // int vecSize = depthVec.size();
-        // if(vecSize > 200 && vecSize <= 400) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-        // }
-        // else if(vecSize > 400 && vecSize <= 600) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-        // }
-        // else if(vecSize > 600 && vecSize <= 800) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(50);
-        // }
-        // else if(vecSize > 800) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(1200);
-        // }
         float bboxW = datasetPtr_->maxX_ - datasetPtr_->minX_;
         float bboxH = datasetPtr_->maxY_ - datasetPtr_->minY_;
         int newLimit = sqrt(bboxW * bboxW + bboxH * bboxH) / 8;
@@ -917,7 +897,6 @@ void Core::createMapTileManagerConnections()
 void Core::onDataProcesstorStateChanged(const DataProcessorType& state)
 {
     dataProcessorState_ = state;
-    dataProcessor_->setDataProcessType(state);
 }
 
 void Core::onZoomLevelChanged(int level)
@@ -931,89 +910,45 @@ void Core::slot_RealtimeDrawContourBle(QVector<float>& depthVec, double minZ, do
 {
     int vecSize = depthVec.size();
     if(vecSize > 0 && vecSize < 3) {
-        qDebug() << "vecSize..........." << vecSize;
         onDataProcesstorStateChanged(DataProcessorType::bletoothTrack);
     }
     if(isAutoRenderSpan_) {
-        if(vecSize == 200) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-        }
-        else if(vecSize == 400) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-        }
-        else if(vecSize == 600) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(50);
-        }
-        else if(vecSize == 800) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(40);
-        }
-    }
-
-    datasetPtr_->vec_CSV_  = depthVec;
-    datasetPtr_->minDepth_ = minZ;
-    datasetPtr_->maxDepth_ = maxZ;
-    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
-    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
-    emit drawRealtimeContour(isRead);
-}
-
-void Core::slot_RealtimeDrawContourWifi(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
-{
-    int vecSize = depthVec.size();
-    if(vecSize > 0 && vecSize < 3) {
-        qDebug() << "vecSize..........." << vecSize;
-        onDataProcesstorStateChanged(DataProcessorType::wifiTrack);
-    }
-    if(isAutoRenderSpan_) {
-        if(vecSize == 200) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-        }
-        else if(vecSize == 400) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-        }
-        else if(vecSize == 600) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(50);
-        }
-        else if(vecSize == 800) {
-            isobathsViewControlMenuController_->setEdgeLimitChanged(40);
-        }
-    }
-
-    datasetPtr_->vec_CSV_  = depthVec;
-    datasetPtr_->minDepth_ = minZ;
-    datasetPtr_->maxDepth_ = maxZ;
-    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
-    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
-    emit drawRealtimeContour(isRead);
-
-}
-
-void Core::slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
-{
-    int vecSize = depthVec.size();
-    if(vecSize > 0 && vecSize < 3) {
-        qDebug() << "vecSize..........." << vecSize;
-        onDataProcesstorStateChanged(DataProcessorType::serialPortTrack);
-    }
-    if(isAutoRenderSpan_) {
-        // if(vecSize == 200) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(80);
-        // }
-        // else if(vecSize == 400) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(60);
-        // }
-        // else if(vecSize == 600) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(50);
-        // }
-        // else if(vecSize == 800) {
-        //     isobathsViewControlMenuController_->setEdgeLimitChanged(40);
-        // }
         float bboxW = datasetPtr_->maxX_ - datasetPtr_->minX_;
         float bboxH = datasetPtr_->maxY_ - datasetPtr_->minY_;
         int newLimit = sqrt(bboxW * bboxW + bboxH * bboxH) / 8;
         isobathsViewControlMenuController_->setEdgeLimitChanged(newLimit);
     }
 
+    datasetPtr_->setAutoBounadry();
+    datasetPtr_->vec_CSV_  = depthVec;
+    datasetPtr_->minDepth_ = minZ;
+    datasetPtr_->maxDepth_ = maxZ;
+    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
+    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
+    if(isRead) {
+        if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
+            btpPtr->indexFrom = 0;
+            btpPtr->indexTo   = datasetPtr_->size();
+            ChannelId channelId;
+            datasetPtr_->onLastBottomTrackEpochChanged(channelId, btpPtr->indexTo, *btpPtr, false);
+        }
+    }
+}
+
+void Core::slot_RealtimeDrawContourWifi(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
+{
+    int vecSize = depthVec.size();
+    if(vecSize > 0 && vecSize < 3) {
+        onDataProcesstorStateChanged(DataProcessorType::wifiTrack);
+    }
+    if(isAutoRenderSpan_) {
+        float bboxW = datasetPtr_->maxX_ - datasetPtr_->minX_;
+        float bboxH = datasetPtr_->maxY_ - datasetPtr_->minY_;
+        int newLimit = sqrt(bboxW * bboxW + bboxH * bboxH) / 8;
+        isobathsViewControlMenuController_->setEdgeLimitChanged(newLimit);
+    }
+
+    datasetPtr_->setAutoBounadry();
     datasetPtr_->vec_CSV_  = depthVec;
     datasetPtr_->minDepth_ = minZ;
     datasetPtr_->maxDepth_ = maxZ;
@@ -1024,7 +959,36 @@ void Core::slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double m
             btpPtr->indexFrom   = 0;
             btpPtr->indexTo     = datasetPtr_->size();
             ChannelId channelId;
-            datasetPtr_->onLastBottomTrackEpochChanged(channelId, btpPtr->indexTo, *btpPtr, true, true);
+            datasetPtr_->onLastBottomTrackEpochChanged(channelId, btpPtr->indexTo, *btpPtr, false);
+        }
+    }
+}
+
+void Core::slot_RealtimeDrawContourSerialPort(QVector<float>& depthVec, double minZ, double maxZ, bool isRead)
+{
+    int vecSize = depthVec.size();
+    if(vecSize > 0 && vecSize < 3) {
+        onDataProcesstorStateChanged(DataProcessorType::serialPortTrack);
+    }
+    if(isAutoRenderSpan_) {
+        float bboxW = datasetPtr_->maxX_ - datasetPtr_->minX_;
+        float bboxH = datasetPtr_->maxY_ - datasetPtr_->minY_;
+        int newLimit = sqrt(bboxW * bboxW + bboxH * bboxH) / 8;
+        isobathsViewControlMenuController_->setEdgeLimitChanged(newLimit);
+    }
+
+    datasetPtr_->setAutoBounadry();
+    datasetPtr_->vec_CSV_  = depthVec;
+    datasetPtr_->minDepth_ = minZ;
+    datasetPtr_->maxDepth_ = maxZ;
+    QMetaObject::invokeMethod(dataProcessor_, "postMinZ", Qt::QueuedConnection, Q_ARG(float, minZ));
+    QMetaObject::invokeMethod(dataProcessor_, "postMaxZ", Qt::QueuedConnection, Q_ARG(float, maxZ));
+    if(isRead) {
+        if (auto btpPtr = datasetPtr_->getBottomTrackParamPtr(); btpPtr) {
+            btpPtr->indexFrom   = 0;
+            btpPtr->indexTo     = datasetPtr_->size();
+            ChannelId channelId;
+            datasetPtr_->onLastBottomTrackEpochChanged(channelId, btpPtr->indexTo, *btpPtr, false);
         }
     }
 }
@@ -1042,11 +1006,6 @@ void Core::createDatasetConnections()
 int Core::getCurrMapLevel() const
 {
     return currMapLevel_;
-}
-
-int Core::getDataProcessorState() const
-{
-    return static_cast<int>(dataProcessorState_);
 }
 
 QObject* Core::progress() const

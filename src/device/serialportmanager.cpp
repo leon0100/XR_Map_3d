@@ -64,12 +64,13 @@ void SerialPortManager::scanPorts()
         // qDebug() << "port.portName is " << port.portName();
         m_availablePorts.append(port.portName());
     }
+    emit portsUpdated();
 }
 
 void SerialPortManager::toggleConnection(QString port, int baudRate)
 {
     baudRate_ = baudRate;
-    qDebug() << "port: " << port << "   baudRate: " << baudRate;
+    // qDebug() << "port: " << port << "   baudRate: " << baudRate;
     if(serialPort_->isOpen()) {
         serialPort_->close();
         serialPort_->disconnect();
@@ -93,12 +94,6 @@ void SerialPortManager::toggleConnection(QString port, int baudRate)
 void SerialPortManager::resetFileAndChannel()
 {
     batchChannelId_ = ChannelId(QUuid::createUuid(), 0);
-    // minZ_ = std::numeric_limits<float>::max();
-    // maxZ_ = std::numeric_limits<float>::lowest();
-    // depthVec_.clear();
-    // flag_haveReportAbnormalGPS = false;
-    // count_abnormalGPS = 0;
-
     if (diskSonarCache_) {
         diskSonarCache_->close();
         delete diskSonarCache_;
@@ -148,7 +143,6 @@ QStringList SerialPortManager::availablePorts()
 
 bool SerialPortManager::isConnected()
 {
-    qDebug() << "serialPort_->isOpen........" << serialPort_->isOpen();
     return serialPort_->isOpen();
 }
 
@@ -308,7 +302,7 @@ void SerialPortManager::parseTModemFrame(QByteArray& rawData)
     int dataLen = rawData.size();
     while (pos <= (dataLen - HEADER_LEN))
     {
-        // 1. 查找包头 0xAA 0xBB
+        // 1. 查找包头 0xAA、0xBB
         if (!(static_cast<quint8>(rawData.at(pos)) == HEAD1 && static_cast<quint8>(rawData.at(pos + 1)) == HEAD2)) {
             pos++;
             continue;
@@ -411,7 +405,6 @@ void SerialPortManager::parseTsl3FromTModem()
         }
     }
 
-    qDebug() << "tslByteList.size()........" << tslByteList.size();
     for(auto tslDataTemp : tslByteList) {
         tsl_3 tslSingleStru;
         memcpy(&tslSingleStru, tslDataTemp, tslIdx);
@@ -458,8 +451,8 @@ void SerialPortManager::parseTsl3FromTModem()
         chartParams.latitude    = lla.latitude;
         latitude_  = chartParams.latitude;;
         longitude_ = chartParams.longitude;
-        angle_     = chartParams.heading ;
-        speed_     = chartParams.speed ;
+        angle_     = chartParams.heading;
+        speed_     = chartParams.speed;
         depth_     = depth;
         emit dataPanelUpdate();
 
@@ -475,7 +468,9 @@ void SerialPortManager::parseTsl3FromTModem()
     if (!tslByteList.isEmpty()) {
         emit signal_drawRealtimeContour(depthHistory_, minDepth_, maxDepth_, readingDrawTrack_);
 
-        emit datasetPtr_->dataUpdate();
+        if(readingDrawTrack_) {
+            emit datasetPtr_->dataUpdate();
+        }
     }
 
     if (nowIndex_ > 65536) {

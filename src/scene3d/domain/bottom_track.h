@@ -46,14 +46,14 @@ public:
     void setDataProcessorPtr(DataProcessor* dataProcessorPtr);
     void actionEvent(ActionEvent actionEvent);
     void updateRenderData(int lEpoch = 0, int rEpoch = 0, bool redrawAll = false, bool manually = false);
-    // 线程安全数据快照：读锁内完成拷贝构造，与 GUI 侧 appendData/setZ 的 detach 互斥，
-    // 供 computeThread/渲染线程使用（裸 cdata() 引用在跨线程场景下与 detach 竞争会损坏引用计数）
+    // 线程安全数据快照：读锁内完成拷贝构造，与GUI侧appendData/setZ的detach互斥，
+    // 供 computeThread/渲染线程使用（裸 cdata()引用在跨线程场景下与 detach 竞争会损坏引用计数）
     QVector<QVector3D> cdataCopy() const;
 
 public Q_SLOTS:
     virtual void setData(const QVector<QVector3D>& data, int primitiveType = GL_POINTS) override;
     virtual void clearData() override;
-    void isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redrawAll);
+    void isEpochsChanged(int lEpoch, int rEpoch, bool manual);
     void resetVertexSelection();
     void selectEpoch(int epochIndex, const ChannelId& channelId);
     void setVisibleState(bool state);
@@ -93,4 +93,5 @@ private:
     QVector<int>  vertIndxUpdated_;
 
     mutable QReadWriteLock dataMtx_ = QReadWriteLock(QReadWriteLock::Recursive);
+    int lastScannedEpoch_ = 0;
 };

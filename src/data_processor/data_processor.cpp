@@ -400,7 +400,6 @@ void DataProcessor::runCoalescedWork()
 
 void DataProcessor::startTimerIfNeeded()
 {
-    // qDebug() << "DataProcessor::startTimerIfNeeded()..........";
     //确保pendingWorkTimer_只能在 DataProcessor所属线程启动，却可以从任意线程安全调用
     if (QThread::currentThread() == this->thread()) {
         if(!pendingWorkTimer_.isActive()) {
@@ -424,17 +423,6 @@ void DataProcessor::onWorkerFinished()
     if (nextRunPending_.load()) {
         startTimerIfNeeded();
     }
-}
-
-void DataProcessor::setDataProcessType(DataProcessorType state)
-{
-    currentDataType_ = state;
-    datasetPtr_->setDataProcessorState(state);
-}
-
-DataProcessorType DataProcessor::getDataProcessType()
-{
-    return currentDataType_;
 }
 
 void DataProcessor::postDistCompletedByProcessing(int epIndx, const ChannelId &channelId, float dist)

@@ -53,7 +53,6 @@ public slots:
     bool getIsFileOpening() const;
     bool getIsSeparateReading() const;
     void onChannelsUpdated();
-    int  getDataProcessorState() const;
     int  getCurrMapLevel() const;
     void createDatasetConnections();
     void createScene3dConnections();
@@ -88,9 +87,6 @@ signals:
     void currentMapLevelChanged();
 
     void progressChanged();
-
-    void drawRealtimeContour(bool isRead);
-
 
 private slots:
     void onFileStopsOpening(QVector<float>& depthVec, double minZ, double maxZ);

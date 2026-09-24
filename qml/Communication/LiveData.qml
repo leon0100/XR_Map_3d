@@ -38,12 +38,37 @@ XRRectangle {
     }
 
     Connections {
+        target: UdpManager
+        function onSignalCancelUdpOn(isOn) {
+            onOffControl.isOn = isOn
+        }
+    }
+
+    Connections {
         target: SerialPort
         function onConnectedChanged(connected) {
             readControl22.isReading = connected
             liveDataContent.isShowDataPanel = connected
         }
     }
+
+
+    function checkChannelConflict(target) {
+        if(target !== "bluetooth" && BleManager.connected) {
+            GetInterface.showDialogInfo(0, qsTr("Bluetooth is Connected!"));
+            return true
+        }
+        if (target !== "wifi" && onOffControl.isOn) {
+            GetInterface.showDialogInfo(0, qsTr("WiFi is Connected!"))
+            return true
+        }
+        if (target !== "serial" && SerialPort.connected) {
+            GetInterface.showDialogInfo(0, qsTr("Serial port is Connected!"))
+            return true
+        }
+        return false;
+    }
+
 
     // 拦截鼠标事件，防止点击穿透到地图
     MouseArea {
@@ -376,6 +401,9 @@ XRRectangle {
                                             switchControl.isOn = false;
                                             BleManager.operateBleOnOff(false)
                                         } else {
+                                            if (liveDataContent.checkChannelConflict("bluetooth")) {
+                                                return
+                                            }
                                             BleManager.operateBleOnOff(true)
                                         }
                                     }
@@ -537,6 +565,9 @@ XRRectangle {
                                 hoverEnabled: true
                                 onClicked:{
                                     if(!noDevices && BleManager){
+                                        if (liveDataContent.checkChannelConflict("bluetooth")) {
+                                            return
+                                        }
                                         BleManager.connectToDevice(index)
                                     }
                                 }
@@ -698,6 +729,9 @@ XRRectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         onClicked: {
+                            if (!onOffControl.isOn && liveDataContent.checkChannelConflict("wifi")) {
+                                return
+                            }
                             UdpManager.openUdp(!onOffControl.isOn)
                         }
                         onEntered: onOffControl.hovered = true
@@ -820,6 +854,7 @@ XRRectangle {
                         model: SerialPort.availablePorts
                         Layout.preferredWidth: iconSize * 6
                         font.pixelSize: iconSize
+                        onPressedChanged: SerialPort.scanPorts()
                         contentItem: Text {
                             text: portCombo.displayText
                             verticalAlignment: Text.AlignVCenter
@@ -888,7 +923,7 @@ XRRectangle {
 
                 Rectangle {
                     id: switchControl2  // serialPort
-                    width:  layoutHeight * 2.2
+                    width:  layoutHeight * 2.1
                     height: layoutHeight
                     radius: layoutHeight * 0.3
                     color:  hovered ? (SerialPort.connected ? "#36D85A" : "#D6E6FF")
@@ -944,6 +979,9 @@ XRRectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         onClicked: {
+                            if (!SerialPort.connected && liveDataContent.checkChannelConflict("serial")) {
+                                return
+                            }
                             SerialPort.toggleConnection(portCombo.currentText, baudCombo.currentText)
                         }
                         onEntered: switchControl2.hovered = true
@@ -957,7 +995,7 @@ XRRectangle {
 
                 Rectangle {
                     id: readControl22
-                    width:  layoutHeight * 2.2
+                    width:  layoutHeight * 2.1
                     height: layoutHeight
                     radius: layoutHeight * 0.3
                     color:  hovered ? (readControl22.isReading ? "#36D85A" : "#D6E6FF")

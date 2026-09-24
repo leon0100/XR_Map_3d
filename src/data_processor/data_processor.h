@@ -30,8 +30,6 @@ public:
 
     void setDatasetPtr(Dataset* datasetPtr);
     inline bool isCancelRequested() const noexcept { return cancelRequested_.load(); }
-    void setDataProcessType(DataProcessorType s);
-    DataProcessorType getDataProcessType();
 
 public slots:
     void setBottomTrackPtr(BottomTrack* bottomTrackPtr);
@@ -148,7 +146,6 @@ private:
     QThread computeThread_;
     ComputeWorker* worker_;
 
-    DataProcessorType currentDataType_;
     uint64_t chartsCounter_;
     uint64_t bottomTrackCounter_;
     uint64_t epochCounter_;

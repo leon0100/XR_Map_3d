@@ -62,8 +62,6 @@ public:
     ~Dataset();
 
     void setState(DatasetState state);
-    void setDataProcessorState(DataProcessorType dataProcessorState);
-    DataProcessorType getDataProcessorState();
 
     DatasetState getState() const;
     LLARef getLlaRef() const;
@@ -239,10 +237,10 @@ public:
 public slots:
     friend class DataProcessor;
     void  onSonarPosCanCalc(uint64_t indx);
+    uint64_t getLastSonarPosIndx() const;
     void  setSonarOffset(float x, float y, float z);
     void  addChart(const ChannelId& channelId, const ChartParameters& chartParams, const QVector<QVector<uint8_t>>& data, bool enableRender);
     void  addChartMeta(const ChannelId& channelId, const ChartParameters& chartParams, bool enableRender);
-    // void  addPosition_realTime(double lat, double lon, double depth, bool isRead);
     void  addPosition(double lat, double lon, int depth, bool enableRender);
 
     void resetDataset();
@@ -260,7 +258,7 @@ public slots:
 
     QStringList channelsNameList();
 
-    void onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual, bool redrawAll);
+    void onLastBottomTrackEpochChanged(const ChannelId& channelId, int val, const BottomTrackParam& btP, bool manual);
 
 signals:
     void epochAdded(uint64_t indx);
@@ -268,7 +266,7 @@ signals:
     void chartAdded(uint64_t indx);
     void attitudeAdded(uint64_t indx);
     void dataUpdate();
-    void bottomTrackUpdated(const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll);
+    void bottomTrackUpdated(const ChannelId& channelId, int lEpoch, int rEpoch, bool manual);
     void updatedLlaRef();
     void locationToDest(LLA targetLla);
     void channelsUpdated();
@@ -336,7 +334,6 @@ public:
     }
     double minDepth_, maxDepth_;
     QVector<QVector3D> autoBoundary_;
-    DataProcessorType dataProcessorState_;
 
     float minX_ = std::numeric_limits<float>::max();
     float maxX_ = std::numeric_limits<float>::lowest();

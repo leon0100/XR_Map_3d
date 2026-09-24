@@ -408,7 +408,7 @@ void qPlot2D::doDistProcessing(int preset, int window_size, float vertical_gap, 
             btpPtr->offset.y    = offsety;
             btpPtr->offset.z    = offsetz;
 
-            datasetPtr_->onLastBottomTrackEpochChanged(cursor_.channel1, btpPtr->indexTo, *btpPtr, manual, true);
+            datasetPtr_->onLastBottomTrackEpochChanged(cursor_.channel1, btpPtr->indexTo, *btpPtr, manual);
         }
     }
 }

@@ -28,7 +28,7 @@ HEADERS += \
     $$PWD/surface_view.h \
     $$PWD/isobaths_view.h \
     $$PWD/triangle.h \
-    $$PWD/usbl_view.h \
+    # $$PWD/usbl_view.h \
 
 
 
@@ -49,4 +49,4 @@ SOURCES += \
     $$PWD/polygon_outline.cpp \
     $$PWD/surface_view.cpp \
     $$PWD/isobaths_view.cpp \
-    $$PWD/usbl_view.cpp
+    # $$PWD/usbl_view.cpp

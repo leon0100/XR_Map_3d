@@ -125,9 +125,9 @@ void BottomTrack::actionEvent(ActionEvent actionEvent)
     }
 }
 
-void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redrawAll)
+void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual)
 {
-    qDebug() << "BottomTrack::isEpochsChanged lEpoch..." << lEpoch << "  " << rEpoch;
+    // qDebug() << "BottomTrack::isEpochsChanged lEpoch..." << lEpoch << "  " << rEpoch;
     if(!datasetPtr_) {
         return;
     }
@@ -136,15 +136,20 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     r->selectedVertexIndices_.clear();
     int rSize = r->cdata().size();
 
-    DataProcessorType currDataType = datasetPtr_->getDataProcessorState();
-    if (currDataType == DataProcessorType::bletoothTrack || currDataType == DataProcessorType::wifiTrack) {
-        lEpoch = rEpoch > 1 ? (rEpoch-1) : 0;
-    }
-
     QVector<QVector3D> prepData;
     epIndxUpdated_.clear();
     vertIndxUpdated_.clear();
-    const int cnt = rEpoch - lEpoch;
+
+    if (rEpoch < lastScannedEpoch_) {
+        lastScannedEpoch_ = 0;
+    }
+
+    int scanFrom = qMax(lEpoch, lastScannedEpoch_);
+
+    int readyTo = static_cast<int>(datasetPtr_->getLastSonarPosIndx()) + 1;
+    int scanTo  = qMin(rEpoch, readyTo);
+
+    const int cnt = scanTo - scanFrom;
     if(cnt > 0) {
         prepData.reserve(cnt);
         epIndxUpdated_.reserve(cnt);
@@ -154,7 +159,8 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     QWriteLocker dataWl(&dataMtx_);
 
     try {
-    for (int epIndx = lEpoch; epIndx < rEpoch; ++epIndx) {
+    // for (int epIndx = lEpoch; epIndx < rEpoch; ++epIndx) {
+    for (int epIndx = scanFrom; epIndx < scanTo; ++epIndx) {
         auto vIt = epoch2Vertex_.find(epIndx);
         if (vIt != epoch2Vertex_.end()) {
             // 情况A: 已存在点，更新Z坐标
@@ -191,6 +197,7 @@ void BottomTrack::isEpochsChanged(int lEpoch, int rEpoch, bool manual, bool redr
     }
 
     // dataWl.unlock();
+    lastScannedEpoch_ = qMax(lastScannedEpoch_, scanTo);
 
     emit updatedPoints(epIndxUpdated_, vertIndxUpdated_, manual);  //这句绘制等高线
 
@@ -213,6 +220,7 @@ void BottomTrack::setData(const QVector<QVector3D> &data, int primitiveType)
 void BottomTrack::clearData()
 {
     QWriteLocker dataWl(&dataMtx_);
+    lastScannedEpoch_ = 0;
     vertex2Epoch_.clear();
     epoch2Vertex_.clear();
     visibleChannel_ = DatasetChannel();

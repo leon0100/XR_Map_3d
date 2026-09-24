@@ -444,7 +444,6 @@ void BLEManager::slot_parserRealtimePt(const BoatPoint &pt)
 
     emit dataPanelUpdate();
 
-    // emit chartComplete(batchChannelId_, chartParams, dataVec, readingDrawTrack_);
     emit positionComplete(pt.latitude, pt.longitude, pt.depth, readingDrawTrack_);
 
     depthHistory_.append(static_cast<float>(pt.depth));
@@ -636,9 +635,9 @@ void BLEManager::onServiceDiscovered(const QBluetoothUuid &uuid)
 void BLEManager::onServiceScanDone()
 {
     GIF->dialogInfo(Dialog_Loading, "hide");
-        m_connected = true;
-        readingDrawTrack_ = true;
-        emit connectedChanged(true);
+    m_connected = true;
+    readingDrawTrack_ = true;
+    emit connectedChanged(true);
 
     if(bleServer_) {
         bleServer_->disconnect();

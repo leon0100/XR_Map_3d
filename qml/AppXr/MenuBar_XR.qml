@@ -100,7 +100,12 @@ Popup {
                     background: Rectangle {
                         color: open.pressed ? menuPressColor : menuBackColor
                     }
-                    onClicked: core.openFileFromMenu()
+                    onClicked: {
+                        if(liveDataPanel.checkChannelConflict("file")) {
+                            return
+                        }
+                        core.openFileFromMenu()
+                    }
 
                     Image {
                         source: "qrc:/icons/ui/file_import.svg"

@@ -900,11 +900,11 @@ void GraphicsScene3dView::setDataset(Dataset *dataset)
     forceUpdateDatasetLlaRef();
 
     QObject::connect(datasetPtr_, &Dataset::bottomTrackUpdated,
-        this, [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual, bool redrawAll)->void {
-            m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual, redrawAll); //最终触发了绘制等高线
+        this, [this](const ChannelId& channelId, int lEpoch, int rEpoch, bool manual)->void {
+            m_bottomTrack->isEpochsChanged(lEpoch, rEpoch, manual); //最终触发了绘制等高线
     }, Qt::DirectConnection);
 
-    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef, this,   [this]() -> void {
+    QObject::connect(datasetPtr_, &Dataset::updatedLlaRef, this, [this]() -> void {
             surfaceView_->setLlaRef(datasetPtr_->getLlaRef());
             forceUpdateDatasetLlaRef();
             fitAllInView();

@@ -24,13 +24,6 @@ Item {
 
     property int  currentCommPage: 0
 
-    Connections {
-        target: UdpManager
-        function onSignalCancelUdpOn(isOn) {
-            onOffControl.isOn = isOn
-        }
-    }
-
     // ------------------ 侧边按钮 -------------------
     ColumnLayout {
         id: toggleButton

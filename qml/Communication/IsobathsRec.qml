@@ -41,6 +41,18 @@ XRRectangle {
        IsobathsViewControlMenuController.onGroundVisibleChanged(isShowGround)
     }
 
+    Connections {
+        target: theme
+        function onLiveDataVisibleChanged() {
+            if(theme.liveDataVisible) {
+                isShowOutline = false
+                isShowGround = false
+                IsobathsViewControlMenuController.onOutlineVisibleChanged(false)
+                IsobathsViewControlMenuController.onGroundVisibleChanged(false)
+            }
+        }
+    }
+
     // 拦截鼠标事件，防止点击穿透到地图
     // MouseArea {
     //     anchors.fill: parent
